@@ -1,4 +1,4 @@
-import { NotificationData } from "@/model/User";
+import { NotificationData } from "@/types/types";
 import { Document } from "mongoose";
 
 

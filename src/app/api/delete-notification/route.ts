@@ -1,5 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
-import UserModel, { NotificationData } from "@/model/User";
+import UserModel from "@/model/User";
+import NotificationData from '@/types/types'
 
 
 export async function POST(request: Request) {
