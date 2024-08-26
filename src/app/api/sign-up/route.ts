@@ -1,6 +1,6 @@
-import { sendVerifyEmail } from "@/helpers/sendVerificationEmail";
+// import { sendVerifyEmail } from "@/helpers/sendVerificationEmail";
 // import { sendVerifyEmailJS } from "@/helpers/sendVerificationEmailJS";
-import { sendVerifyEmailResend } from "@/helpers/sendVerifyEmailResend";
+// import { sendVerifyEmailResend } from "@/helpers/sendVerifyEmailResend";
 import dbConnect from "@/lib/dbConnect";
 import AlltopicModel from "@/model/Alltopic";
 import UserModel from "@/model/User";
