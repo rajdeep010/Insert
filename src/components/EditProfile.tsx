@@ -5,15 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import Image from 'next/image';
-import { useToast } from './ui/use-toast';
-import axios from 'axios';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import {useUser} from '@/app/context/UserProvider'
 
 
 const EditProfile = () => {
     const { data: session, status} = useSession()
-    const { toast } = useToast()
     const { updateUser, user_information, uploadAvatar, user_avatar } = useUser()
 
     const avatarURL = user_avatar
