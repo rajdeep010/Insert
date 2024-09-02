@@ -12,12 +12,12 @@ import { ApiResponse } from '@/types/ApiResponse'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import {  Loader2 } from 'lucide-react'
-import { BsHourglassSplit } from 'react-icons/bs'
-// import { useUser } from '@/app/context/UserProvider'
-import emailjs from 'emailjs-com'
+import { Loader2, Eye, EyeOff } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { FiTarget } from "react-icons/fi";
+import { FiTarget } from "react-icons/fi"
+import emailjs from 'emailjs-com'
+
+
 
 
 
@@ -26,29 +26,25 @@ export default function SignUpForm() {
     const [username, setUsername] = useState<string>('')
     const [usernameMessage, setUsernameMessage] = useState<string>()
     const [isCheckingUsername, setIsCheckingUsername] = useState(false)
-
     const [isSubmitting, setIsSubmitting] = useState(false)
-
+    const [showPassword, setShowPassword] = useState(false)
 
     const debounced = useDebounceCallback(setUsername, 500)
     const { toast } = useToast()
 
+    const togglePasswordVisibility = () => setShowPassword(!showPassword)
 
-    //! zod implementation
-    const form = useForm<z.infer<typeof signUpSchema>>(
-        {
-            resolver: zodResolver(signUpSchema),
-            defaultValues: {
-                username: '',
-                email: '',
-                password: ''
-            }
+    const form = useForm<z.infer<typeof signUpSchema>>({
+        resolver: zodResolver(signUpSchema),
+        defaultValues: {
+            username: '',
+            email: '',
+            password: ''
         }
-    )
+    })
 
     useEffect(() => {
         const checkUsernameUnique = async () => {
-
             if (username) {
                 setIsCheckingUsername(true)
                 setUsernameMessage('')
@@ -68,7 +64,6 @@ export default function SignUpForm() {
 
         checkUsernameUnique()
     }, [username])
-
 
     const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
         setIsSubmitting(true)
@@ -108,15 +103,12 @@ export default function SignUpForm() {
                         })
                     }
                 )
-            }
-
-            else {
+            } else {
                 toast({
                     title: 'Error',
                     description: response.data.message,
                 })
             }
-
             setIsSubmitting(false)
         } catch (error) {
             const axiosError = error as AxiosError<ApiResponse>
@@ -131,8 +123,8 @@ export default function SignUpForm() {
     }
 
     return (
-        <div className='flex justify-center items-center min-h-screen bg-gray-100'>
-            <div className='w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md'>
+        <div className='flex justify-center items-center min-h-screen'>
+            <div className='w-full max-w-md p-8 space-y-8 rounded-lg shadow-md'>
                 <div className='flex flex-col justify-center items-center'>
                     <div className='flex flex-col items-center gap-2'>
                         <span className='m-auto text-gray-300'>join</span>
@@ -152,7 +144,8 @@ export default function SignUpForm() {
                                 <FormItem>
                                     <FormLabel>Username</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Username"
+                                        <Input
+                                            placeholder="Username"
                                             {...field}
                                             onChange={(e) => {
                                                 field.onChange(e)
@@ -164,7 +157,6 @@ export default function SignUpForm() {
                                     <p className={`text-sm ${usernameMessage === "Username is unique" ? 'text-green-500' : 'text-red-500'}`}>
                                         {usernameMessage}
                                     </p>
-
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -191,21 +183,31 @@ export default function SignUpForm() {
                                 <FormItem>
                                     <FormLabel>Password</FormLabel>
                                     <FormControl>
-                                        <Input type='password' placeholder="Password" {...field} />
+                                        <div className="relative">
+                                            <Input
+                                                type={showPassword ? 'text' : 'password'}
+                                                placeholder="Password"
+                                                {...field}
+                                            />
+                                            <div
+                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                                                onClick={togglePasswordVisibility}
+                                            >
+                                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            </div>
+                                        </div>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
 
-                        <Button type='submit' disabled={isSubmitting} >
-                            {
-                                isSubmitting ? (
-                                    <>
-                                        <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
-                                    </>
-                                ) : ('Signup')
-                            }
+                        <Button type='submit' disabled={isSubmitting}>
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
+                                </>
+                            ) : ('Signup')}
                         </Button>
                     </form>
                 </Form>

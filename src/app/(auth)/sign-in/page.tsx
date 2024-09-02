@@ -1,5 +1,5 @@
 'use client'
-import React, { Suspense, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -11,7 +11,7 @@ import { ApiResponse } from '@/types/ApiResponse'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Eye, EyeOff } from 'lucide-react'
 import { signInSchema } from '@/schemas/signInSchema'
 import { signIn } from 'next-auth/react'
 import { BsHourglassSplit } from "react-icons/bs";
@@ -20,25 +20,24 @@ import { FiTarget } from "react-icons/fi";
 
 
 export default function SignInForm() {
+
     const [isSubmitting, setIsSubmitting] = useState(false)
     const { toast } = useToast()
     const router = useRouter()
 
-    //! zod implementation
-    const form = useForm<z.infer<typeof signInSchema>>(
-        {
-            resolver: zodResolver(signInSchema),
-            defaultValues: {
-                email: '',
-                password: ''
-            }
+    const [showPassword, setShowPassword] = useState(false)
+    const togglePasswordVisibility = () => setShowPassword(!showPassword)
+
+    const form = useForm<z.infer<typeof signInSchema>>({
+        resolver: zodResolver(signInSchema),
+        defaultValues: {
+            email: '',
+            password: ''
         }
-    )
+    })
 
     const onSubmit = async (data: z.infer<typeof signInSchema>) => {
         setIsSubmitting(true)
-        // console.log(data.email, data.password)
-
         try {
             const response = await signIn('credentials', {
                 redirect: false,
@@ -46,10 +45,7 @@ export default function SignInForm() {
                 password: data.password
             })
 
-            // console.log(response)
-
             if (response?.error) {
-                // console.log(response)
                 toast({
                     title: 'Signin Failed',
                     description: 'Incorrect credentials',
@@ -63,16 +59,13 @@ export default function SignInForm() {
                     title: 'Hello',
                     description: 'Welcome from team insert'
                 })
-                
-                // only to get the user data by email
+
                 const userData = await axios.get(`/api/sign-in?email=${data.email}`)
                 const username = userData.data.userdata.username
                 router.replace(`/u/${username}`)
             }
             setIsSubmitting(false)
-
         } catch (error) {
-            // console.error('Error in sign in', error)
             const axiosError = error as AxiosError<ApiResponse>
             let errorMessage = axiosError.response?.data.message
             toast({
@@ -85,8 +78,8 @@ export default function SignInForm() {
     }
 
     return (
-        <div className='flex justify-center items-center min-h-screen bg-gray-100'>
-            <div className='w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md'>
+        <div className='flex justify-center items-center min-h-screen'>
+            <div className='w-full max-w-md p-8 space-y-8 rounded-lg shadow-md'>
                 <div className='flex flex-col justify-center items-center'>
                     <div className='flex flex-col items-center gap-2'>
                         <span className='m-auto text-gray-300'>join</span>
@@ -99,7 +92,6 @@ export default function SignInForm() {
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
-
                         <FormField
                             control={form.control}
                             name="email"
@@ -121,21 +113,31 @@ export default function SignInForm() {
                                 <FormItem>
                                     <FormLabel>Password</FormLabel>
                                     <FormControl>
-                                        <Input type='password' placeholder="Password" {...field} />
+                                        <div className="relative">
+                                            <Input
+                                                type={showPassword ? 'text' : 'password'}
+                                                placeholder="Password"
+                                                {...field}
+                                            />
+                                            <div
+                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                                                onClick={togglePasswordVisibility}
+                                            >
+                                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            </div>
+                                        </div>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
 
-                        <Button type='submit' disabled={isSubmitting} >
-                            {
-                                isSubmitting ? (
-                                    <>
-                                        <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
-                                    </>
-                                ) : ('SignIn')
-                            }
+                        <Button type='submit' disabled={isSubmitting}>
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
+                                </>
+                            ) : ('Sign In')}
                         </Button>
                     </form>
                 </Form>
@@ -152,4 +154,3 @@ export default function SignInForm() {
         </div>
     )
 }
-

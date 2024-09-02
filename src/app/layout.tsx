@@ -9,6 +9,8 @@ import 'dotenv/config'
 import Script from "next/script";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { TopicProvider } from "./context/TopicProvider";
+import { ThemeProvider } from "@/components/ThemeProvider"
+import Footer from "@/components/Footer";
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -34,8 +36,16 @@ export default function RootLayout({
                   src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
                   strategy="beforeInteractive"
                 />
-                {children}
-                <Toaster />
+                <ThemeProvider
+                  attribute="class"
+                  defaultTheme="system"
+                  enableSystem
+                  disableTransitionOnChange
+                >
+                  {children}
+                  <Toaster />
+                  <Footer/>
+                </ThemeProvider>
               </body>
             </TopicProvider>
           </UserProvider>
