@@ -442,17 +442,17 @@ const EachTopic = () => {
                         <>
                             <TableHeader className="block md:table-header-group">
                                 <TableRow className="border border-grey-500 md:border-none block md:table-row">
-                                    <TableHead className="rounded-tl-md rounded-bl-md bg-slate-50 p-2 text-black font-bold text-center md:border md:border-grey-500 block md:table-cell">
+                                    <TableHead className="rounded-tl-md rounded-bl-md bg-slate-50 dark:bg-gray-900 p-2 text-black dark:text-white font-bold text-center md:border md:border-grey-500 block md:table-cell">
                                         Problem Name
                                     </TableHead>
-                                    <TableHead className="bg-slate-50 p-2 text-black font-bold text-center md:border md:border-grey-500 block md:table-cell">
+                                    <TableHead className=" bg-slate-50 dark:bg-gray-900 p-2 text-black dark:text-white font-bold text-center md:border md:border-grey-500 block md:table-cell">
                                         Link
                                     </TableHead>
-                                    <TableHead className="bg-slate-50 p-2 text-black font-bold text-center md:border md:border-grey-500 block md:table-cell">
+                                    <TableHead className=" bg-slate-50 dark:bg-gray-900 p-2 text-black dark:text-white font-bold text-center md:border md:border-grey-500 block md:table-cell">
                                         Difficulty
                                     </TableHead>
                                     {status === 'authenticated' && session?.user.username === curr_topic.creator_username && (
-                                        <TableHead className="rounded-tr-md rounded-br-md bg-slate-50 p-2 text-black font-bold text-center md:border md:border-grey-500 block md:table-cell">
+                                        <TableHead className="rounded-tr-md rounded-br-md  bg-slate-50 dark:bg-gray-900 p-2 text-black dark:text-white font-bold text-center md:border md:border-grey-500 block md:table-cell">
                                             Delete
                                         </TableHead>
                                     )}
@@ -460,24 +460,25 @@ const EachTopic = () => {
                             </TableHeader>
                             <TableBody className="block md:table-row-group px-6">
                                 {curr_topic.problems.map(({ id: problemId, qname, url, difficulty }, index) => (
-                                    <TableRow key={index} className="bg-gray-50 my-4 border-2 rounded-md block md:table-row">
+                                    <TableRow key={index} className="bg-gray-50 dark:bg-gray-900 my-4 border-2 rounded-md block md:table-row">
                                         <TableCell className="p-2 px-4 text-center block md:table-cell">
                                             <Tooltip>
                                                 <TooltipTrigger>
                                                     <span>
-                                                        {qname && qname.length < 22 ? `${qname}` : `${qname.substring(0, Math.min(qname.length, 22))}...`}
+
+                                                        {qname && qname.length < 22 ? `${qname}` : `${qname.substring(0, Math.min(qname.length, 70))}`}
+                                                        {qname.length >= 70 ? '...' : ''}
                                                     </span>
                                                 </TooltipTrigger>
-                                                <TooltipContent className='bg-black text-white px-2 py-1 rounded-md'>
+                                                <TooltipContent className='bg-black dark:bg-white text-white dark:text-gray-900 px-2 py-1 rounded-md'>
                                                     {qname}
                                                 </TooltipContent>
                                             </Tooltip>
                                         </TableCell>
-                                        <TableCell className="p-2 px-4 text-left block md:table-cell">
-                                            <Link href={url} target="_blank" rel="noopener noreferrer" className='text-blue-500 hover:text-blue-300'>
-                                                {
-                                                    (url.length > 80) ? `{url.substring(0, Math.min(url.length, 80)) + '...'}` : `${url}`
-                                                }
+                                        <TableCell className="p-2 px-4 text-center block md:table-cell ">
+                                            <Link href={url} target="_blank" rel="noopener noreferrer" className='text-blue-500 hover:text-blue-300 hover:underline'>
+                                                
+                                                Go Problem
                                             </Link>
                                         </TableCell>
                                         <TableCell className="p-2 px-4 text-center block md:table-cell">
