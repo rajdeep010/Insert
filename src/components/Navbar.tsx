@@ -37,8 +37,8 @@ const Navbar = () => {
         <>
             <nav className='flex justify-between items-center'>
                 <Link className='flex gap-2 text-5xl' href={`/`}>
-                    <span><FiTarget /></span>
-                    <span>Insert</span>
+                    {/* <span><FiTarget /></span> */}
+                    <span className='font-sans'>Insert</span>
                 </Link>
 
 
@@ -152,7 +152,7 @@ const Navbar = () => {
                                                     <RiMenu3Line />
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent>
-                                                    <DropdownMenuLabel>Insert</DropdownMenuLabel>
+                                                    <DropdownMenuLabel className='font-sans'>Insert</DropdownMenuLabel>
                                                     <DropdownMenuSeparator />
 
                                                     <Link href={`/u/${session?.user?.username}`} onClick={handleOverViewClick}>

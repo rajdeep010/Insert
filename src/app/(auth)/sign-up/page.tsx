@@ -128,8 +128,8 @@ export default function SignUpForm() {
                 <div className='flex flex-col justify-center items-center'>
                     <div className='flex flex-col items-center gap-2'>
                         <span className='m-auto text-gray-300'>join</span>
-                        <h1 className='flex gap-1 text-5xl font-extrabold tracking-tight lg:text-5xl mb-3'>
-                            <FiTarget /> Insert
+                        <h1 className='flex gap-1 text-5xl font-sans tracking-wide lg:text-5xl mb-3'>
+                             Insert
                         </h1>
                     </div>
                     <p className='mb-4'>Sign up to start </p>

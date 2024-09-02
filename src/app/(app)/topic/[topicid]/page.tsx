@@ -229,19 +229,19 @@ const EachTopic = () => {
         <div className='flex flex-col gap-6 py-16 justify-center px-32'>
             <div> <TopicNavbar /> </div>
 
-            <div className='flex flex-col'>
+            <div className='flex flex-col mt-6'>
 
                 {/* title and buttons */}
                 <div className='flex justify-between items-center gap-6'>
 
                     <div className='flex flex-col gap-4'>
                         <div className='mb-2 flex gap-2 items-end'>
-                            {topicLoading ? <Skeleton className='h-8 w-[250px]' /> : <div className='text-4xl font-bold italic transition hover:text-gray-600'>{curr_topic?.title}</div>}
+                            {topicLoading ? <Skeleton className='h-8 w-[250px]' /> : <div className='text-3xl font-sans transition hover:text-gray-600'>{curr_topic?.title}</div>}
                             {topicLoading ? <Skeleton className='h-6 w-[100px]' /> : <div className="text-md">{curr_topic && `(` + curr_topic.problems.length + ` problems)`} </div>}
                         </div>
                         <div className='flex flex-col gap-1'>
-                            {topicLoading ? <Skeleton className='h-4 w-[200px]' /> : <div className='text-sm'>Created by <Link className='text-blue-400 underline' href={`/u/${curr_topic?.creator_username}`}>{curr_topic?.creator_username}</Link> </div>}
-                            {topicLoading ? <Skeleton className='h-6 w-[600px]' /> : <div className='text-gray-400'>{curr_topic?.about}</div>}
+                            {topicLoading ? <Skeleton className='h-4 w-[200px]' /> : <div className='text-xs text-gray-400'>Created by <Link className='text-blue-400 underline' href={`/u/${curr_topic?.creator_username}`}>@{curr_topic?.creator_username}</Link> </div>}
+                            {topicLoading ? <Skeleton className='h-6 w-[600px]' /> : <div className='text-gray-100 font-sans'>{curr_topic?.about}</div>}
                         </div>
                     </div>
 
@@ -465,7 +465,6 @@ const EachTopic = () => {
                                             <Tooltip>
                                                 <TooltipTrigger>
                                                     <span>
-
                                                         {qname && qname.length < 22 ? `${qname}` : `${qname.substring(0, Math.min(qname.length, 70))}`}
                                                         {qname.length >= 70 ? '...' : ''}
                                                     </span>
