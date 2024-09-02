@@ -359,7 +359,7 @@ const Dashboard = ({ topics }: DashboardProps) => {
                         return false
                     }).map(({ title, about, id, problems, visibility, creator_username }, idx) => (
                         <AccordionItem className='border-2 px-6 rounded-lg accordion-width' key={idx} value={`item-${idx}`}>
-                            <AccordionTrigger className={expandedTopicId === idx ? 'text-blue-500' : 'text-black'} onClick={() => handleAccordionChange(idx)}>
+                            <AccordionTrigger className={expandedTopicId === idx ? 'text-blue-500' : 'text-black dark:text-white'} onClick={() => handleAccordionChange(idx)}>
                                 <div className='flex gap-4 items-center'>
                                     <div className='text-2xl'>{title}</div>
                                     <div className='text-xs px-2 py-1 border-2 rounded-md'>{visibility}</div>
@@ -406,17 +406,17 @@ const Dashboard = ({ topics }: DashboardProps) => {
                                             <>
                                                 <TableHeader className="block md:table-header-group">
                                                     <TableRow className="border border-grey-500 md:border-none block md:table-row">
-                                                        <TableHead className="rounded-tl-md rounded-bl-md bg-slate-50 p-2 text-black font-bold text-center md:border md:border-grey-500 block md:table-cell">
+                                                        <TableHead className="rounded-tl-md rounded-bl-md bg-black dark:bg-white text-white dark:text-gray-900 font-bold text-center md:border md:border-grey-500 block md:table-cell">
                                                             Problem Name
                                                         </TableHead>
-                                                        <TableHead className="bg-slate-50 p-2 text-black font-bold text-center md:border md:border-grey-500 block md:table-cell">
+                                                        <TableHead className="bg-black dark:bg-white text-white dark:text-gray-900 font-bold text-center md:border md:border-grey-500 block md:table-cell">
                                                             Link
                                                         </TableHead>
-                                                        <TableHead className="bg-slate-50 p-2 text-black font-bold text-center md:border md:border-grey-500 block md:table-cell">
+                                                        <TableHead className="bg-black dark:bg-white text-white dark:text-gray-900 font-bold text-center md:border md:border-grey-500 block md:table-cell">
                                                             Difficulty
                                                         </TableHead>
                                                         {status === 'authenticated' && session?.user.username === username && (
-                                                            <TableHead className="rounded-tr-md rounded-br-md bg-slate-50 p-2 text-black font-bold text-center md:border md:border-grey-500 block md:table-cell">
+                                                            <TableHead className="rounded-tr-md rounded-br-md bg-black dark:bg-white text-white dark:text-gray-900 font-bold text-center md:border md:border-grey-500 block md:table-cell">
                                                                 Delete
                                                             </TableHead>
                                                         )}
@@ -424,7 +424,7 @@ const Dashboard = ({ topics }: DashboardProps) => {
                                                 </TableHeader>
                                                 <TableBody className="block md:table-row-group px-6">
                                                     {problems.map(({ id: problemId, qname, url, difficulty }, index) => (
-                                                        <TableRow key={index} className="bg-gray-50 my-4 border-2 rounded-md block md:table-row">
+                                                        <TableRow key={index} className="bg-gray-50 dark:bg-gray-900 my-4 border-2 rounded-md block md:table-row">
                                                             <TableCell className="p-2 px-4 text-center block md:table-cell">
                                                                 <Tooltip>
                                                                     <TooltipTrigger>
@@ -432,14 +432,15 @@ const Dashboard = ({ topics }: DashboardProps) => {
                                                                             {qname && qname.length < 22 ? `${qname}` : `${qname.substring(0, Math.min(qname.length, 22))}...`}
                                                                         </span>
                                                                     </TooltipTrigger>
-                                                                    <TooltipContent className='bg-black text-white px-2 py-1 rounded-md'>
+                                                                    <TooltipContent className='bg-black dark:bg-white text-white dark:text-gray-900 px-2 py-1 rounded-md'>
                                                                         {qname}
                                                                     </TooltipContent>
                                                                 </Tooltip>
                                                             </TableCell>
-                                                            <TableCell className="p-2 px-4 text-left block md:table-cell">
-                                                                <Link href={url} target="_blank" rel="noopener noreferrer">
-                                                                    {url.substring(0, Math.min(url.length, 30)) + '...'}
+                                                            <TableCell className="p-2 px-4 text-center block md:table-cell ">
+                                                                <Link href={url} target="_blank" rel="noopener noreferrer" className='hover:underline'>
+                                                                    {/* {url.substring(0, Math.min(url.length, 30)) + '...'} */}
+                                                                    Go Problem
                                                                 </Link>
                                                             </TableCell>
                                                             <TableCell className="p-2 px-4 text-center block md:table-cell">

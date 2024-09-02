@@ -16,27 +16,34 @@ const TableSkeleton = () => {
         <Table className="border-collapse separate md:table px-8 py-2">
             <TableHeader className="block md:table-header-group">
                 <TableRow className="border border-grey-500 md:border-none block md:table-row">
-                    <TableHead className="rounded-tl-md rounded-bl-md bg-slate-50 p-2 text-black font-bold text-center md:border md:border-grey-500 block md:table-cell">
-                        Problem Name
+                    <TableHead className="rounded-tl-md rounded-bl-md bg-slate-50 dark:bg-gray-900 p-2 text-black dark:text-white font-bold text-center md:border md:border-grey-500 block md:table-cell">
+                        {/* Problem Name */}
+                        <Skeleton className='h-6 w-20 md:w-32'/>
                     </TableHead>
-                    <TableHead className="bg-slate-50 p-2 text-black font-bold text-center md:border md:border-grey-500 block md:table-cell">
-                        Link
+                    <TableHead className="bg-slate-50 dark:bg-gray-900 p-2 text-black dark:text-white font-bold text-center md:border md:border-grey-500 block md:table-cell">
+                        {/* Link */}
+                        <Skeleton className='h-6 w-20 md:w-32'/>
+
                     </TableHead>
-                    <TableHead className="bg-slate-50 p-2 text-black font-bold text-center md:border md:border-grey-500 block md:table-cell">
-                        Difficulty
+                    <TableHead className="bg-slate-50 dark:bg-gray-900 p-2 text-black dark:text-white font-bold text-center md:border md:border-grey-500 block md:table-cell">
+                        {/* Difficulty */}
+                        <Skeleton className='h-6 w-20 md:w-32'/>
+
                     </TableHead>
-                    <TableHead className="rounded-tr-md rounded-br-md bg-slate-50 p-2 text-black font-bold text-center md:border md:border-grey-500 block md:table-cell">
-                        Delete
+                    <TableHead className="rounded-tr-md rounded-br-md bg-slate-50 dark:bg-gray-900 p-2 text-black dark:text-white font-bold text-center md:border md:border-grey-500 block md:table-cell">
+                        {/* Delete */}
+                        <Skeleton className='h-6 w-20 md:w-32'/>
+
                     </TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody className="block md:table-row-group px-6">
                 {skeletonRows.map((_, index) => (
-                    <TableRow key={index} className="bg-gray-50 my-4 border-2 rounded-md block md:table-row">
+                    <TableRow key={index} className="bg-gray-50 dark:bg-gray-900 my-4 border-2 rounded-md block md:table-row">
                         <TableCell className="p-2 px-4 text-center block md:table-cell">
                             <Skeleton className="h-6 w-24 md:w-32" />
                         </TableCell>
-                        <TableCell className="p-2 px-4 text-left block md:table-cell">
+                        <TableCell className="p-2 px-4 text-center block md:table-cell">
                             <Skeleton className="h-6 w-48 md:w-64" />
                         </TableCell>
                         <TableCell className="p-2 px-4 text-center block md:table-cell">
