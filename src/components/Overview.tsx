@@ -39,7 +39,7 @@ const Overview = ({ topics }: OverviewProps) => {
                 }
 
                 {
-                    !isTopicsLoading && topics && topics.length == 0 && <div className='font-bold italic'>No topics...</div>
+                    !isTopicsLoading && topics && topics.length == 0 && <div className='font-bold font-sans'>No topics !!! &nbsp; &nbsp; Create one now..</div>
                 }
             </div>
         </div>

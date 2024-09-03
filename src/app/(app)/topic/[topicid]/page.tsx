@@ -1,22 +1,22 @@
 'use client'
 // import TopicNavbar from '@/components/TopicNavbar'
 import { toast } from '@/components/ui/use-toast'
-import { ProblemDifficulty, Topic, TopicVisibility, UserInfo } from '@/types/types'
-import axios, { AxiosError } from 'axios'
-import { useParams, useRouter } from 'next/navigation'
-import React, { useEffect, useState } from 'react'
+import { ProblemDifficulty,Topic,TopicVisibility,UserInfo } from '@/types/types'
+import axios,{ AxiosError } from 'axios'
+import { useParams,useRouter } from 'next/navigation'
+import React,{ useEffect,useState } from 'react'
 // import { useTopics } from '@/app/context/TopicProvider'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table,TableBody,TableCell,TableHead,TableHeader,TableRow } from "@/components/ui/table";
 import { useSession } from 'next-auth/react'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip';
+import { Tooltip,TooltipContent,TooltipProvider,TooltipTrigger } from '@radix-ui/react-tooltip';
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, } from "@/components/ui/select"
+import { Dialog,DialogContent,DialogHeader,DialogFooter,DialogTitle,DialogDescription } from "@/components/ui/dialog";
+import { Select,SelectContent,SelectGroup,SelectItem,SelectLabel,SelectTrigger,SelectValue,} from "@/components/ui/select"
 import { Input } from '@/components/ui/input'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form,FormControl,FormField,FormItem,FormLabel,FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form'
-import { questionSchema, suggestionSchema } from '@/schemas/topicSchema'
+import { questionSchema,suggestionSchema } from '@/schemas/topicSchema'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ApiResponse } from '@/types/ApiResponse'
@@ -36,34 +36,34 @@ import TopicNavbar from '@/components/TopicNavbar'
 const EachTopic = () => {
     const params = useParams()
     const topic_id = params.topicid as string
-    const { data: session, status } = useSession()
+    const { data: session,status } = useSession()
     const router = useRouter()
 
-    const [curr_topic, setCurrTopic] = useState<Topic>()
+    const [curr_topic,setCurrTopic] = useState<Topic>()
 
-    const { addProblem, deleteProblem } = useTopics()
+    const { addProblem,deleteProblem } = useTopics()
     const { sendSuggestion } = useUser()
 
-    const [currentTopicId, setCurrentTopicId] = useState<string | null>(topic_id)
+    const [currentTopicId,setCurrentTopicId] = useState<string | null>(topic_id)
 
-    const [currentProblemId, setCurrentProblemId] = useState<string | null>(null)
+    const [currentProblemId,setCurrentProblemId] = useState<string | null>(null)
 
-    const [isItemModalOpen, setIsItemModalOpen] = useState(false)
-    const [isItemDeleteModalOpen, setIsItemDeleteModalOpen] = useState(false)
-    const [iscollabModalOpen, setIsCollabModalOpen] = useState(false)
-    const [isSuggestProblemOpen, setIsSuggestProblemOpen] = useState(false)
+    const [isItemModalOpen,setIsItemModalOpen] = useState(false)
+    const [isItemDeleteModalOpen,setIsItemDeleteModalOpen] = useState(false)
+    const [iscollabModalOpen,setIsCollabModalOpen] = useState(false)
+    const [isSuggestProblemOpen,setIsSuggestProblemOpen] = useState(false)
 
     // const session_user_username = session?.user.username
 
-    const [topicLoading, setTopicLoading] = useState(false)
+    const [topicLoading,setTopicLoading] = useState(false)
 
 
-    const [searchUsername, setSearchUsername] = useState<string>('')
-    const [isSearchingUsername, setIsSearchingUsername] = useState<boolean>(false)
-    const [searchUsernameMessage, setSearchUsernameMessage] = useState<string>('')
-    const [similarUsers, setSimilarUsers] = useState<UserInfo[]>([])
+    const [searchUsername,setSearchUsername] = useState<string>('')
+    const [isSearchingUsername,setIsSearchingUsername] = useState<boolean>(false)
+    const [searchUsernameMessage,setSearchUsernameMessage] = useState<string>('')
+    const [similarUsers,setSimilarUsers] = useState<UserInfo[]>([])
 
-    const debouned = useDebounceCallback(setSearchUsername, 500)
+    const debouned = useDebounceCallback(setSearchUsername,500)
 
 
 
@@ -77,7 +77,7 @@ const EachTopic = () => {
         setIsCollabModalOpen(true)
     }
 
-    const handleOpenDeleteProblemModal = (topicId: string, problemId: string) => {
+    const handleOpenDeleteProblemModal = (topicId: string,problemId: string) => {
         setCurrentTopicId(topicId)
         setCurrentProblemId(problemId)
         setIsItemDeleteModalOpen(true)
@@ -85,7 +85,7 @@ const EachTopic = () => {
 
     const checkAndFetchTopic = async () => {
         try {
-            if(status === 'loading')    return
+            if (status === 'loading') return
 
             setTopicLoading(true)
             const accessResponse = await axios.get(`/api/check-topic-access?topicid=${topic_id}&username=${session?.user?.username}`)
@@ -116,7 +116,7 @@ const EachTopic = () => {
     const handleDeleteProblem = async () => {
         if (currentTopicId !== null && currentProblemId !== null) {
             try {
-                deleteProblem(currentTopicId, currentProblemId)
+                deleteProblem(currentTopicId,currentProblemId)
                 setIsItemDeleteModalOpen(false)
                 // Fetch the updated topic to refresh the UI
                 const response = await axios.get(`/api/get-topic-by-topicid?topic_id=${currentTopicId}`)
@@ -165,7 +165,7 @@ const EachTopic = () => {
             if (!session?.user?.username) return
 
             // setIsProblemSubmitting(true)
-            addProblem(data, topic_id, session?.user?.username)
+            addProblem(data,topic_id,session?.user?.username)
             setIsItemModalOpen(false)
             // Fetch the updated topic to refresh the UI
             const response = await axios.get(`/api/get-topic-by-topicid?topic_id=${topic_id}`)
@@ -199,7 +199,7 @@ const EachTopic = () => {
             read: true,
         }
 
-        sendSuggestion(curr_topic?.creator_username!, suggestNotify)
+        sendSuggestion(curr_topic?.creator_username!,suggestNotify)
     }
 
     useEffect(() => {
@@ -223,13 +223,13 @@ const EachTopic = () => {
         }
 
         findSimilarUsers()
-    }, [searchUsername])
+    },[searchUsername])
 
-   
+
 
     useEffect(() => {
         checkAndFetchTopic()
-    }, [status])
+    },[status])
 
 
     return (
@@ -244,11 +244,16 @@ const EachTopic = () => {
                     <div className='flex flex-col gap-4'>
                         <div className='mb-2 flex gap-2 items-end'>
                             {topicLoading ? <Skeleton className='h-8 w-[250px]' /> : <div className='text-3xl font-sans transition hover:text-gray-600'>{curr_topic?.title}</div>}
-                            {topicLoading ? <Skeleton className='h-6 w-[100px]' /> : <div className="text-md">{curr_topic && `(` + curr_topic.problems.length + ` problems)`} </div>}
+                            {
+                                topicLoading ? <Skeleton className='h-6 w-[100px]' /> :
+                                <div className="text-[13px] mb-[2px]">
+                                    {curr_topic && `(` + curr_topic.problems.length + `${curr_topic.problems.length > 1 ? ' problems' : ' problem'})`}
+                                </div>
+                            }
                         </div>
                         <div className='flex flex-col gap-1'>
                             {topicLoading ? <Skeleton className='h-4 w-[200px]' /> : <div className='text-xs text-gray-400'>Created by <Link className='text-blue-400 underline' href={`/u/${curr_topic?.creator_username}`}>@{curr_topic?.creator_username}</Link> </div>}
-                            {topicLoading ? <Skeleton className='h-6 w-[600px]' /> : <div className='text-gray-100 font-sans'>{curr_topic?.about}</div>}
+                            {topicLoading ? <Skeleton className='h-6 w-[600px]' /> : <div className='dark:text-gray-100 text-gray-500 font-sans'>{curr_topic?.about}</div>}
                         </div>
                     </div>
 
@@ -273,7 +278,9 @@ const EachTopic = () => {
                         {topicLoading ? <CollaboratorsSkeleton /> : <div className='flex items-center gap-3'>
                             {
                                 curr_topic?.collaborators.map((each) => (
-                                    <Collaborator key={each.username} username={each.username} name={each.name} />
+                                    <Link href={`/u/${each.username}`}>
+                                        <Collaborator key={each.username} username={each.username} name={each.name} />
+                                    </Link>
                                 ))
                             }
                         </div>
@@ -305,7 +312,7 @@ const EachTopic = () => {
 
                         <div className='flex flex-col gap-2 p-2 overflow-y-scroll custom-scrollbar'>
                             {
-                                similarUsers.map(({ username, name }) => (
+                                similarUsers.map(({ username,name }) => (
                                     <>
                                         {(username !== curr_topic?.creator_username) && <UserCard
                                             username={username as string}
@@ -466,13 +473,13 @@ const EachTopic = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody className="block md:table-row-group px-6">
-                                {curr_topic.problems.map(({ id: problemId, qname, url, difficulty }, index) => (
+                                {curr_topic.problems.map(({ id: problemId,qname,url,difficulty },index) => (
                                     <TableRow key={index} className="bg-gray-50 dark:bg-gray-900 my-4 border-2 rounded-md block md:table-row">
                                         <TableCell className="p-2 px-4 text-center block md:table-cell">
                                             <Tooltip>
                                                 <TooltipTrigger>
                                                     <span>
-                                                        {qname && qname.length < 22 ? `${qname}` : `${qname.substring(0, Math.min(qname.length, 70))}`}
+                                                        {qname && qname.length < 22 ? `${qname}` : `${qname.substring(0,Math.min(qname.length,70))}`}
                                                         {qname.length >= 70 ? '...' : ''}
                                                     </span>
                                                 </TooltipTrigger>
@@ -483,7 +490,7 @@ const EachTopic = () => {
                                         </TableCell>
                                         <TableCell className="p-2 px-4 text-center block md:table-cell ">
                                             <Link href={url} target="_blank" rel="noopener noreferrer" className='text-blue-500 hover:text-blue-300 hover:underline'>
-                                                
+
                                                 Go Problem
                                             </Link>
                                         </TableCell>
@@ -492,7 +499,7 @@ const EachTopic = () => {
                                         </TableCell>
                                         {status === 'authenticated' && session?.user.username === curr_topic.creator_username && (
                                             <TableCell className="p-2 px-4 text-center block md:table-cell">
-                                                <Button variant="destructive" onClick={() => handleOpenDeleteProblemModal(topic_id, problemId)}>
+                                                <Button variant="destructive" onClick={() => handleOpenDeleteProblemModal(topic_id,problemId)}>
                                                     Delete
                                                 </Button>
                                             </TableCell>

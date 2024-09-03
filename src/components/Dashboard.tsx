@@ -465,7 +465,7 @@ const Dashboard = ({ topics }: DashboardProps) => {
                     ))}
 
                     {
-                        topics && topics.length == 0 && <div className='font-bold italic text-2xl'>No topics...</div>
+                        topics && topics.length == 0 && <div className='font-bold font-sans m-auto text-2xl'>No topics...</div>
                     }
                 </Accordion>
             </div>

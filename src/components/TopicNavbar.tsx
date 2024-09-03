@@ -3,7 +3,7 @@ import { signOut,useSession } from 'next-auth/react'
 import React from 'react'
 import { BsHourglassSplit } from 'react-icons/bs'
 import { DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuLabel,DropdownMenuSeparator,DropdownMenuTrigger,} from "@/components/ui/dropdown-menu"
-import { CreditCard,LogOut,User,LayoutDashboard,Contact,LogIn,LoaderPinwheel, MessageSquare, CircleCheckBig } from "lucide-react"
+import { CreditCard,LogOut,User,LayoutDashboard,Contact,LogIn,LoaderPinwheel,MessageSquare,CircleCheckBig } from "lucide-react"
 import { RiMenu3Line } from "react-icons/ri";
 import Link from 'next/link'
 import { FiTarget } from "react-icons/fi";

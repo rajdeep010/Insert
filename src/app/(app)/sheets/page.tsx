@@ -22,7 +22,7 @@ const Allsheets = () => {
         <div className='flex flex-col gap-6 py-16 justify-center px-32'>
             <div><TopicNavbar/></div>
             <div className='flex flex-col gap-3 my-4'>
-                <div className='text-3xl font-semibold underline my-4'>All Sheets</div>
+                <div className='text-4xl m-auto my-4 '>All Sheets</div>
                 <div className='flex flex-col gap-3'>
                     {
                         isAllSheetsLoading && <AllTopicsSkeleton/>
@@ -30,7 +30,7 @@ const Allsheets = () => {
 
                     {
                         !isAllSheetsLoading && all_topics && all_topics.map(({ id, title, problems, creator_name, creator_username }, idx) => (
-                            <Link href={`/topic/${id}`} key={idx} className='border-2 p-4 rounded-md flex flex-row items-center gap-4'>
+                            <Link href={`/topic/${id}`} key={idx} className='border-2 p-4 rounded-md flex flex-row items-center gap-4 hover:dark:bg-gray-900 hover:bg-gray-50'>
 
                                 <div className='flex items-center gap-3 pr-4'>
                                     <div>
@@ -50,7 +50,7 @@ const Allsheets = () => {
                                         {title}
                                     </div>
                                     <div className='text-gray-400'>
-                                        ({(problems.length > 0) ? `${problems.length} problems` : `${problems.length} problem`})
+                                        ({(problems.length > 1) ? `${problems.length} problems` : `${problems.length} problem`})
                                     </div>
                                 </Link>
                             </Link>

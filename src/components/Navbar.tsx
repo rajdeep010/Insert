@@ -340,7 +340,7 @@ const Navbar = () => {
                                             </div>
 
 
-                                            <div onClick={handleOverViewClick} className='flex items-center'>
+                                            <div onClick={handleDashboardClick} className='flex items-center'>
                                                 <DropdownMenuItem className='cursor-pointer'>
                                                     <LoaderPinwheel className='mr-2 h-4 w-4' />
                                                     <span className='text-md'>Dashboard</span>
