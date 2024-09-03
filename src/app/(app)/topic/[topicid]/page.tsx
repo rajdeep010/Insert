@@ -83,6 +83,36 @@ const EachTopic = () => {
         setIsItemDeleteModalOpen(true)
     }
 
+    const checkAndFetchTopic = async () => {
+        try {
+            if(status === 'loading')    return
+
+            setTopicLoading(true)
+            const accessResponse = await axios.get(`/api/check-topic-access?topicid=${topic_id}&username=${session?.user?.username}`)
+            if (!accessResponse.data.success) {
+                router.push(`/sheets`)
+                return
+            }
+
+            const topicResponse = await axios.get(`/api/get-topic-by-topicid?topic_id=${topic_id}`)
+
+            if (!topicResponse) {
+                toast({
+                    title: 'Error',
+                    description: 'Topic not found',
+                    variant: 'destructive'
+                })
+                return
+            }
+            setCurrTopic(topicResponse.data.curr_topic)
+
+        } catch (error) {
+            router.push(`/sheets`)
+        } finally {
+            setTopicLoading(false)
+        }
+    }
+
     const handleDeleteProblem = async () => {
         if (currentTopicId !== null && currentProblemId !== null) {
             try {
@@ -91,6 +121,8 @@ const EachTopic = () => {
                 // Fetch the updated topic to refresh the UI
                 const response = await axios.get(`/api/get-topic-by-topicid?topic_id=${currentTopicId}`)
                 setCurrTopic(response.data.curr_topic)
+
+                checkAndFetchTopic()
             } catch (error) {
                 toast({
                     title: 'Error',
@@ -138,6 +170,9 @@ const EachTopic = () => {
             // Fetch the updated topic to refresh the UI
             const response = await axios.get(`/api/get-topic-by-topicid?topic_id=${topic_id}`)
             setCurrTopic(response.data.curr_topic)
+
+            checkAndFetchTopic()
+
         } catch (error) {
             const axiosError = error as AxiosError<ApiResponse>
             let errorMessage = axiosError.response?.data.message
@@ -190,37 +225,9 @@ const EachTopic = () => {
         findSimilarUsers()
     }, [searchUsername])
 
+   
+
     useEffect(() => {
-
-        const checkAndFetchTopic = async () => {
-            try {
-                if(status === 'loading')    return
-
-                setTopicLoading(true)
-                const accessResponse = await axios.get(`/api/check-topic-access?topicid=${topic_id}&username=${session?.user?.username}`)
-                if (!accessResponse.data.success) {
-                    router.push(`/sheets`)
-                    return
-                }
-
-                const topicResponse = await axios.get(`/api/get-topic-by-topicid?topic_id=${topic_id}`)
-
-                if (!topicResponse) {
-                    toast({
-                        title: 'Error',
-                        description: 'Topic not found',
-                        variant: 'destructive'
-                    })
-                    return
-                }
-                setCurrTopic(topicResponse.data.curr_topic)
-
-            } catch (error) {
-                router.push(`/sheets`)
-            } finally {
-                setTopicLoading(false)
-            }
-        }
         checkAndFetchTopic()
     }, [status])
 
