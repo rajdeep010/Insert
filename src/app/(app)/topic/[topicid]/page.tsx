@@ -278,7 +278,7 @@ const EachTopic = () => {
                         {topicLoading ? <CollaboratorsSkeleton /> : <div className='flex items-center gap-3'>
                             {
                                 curr_topic?.collaborators.map((each) => (
-                                    <Link href={`/u/${each.username}`}>
+                                    <Link key={each.username} href={`/u/${each.username}`}>
                                         <Collaborator key={each.username} username={each.username} name={each.name} />
                                     </Link>
                                 ))
