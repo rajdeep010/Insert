@@ -11,7 +11,7 @@ import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { TopicProvider } from "./context/TopicProvider";
 import { ThemeProvider } from "@/components/ThemeProvider"
 import Footer from "@/components/Footer";
-
+import { Analytics } from "@vercel/analytics/react"
 
 
 const inter = Inter({ subsets: ["latin"] });

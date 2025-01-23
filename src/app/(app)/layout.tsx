@@ -1,4 +1,5 @@
 import { TooltipProvider } from "@radix-ui/react-tooltip";
+import { Analytics } from "@vercel/analytics/react"
 
 interface RootLayoutProps {
     children: React.ReactNode
