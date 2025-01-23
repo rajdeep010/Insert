@@ -104,7 +104,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
             }
 
             const userdata = await response.data.userdata as UserInfo
-            // console.log(userdata)
+            // // console.log(userdata)
 
             setUserNotifications(userdata.notifications ? userdata.notifications.reverse() : [])
             setUserInformation(userdata)
@@ -183,7 +183,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
                 () => {
                     getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
                         // setSessionUserAvatarURL(downloadURL)
-                        // console.log(downloadURL)
+                        // // console.log(downloadURL)
                         toast({
                             title: 'Uploaded ✅',
                             description: 'Avatar uploaded successfully',
@@ -221,7 +221,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
 
     const updateUser = async (formData: Partial<UserInfo>) => {
         try {
-            // console.log(session_user_username, session)
+            // // console.log(session_user_username, session)
             if (status !== 'authenticated') return
 
             setIsProfileDataLoading(true)
@@ -231,7 +231,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
             })
 
             if (response.data.success) {
-                // console.log(response.data)
+                // // console.log(response.data)
                 toast({
                     title: 'Updated ✅',
                     description: 'User info updated successfully',
@@ -319,7 +319,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
             fetchNotifications(whose_topic)
         } catch (error) {
 
-            // console.log(error)
+            // // console.log(error)
 
             toast({
                 title: 'Error',
@@ -364,7 +364,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
                 setUserNotifications(response.data.notifications.reverse())
             }
         } catch (error) {
-            // console.log(error)
+            // // console.log(error)
         }
     }
 
@@ -529,7 +529,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
 
         } catch (error) {
             const axiosError = error as AxiosError<ApiResponse>
-            // console.log(axiosError)
+            // // console.log(axiosError)
 
             toast({
                 title: 'Oops',
@@ -563,7 +563,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
         try {
             if (!username) return
 
-            // console.log('mark all read called', username)
+            // // console.log('mark all read called', username)
 
             const response = await axios.post(`/api/mark-all-as-read`, { username })
             if (response.data.success) {
@@ -572,7 +572,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
                     description: 'Successfully marked all read',
                     variant: 'default'
                 })
-                // console.log(response.data)
+                // // console.log(response.data)
                 fetchUser(username)
                 // setUserNotifications(response.data.notifications.reverse())
             }

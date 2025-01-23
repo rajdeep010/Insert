@@ -96,7 +96,7 @@ export default function SignUpForm() {
                         router.replace(`/verify/${username}`)
                     },
                     function(error) {
-                        console.log(error)
+                        // console.log(error)
                         toast({
                             title: 'Error',
                             description: 'Could not send verification email'

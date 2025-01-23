@@ -31,7 +31,7 @@ const Navbar = () => {
     userNotifications.map((each) => {
         if (each.read === true) unread_cnt += 1
     })
-    // console.log(userNotifications, userNotifications.length)
+    // // console.log(userNotifications, userNotifications.length)
 
     return (
         <>

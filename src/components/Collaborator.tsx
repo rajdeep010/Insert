@@ -11,7 +11,7 @@ interface CollaboratorProps {
 }
 
 const Collaborator = ({ username,name }: CollaboratorProps) => {
-    // console.log(username, name)
+    // // console.log(username, name)
     const [avatarURL, setAvatarURL] = useState<string | null>(null)
     const { getAvatar } = useUser()
 

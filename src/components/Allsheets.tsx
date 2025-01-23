@@ -7,9 +7,12 @@ import {
 } from "@/components/ui/avatar"
 import Link from 'next/link'
 
+
+
 const Allsheets = () => {
 
     const { all_topics } = useTopics()
+    // console.log(all_topics)
 
     return (
         <div className='flex flex-col gap-3 my-4'>

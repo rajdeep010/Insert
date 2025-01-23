@@ -6,18 +6,25 @@ export async function GET(request: Request) {
     await dbConnect()
     try {
         const docs = await AlltopicModel.find({})
-        const topics = docs.flatMap(user => user.topics)
+  
+        const publicTopics = docs.reduce((acc, user) => {
+            if (user.topics) {
+                const filteredTopics = user.topics.filter((topic: any) => topic.visibility === 'public');
+                acc.push(...filteredTopics);
+            }
+            return acc;
+        }, [])
 
-        const publicTopics = topics.filter((topic) => topic.visibility === 'public')
+        // // console.log('these are the all topics: ', publicTopics)
 
         return Response.json({
             success: true,
             message: 'Fetched all the topics',
-            topics: publicTopics
-        }, {status: 200})
+            topics: publicTopics,
+        }, { status: 200 })
 
     } catch (error) {
-        console.log(error)
+        // // console.log(error)
 
         return Response.json({
             success: false,

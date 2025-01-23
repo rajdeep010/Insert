@@ -36,7 +36,7 @@ export async function GET(request: Request) {
         }
 
         const { creator_username, topicid, check_whom } = result.data
-        console.log(creator_username, topicid, check_whom)
+        // console.log(creator_username, topicid, check_whom)
 
         const topicdata = await AlltopicModel.findOne({
             username: creator_username,
@@ -77,7 +77,7 @@ export async function GET(request: Request) {
 
     } catch (error) {
 
-        console.log(error)
+        // console.log(error)
 
          return Response.json({
             success: false,

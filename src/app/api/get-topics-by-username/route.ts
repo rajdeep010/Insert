@@ -29,10 +29,10 @@ export async function GET(request: Request) {
         }
 
         const { username } = result.data
-        // console.log('get topics by username', username)
+        // // console.log('get topics by username', username)
 
         const response = await AlltopicModel.findOne({username})
-        // console.log(response)
+        // // console.log(response)
 
         if(!response){
             return Response.json({

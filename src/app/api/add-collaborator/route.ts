@@ -29,7 +29,7 @@ export async function POST(request: Request) {
             { new: true }
         )
 
-        // console.log(updateCollaborators)
+        // // console.log(updateCollaborators)
 
 
         if (!updateCollaborators) {
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
         }, { status: 200 })
 
     } catch (error) {
-        console.log(error)
+        // console.log(error)
         return Response.json({
             success: false,
             message: 'Error in adding collaborator',

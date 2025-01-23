@@ -20,12 +20,12 @@ const Profile = () => {
     const { data: session } = useSession()
     const { user_information, user_avatar, isAvatarLoading, isProfileDataLoading } = useUser()
 
-    // console.log(user_avatar)
+    // // console.log(user_avatar)
 
     const currentUser =  user_information
     const avatarURL = user_avatar
 
-    // console.log(user_avatar)
+    // // console.log(user_avatar)
 
     return (
         <div className='flex justify-between'>

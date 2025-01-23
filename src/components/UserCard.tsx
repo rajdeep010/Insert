@@ -43,7 +43,7 @@ const UserCard = ({ username, name, topicid, topicname, creator_username }: User
                 sendCollabInvite(username, collabNotification)
             }
         } catch (error) {
-            // console.log(error)
+            // // console.log(error)
             toast({
                 title: 'Oops',
                 description: 'Something went wrong',

@@ -40,7 +40,7 @@ export async function GET(request: Request) {
             "topics.id": topic_id
         })
 
-        // console.log(userWithTopic)
+        // // console.log(userWithTopic)
 
         if (!userWithTopic) {
             return Response.json({
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
 
         // Find the specific topic
         const topic = userWithTopic.topics.find((t: any) => t.id === topic_id);
-        // console.log(topic)
+        // // console.log(topic)
 
         return Response.json({
             success: true,

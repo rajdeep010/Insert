@@ -16,7 +16,7 @@ import UserProfilePic from '@/components/UserProfilePic'
 const Allsheets = () => {
 
     const { all_topics, isAllSheetsLoading } = useTopics()
-    // console.log(all_topics)
+    // // console.log(all_topics)
 
     return (
         <div className='flex flex-col gap-6 py-16 justify-center px-32'>

@@ -24,7 +24,7 @@ const EditProfile = () => {
         location: ''
     })
 
-    // console.log(user_information, formData)
+    // // console.log(user_information, formData)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target

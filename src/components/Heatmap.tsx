@@ -73,7 +73,7 @@ const Heatmap = () => {
         } else {
             const target = event.currentTarget as HTMLElement
             const date = target.getAttribute('data-date')
-            // console.log(event, date)
+            // // console.log(event, date)
             if (date) {
                 setTooltipContent(`0 actions on ${formatDate(date)}`)
                 setTooltipPosition({ x: event.clientX, y: event.clientY })

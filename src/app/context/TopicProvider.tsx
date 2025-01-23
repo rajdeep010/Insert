@@ -113,7 +113,7 @@ export const TopicProvider = ({ children }: { children: React.ReactNode }) => {
                 topic: data
             })
 
-            console.log(session_user_username, session, creator_username, creator_name)
+            // // console.log(session_user_username, session, creator_username, creator_name)
 
             if(!response.data.success){
                 toast({
@@ -124,9 +124,9 @@ export const TopicProvider = ({ children }: { children: React.ReactNode }) => {
                 return
             }
 
-            fetchTopics(creator_username)
-            fetchAllTopics()
-            addActivity()
+            await fetchTopics(creator_username)
+            await fetchAllTopics()
+            await addActivity()
 
             toast({
                 title: 'New Topic Added ✅',
