@@ -11,6 +11,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             <TooltipProvider>
                 {children}
             </TooltipProvider>
+            <Analytics />
         </div>
     );
 }
