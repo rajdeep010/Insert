@@ -1,5 +1,4 @@
 import { TooltipProvider } from "@radix-ui/react-tooltip";
-import { Analytics } from "@vercel/analytics/react"
 
 interface RootLayoutProps {
     children: React.ReactNode
@@ -11,7 +10,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             <TooltipProvider>
                 {children}
             </TooltipProvider>
-            <Analytics />
         </div>
     );
 }
