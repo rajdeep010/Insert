@@ -90,7 +90,7 @@ const EachTopic = () => {
             setTopicLoading(true)
             const accessResponse = await axios.get(`/api/check-topic-access?topicid=${topic_id}&username=${session?.user?.username}`)
             if (!accessResponse.data.success) {
-                router.push(`/sheets`)
+                // router.push(`/sheets`)
                 return
             }
 
@@ -107,7 +107,7 @@ const EachTopic = () => {
             setCurrTopic(topicResponse.data.curr_topic)
 
         } catch (error) {
-            router.push(`/sheets`)
+            // router.push(`/sheets`)
         } finally {
             setTopicLoading(false)
         }

@@ -24,7 +24,7 @@ const Heatmap = () => {
     const { data: session, status } = useSession()
 
     const years = []
-    for (let year = 2024; year <= new Date().getFullYear(); year++) {
+    for (let year = new Date().getFullYear(); year >= 2024; year--) {
         years.push(year)
     }
 

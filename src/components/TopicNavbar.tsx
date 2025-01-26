@@ -146,12 +146,12 @@ const TopicNavbar = () => {
                                 </DropdownMenuItem>
                             }
 
-                            <DropdownMenuItem className='cursor-pointer'>
+                            {/* <DropdownMenuItem className='cursor-pointer'>
                                 <Link href={`/sheets`} className='flex items-center'>
                                     <LayoutDashboard className='mr-2 h-4 w-4' />
                                     <span>All Sheets</span>
                                 </Link>
-                            </DropdownMenuItem>
+                            </DropdownMenuItem> */}
 
                             {
                                 status === 'authenticated' && <DropdownMenuItem className='cursor-pointer'>

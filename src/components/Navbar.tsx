@@ -162,12 +162,12 @@ const Navbar = () => {
                                                         </DropdownMenuItem>
                                                     </Link>
 
-                                                    <Link className='text-md' href={`/sheets`}>
+                                                    {/* <Link className='text-md' href={`/sheets`}>
                                                         <DropdownMenuItem className='cursor-pointer'>
                                                             <LayoutDashboard className='mr-2 h-4 w-4' />
                                                             All Sheets
                                                         </DropdownMenuItem>
-                                                    </Link>
+                                                    </Link> */}
 
                                                     <Link href={`mailto:insertcontact999@gmail.com`}>
                                                         <DropdownMenuItem className='cursor-pointer'>
@@ -203,12 +203,12 @@ const Navbar = () => {
                                                     <DropdownMenuLabel>Insert</DropdownMenuLabel>
                                                     <DropdownMenuSeparator />
 
-                                                    <Link className='text-md' href={`/sheets`}>
+                                                    {/* <Link className='text-md' href={`/sheets`}>
                                                         <DropdownMenuItem className='cursor-pointer'>
                                                             <LayoutDashboard className='mr-2 h-4 w-4' />
                                                             All Sheets
                                                         </DropdownMenuItem>
-                                                    </Link>
+                                                    </Link> */}
 
                                                     <Link className='text-md' href={`/sign-in`}>
                                                         <DropdownMenuItem className='cursor-pointer'>
@@ -354,12 +354,12 @@ const Navbar = () => {
                                                 </DropdownMenuItem>
                                             </Link>
 
-                                            <Link href={`/sheets`} className='flex items-center'>
+                                            {/* <Link href={`/sheets`} className='flex items-center'>
                                                 <DropdownMenuItem className='cursor-pointer'>
                                                     <LayoutDashboard className='mr-2 h-4 w-4' />
                                                     <span className='text-md'>All Sheets</span>
                                                 </DropdownMenuItem>
-                                            </Link>
+                                            </Link> */}
 
                                             {
                                                 status === 'authenticated' && <Link href={`mailto:insertcontact999@gmail.com`}>
@@ -396,12 +396,12 @@ const Navbar = () => {
                                                 <span className='text-md' onClick={handleDashboardClick}>Dashboard</span>
                                             </DropdownMenuItem>
 
-                                            <Link href={`/sheets`} className='flex items-center'>
+                                            {/* <Link href={`/sheets`} className='flex items-center'>
                                                 <DropdownMenuItem className='cursor-pointer'>
                                                     <LayoutDashboard className='mr-2 h-4 w-4' />
                                                     <span className='text-md'>All Sheets</span>
                                                 </DropdownMenuItem>
-                                            </Link>
+                                            </Link> */}
 
                                             {
                                                 status === 'unauthenticated' && <>
