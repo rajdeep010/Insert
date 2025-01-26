@@ -12,7 +12,7 @@ import Link from 'next/link'
 const Allsheets = () => {
 
     const { all_topics } = useTopics()
-    // console.log(all_topics)
+    console.log('this is all sheets: ', all_topics)
 
     return (
         <div className='flex flex-col gap-3 my-4'>
