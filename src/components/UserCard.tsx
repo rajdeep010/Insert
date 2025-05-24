@@ -56,19 +56,19 @@ const UserCard = ({ username, name, topicid, topicname, creator_username }: User
 
     return (
         <>
-            <div className='flex justify-between items-center p-3  bg-blue-50 rounded-md'>
+            <div className='flex justify-between items-center py-2 px-3  bg-blue-200 rounded-md'>
                 <div className='flex gap-2 items-center '>
-                    <div className='text-md font-semibold'>{name}</div>
-                    <div className='text-sm text-gray-400'>({username})</div>
+                    <div className='text-sm text-black'>{name}</div>
+                    <div className='text-sm text-black'>({username})</div>
                 </div>
 
-                <Button className='bg-blue-400' disabled={isSubmitting} onClick={handleAdd}>
+                <Button className='py-1' variant="default" disabled={isSubmitting} onClick={handleAdd}>
                     {
                         isSubmitting ? (
                             <>
                                 <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
                             </>
-                        ) : 'Add'
+                        ) : (<><span className='text-sm'>Add</span></>)
                     }
                 </Button>
             </div>

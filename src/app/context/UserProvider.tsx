@@ -118,6 +118,64 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
         }
     }
 
+    const saveOrUpateAvatarURL = async (username: string, avatarURL: string) => {
+        try {
+            if (!session) return
+            setIsAvatarLoading(true)
+            const response = await axios.post(`/api/save-user-avatar`, {
+                username,
+                avatarURL
+            })
+
+            if (response.data.success) {
+                toast({
+                    title: 'Updated ✅',
+                    description: 'Avatar updated successfully',
+                    variant: 'default'
+                })
+            } else {
+                toast({
+                    title: 'Failed ⭕',
+                    description: response.data.message,
+                    variant: 'destructive'
+                })
+            }
+        } catch (error) {
+            toast({
+                title: 'Error ⭕',
+                description: 'Something went wrong',
+                variant: 'destructive'
+            })
+        } finally {
+            setIsAvatarLoading(false)
+        }
+    }
+
+    const retriveAvatarURL = async (username: string) => {
+        try {
+            console.log('retriveAvatarURL called with username:', username)
+            if (!username) return
+
+            setIsAvatarLoading(true)
+            const response = await axios.get(`/api/get-avatar-by-username?username=${username}`)
+            console.log('this is the retrive response: ', response)
+            
+            let avatar = null
+            if (response?.data?.success) {
+                const avatarURL = response.data?.user?.avatarURL
+                setUserAvatar(avatarURL)
+                avatar = avatarURL
+            } else {
+                setUserAvatar(null)
+            }
+            return avatar
+        } catch (error) {
+            setUserAvatar(null)
+        } finally {
+            setIsAvatarLoading(false)
+        }
+    }
+
     const checkIfFileExists = async (username: string) => {
         try {
             if (!username) return false
@@ -138,20 +196,21 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
             if (!username) return
     
             setIsAvatarLoading(true)
-            const fileExists = await checkIfFileExists(username)
+            // const fileExists = await checkIfFileExists(username)
     
-            if (fileExists) {
-                const storageRef = ref(storage, `avatars/${username}`)
-                try {
-                    const url = await getDownloadURL(storageRef)
-                    setUserAvatar(url)
-                } catch (error: any) {
-                    console.error('Error fetching avatar:', error)
-                    setUserAvatar(null)
-                }
-            } else {
-                setUserAvatar(null)
-            }
+            // if (fileExists) {
+            //     const storageRef = ref(storage, `avatars/${username}`)
+            //     try {
+            //         const url = await getDownloadURL(storageRef)
+            //         setUserAvatar(url)
+            //     } catch (error: any) {
+            //         console.error('Error fetching avatar:', error)
+            //         setUserAvatar(null)
+            //     }
+            // } else {
+            //     setUserAvatar(null)
+            // }
+            retriveAvatarURL(username)
         } catch (error) {
             console.error('Unexpected error:', error)
             setUserAvatar(null)
@@ -184,6 +243,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
                     getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
                         // setSessionUserAvatarURL(downloadURL)
                         // // console.log(downloadURL)
+                        saveOrUpateAvatarURL(session?.user?.username as string, downloadURL)
                         toast({
                             title: 'Uploaded ✅',
                             description: 'Avatar uploaded successfully',
@@ -193,7 +253,9 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
                 }
             )
 
-            fetchAvatar(session?.user?.username as string)
+            // fetchAvatar(session?.user?.username as string)
+            retriveAvatarURL(session?.user?.username as string)
+
         } catch (error) {
             toast({
                 title: 'Error ⭕',
@@ -545,13 +607,14 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
         try {
             if (!username) return null
 
-            const storageRef = ref(storage, `avatars/${username}`)
+            // const storageRef = ref(storage, `avatars/${username}`)
+            return retriveAvatarURL(username) || null
 
-            if (storageRef) {
-                const url = await getDownloadURL(storageRef)
-                return url
-            }
-            return null
+            // if (storageRef) {
+            //     const url = await getDownloadURL(storageRef)
+            //     return url
+            // }
+            // return null
         } catch (error) {
             // console.error('Error fetching avatar:', error)
             // setSessionUserAvatarURL(null)

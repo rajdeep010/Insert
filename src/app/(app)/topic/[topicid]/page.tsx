@@ -31,6 +31,7 @@ import CollaboratorsSkeleton from '@/components/skeletons/CollaboratorsSkeleton'
 import { NotificationData } from '@/types/types'
 import { useTopics } from '@/app/context/TopicProvider'
 import TopicNavbar from '@/components/TopicNavbar'
+import ProfileModal from '@/components/ProfileModal'
 
 
 const EachTopic = () => {
@@ -45,15 +46,12 @@ const EachTopic = () => {
     const { sendSuggestion } = useUser()
 
     const [currentTopicId,setCurrentTopicId] = useState<string | null>(topic_id)
-
     const [currentProblemId,setCurrentProblemId] = useState<string | null>(null)
-
     const [isItemModalOpen,setIsItemModalOpen] = useState(false)
     const [isItemDeleteModalOpen,setIsItemDeleteModalOpen] = useState(false)
     const [iscollabModalOpen,setIsCollabModalOpen] = useState(false)
     const [isSuggestProblemOpen,setIsSuggestProblemOpen] = useState(false)
 
-    // const session_user_username = session?.user.username
 
     const [topicLoading,setTopicLoading] = useState(false)
 
@@ -105,6 +103,8 @@ const EachTopic = () => {
                 return
             }
             setCurrTopic(topicResponse.data.curr_topic)
+
+            console.log('this is curr_topic', topicResponse.data)
 
         } catch (error) {
             // router.push(`/sheets`)
@@ -252,7 +252,18 @@ const EachTopic = () => {
                             }
                         </div>
                         <div className='flex flex-col gap-1'>
-                            {topicLoading ? <Skeleton className='h-4 w-[200px]' /> : <div className='text-xs text-gray-400'>Created by <Link className='text-blue-400 underline' href={`/u/${curr_topic?.creator_username}`}>@{curr_topic?.creator_username}</Link> </div>}
+                            {
+                                topicLoading 
+                                ? <Skeleton className='h-4 w-[200px]' /> 
+                                : <div className='text-xs text-gray-400'>
+                                        Created by 
+                                        <ProfileModal
+                                            creator_username={curr_topic?.creator_username as string}
+                                            creator_name={curr_topic?.creator_name as string}
+                                        />
+                                    </div>
+                            }
+                           
                             {topicLoading ? <Skeleton className='h-6 w-[600px]' /> : <div className='dark:text-gray-100 text-gray-500 font-sans'>{curr_topic?.about}</div>}
                         </div>
                     </div>
@@ -279,7 +290,11 @@ const EachTopic = () => {
                             {
                                 curr_topic?.collaborators.map((each) => (
                                     <Link key={each.username} href={`/u/${each.username}`}>
-                                        <Collaborator key={each.username} username={each.username} name={each.name} />
+                                        <Collaborator 
+                                            key={each.username} 
+                                            username={each.username} 
+                                            name={each.name} 
+                                        />
                                     </Link>
                                 ))
                             }
