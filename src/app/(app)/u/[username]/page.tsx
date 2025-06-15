@@ -1,6 +1,8 @@
 'use client'
 import { useTopics } from '@/app/context/TopicProvider'
 import { useUser } from '@/app/context/UserProvider'
+import Page from '@/app/simple/page'
+import Blogs from '@/components/Blogs'
 import Dashboard from '@/components/Dashboard'
 import Heatmap from '@/components/Heatmap'
 import Navbar from '@/components/Navbar'
@@ -13,7 +15,7 @@ import React from 'react'
 export default function UserPage() {
     const params = useParams()
     const username = params.username
-    const { user_information, isOverviewVisible, isDashboardVisible } = useUser()
+    const { user_information, isOverviewVisible, isDashboardVisible, isBlogEditorVisible } = useUser()
     const { user_Topics } = useTopics()
 
     // const currentUserTopics = (username === curr_user?.username) ? user_Topics : others_Topics
@@ -36,7 +38,8 @@ export default function UserPage() {
                     {
                         isOverviewVisible && <Overview topics={currentUserTopics} />
                     }
-
+                    {   isBlogEditorVisible && <Page /> }
+                    
                 </div>
 
                 <div>

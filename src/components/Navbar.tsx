@@ -21,7 +21,7 @@ import { FiTarget } from "react-icons/fi";
 
 const Navbar = () => {
     const { data: session,status } = useSession()
-    const { handleOverViewClick,handleDashboardClick } = useUser()
+    const { handleOverViewClick,handleDashboardClick, handleBlogEditorClick } = useUser()
 
     const params = useParams()
     const param_username = params.username
@@ -31,7 +31,6 @@ const Navbar = () => {
     userNotifications.map((each) => {
         if (each.read === true) unread_cnt += 1
     })
-    // // console.log(userNotifications, userNotifications.length)
 
     return (
         <>
@@ -55,6 +54,7 @@ const Navbar = () => {
 
                                         <div className='text-md cursor-pointer' onClick={handleOverViewClick}>Overview</div>
                                         <div className='text-md cursor-pointer' onClick={handleDashboardClick}>Dashboard</div>
+                                        <div className='text-md cursor-pointer' onClick={handleBlogEditorClick}>Editor</div>
 
                                         {status === 'authenticated' && param_username && param_username === session?.user?.username && <div>
                                             <DropdownMenu>
@@ -191,6 +191,7 @@ const Navbar = () => {
                                     <div className='flex items-center gap-10'>
                                         <div className='text-md cursor-pointer' onClick={handleOverViewClick}>Overview</div>
                                         <div className='text-md cursor-pointer' onClick={handleDashboardClick}>Dashboard</div>
+                                        <div className='text-md cursor-pointer' onClick={handleBlogEditorClick}>Editor</div>
 
 
 

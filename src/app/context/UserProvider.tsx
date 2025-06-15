@@ -22,6 +22,7 @@ interface UserContextProps {
     isDashboardVisible: boolean
     isProfileDataLoading: boolean
     isAvatarLoading: boolean
+    isBlogEditorVisible: boolean
 
     // functions
     updateUser: (formData: Partial<UserInfo>) => {}
@@ -33,6 +34,7 @@ interface UserContextProps {
     handleDashboardClick: () => void
     handleOverViewClick: () => void
     handleAllTopicsClick: () => void
+    handleBlogEditorClick: () => void
 
     sendCollabInvite: (to_whom: string, noti: NotificationData) => void
     addCollab: (add_whom_username: string, add_whom_name: string, topicid: string, topicname: string, whose_topic: string, notifyid: string) => void
@@ -68,23 +70,36 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
 
     const [isOverviewVisible, setOverviewVisible] = useState(true)
     const [isDashboardVisible, setDashboardVisible] = useState(false)
-
+    const [isBlogEditorVisible, setIsBlogEditorVisible] = useState(false)
 
     //! FUNCTIONS
     const handleDashboardClick = () => {
         setOverviewVisible(false)
         setDashboardVisible(true)
+        setIsBlogEditorVisible(false)
     }
 
     const handleOverViewClick = () => {
         setDashboardVisible(false)
         setOverviewVisible(true)
+        setIsBlogEditorVisible(false)
     }
 
     const handleAllTopicsClick = () => {
         setDashboardVisible(false)
         setOverviewVisible(false)
     }
+
+    const handleBlogEditorClick = () => {
+        setDashboardVisible(false)
+        setOverviewVisible(false)
+        setIsBlogEditorVisible(true)
+    }
+
+    const NEXT_CLOUD_NAME = process.env.NEXT_CLOUD_NAME
+    const NEXT_CLOUD_API_KEY = process.env.NEXT_CLOUD_API_KEY
+    const NEXT_CLOUD_API_SECRET = process.env.NEXT_CLOUD_API_SECRET
+    const NEXT_CLOUD_PRESET = process.env.NEXT_CLOUD_PRESET
 
     //! user information & avatar functions
     const fetchUser = async (username: string) => {
@@ -176,41 +191,12 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
         }
     }
 
-    const checkIfFileExists = async (username: string) => {
-        try {
-            if (!username) return false
-    
-            const listRef = ref(storage, 'avatars/')
-            const res = await listAll(listRef)
-            const fileExists = res.items.some(item => item.name === username)
-    
-            return fileExists
-        } catch (error) {
-            console.error('Error listing files:', error)
-            return false
-        }
-    }
-    
     const fetchAvatar = async (username: string) => {
         try {
             if (!username) return
     
             setIsAvatarLoading(true)
-            // const fileExists = await checkIfFileExists(username)
-    
-            // if (fileExists) {
-            //     const storageRef = ref(storage, `avatars/${username}`)
-            //     try {
-            //         const url = await getDownloadURL(storageRef)
-            //         setUserAvatar(url)
-            //     } catch (error: any) {
-            //         console.error('Error fetching avatar:', error)
-            //         setUserAvatar(null)
-            //     }
-            // } else {
-            //     setUserAvatar(null)
-            // }
-            retriveAvatarURL(username)
+            await retriveAvatarURL(username)
         } catch (error) {
             console.error('Unexpected error:', error)
             setUserAvatar(null)
@@ -283,7 +269,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
 
     const updateUser = async (formData: Partial<UserInfo>) => {
         try {
-            // // console.log(session_user_username, session)
+            // console.log(session_user_username, session)
             if (status !== 'authenticated') return
 
             setIsProfileDataLoading(true)
@@ -293,7 +279,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
             })
 
             if (response.data.success) {
-                // // console.log(response.data)
+                // console.log(response.data)
                 toast({
                     title: 'Updated ✅',
                     description: 'User info updated successfully',
@@ -606,18 +592,8 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
     const getAvatar = async (username: string) => {
         try {
             if (!username) return null
-
-            // const storageRef = ref(storage, `avatars/${username}`)
             return retriveAvatarURL(username) || null
-
-            // if (storageRef) {
-            //     const url = await getDownloadURL(storageRef)
-            //     return url
-            // }
-            // return null
         } catch (error) {
-            // console.error('Error fetching avatar:', error)
-            // setSessionUserAvatarURL(null)
             return null
         }
     }
@@ -626,7 +602,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
         try {
             if (!username) return
 
-            // // console.log('mark all read called', username)
+            // console.log('mark all read called', username)
 
             const response = await axios.post(`/api/mark-all-as-read`, { username })
             if (response.data.success) {
@@ -635,7 +611,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
                     description: 'Successfully marked all read',
                     variant: 'default'
                 })
-                // // console.log(response.data)
+                // console.log(response.data)
                 fetchUser(username)
                 // setUserNotifications(response.data.notifications.reverse())
             }
@@ -664,7 +640,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
     }, [param_username])
 
 
-    return <UserContext.Provider value={{ user_avatar, markAllRead, getAvatar, isInviteAlreadySent, sendDeclinedCollabNotification, isAlreadyCollaborator, deleteNotification, sendAcceptedCollabNotification, userNotifications, sendSuggestion, addCollab, sendCollabInvite, isAvatarLoading, isProfileDataLoading, uploadAvatarOnSignup, handleOverViewClick, handleDashboardClick, handleAllTopicsClick, isOverviewVisible, isDashboardVisible, uploadAvatar, fetchAvatar, user_information, updateUser, fetchUser }}>
+    return <UserContext.Provider value={{ handleBlogEditorClick, isBlogEditorVisible, user_avatar, markAllRead, getAvatar, isInviteAlreadySent, sendDeclinedCollabNotification, isAlreadyCollaborator, deleteNotification, sendAcceptedCollabNotification, userNotifications, sendSuggestion, addCollab, sendCollabInvite, isAvatarLoading, isProfileDataLoading, uploadAvatarOnSignup, handleOverViewClick, handleDashboardClick, handleAllTopicsClick, isOverviewVisible, isDashboardVisible, uploadAvatar, fetchAvatar, user_information, updateUser, fetchUser }}>
         {children}
     </UserContext.Provider>
 }
