@@ -1,0 +1,16 @@
+.swiper {
+  width: 100%;
+  padding-bottom: 16px;
+  overflow: hidden;
+}
+
+.swiper-slide {
+  display: flex;
+  gap: 1rem;
+  background: transparent;
+}
+
+.swiper-wrapper{
+  display: flex !important;
+  gap: 2rem !important;
+}

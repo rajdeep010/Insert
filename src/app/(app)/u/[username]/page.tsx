@@ -38,7 +38,7 @@ export default function UserPage() {
                     {
                         isOverviewVisible && <Overview topics={currentUserTopics} />
                     }
-                    {   isBlogEditorVisible && <Page /> }
+                    {   isBlogEditorVisible && <Blogs /> }
                     
                 </div>
 

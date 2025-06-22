@@ -23,7 +23,7 @@ const BlogCard = () => {
   const title = "Hello world"
 
   return (
-    <Card className="w-full shadow-lg">
+    <Card className="w-full shadow-lg dark:shadow-lg dark:shadow-gray-800">
       <CardHeader className="p-0">
         <Image
           height={100}

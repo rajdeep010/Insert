@@ -384,7 +384,7 @@
 .is-empty[data-placeholder]:has(
     > .ProseMirror-trailingBreak:only-child
   )::before {
-  content: "Start writing...";
+  content: attr(data-placeholder)
 }
 
 .is-empty[data-placeholder]:has(
@@ -393,7 +393,6 @@
   pointer-events: none;
   height: 0;
   position: absolute;
-  font-style: italic;
 }
 
 .is-empty[data-placeholder]:has(> .ProseMirror-trailingBreak):before {

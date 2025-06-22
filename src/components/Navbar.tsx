@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { signOut,useSession } from 'next-auth/react'
 import { DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuLabel,DropdownMenuSeparator,DropdownMenuTrigger,} from "@/components/ui/dropdown-menu"
 import { RiMenu3Line } from "react-icons/ri";
-import { CreditCard,LogOut,User,LayoutDashboard,Contact,LogIn,LoaderPinwheel,MessageSquareDot,MessageSquare,CircleCheckBig } from "lucide-react"
+import { CreditCard,LogOut,User,LayoutDashboard,Contact,LogIn,LoaderPinwheel,MessageSquareDot,MessageSquare,CircleCheckBig, Edit2, Edit, FilePenLine } from "lucide-react"
 import { useUser } from '@/app/context/UserProvider'
 import { Button } from './ui/button'
 import { InviteNotificationCardProps,SuggestionNotificationCardProps } from '@/types/types'
@@ -21,7 +21,7 @@ import { FiTarget } from "react-icons/fi";
 
 const Navbar = () => {
     const { data: session,status } = useSession()
-    const { handleOverViewClick,handleDashboardClick, handleBlogEditorClick } = useUser()
+    const { handleOverViewClick,handleDashboardClick, handleBlogsClick } = useUser()
 
     const params = useParams()
     const param_username = params.username
@@ -54,7 +54,7 @@ const Navbar = () => {
 
                                         <div className='text-md cursor-pointer' onClick={handleOverViewClick}>Overview</div>
                                         <div className='text-md cursor-pointer' onClick={handleDashboardClick}>Dashboard</div>
-                                        <div className='text-md cursor-pointer' onClick={handleBlogEditorClick}>Editor</div>
+                                        <div className='text-md cursor-pointer' onClick={handleBlogsClick}>Blogs</div>
 
                                         {status === 'authenticated' && param_username && param_username === session?.user?.username && <div>
                                             <DropdownMenu>
@@ -162,13 +162,6 @@ const Navbar = () => {
                                                         </DropdownMenuItem>
                                                     </Link>
 
-                                                    {/* <Link className='text-md' href={`/sheets`}>
-                                                        <DropdownMenuItem className='cursor-pointer'>
-                                                            <LayoutDashboard className='mr-2 h-4 w-4' />
-                                                            All Sheets
-                                                        </DropdownMenuItem>
-                                                    </Link> */}
-
                                                     <Link href={`mailto:insertcontact999@gmail.com`}>
                                                         <DropdownMenuItem className='cursor-pointer'>
                                                             <Contact className='mr-2 h-4 w-4' />
@@ -176,6 +169,12 @@ const Navbar = () => {
                                                         </DropdownMenuItem>
                                                     </Link>
 
+                                                    <Link href={`/write`}>
+                                                        <DropdownMenuItem className='cursor-pointer'>
+                                                            <FilePenLine className='mr-2 h-4 w-4' />
+                                                            Write
+                                                        </DropdownMenuItem>
+                                                    </Link>
 
                                                     <DropdownMenuItem className='cursor-pointer' onClick={() => signOut()}>
                                                         <LogOut className='mr-2 h-4 w-4' />
@@ -191,9 +190,7 @@ const Navbar = () => {
                                     <div className='flex items-center gap-10'>
                                         <div className='text-md cursor-pointer' onClick={handleOverViewClick}>Overview</div>
                                         <div className='text-md cursor-pointer' onClick={handleDashboardClick}>Dashboard</div>
-                                        <div className='text-md cursor-pointer' onClick={handleBlogEditorClick}>Editor</div>
-
-
+                                        <div className='text-md cursor-pointer' onClick={handleBlogsClick}>Blogs</div>
 
                                         <div>
                                             <DropdownMenu>

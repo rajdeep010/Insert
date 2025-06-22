@@ -5,6 +5,7 @@ import type { NodeViewProps } from "@tiptap/react";
 import { NodeViewWrapper } from "@tiptap/react";
 import { CloseIcon } from "@/components/tiptap-icons/close-icon";
 import "@/components/tiptap-node/image-upload-node/image-upload-node.scss";
+import { useToast } from "@/components/ui/use-toast";
 
 export interface FileItem {
   id: string;
@@ -29,6 +30,7 @@ interface UploadOptions {
 }
 
 function useFileUpload(options: UploadOptions) {
+  const {toast} = useToast()
   const [fileItem, setFileItem] = React.useState<FileItem | null>(null);
 
   const uploadFile = async (file: File): Promise<string | null> => {
@@ -36,6 +38,11 @@ function useFileUpload(options: UploadOptions) {
       const error = new Error(
         `File size exceeds maximum allowed (${options.maxSize / 1024 / 1024}MB)`
       );
+      toast({
+        title: 'Error ⭕',
+        description: `File size exceeds maximum allowed (${options.maxSize / 1024 / 1024}MB)`,
+        variant: 'destructive'
+      })
       options.onError?.(error);
       return null;
     }

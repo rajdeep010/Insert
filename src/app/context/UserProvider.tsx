@@ -34,7 +34,7 @@ interface UserContextProps {
     handleDashboardClick: () => void
     handleOverViewClick: () => void
     handleAllTopicsClick: () => void
-    handleBlogEditorClick: () => void
+    handleBlogsClick: () => void
 
     sendCollabInvite: (to_whom: string, noti: NotificationData) => void
     addCollab: (add_whom_username: string, add_whom_name: string, topicid: string, topicname: string, whose_topic: string, notifyid: string) => void
@@ -90,7 +90,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
         setOverviewVisible(false)
     }
 
-    const handleBlogEditorClick = () => {
+    const handleBlogsClick = () => {
         setDashboardVisible(false)
         setOverviewVisible(false)
         setIsBlogEditorVisible(true)
@@ -640,7 +640,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
     }, [param_username])
 
 
-    return <UserContext.Provider value={{ handleBlogEditorClick, isBlogEditorVisible, user_avatar, markAllRead, getAvatar, isInviteAlreadySent, sendDeclinedCollabNotification, isAlreadyCollaborator, deleteNotification, sendAcceptedCollabNotification, userNotifications, sendSuggestion, addCollab, sendCollabInvite, isAvatarLoading, isProfileDataLoading, uploadAvatarOnSignup, handleOverViewClick, handleDashboardClick, handleAllTopicsClick, isOverviewVisible, isDashboardVisible, uploadAvatar, fetchAvatar, user_information, updateUser, fetchUser }}>
+    return <UserContext.Provider value={{ handleBlogsClick, isBlogEditorVisible, user_avatar, markAllRead, getAvatar, isInviteAlreadySent, sendDeclinedCollabNotification, isAlreadyCollaborator, deleteNotification, sendAcceptedCollabNotification, userNotifications, sendSuggestion, addCollab, sendCollabInvite, isAvatarLoading, isProfileDataLoading, uploadAvatarOnSignup, handleOverViewClick, handleDashboardClick, handleAllTopicsClick, isOverviewVisible, isDashboardVisible, uploadAvatar, fetchAvatar, user_information, updateUser, fetchUser }}>
         {children}
     </UserContext.Provider>
 }
