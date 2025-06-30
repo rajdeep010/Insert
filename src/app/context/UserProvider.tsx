@@ -228,7 +228,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
                 () => {
                     getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
                         // setSessionUserAvatarURL(downloadURL)
-                        // // console.log(downloadURL)
+                        // console.log(downloadURL)
                         saveOrUpateAvatarURL(session?.user?.username as string, downloadURL)
                         toast({
                             title: 'Uploaded ✅',

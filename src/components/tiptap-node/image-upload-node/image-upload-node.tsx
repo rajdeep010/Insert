@@ -30,89 +30,91 @@ interface UploadOptions {
 }
 
 function useFileUpload(options: UploadOptions) {
-  const {toast} = useToast()
-  const [fileItem, setFileItem] = React.useState<FileItem | null>(null);
+  const { toast } = useToast()
+  const [fileItem,setFileItem] = React.useState<FileItem | null>(null);
 
   const uploadFile = async (file: File): Promise<string | null> => {
     if (file.size > options.maxSize) {
       const error = new Error(
         `File size exceeds maximum allowed (${options.maxSize / 1024 / 1024}MB)`
-      );
+      )
       toast({
         title: 'Error ⭕',
-        description: `File size exceeds maximum allowed (${options.maxSize / 1024 / 1024}MB)`,
-        variant: 'destructive'
+        description: error.message,
+        variant: 'destructive',
       })
-      options.onError?.(error);
-      return null;
+      options.onError?.(error)
+      return null
     }
 
-    const abortController = new AbortController();
+    const abortController = new AbortController()
 
     const newFileItem: FileItem = {
       id: crypto.randomUUID(),
       file,
       progress: 0,
-      status: "uploading",
+      status: 'uploading',
       abortController,
-    };
+    }
 
-    setFileItem(newFileItem);
+    setFileItem(newFileItem)
 
     try {
       if (!options.upload) {
-        throw new Error("Upload function is not defined");
+        throw new Error('Upload function is not defined')
       }
 
       const url = await options.upload(
         file,
         (event: { progress: number }) => {
           setFileItem((prev) => {
-            if (!prev) return null;
+            if (!prev) return null
             return {
               ...prev,
               progress: event.progress,
-            };
-          });
+            }
+          })
         },
         abortController.signal
-      );
+      )
 
-      if (!url) throw new Error("Upload failed: No URL returned");
+      if (!url) throw new Error('Upload failed: No URL returned')
 
       if (!abortController.signal.aborted) {
         setFileItem((prev) => {
-          if (!prev) return null;
+          if (!prev) return null
           return {
             ...prev,
-            status: "success",
+            status: 'success',
             url,
             progress: 100,
-          };
-        });
-        options.onSuccess?.(url);
-        const fileUrl = URL.createObjectURL(file)
-        return fileUrl;
+          }
+        })
+        options.onSuccess?.(url)
+
+        // ✅ Return Cloudinary URL (NOT a blob)
+        return url
       }
 
-      return null;
+      return null
     } catch (error) {
       if (!abortController.signal.aborted) {
         setFileItem((prev) => {
-          if (!prev) return null;
+          if (!prev) return null
           return {
             ...prev,
-            status: "error",
+            status: 'error',
             progress: 0,
-          };
-        });
+          }
+        })
         options.onError?.(
-          error instanceof Error ? error : new Error("Upload failed")
-        );
+          error instanceof Error ? error : new Error('Upload failed')
+        )
       }
-      return null;
+      return null
     }
-  };
+  }
+
 
   const uploadFiles = async (files: File[]): Promise<string | null> => {
     if (!files || files.length === 0) {
@@ -123,8 +125,7 @@ function useFileUpload(options: UploadOptions) {
     if (options.limit && files.length > options.limit) {
       options.onError?.(
         new Error(
-          `Maximum ${options.limit} file${
-            options.limit === 1 ? "" : "s"
+          `Maximum ${options.limit} file${options.limit === 1 ? "" : "s"
           } allowed`
         )
       );
@@ -223,7 +224,7 @@ const ImageUploadDragArea: React.FC<ImageUploadDragAreaProps> = ({
   onFile,
   children,
 }) => {
-  const [dragover, setDragover] = React.useState(false);
+  const [dragover,setDragover] = React.useState(false);
 
   const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
     setDragover(false);
@@ -246,9 +247,8 @@ const ImageUploadDragArea: React.FC<ImageUploadDragAreaProps> = ({
 
   return (
     <div
-      className={`tiptap-image-upload-dragger ${
-        dragover ? "tiptap-image-upload-dragger-active" : ""
-      }`}
+      className={`tiptap-image-upload-dragger ${dragover ? "tiptap-image-upload-dragger-active" : ""
+        }`}
       onDrop={onDrop}
       onDragOver={onDragover}
       onDragLeave={onDragleave}
@@ -274,9 +274,9 @@ const ImageUploadPreview: React.FC<ImageUploadPreviewProps> = ({
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ["Bytes","KB","MB","GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+    return `${parseFloat((bytes / Math.pow(k,i)).toFixed(2))} ${sizes[i]}`;
   };
 
   return (
@@ -343,7 +343,7 @@ const DropZoneContent: React.FC<{ maxSize: number }> = ({ maxSize }) => (
 );
 
 export const ImageUploadNode: React.FC<NodeViewProps> = (props) => {
-  const { accept, limit, maxSize } = props.node.attrs;
+  const { accept,limit,maxSize } = props.node.attrs;
   const inputRef = React.useRef<HTMLInputElement>(null);
   const extension = props.extension;
 
@@ -356,7 +356,7 @@ export const ImageUploadNode: React.FC<NodeViewProps> = (props) => {
     onError: extension.options.onError,
   };
 
-  const { fileItem, uploadFiles, clearFileItem } = useFileUpload(uploadOptions);
+  const { fileItem,uploadFiles,clearFileItem } = useFileUpload(uploadOptions);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -372,16 +372,16 @@ export const ImageUploadNode: React.FC<NodeViewProps> = (props) => {
 
     if (url) {
       const pos = props.getPos();
-      const filename = files[0]?.name.replace(/\.[^/.]+$/, "") || "unknown";
+      const filename = files[0]?.name.replace(/\.[^/.]+$/,"") || "unknown";
 
       props.editor
         .chain()
         .focus()
-        .deleteRange({ from: pos, to: pos + 1 })
-        .insertContentAt(pos, [
+        .deleteRange({ from: pos,to: pos + 1 })
+        .insertContentAt(pos,[
           {
             type: "image",
-            attrs: { src: url, alt: filename, title: filename },
+            attrs: { src: url,alt: filename,title: filename },
           },
         ])
         .run();

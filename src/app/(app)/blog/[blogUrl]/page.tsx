@@ -1,9 +1,6 @@
 "use client";
-
 import * as React from "react";
-import { EditorContent, EditorContext, useEditor } from "@tiptap/react";
-
-// --- Tiptap Core Extensions ---
+import { EditorContent,EditorContext,useEditor } from "@tiptap/react";
 import { StarterKit } from "@tiptap/starter-kit";
 import { Image } from "@tiptap/extension-image";
 import { TaskItem } from "@tiptap/extension-task-item";
@@ -14,13 +11,9 @@ import { Highlight } from "@tiptap/extension-highlight";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import { Underline } from "@tiptap/extension-underline";
-
-// --- Custom Extensions ---
 import { Link } from "@/components/tiptap-extension/link-extension";
 import { Selection } from "@/components/tiptap-extension/selection-extension";
 import { TrailingNode } from "@/components/tiptap-extension/trailing-node-extension";
-
-// --- UI Primitives ---
 import { Button } from "@/components/tiptap-ui-primitive/button";
 import { Spacer } from "@/components/tiptap-ui-primitive/spacer";
 import {
@@ -28,15 +21,11 @@ import {
   ToolbarGroup,
   ToolbarSeparator,
 } from "@/components/tiptap-ui-primitive/toolbar";
-
-// --- Tiptap Node ---
 import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node/image-upload-node-extension";
 import "@/components/tiptap-node/code-block-node/code-block-node.scss";
 import "@/components/tiptap-node/list-node/list-node.scss";
 import "@/components/tiptap-node/image-node/image-node.scss";
 import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
-
-// --- Tiptap UI ---
 import { HeadingDropdownMenu } from "@/components/tiptap-ui/heading-dropdown-menu";
 import { ImageUploadButton } from "@/components/tiptap-ui/image-upload-button";
 import { ListDropdownMenu } from "@/components/tiptap-ui/list-dropdown-menu";
@@ -55,44 +44,58 @@ import {
 import { MarkButton } from "@/components/tiptap-ui/mark-button";
 import { TextAlignButton } from "@/components/tiptap-ui/text-align-button";
 import { UndoRedoButton } from "@/components/tiptap-ui/undo-redo-button";
-
-// --- Icons ---
 import { ArrowLeftIcon } from "@/components/tiptap-icons/arrow-left-icon";
 import { HighlighterIcon } from "@/components/tiptap-icons/highlighter-icon";
 import { LinkIcon } from "@/components/tiptap-icons/link-icon";
-
-// --- Hooks ---
 import { useMobile } from "@/hooks/use-mobile";
 import { useWindowSize } from "@/hooks/use-window-size";
 import { useCursorVisibility } from "@/hooks/use-cursor-visibility";
-
-// --- Components ---
 import { Button as Btn } from "@/components/ui/button";
-
-// --- Lib ---
-import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
-
-// --- Styles ---
+import { handleImageUpload,MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 import "@/components/tiptap-templates/simple/simple-editor.scss";
-
-// import content from "@/components/tiptap-templates/simple/data/content.json"
 import { Placeholder } from "@/components/tiptap-extension/placeholder-extension";
-import BlogWriteSidebar from '@/components/BlogWriteSidebar'
+import BlogWriteSidebar from "@/components/BlogWriteSidebar";
+import { useBlog } from "@/app/context/BlogProvider";
+import { useSession } from "next-auth/react";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useDebounceCallback } from "usehooks-ts";
+import { useParams } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Loader2 } from "lucide-react";
+
+function extractBlogTitle(blogContent: any): string {
+  if (!blogContent) return "";
+
+  const content = blogContent?.content || {};
+  if (Array.isArray(content) && content.length > 0) {
+    const firstNode = content[0];
+    if (firstNode.type === "heading" && firstNode.attrs?.level === 1) {
+      return firstNode.content?.[0]?.text || "";
+    }
+    return "";
+  }
+  return "";
+}
 
 const MainToolbarContent = ({
   onHighlighterClick,
   onLinkClick,
   isMobile,
-  editorContent,
+  onSaveClick,
 }: {
   onHighlighterClick: () => void;
   onLinkClick: () => void;
   isMobile: boolean;
-  editorContent: any;
+  onSaveClick: () => void;
 }) => {
-  const handleSaveContent = () => {
-    console.log("editorContent: ", editorContent);
-  };
+
+  const { isBlogLoading } = useBlog();
 
   return (
     <>
@@ -104,8 +107,8 @@ const MainToolbarContent = ({
       <ToolbarSeparator />
 
       <ToolbarGroup>
-        <HeadingDropdownMenu levels={[1, 2, 3, 4]} />
-        <ListDropdownMenu types={["bulletList", "orderedList", "taskList"]} />
+        <HeadingDropdownMenu levels={[1,2,3,4]} />
+        <ListDropdownMenu types={["bulletList","orderedList","taskList"]} />
         <BlockQuoteButton />
         <CodeBlockButton />
       </ToolbarGroup>
@@ -148,10 +151,20 @@ const MainToolbarContent = ({
         <ImageUploadButton text="Add" />
       </ToolbarGroup>
 
-      {/* <Spacer /> */}
+      <ToolbarSeparator />
 
-      {/* {isMobile && <ToolbarSeparator />} */}
-      <Btn onClick={handleSaveContent}>Save</Btn>
+      {/* <Tooltip>
+        <TooltipTrigger asChild>
+          <span>
+            <Switch checked={autoSave} onCheckedChange={onToggleAutoSave} />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Auto Save</p>
+        </TooltipContent>
+      </Tooltip> */}
+
+      {!isBlogLoading && <Btn onClick={onSaveClick}>Save</Btn>}
     </>
   );
 };
@@ -188,22 +201,28 @@ const MobileToolbarContent = ({
 const SimpleEditor = () => {
   const isMobile = useMobile();
   const windowSize = useWindowSize();
-  const [mobileView, setMobileView] = React.useState<
+  const [mobileView,setMobileView] = React.useState<
     "main" | "highlighter" | "link"
   >("main");
   const toolbarRef = React.useRef<HTMLDivElement>(null);
-  const [editorContent, setEditorContent] = React.useState<any>({
-    type: "doc",
-    content: [
-      {
-        type: "heading",
-        attrs: { level: 1 },
-        content: [],
-      },
-    ],
-  });
 
-  // console.log(content)
+  const { currentBlog,handleBlogUpdate, isBlogLoading } = useBlog();
+  const [editorContent,setEditorContent] = React.useState<any>(currentBlog?.blogContent)
+  // const [autoSave,setAutoSave] = React.useState(currentBlog?.autosave || false)
+
+  // const debounced = useDebounceCallback(setEditorContent, 5000)
+
+  const handleSaveContent = React.useCallback(() => {
+    if (!editorContent && !currentBlog) return;
+
+    handleBlogUpdate({
+      blogContent: JSON.stringify(editorContent),
+    });
+  },[editorContent,currentBlog, handleBlogUpdate])
+
+  // React.useEffect(() => {
+  //   handleSaveContent()
+  // }, [editorContent])
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -217,7 +236,7 @@ const SimpleEditor = () => {
     },
     extensions: [
       StarterKit,
-      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      TextAlign.configure({ types: ["heading","paragraph"] }),
       Underline,
       TaskList,
       TaskItem.configure({ nested: true }),
@@ -226,12 +245,10 @@ const SimpleEditor = () => {
       Typography,
       Superscript,
       Placeholder.configure({
-        placeholder: ({ node, pos }) => {
-          // Show "Title..." only for the first heading node
+        placeholder: ({ node,pos }) => {
           if (pos === 0 && node.type.name === "heading") {
             return "Enter title";
           }
-          // Show "Start writing..." for all other empty nodes
           return "Start writing...";
         },
         emptyEditorClass: "is-editor-empty",
@@ -244,7 +261,7 @@ const SimpleEditor = () => {
         maxSize: MAX_FILE_SIZE,
         limit: 3,
         upload: handleImageUpload,
-        onError: (error) => console.error("Upload failed:", error),
+        onError: (error) => console.error("Upload failed:",error),
       }),
       TrailingNode,
       Link.configure({ openOnClick: false }),
@@ -252,13 +269,6 @@ const SimpleEditor = () => {
     content: editorContent,
     onUpdate: ({ editor }) => {
       const json = editor.getJSON() || "";
-      if (
-        json.content &&
-        json.content.length > 0 &&
-        json.content[0].type !== "heading"
-      ) {
-        editor.commands.setNode("heading", { level: 1 });
-      }
       setEditorContent(json);
     },
   });
@@ -277,7 +287,7 @@ const SimpleEditor = () => {
     }
 
     editor.chain().focus().setImageUploadNode().run();
-  }, [isMobile, mobileView]);
+  },[isMobile,mobileView]);
 
   return (
     <EditorContext.Provider value={{ editor }}>
@@ -286,17 +296,19 @@ const SimpleEditor = () => {
         style={
           isMobile
             ? {
-                bottom: `calc(100% - ${windowSize.height - bodyRect.y}px)`,
-              }
+              bottom: `calc(100% - ${windowSize.height - bodyRect.y}px)`,
+            }
             : {}
         }
       >
-        {mobileView === "main" ? (
+        {mobileView === "main" ? 
+          isBlogLoading ? <Skeleton className="w-32 h-6" /> : (
+
           <MainToolbarContent
             onHighlighterClick={() => setMobileView("highlighter")}
             onLinkClick={() => setMobileView("link")}
             isMobile={isMobile}
-            editorContent={editorContent}
+            onSaveClick={handleSaveContent}
           />
         ) : (
           <MobileToolbarContent
@@ -318,13 +330,22 @@ const SimpleEditor = () => {
 };
 
 const Write = () => {
+  const { isBlogLoading } = useBlog();
+
   return (
     <>
-      <div className="absolute top-5 left-5"> <BlogWriteSidebar/> </div>
+      <div className="absolute top-5 left-5">
+        {" "}
+        <BlogWriteSidebar />{" "}
+      </div>
 
-      <div className="px-64 pt-16 min-h-screen">
+      <div className="px-64 pt-8 min-h-screen">
         <div className="flex item-center justify-center flex-col gap-4">
-          <SimpleEditor />
+          {isBlogLoading 
+            ? <div className="flex justify-center items-center h-screen">
+              <Loader2 className="h-12 w-12 animate-spin text-gray-500" />
+            </div>
+            : <SimpleEditor />}
         </div>
       </div>
     </>

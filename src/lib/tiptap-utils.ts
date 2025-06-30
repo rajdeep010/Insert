@@ -150,16 +150,46 @@ export const handleImageUpload = async (
     )
   }
 
-  // For demo/testing: Simulate upload progress
-  for (let progress = 0; progress <= 100; progress += 10) {
-    if (abortSignal?.aborted) {
-      throw new Error("Upload cancelled")
+  const NEXT_CLOUD_PRESET = process.env.NEXT_PUBLIC_CLOUD_PRESET || "default_preset"
+  const NEXT_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUD_NAME || "your_cloud_name"
+
+  console.log('Uploading file to Cloudinary:', NEXT_CLOUD_NAME, NEXT_CLOUD_PRESET)
+
+  const formData = new FormData()
+  formData.append("file", file)
+  formData.append("upload_preset", NEXT_CLOUD_PRESET)
+
+  try {
+    for (let progress = 0; progress <= 100; progress += 10) {
+      if (abortSignal?.aborted) {
+        throw new Error("Upload cancelled")
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      onProgress?.({ progress })
     }
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    onProgress?.({ progress })
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${NEXT_CLOUD_NAME}/image/upload`, {
+      method: "POST",
+      body: formData,
+      signal: abortSignal,
+    })
+
+    const data = await response.json()
+    console.log("Upload response:", data)
+    if (!data.secure_url) {
+      throw new Error("Upload failed")
+    }
+
+    return data.secure_url
+
+  } catch (error) {
+    console.error("Image upload failed", error)
+    throw new Error("Image upload failed")
   }
 
-  return "/images/placeholder-image.png"
+  // // For demo/testing: Simulate upload progress
+  
+
+  // return "/images/placeholder-image.png"
 
   // Uncomment for production use:
   // return convertFileToBase64(file, abortSignal);

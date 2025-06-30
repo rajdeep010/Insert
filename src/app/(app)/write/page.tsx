@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import BlogWriteSidebar from "@/components/BlogWriteSidebar";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { CalendarCheck2,Clock3,FileText,Lightbulb,Rocket } from "lucide-react";
@@ -10,8 +9,14 @@ import { FreeMode,Pagination,Scrollbar } from "swiper/modules";
 import { Autoplay,Navigation } from "swiper/modules";
 import '../../swiper.css'
 import Link from "next/link";
+import BlogWriteSidebar from "@/components/BlogWriteSidebar";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Card, CardContent } from "@/components/ui/card";
+import { useBlog } from "@/app/context/BlogProvider";
 
 const Write = () => {
+	const {allBlogs} = useBlog()
+
 	return (
 		<>
 			<div className="absolute top-5 left-5">
@@ -40,78 +45,26 @@ const Write = () => {
 							<span className="text-sm opacity-30">Recently visited</span>
 						</div>
 						<div className="w-full py-2">
-							<Swiper
-								slidesPerView={3.5}
-								spaceBetween={15}
-								freeMode={true}
-								pagination={{ clickable: true }}
-								modules={[FreeMode,Scrollbar]}
-								className="mySwiper custom-scrollbar"
-							>
-								<SwiperSlide>
-									<div className="relative shadow-sm shadow-gray-200 dark:shadow-gray-800 bg-slate-100 dark:bg-slate-800  cursor-pointer rounded-md flex flex-col justify-center px-6 py-8 text-left h-[150px] w-[230px] break-words overflow-hidden">
-										<div className="absolute left-0 bottom-0 w-full h-1/2 bg-slate-200 dark:dark:bg-slate-950 opacity-60 rounded-b-md pointer-events-none" />
-										<FileText className="h-6 w-6 mb-2 z-10 relative" />
-										<span className="z-10 relative">LLD (Interview)</span>
-									</div>
-								</SwiperSlide>
-								<SwiperSlide>
-									<div className="relative shadow-sm shadow-gray-200 dark:shadow-gray-800 bg-slate-100 dark:bg-slate-800  cursor-pointer rounded-md flex flex-col justify-center px-6 py-8 text-left h-[150px] w-[230px] break-words overflow-hidden">
-										<div className="absolute left-0 bottom-0 w-full h-1/2 bg-slate-200 dark:bg-slate-950 opacity-60 rounded-b-md pointer-events-none" />
-										<FileText className="h-6 w-6 mb-2 z-10 relative" />
-										<span className="z-10 relative">LLD (Interview)</span>
-									</div>
-								</SwiperSlide>
-								<SwiperSlide>
-									<div className="relative shadow-sm shadow-gray-200 dark:shadow-gray-800 bg-slate-100 dark:bg-slate-800  cursor-pointer rounded-md flex flex-col justify-center px-6 py-8 text-left h-[150px] w-[230px] break-words overflow-hidden">
-										<div className="absolute left-0 bottom-0 w-full h-1/2 bg-slate-200 dark:bg-slate-950 opacity-60 rounded-b-md pointer-events-none" />
-										<FileText className="h-6 w-6 mb-2 z-10 relative" />
-										<span className="z-10 relative">LLD (Interview)</span>
-									</div>
-								</SwiperSlide>
-								<SwiperSlide>
-									<div className="relative shadow-sm shadow-gray-200 dark:shadow-gray-800 bg-slate-100 dark:bg-slate-800  cursor-pointer rounded-md flex flex-col justify-center px-6 py-8 text-left h-[150px] w-[230px] break-words overflow-hidden">
-										<div className="absolute left-0 bottom-0 w-full h-1/2 bg-slate-200 dark:bg-slate-950 opacity-60 rounded-b-md pointer-events-none" />
-										<FileText className="h-6 w-6 mb-2 z-10 relative" />
-										<span className="z-10 relative">LLD (Interview)</span>
-									</div>
-								</SwiperSlide>
-								<SwiperSlide>
-									<div className="relative bg-slate-100 dark:bg-slate-800  cursor-pointer rounded-md flex flex-col justify-center px-6 py-8 text-left h-[150px] w-[230px] break-words overflow-hidden">
-										<div className="absolute left-0 bottom-0 w-full h-1/2 bg-slate-200 dark:bg-slate-950 opacity-60 rounded-b-md pointer-events-none" />
-										<FileText className="h-6 w-6 mb-2 z-10 relative" />
-										<span className="z-10 relative">LLD (Interview)</span>
-									</div>
-								</SwiperSlide>
-								<SwiperSlide>
-									<div className="relative shadow-md bg-slate-100 dark:bg-slate-800  cursor-pointer rounded-md flex flex-col justify-center px-6 py-8 text-left h-[150px] w-[230px] break-words overflow-hidden">
-										<div className="absolute left-0 bottom-0 w-full h-1/2 bg-slate-200 dark:bg-slate-950 opacity-60 rounded-b-md pointer-events-none" />
-										<FileText className="h-6 w-6 mb-2 z-10 relative" />
-										<span className="z-10 relative">LLD (Interview)</span>
-									</div>
-								</SwiperSlide>
-								<SwiperSlide>
-									<div className="relative bg-slate-100 dark:bg-slate-800  cursor-pointer rounded-md flex flex-col justify-center px-6 py-8 text-left h-[150px] w-[230px] break-words overflow-hidden">
-										<div className="absolute left-0 bottom-0 w-full h-1/2 bg-slate-200 dark:bg-slate-950 opacity-60 rounded-b-md pointer-events-none" />
-										<FileText className="h-6 w-6 mb-2 z-10 relative" />
-										<span className="z-10 relative">LLD (Interview)</span>
-									</div>
-								</SwiperSlide>
-								<SwiperSlide>
-									<div className="relative bg-slate-100 dark:bg-slate-800 cursor-pointer rounded-md flex flex-col justify-center px-6 py-8 text-left h-[150px] w-[230px] break-words overflow-hidden">
-										<div className="absolute left-0 bottom-0 w-full h-1/2 bg-slate-200 dark:bg-slate-950 opacity-60 rounded-b-md pointer-events-none" />
-										<FileText className="h-6 w-6 mb-2 z-10 relative" />
-										<span className="z-10 relative">LLD (Interview)</span>
-									</div>
-								</SwiperSlide>
-								<SwiperSlide>
-									<div className="relative bg-slate-100 dark:bg-slate-800  cursor-pointer rounded-md flex flex-col justify-center px-6 py-8 text-left h-[150px] w-[230px] break-words overflow-hidden">
-										<div className="absolute left-0 bottom-0 w-full h-1/2 bg-slate-200 dark:bg-slate-950 opacity-60 rounded-b-md pointer-events-none" />
-										<FileText className="h-6 w-6 mb-2 z-10 relative" />
-										<span className="z-10 relative">LLD (Interview)</span>
-									</div>
-								</SwiperSlide>
-							</Swiper>
+							<Carousel>
+								<CarouselContent className="-ml-1">
+									{allBlogs.map((blog,index) => (
+										<CarouselItem key={index} className="pl-1 md:basis-1/2 lg:basis-1/3">
+											<div className="p-1">
+												<Card className="bg-slate-100 dark:bg-slate-900 shadow-sm shadow-gray-200 dark:shadow-gray-800">
+													<CardContent className="flex aspect-square items-center justify-center p-6">
+														<div className="flex flex-col items-start justify-start gap-4">
+															<FileText className="h-8 w-8 text-gray-500 dark:text-gray-400" />
+															<Link className="text-lg font-semibold" href={`/blog/${blog?.blogUrl}`}>{blog?.blogTitle}</Link>
+														</div>
+													</CardContent>
+												</Card>
+											</div>
+										</CarouselItem>
+									))}
+								</CarouselContent>
+								<CarouselPrevious />
+								<CarouselNext />
+							</Carousel>
 						</div>
 					</div>
 
@@ -123,7 +76,7 @@ const Write = () => {
 
 						<div className="rounded-md flex justify-evenly items-center bg-slate-100 dark:bg-slate-900 min-h-fit shadow-sm shadow-gray-200 dark:shadow-gray-800">
 							<div className="flex flex-col items-start justify-start gap-4 px-6 py-12 text-left w-2/5 ">
-								<Rocket className="h-12 w-12 p-2 rounded-md bg-slate-200 dark:bg-slate-700 border-2 border-slate-400 dark:border-slate-700" />
+								<Rocket className="h-12 w-12 p-2 rounded-md bg-slate-200 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-700" />
 								<p className="text-lg">Integrating AI Features</p>
 								<p className="text-xs opacity-50">Add AI to help writing and summarize blogs</p>
 								<Link href={'/'} className="text-blue-500 text-xs mt-[-10px] hover:underline">Insert Blogs</Link>
@@ -132,7 +85,7 @@ const Write = () => {
 							<div className="border-[1px] border-gray-700 min-h-[100px]"></div>
 
 							<div className="flex flex-col items-start justify-start gap-4 px-6 py-12 text-left w-2/5 ">
-								<Lightbulb className="h-12 w-12 p-2 rounded-md bg-slate-200 dark:bg-slate-700 border-2 border-slate-400 dark:border-slate-700" />
+								<Lightbulb className="h-12 w-12 p-2 rounded-md bg-slate-200 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-700" />
 								<p className="text-lg">Any Ideas or Suggestion?</p>
 								<p className="text-xs opacity-50">Write to us how we can do better</p>
 								<Link href={'/'} className="text-blue-500 text-xs mt-[-10px] hover:underline">Suggest</Link>
