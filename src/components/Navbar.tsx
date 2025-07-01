@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { signOut,useSession } from 'next-auth/react'
 import { DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuLabel,DropdownMenuSeparator,DropdownMenuTrigger,} from "@/components/ui/dropdown-menu"
 import { RiMenu3Line } from "react-icons/ri";
-import { CreditCard,LogOut,User,LayoutDashboard,Contact,LogIn,LoaderPinwheel,MessageSquareDot,MessageSquare,CircleCheckBig, Edit2, Edit, FilePenLine } from "lucide-react"
+import { CreditCard,LogOut,User,LayoutDashboard,Contact,LogIn,LoaderPinwheel,MessageSquareDot,MessageSquare,CircleCheckBig, Edit2, Edit, FilePenLine, DiamondMinus } from "lucide-react"
 import { useUser } from '@/app/context/UserProvider'
 import { Button } from './ui/button'
 import { InviteNotificationCardProps,SuggestionNotificationCardProps } from '@/types/types'
@@ -35,8 +35,8 @@ const Navbar = () => {
     return (
         <>
             <nav className='flex justify-between items-center'>
-                <Link className='flex gap-2 text-5xl' href={`/`}>
-                    {/* <span><FiTarget /></span> */}
+                <Link className='flex items-center gap-2 text-5xl' href={`/`}>
+                    <DiamondMinus className='h-8 w-8' />
                     <span className='font-sans'>Insert</span>
                 </Link>
 

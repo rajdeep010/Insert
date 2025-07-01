@@ -9,6 +9,7 @@ export interface Comment {
 export interface Blog extends Document {
   blogTitle: string
   blogContent: string
+  blogContentText?: string
   blogUrl: string
   lastEdited: Date
   status: string
@@ -17,6 +18,7 @@ export interface Blog extends Document {
   comments: Comment[]
   creator: string
   autosave: boolean
+  blogBannerImage?: string
 }
 
 const CommentSchema = new Schema<Comment>({
@@ -57,6 +59,8 @@ const BlogSchema = new Schema<Blog>({
   comments: [CommentSchema],
   creator: { type: String,required: true },
   autosave: { type: Boolean,default: false },
+  blogContentText: { type: String,default: "" },
+  blogBannerImage: { type: String, default: "" },
 })
 
 

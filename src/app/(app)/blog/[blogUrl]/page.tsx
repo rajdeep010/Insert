@@ -206,8 +206,9 @@ const SimpleEditor = () => {
   >("main");
   const toolbarRef = React.useRef<HTMLDivElement>(null);
 
-  const { currentBlog,handleBlogUpdate, isBlogLoading } = useBlog();
+  const { currentBlog,handleBlogUpdate,isBlogLoading } = useBlog();
   const [editorContent,setEditorContent] = React.useState<any>(currentBlog?.blogContent)
+  const [editorTextContent,setEditorTextContent] = React.useState<string>(currentBlog?.blogContentText || "");
   // const [autoSave,setAutoSave] = React.useState(currentBlog?.autosave || false)
 
   // const debounced = useDebounceCallback(setEditorContent, 5000)
@@ -217,8 +218,34 @@ const SimpleEditor = () => {
 
     handleBlogUpdate({
       blogContent: JSON.stringify(editorContent),
-    });
-  },[editorContent,currentBlog, handleBlogUpdate])
+      blogContentText: editorTextContent,
+      blogBannerImage: getFirstImageFromBlogContent(editorContent) || currentBlog?.blogBannerImage,
+    })
+  },[editorContent,currentBlog,handleBlogUpdate])
+
+  const getFirstImageFromBlogContent = (blogContent: string) => {
+    try {
+      const contentObj = typeof blogContent === "string" ? JSON.parse(blogContent) : blogContent;
+
+      const findFirstImage = (node: any): string | null => {
+        if (!node) return null;
+        if (node.type === "image" && node.attrs?.src) {
+          return node.attrs.src;
+        }
+        if (Array.isArray(node.content)) {
+          for (const child of node.content) {
+            const found = findFirstImage(child);
+            if (found) return found;
+          }
+        }
+        return null;
+      }
+
+      return findFirstImage(contentObj) || null;
+    } catch {
+      return null;
+    }
+  }
 
   // React.useEffect(() => {
   //   handleSaveContent()
@@ -269,7 +296,10 @@ const SimpleEditor = () => {
     content: editorContent,
     onUpdate: ({ editor }) => {
       const json = editor.getJSON() || "";
-      setEditorContent(json);
+      const plainText = editor?.getText().trim() || ""
+      console.log("Plain Text:",typeof plainText);
+      setEditorContent(json)
+      setEditorTextContent(plainText)
     },
   });
 
@@ -301,21 +331,21 @@ const SimpleEditor = () => {
             : {}
         }
       >
-        {mobileView === "main" ? 
+        {mobileView === "main" ?
           isBlogLoading ? <Skeleton className="w-32 h-6" /> : (
 
-          <MainToolbarContent
-            onHighlighterClick={() => setMobileView("highlighter")}
-            onLinkClick={() => setMobileView("link")}
-            isMobile={isMobile}
-            onSaveClick={handleSaveContent}
-          />
-        ) : (
-          <MobileToolbarContent
-            type={mobileView === "highlighter" ? "highlighter" : "link"}
-            onBack={() => setMobileView("main")}
-          />
-        )}
+            <MainToolbarContent
+              onHighlighterClick={() => setMobileView("highlighter")}
+              onLinkClick={() => setMobileView("link")}
+              isMobile={isMobile}
+              onSaveClick={handleSaveContent}
+            />
+          ) : (
+            <MobileToolbarContent
+              type={mobileView === "highlighter" ? "highlighter" : "link"}
+              onBack={() => setMobileView("main")}
+            />
+          )}
       </Toolbar>
 
       <div className="content-wrapper shadow-sm dark:shadow-grey-800">
@@ -341,7 +371,7 @@ const Write = () => {
 
       <div className="px-64 pt-8 min-h-screen">
         <div className="flex item-center justify-center flex-col gap-4">
-          {isBlogLoading 
+          {isBlogLoading
             ? <div className="flex justify-center items-center h-screen">
               <Loader2 className="h-12 w-12 animate-spin text-gray-500" />
             </div>

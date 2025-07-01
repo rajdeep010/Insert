@@ -72,7 +72,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 
             if (response.data.success) {
                 dispatch({ type: "SET_CURRENT_BLOG",payload: response.data.blog })
-                console.log("Blog fetched successfully:",state.currentBlog)
+                // console.log("Blog fetched successfully:",state.currentBlog)
 
             } else {
                 toast({
@@ -142,7 +142,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
             }
 
             const data = response.data
-            console.log("Blog added successfully : ",data)
+            // console.log("Blog added successfully : ",data)
             if (data) {
                 dispatch({ type: "ADD_BLOG",payload: data.blog })
                 toast({
@@ -172,18 +172,22 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
     const handleBlogUpdate = async (blogData: any) => {
         if (!username) return
 
-        console.log("Saving blog with content:",blogData)
+        // console.log("Saving blog with content:",blogData)
         const blogContent = blogData?.blogContent
+        const blogContentText = blogData?.blogContentText || ""
+        const blogBannerImage = blogData?.blogBannerImage || ""
 
         const response = await axios.put('/api/update-blog',{
             blogContent,
             blogUrl,
-            creator: username
+            creator: username,
+            blogContentText,
+            blogBannerImage
         })
 
         if (response.data.success) {
             const data = response.data
-            console.log("Blog saved successfully:",data)
+            // console.log("Blog saved successfully:",data)
 
             dispatch({ type: "SET_CURRENT_BLOG",payload: data.blog })
 

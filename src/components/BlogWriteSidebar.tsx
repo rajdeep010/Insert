@@ -8,6 +8,7 @@ import {
     Calculator,
     Calendar,
     CreditCard,
+    DiamondMinus,
     Settings,
     Smile,
     User,
@@ -81,7 +82,8 @@ const BlogWriteSidebar = () => {
 
                 <SheetContent side="left" className="flex flex-col gap-6 px-6 mb-6">
                     <SheetHeader>
-                        <Link className="flex gap-2 text-2xl" href={`/`}>
+                        <Link className="flex items-center gap-2 text-2xl" href={`/`}>
+                            <DiamondMinus className="h-5 w-5" />
                             <span className="font-sans">Insert</span>
                         </Link>
                     </SheetHeader>

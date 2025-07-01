@@ -5,7 +5,7 @@ export async function PUT(request: Request) {
     await dbConnect();
 
     try {
-        const { blogContent, blogUrl, creator } = await request.json();
+        const { blogContent, blogUrl, creator, blogContentText, blogBannerImage } = await request.json();
 
         if (!blogUrl || !creator) {
             return Response.json({
@@ -19,6 +19,8 @@ export async function PUT(request: Request) {
             {
                 blogContent,
                 lastEdited: new Date(),
+                blogContentText,
+                blogBannerImage
             },
             { new: true }
         )
