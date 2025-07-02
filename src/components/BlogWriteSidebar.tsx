@@ -83,7 +83,7 @@ const BlogWriteSidebar = () => {
                 <SheetContent side="left" className="flex flex-col gap-6 px-6 mb-6">
                     <SheetHeader>
                         <Link className="flex items-center gap-2 text-2xl" href={`/`}>
-                            <DiamondMinus className="h-5 w-5" />
+                            {/* <DiamondMinus className="h-5 w-5" /> */}
                             <span className="font-sans">Insert</span>
                         </Link>
                     </SheetHeader>
@@ -112,27 +112,28 @@ const BlogWriteSidebar = () => {
                                 <CommandInput placeholder="Type to search..." />
                                 <CommandList>
                                     <CommandEmpty>No private blog found</CommandEmpty>
-                                    <CommandGroup heading="Suggestions">
-                                        {privateBlogs && privateBlogs.length > 0 && (
-                                            privateBlogs.map((blog,idx) => (
-                                                <CommandItem
-                                                    key={idx}
-                                                    className="flex justify-between items-center cursor-pointer"
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <File className="w-5 h-5 " />
-                                                        <span>{blog.blogTitle}</span>
-                                                    </div>
-                                                    <Link
-                                                        href={`/blog/${blog.blogUrl}`}
-                                                        className="opacity-50 hover:opacity-100 transition-opacity cursor-pointer pr-[-10px]"
+                                    {privateBlogs && privateBlogs.length > 0 &&
+                                        <CommandGroup heading="Suggestions">
+                                            {
+                                                privateBlogs.map((blog,idx) => (
+                                                    <CommandItem
+                                                        key={idx}
+                                                        className="flex justify-between items-center cursor-pointer"
                                                     >
-                                                        <SquarePen className="w-5 h-5" />
-                                                    </Link>
-                                                </CommandItem>
-                                            ))
-                                        )}
-                                    </CommandGroup>
+                                                        <div className="flex items-center gap-2">
+                                                            <File className="w-5 h-5 " />
+                                                            <span>{blog.blogTitle}</span>
+                                                        </div>
+                                                        <Link
+                                                            href={`/blog/${blog.blogUrl}`}
+                                                            className="opacity-50 hover:opacity-100 transition-opacity cursor-pointer pr-[-10px]"
+                                                        >
+                                                            <SquarePen className="w-5 h-5" />
+                                                        </Link>
+                                                    </CommandItem>
+                                                ))
+                                            }
+                                        </CommandGroup>}
                                 </CommandList>
                             </Command>
                         </div>
@@ -158,27 +159,28 @@ const BlogWriteSidebar = () => {
                                 <CommandInput placeholder="Type to search..." />
                                 <CommandList>
                                     <CommandEmpty>No public blog found</CommandEmpty>
-                                    <CommandGroup heading="Suggestions">
-                                        {publicBlogs && publicBlogs.length > 0 && (
-                                            publicBlogs.map((blog,idx) => (
-                                                <CommandItem
-                                                    key={idx}
-                                                    className="flex justify-between items-center cursor-pointer"
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <File className="w-5 h-5 " />
-                                                        <span>{blog.blogTitle}</span>
-                                                    </div>
-                                                    <Link
-                                                        href={`/blog/${blog.blogUrl}`}
-                                                        className="opacity-50 hover:opacity-100 transition-opacity cursor-pointer pr-[-10px]"
+                                    {publicBlogs && publicBlogs.length > 0 &&
+                                        <CommandGroup heading="Suggestions">
+                                            {
+                                                publicBlogs.map((blog,idx) => (
+                                                    <CommandItem
+                                                        key={idx}
+                                                        className="flex justify-between items-center cursor-pointer"
                                                     >
-                                                        <SquarePen className="w-5 h-5" />
-                                                    </Link>
-                                                </CommandItem>
-                                            ))
-                                        )}
-                                    </CommandGroup>
+                                                        <div className="flex items-center gap-2">
+                                                            <File className="w-5 h-5 " />
+                                                            <span>{blog.blogTitle}</span>
+                                                        </div>
+                                                        <Link
+                                                            href={`/blog/${blog.blogUrl}`}
+                                                            className="opacity-50 hover:opacity-100 transition-opacity cursor-pointer pr-[-10px]"
+                                                        >
+                                                            <SquarePen className="w-5 h-5" />
+                                                        </Link>
+                                                    </CommandItem>
+                                                ))
+                                            }
+                                        </CommandGroup>}
                                 </CommandList>
                             </Command>
                         </div>

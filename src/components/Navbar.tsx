@@ -36,7 +36,7 @@ const Navbar = () => {
         <>
             <nav className='flex justify-between items-center'>
                 <Link className='flex items-center gap-2 text-5xl' href={`/`}>
-                    <DiamondMinus className='h-8 w-8' />
+                    {/* <DiamondMinus className='h-8 w-8' /> */}
                     <span className='font-sans'>Insert</span>
                 </Link>
 
