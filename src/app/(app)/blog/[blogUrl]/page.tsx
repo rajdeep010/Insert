@@ -68,16 +68,6 @@ import { useDebounceCallback } from "usehooks-ts";
 import { useParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2 } from "lucide-react";
-import { AppWindowIcon,CodeIcon } from "lucide-react"
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import {
 	Tabs,
 	TabsContent,
@@ -236,8 +226,10 @@ const SimpleEditor = () => {
 		handleBlogUpdate({
 			blogContent: JSON.stringify(editorContent),
 			blogContentText: editorTextContent,
-			blogBannerImage: getFirstImageFromBlogContent(editorContent) || currentBlog?.blogBannerImage,
+			blogBannerImage: getFirstImageFromBlogContent(editorContent),
 		})
+
+		// console.log("banner: ",  getFirstImageFromBlogContent(editorContent))
 	},[editorContent,currentBlog,handleBlogUpdate])
 
 	const getFirstImageFromBlogContent = (blogContent: string) => {

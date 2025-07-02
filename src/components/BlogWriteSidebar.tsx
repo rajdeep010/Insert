@@ -51,8 +51,7 @@ import {
 
 const BlogWriteSidebar = () => {
     const { data: session } = useSession();
-    const { setIsAddBlogModalOpen,allBlogs,isAllBlogsLoading,isBlogAdding } =
-        useBlog();
+    const { setIsAddBlogModalOpen,allBlogs,isAllBlogsLoading,isBlogAdding } = useBlog();
 
     const [defaultVisibility,setDefaultVisibility] = React.useState("public");
 
