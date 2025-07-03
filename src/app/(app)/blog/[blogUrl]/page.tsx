@@ -207,6 +207,9 @@ const MobileToolbarContent = ({
 );
 
 const SimpleEditor = () => {
+	const { data: session, status } = useSession()
+	
+
 	const isMobile = useMobile();
 	const windowSize = useWindowSize();
 	const [mobileView,setMobileView] = React.useState<"main" | "highlighter" | "link">("main")
@@ -313,6 +316,7 @@ const SimpleEditor = () => {
 	})
 
 	const previewEditor = useEditor({
+		immediatelyRender: false,
 		extensions: [
 			StarterKit,
 			TextAlign.configure({ types: ["heading","paragraph"] }),
@@ -366,6 +370,7 @@ const SimpleEditor = () => {
 		<EditorContext.Provider value={{ editor }}>
 
 			<div className="flex w-full flex-col gap-6">
+				{status === 'authenticated' && session?.user?.username === currentBlog?.creator && 
 				<Tabs defaultValue="write">
 					<TabsList>
 						<TabsTrigger value="write">Write</TabsTrigger>
@@ -414,7 +419,19 @@ const SimpleEditor = () => {
 						</div>
 
 					</TabsContent>
-				</Tabs>
+				</Tabs>}
+
+				{
+					status === 'authenticated' && <>
+						<div className="content-wrapper shadow-sm dark:shadow-grey-800">
+							<EditorContent
+								editor={previewEditor}
+								role="presentation"
+								className="simple-editor-content"
+							/>
+						</div>
+					</>
+				}
 			</div>
 
 		</EditorContext.Provider>
@@ -422,13 +439,14 @@ const SimpleEditor = () => {
 };
 
 const Write = () => {
-	const { isBlogLoading } = useBlog();
+	const { isBlogLoading } = useBlog()
+	const { data: session, status } = useSession();
 
 	return (
 		<>
 			<div className="absolute top-5 left-5">
 				{" "}
-				<BlogWriteSidebar />{" "}
+				{status === 'authenticated' && <BlogWriteSidebar /> }
 			</div>
 
 			<div className="px-64 pt-8 min-h-screen">

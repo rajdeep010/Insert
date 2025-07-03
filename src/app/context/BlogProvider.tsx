@@ -45,7 +45,7 @@ const initialState: BlogProviderProps = {
 const BlogContext = createContext<BlogProviderProps | null>(null)
 
 export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
-    const { data: session } = useSession()
+    const { data: session, status } = useSession()
 
     const { toast } = useToast()
     const router = useRouter()
@@ -237,6 +237,10 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 
 
     useEffect(() => {
+        if(status === 'unauthenticated'){
+            router.replace('/sign-in')
+            return
+        }
         if (session && session?.user) {
             getBlogsByUsername()
         }
@@ -245,7 +249,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
             getBlogByUrl(blogUrl)
         }
 
-    },[state.allblogs, session?.user, blogUrl])
+    },[state.allblogs, status, blogUrl])
 
 
     return (

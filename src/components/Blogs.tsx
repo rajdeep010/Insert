@@ -31,9 +31,6 @@ const Blogs = () => {
   );
 
   const defaultBanner = "/insert.png"
-  const description = "Lorem ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. blanditiis velit cum sit impedit eveniet delectus...";
-  const image = "https://github.com/shadcn.png";
-  const content = "Lorem ipsum dolor sit amet consectetur ";
 
   return (
     <div className="w-full">
@@ -42,7 +39,7 @@ const Blogs = () => {
           <TabsTrigger value="public">Public</TabsTrigger>
           <TabsTrigger value="private">Private</TabsTrigger>
         </TabsList>
-        <div className="shadow-md dark:shadow-gray-800 pr-4 h-[80vh] scrollbar-thin overflow-y-scroll">
+        <div className="shadow-md dark:shadow-gray-800 px-4 h-[80vh] scrollbar-thin overflow-y-scroll">
           <TabsContent value="public" className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-[-4px]">
             {publicBlogs &&
               publicBlogs?.map((blog,index) => (

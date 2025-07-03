@@ -13,6 +13,7 @@ import BlogWriteSidebar from "@/components/BlogWriteSidebar";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import { useBlog } from "@/app/context/BlogProvider";
+import { useUser } from "@/app/context/UserProvider";
 
 const Write = () => {
 	const {allBlogs} = useBlog()

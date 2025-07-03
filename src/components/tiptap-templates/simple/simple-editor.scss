@@ -65,10 +65,37 @@ body {
   scrollbar-color: var(--tt-scrollbar-color) transparent;
 }
 
+.post-wrapper{
+  height: 90vh;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    display: block;
+    width: 0.5rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--tt-scrollbar-color);
+    border-radius: 4px;
+  }
+
+  /* Firefox scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: var(--tt-scrollbar-color) transparent;
+}
+
 .simple-editor-content {
   max-width: 58vw;
   width: 100%;
   margin: 0 auto;
+}
+
+.simple-post-content{
+  height: 80vh;
 }
 
 .simple-editor-content .tiptap.ProseMirror {
