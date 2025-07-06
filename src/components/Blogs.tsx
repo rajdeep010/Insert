@@ -43,69 +43,79 @@ const Blogs = () => {
           <TabsContent value="public" className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-[-4px]">
             {publicBlogs &&
               publicBlogs?.map((blog,index) => (
-                <Card
+                <Link
                   key={index}
-                  className="w-full shadow-lg dark:shadow-lg dark:shadow-gray-800"
+                  target="__blank"
+                  href={`/blog/${blog?.blogUrl}`}
+                  className="cursor-pointer transition ease-in-out duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:shadow-lg rounded-md block"
                 >
-                  <CardHeader className="p-0">
-                    <Image
-                      height={400}
-                      width={400}
-                      src={blog?.blogBannerImage || defaultBanner}
-                      alt={blog?.blogTitle}
-                      className="w-full h-48 object-cover rounded-t-md"
-                    />
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <CardTitle className="text-3xl font-normal mb-4">
-                      {blog?.blogTitle}
-                    </CardTitle>
-                    <CardDescription className="text-sm text-gray-500 mb-2">
-                      {blog?.blogContentText?.slice(0,200)}...
-                    </CardDescription>
-                    <Link href={`/blog/${blog?.blogUrl}`}>
-                      <Button variant="default" className="mt-4">
-                        Read More
-                      </Button>
-                    </Link>
+                  <Card className="w-full shadow-lg dark:shadow-lg dark:shadow-gray-800 max-h-[400px] min-h-[350px] grow flex flex-col">
+                    <CardHeader className="p-0">
+                      <Image
+                        height={400}
+                        width={400}
+                        src={blog?.blogBannerImage || defaultBanner}
+                        alt={blog?.blogTitle}
+                        className="w-full h-48 object-cover rounded-t-md"
+                      />
+                    </CardHeader>
+                    <CardContent className="p-4 flex-1 flex flex-col">
+                      <CardTitle className="text-3xl font-normal mb-4">
+                        {blog?.blogTitle}
+                      </CardTitle>
+                      <CardDescription className="text-sm text-gray-500 mb-2">
+                        {blog?.blogContentText
+                          ? blog.blogContentText.slice(0,150) + "..."
+                          : <span>&nbsp;</span> }
+                      </CardDescription>
 
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
+
+              { publicBlogs && publicBlogs?.length === 0 && 
+                    <div className="text-gray-500 mt-6">No public blogs...</div>
+              }
           </TabsContent>
 
 
           <TabsContent value="private" className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
             {privateBlogs &&
               privateBlogs?.map((blog,index) => (
-                <Card
+                <Link
                   key={index}
-                  className="w-full shadow-lg dark:shadow-lg dark:shadow-gray-800"
+                  target="__blank"
+                  href={`/blog/${blog?.blogUrl}`}
+                  className="cursor-pointer transition ease-in-out duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:shadow-lg rounded-md block"
                 >
-                  <CardHeader className="p-0">
-                    <Image
-                      height={400}
-                      width={400}
-                      src={blog?.blogBannerImage || defaultBanner}
-                      alt={blog?.blogTitle}
-                      className="w-full h-48 object-cover rounded-t-md"
-                    />
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <CardTitle className="text-3xl font-normal mb-4">
-                      {blog?.blogTitle}
-                    </CardTitle>
-                    <CardDescription className="text-sm text-gray-500 mb-2">
-                      {blog?.blogContentText?.slice(0,200)}...
-                    </CardDescription>
-                    <Link href={`/blog/${blog?.blogUrl}`}>
-                      <Button variant="default" className="mt-4">
-                        Read More
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
+                  <Card className="w-full shadow-lg dark:shadow-lg dark:shadow-gray-800 max-h-[400px] min-h-[350px] grow flex flex-col">
+                    <CardHeader className="p-0">
+                      <Image
+                        height={400}
+                        width={400}
+                        src={blog?.blogBannerImage || defaultBanner}
+                        alt={blog?.blogTitle}
+                        className="w-full h-48 object-cover rounded-t-md"
+                      />
+                    </CardHeader>
+                    <CardContent className="p-4 flex-1 flex flex-col">
+                      <CardTitle className="text-3xl font-normal mb-4">
+                        {blog?.blogTitle}
+                      </CardTitle>
+                      <CardDescription className="text-sm text-gray-500 mb-2">
+                        {blog?.blogContentText
+                          ? blog.blogContentText.slice(0,150) + "..."
+                          : <span>&nbsp;</span> }
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
+
+              { privateBlogs && privateBlogs?.length === 0 && 
+                    <div className="text-gray-500 mt-6">No private blogs...</div>
+              }
           </TabsContent>
         </div>
       </Tabs>

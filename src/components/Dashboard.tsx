@@ -27,6 +27,7 @@ import { Loader2 } from 'lucide-react'
 import { useTopics } from '@/app/context/TopicProvider'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useUser } from '@/app/context/UserProvider'
+import { Badge } from './ui/badge'
 
 
 
@@ -360,10 +361,15 @@ const Dashboard = ({ topics }: DashboardProps) => {
                     }).map(({ title, about, id, problems, visibility, creator_username }, idx) => (
                         <AccordionItem className='border-2 px-6 rounded-lg accordion-width' key={idx} value={`item-${idx}`}>
                             <AccordionTrigger className={expandedTopicId === idx ? 'text-blue-500' : 'text-black dark:text-white'} onClick={() => handleAccordionChange(idx)}>
-                                <div className='flex gap-4 items-center'>
-                                    <div className='text-2xl'>{title}</div>
-                                    <div className='text-xs px-2 py-1 border-2 rounded-md'>{visibility}</div>
-                                </div>
+                              	<div className='flex gap-4 items-center'>
+							<div className='text-2xl'>{title}</div>
+								{visibility === "private" && (
+									<Badge variant="destructive" className="flex items-center gap-2">private</Badge>
+								)}
+								{visibility === "public" && (
+									<Badge variant="default" className="bg-blue-500 text-white dark:bg-blue-600">public</Badge>
+								)}
+							</div>
                             </AccordionTrigger>
                             <AccordionContent>
                                 <div className='flex flex-col gap-2'>
@@ -377,7 +383,7 @@ const Dashboard = ({ topics }: DashboardProps) => {
                                         }
                                         {
                                             about && about.length >= 70 && (
-                                                <Link href={`/topic/${id}`} className='text-blue-500 underline' rel="noopener noreferrer">
+                                                <Link href={`/topic/${id}`} className='text-blue-500' rel="noopener noreferrer">
                                                     open in new tab
                                                 </Link>
                                             )
@@ -386,7 +392,7 @@ const Dashboard = ({ topics }: DashboardProps) => {
 
                                     <div className='flex justify-between mb-4'>
 
-                                        <div className='flex gap-2 justify-center items-center text-xl'>
+                                        <div className='flex gap-2 justify-center items-center text-md'>
                                             <div>{problems?.length ?? 0} Problems</div>
                                             <div className='text-blue-400'><Link href={`/topic/${id}`}><FiExternalLink /></Link></div>
                                         </div>
@@ -438,7 +444,7 @@ const Dashboard = ({ topics }: DashboardProps) => {
                                                                 </Tooltip>
                                                             </TableCell>
                                                             <TableCell className="p-2 px-4 text-center block md:table-cell ">
-                                                                <Link href={url} target="_blank" rel="noopener noreferrer" className='hover:underline'>
+                                                                <Link href={url} target="_blank" rel="noopener noreferrer">
                                                                     {/* {url.substring(0, Math.min(url.length, 30)) + '...'} */}
                                                                     Go Problem
                                                                 </Link>

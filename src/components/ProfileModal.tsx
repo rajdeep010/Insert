@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 interface ProfileModalProps {
     creator_username: string;
-    creator_name: string;
+    creator_name?: string;
 }
 
 const ProfileModal = ({creator_username, creator_name}: ProfileModalProps) => {

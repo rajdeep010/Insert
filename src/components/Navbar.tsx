@@ -14,7 +14,7 @@ import SuggestionNotificationCard from './SuggestionNotificationCard'
 import AcceptedInviteCard from './AcceptedInviteCard'
 import { uniqueId } from '@/helpers/unique-id'
 import DeclineInviteCard from './DeclineInviteCard'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { FiTarget } from "react-icons/fi";
 
 
@@ -31,6 +31,14 @@ const Navbar = () => {
     userNotifications.map((each) => {
         if (each.read === true) unread_cnt += 1
     })
+
+    const router = useRouter();
+
+    const handleTabClick = (tab: string) => {
+        if (param_username) {
+            router.push(`/u/${param_username}?tab=${tab}`);
+        }
+    }
 
     return (
         <>
@@ -52,9 +60,9 @@ const Navbar = () => {
                                     <div className='flex items-center gap-10'>
 
 
-                                        <div className='text-md cursor-pointer' onClick={handleOverViewClick}>Overview</div>
-                                        <div className='text-md cursor-pointer' onClick={handleDashboardClick}>Dashboard</div>
-                                        <div className='text-md cursor-pointer' onClick={handleBlogsClick}>Blogs</div>
+                                        <div className='text-md cursor-pointer' onClick={() => handleTabClick('overview')}>Overview</div>
+                                        <div className='text-md cursor-pointer' onClick={() => handleTabClick('topics')}>Dashboard</div>
+                                        <div className='text-md cursor-pointer' onClick={() => handleTabClick('blogs')}>Blogs</div>
 
                                         {status === 'authenticated' && param_username && param_username === session?.user?.username && <div>
                                             <DropdownMenu>

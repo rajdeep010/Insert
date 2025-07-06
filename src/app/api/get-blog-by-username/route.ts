@@ -1,6 +1,7 @@
 import dbConnect from "@/lib/dbConnect";
 import BlogModel from "@/model/Blog";
 import { usernameValidation } from "@/schemas/signUpSchema";
+import { getToken } from "next-auth/jwt";
 import { z } from "zod";
 
 const UsernameQueryValidation = z.object({
@@ -35,15 +36,24 @@ export async function GET(request: Request) {
             }, { status: 404 })
         }
 
-        const getBlogByUsername = await BlogModel.find({ creator: username }).sort({ lastEdited: -1 })
+        const token = await getToken({ req: request as any })
 
-        if (getBlogByUsername.length > 0) {
+        let blogs
+        if(token?.username === username) {
+            blogs = await BlogModel.find({ creator: username }).sort({ lastEdited: -1 })
+        } else {
+            blogs = await BlogModel.find({ creator: username, type: "public" }).sort({ lastEdited: -1 })
+        }
+
+        if(blogs.length > 0)
+        {
             return Response.json({
                 success: true,
                 message: 'Blogs found',
-                blog: getBlogByUsername
+                blog: blogs
             }, { status: 200 })
-        } else {
+        }
+        else {
             return Response.json({
                 success: false,
                 message: 'No blogs found for this user',

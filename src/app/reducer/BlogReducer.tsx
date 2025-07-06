@@ -43,6 +43,18 @@ export default function BlogReducer(state: any,action: any) {
                 ...state,
                 currentBlog: {...action.payload, blogContent: JSON.parse(action.payload.blogContent || "{}")},
             }
+        
+        case "SET_ALL_BLOG_POSTS_LOADING":
+            return {
+                ...state,
+                isAllBlogPostsLoading: action.payload,
+            }
+
+        case "SET_ALL_BLOG_POSTS_CONTENT":
+            return {
+                ...state,
+                allBlogPosts: action.payload,
+            }
 
         default:
             return state;

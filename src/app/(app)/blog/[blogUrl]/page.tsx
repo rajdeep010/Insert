@@ -422,7 +422,7 @@ const SimpleEditor = () => {
 				</Tabs>}
 
 				{
-					status === 'authenticated' && <>
+					status === 'unauthenticated' && <>
 						<div className="content-wrapper shadow-sm dark:shadow-grey-800">
 							<EditorContent
 								editor={previewEditor}

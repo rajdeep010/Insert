@@ -12,40 +12,46 @@ import { useUser } from "./UserProvider"
 
 
 interface BlogProviderProps {
-    blogContent: any,
-    allBlogs: any[],
-    isAllBlogsLoading: boolean,
+    blogContent: any
+    allBlogs: any[]
+    allBlogPosts: any[]
+    isAllBlogsLoading: boolean
     isBlogAdding: boolean,
-    isAddBlogModalOpen: boolean,
+    isAddBlogModalOpen: boolean
     currentBlog: any
     isBlogLoading: boolean
+    isAllBlogPostsLoading: boolean
 
     deleteBlog: (blog_id: string) => void
     handleBlogUpdate: (content: any) => void
     addBlog: (title: string,visibility: string) => void
     setIsAddBlogModalOpen: (isOpen: boolean) => void
+    fetchAllBlogPosts: () => void
 }
 
 const initialState: BlogProviderProps = {
     blogContent: {},
     allBlogs: [],
     currentBlog: {},
+    allBlogPosts: [],
 
     isBlogLoading: false,
     isAllBlogsLoading: false,
     isBlogAdding: false,
     isAddBlogModalOpen: false,
+    isAllBlogPostsLoading: false,
 
     deleteBlog: (blog_id: string) => { },
     handleBlogUpdate: (content: any) => { },
     addBlog: (title: string,visibility: string) => { },
     setIsAddBlogModalOpen: (isOpen: boolean) => { },
+    fetchAllBlogPosts: () => {}
 }
 
 const BlogContext = createContext<BlogProviderProps | null>(null)
 
 export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
-    const { data: session, status } = useSession()
+    const { data: session,status } = useSession()
 
     const { toast } = useToast()
     const router = useRouter()
@@ -235,9 +241,24 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
         dispatch({ type: "SET_IS_ADD_BLOG_MODAL_OPEN",payload: isOpen })
     }
 
+    const fetchAllBlogPosts = async () => {
+        dispatch({ type: "SET_ALL_BLOG_POSTS_LOADING",payload: true })
+        try {
+            const response = await axios.get('/api/get-all-blogs')
+            if (response.data.success) {
+                dispatch({ type: "SET_ALL_BLOG_POSTS_CONTENT",payload: response.data.blogs })
+            }else{
+                dispatch({ type: "SET_ALL_BLOG_POSTS_CONTENT",payload: [] })
+            }
+        } catch (error) {
+            console.error("Error fetching blogs:",error)
+        } finally {
+            dispatch({ type: "SET_ALL_BLOG_POSTS_LOADING",payload: false })
+        }
+    }
 
     useEffect(() => {
-        if(status === 'unauthenticated'){
+        if (status === 'unauthenticated') {
             router.replace('/sign-in')
             return
         }
@@ -249,7 +270,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
             getBlogByUrl(blogUrl)
         }
 
-    },[state.allblogs, status, blogUrl])
+    },[state.allblogs,status,blogUrl])
 
 
     return (
@@ -260,6 +281,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
                 handleBlogUpdate,
                 addBlog,
                 setIsAddBlogModalOpen,
+                fetchAllBlogPosts
             }}>
             {children}
         </BlogContext.Provider>
