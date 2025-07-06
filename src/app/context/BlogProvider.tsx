@@ -57,6 +57,8 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
     const router = useRouter()
 
     const params = useParams()
+    const param_username = params.username as string   
+
     const blogUrl = params.blogUrl as string
     // console.log("Blog URL from params:",blogUrl,params)
 
@@ -221,11 +223,11 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }
 
-    const getBlogsByUsername = async () => {
+    const getBlogsByUsername = async (query_username: string) => {
         if (!username) return
         dispatch({ type: "SET_ALL_BLOGS_LOADING",payload: true })
         try {
-            const response = await axios.get(`/api/get-blog-by-username?username=${username}`)
+            const response = await axios.get(`/api/get-blog-by-username?username=${query_username}`)
             if (response.data.success) {
                 dispatch({ type: "LOAD_BLOGS",payload: response.data.blog })
             }
@@ -262,8 +264,12 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
             router.replace('/sign-in')
             return
         }
-        if (session && session?.user) {
-            getBlogsByUsername()
+        if (param_username) {
+            getBlogsByUsername(param_username)
+        }
+
+        if(!param_username && session && session?.user && session?.user?.username){
+            getBlogsByUsername(session?.user?.username)
         }
 
         if (blogUrl) {
