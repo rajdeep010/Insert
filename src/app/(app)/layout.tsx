@@ -1,5 +1,4 @@
 import { TooltipProvider } from "@radix-ui/react-tooltip";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 interface RootLayoutProps {
   children: React.ReactNode;
