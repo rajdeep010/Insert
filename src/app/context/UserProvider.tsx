@@ -367,8 +367,6 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
             fetchNotifications(whose_topic)
         } catch (error) {
 
-            // // console.log(error)
-
             toast({
                 title: 'Error',
                 description: 'Something wrong in adding as collabrator',

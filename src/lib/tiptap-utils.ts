@@ -150,10 +150,10 @@ export const handleImageUpload = async (
     )
   }
 
-  const NEXT_CLOUD_PRESET = process.env.NEXT_PUBLIC_CLOUD_PRESET || "default_preset"
-  const NEXT_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUD_NAME || "your_cloud_name"
-
+  const NEXT_CLOUD_PRESET = process.env.NEXT_PUBLIC_CLOUD_PRESET ?? ""
+  const NEXT_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUD_NAME
   console.log('Uploading file to Cloudinary:', NEXT_CLOUD_NAME, NEXT_CLOUD_PRESET)
+
 
   const formData = new FormData()
   formData.append("file", file)

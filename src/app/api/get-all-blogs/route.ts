@@ -18,9 +18,9 @@ export async function GET(request: NextRequest){
                     { type: "public" },
                     { type: "private", creator: token.username }
                 ]
-            }).sort({ createdAt: -1 });
+            }).sort({ lastEdited: -1 });
         } else {
-            blogs = await BlogModel.find({ type: "public" }).sort({ createdAt: -1 })
+            blogs = await BlogModel.find({ type: "public" }).sort({ lastEdited: -1 })
         }
 
         return NextResponse.json({ success: true, blogs })

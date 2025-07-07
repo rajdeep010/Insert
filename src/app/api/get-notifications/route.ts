@@ -1,6 +1,7 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 import { usernameValidation } from "@/schemas/signUpSchema";
+import { getToken } from "next-auth/jwt";
 import { z } from "zod";
 
 
@@ -10,6 +11,7 @@ const UsernameQueryValidation = z.object({
 
 export async function GET(request: Request) {
     await dbConnect()
+    const token = await getToken({ req: request as any })
 
     try {
         const { searchParams } = new URL(request.url)
@@ -29,6 +31,13 @@ export async function GET(request: Request) {
         }
 
         const { username } = result.data
+        if(username !== token?.username){
+            return Response.json({
+                success: false,
+                message: 'No notifications'
+            }, {status: 200})
+        }
+        
         const user = await UserModel.findOne({username})
         if(!user){
             return Response.json({
