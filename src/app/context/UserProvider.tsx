@@ -28,13 +28,8 @@ interface UserContextProps {
     updateUser: (formData: Partial<UserInfo>) => {}
     fetchUser: (username: string) => {}
     uploadAvatar: (file: File) => {}
-    uploadAvatarOnSignup: (file: File, username: string) => {}
     fetchAvatar: (username: string) => {}
 
-    handleDashboardClick: () => void
-    handleOverViewClick: () => void
-    handleAllTopicsClick: () => void
-    handleBlogsClick: () => void
 
     sendCollabInvite: (to_whom: string, noti: NotificationData) => void
     addCollab: (add_whom_username: string, add_whom_name: string, topicid: string, topicname: string, whose_topic: string, notifyid: string) => void
@@ -95,11 +90,6 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
         setOverviewVisible(false)
         setIsBlogEditorVisible(true)
     }
-
-    const NEXT_CLOUD_NAME = process.env.NEXT_CLOUD_NAME
-    const NEXT_CLOUD_API_KEY = process.env.NEXT_CLOUD_API_KEY
-    const NEXT_CLOUD_API_SECRET = process.env.NEXT_CLOUD_API_SECRET
-    const NEXT_CLOUD_PRESET = process.env.NEXT_CLOUD_PRESET
 
     //! user information & avatar functions
     const fetchUser = async (username: string) => {
@@ -250,20 +240,6 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
             })
         } finally {
             setIsAvatarLoading(false)
-        }
-    }
-
-    const uploadAvatarOnSignup = async (file: File, username: string) => {
-        try {
-            const storageRef = ref(storage, `avatars/${username}`)
-            const uploadTask = uploadBytesResumable(storageRef, file)
-
-        } catch (error) {
-            toast({
-                title: 'Error ⭕',
-                description: 'Default avatar uploading error',
-                variant: 'destructive'
-            })
         }
     }
 
@@ -638,7 +614,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
     }, [param_username])
 
 
-    return <UserContext.Provider value={{ handleBlogsClick, isBlogEditorVisible, user_avatar, markAllRead, getAvatar, isInviteAlreadySent, sendDeclinedCollabNotification, isAlreadyCollaborator, deleteNotification, sendAcceptedCollabNotification, userNotifications, sendSuggestion, addCollab, sendCollabInvite, isAvatarLoading, isProfileDataLoading, uploadAvatarOnSignup, handleOverViewClick, handleDashboardClick, handleAllTopicsClick, isOverviewVisible, isDashboardVisible, uploadAvatar, fetchAvatar, user_information, updateUser, fetchUser }}>
+    return <UserContext.Provider value={{ isBlogEditorVisible, user_avatar, markAllRead, getAvatar, isInviteAlreadySent, sendDeclinedCollabNotification, isAlreadyCollaborator, deleteNotification, sendAcceptedCollabNotification, userNotifications, sendSuggestion, addCollab, sendCollabInvite, isAvatarLoading, isProfileDataLoading, isOverviewVisible, isDashboardVisible, uploadAvatar, fetchAvatar, user_information, updateUser, fetchUser }}>
         {children}
     </UserContext.Provider>
 }

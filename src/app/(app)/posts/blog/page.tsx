@@ -1,7 +1,6 @@
 "use client";
 import { useBlog } from "@/app/context/BlogProvider";
 import InsertNavbar from "@/components/InsertNavbar";
-import Navbar from "@/components/Navbar";
 import { Avatar,AvatarFallback,AvatarImage } from "@/components/ui/avatar";
 import {
 	Card,
@@ -30,7 +29,7 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
+import { Loader2,MoreHorizontal } from "lucide-react";
 
 export default function AllBlogPosts() {
 	const { allBlogPosts,fetchAllBlogPosts,isAllBlogPostsLoading } = useBlog();
@@ -51,6 +50,11 @@ export default function AllBlogPosts() {
 	return (
 		<>
 			<div className="flex flex-col gap-6 py-24 justify-center px-64">
+				{isAllBlogPostsLoading && (
+					<div className="flex justify-center items-center h-[60vh]">
+						<Loader2 className="h-12 w-12 animate-spin text-gray-500" />
+					</div>
+				)}
 				{!isAllBlogPostsLoading && (
 					<div>
 						<InsertNavbar />
@@ -61,7 +65,6 @@ export default function AllBlogPosts() {
 					<div className="flex flex-col gap-4 max-h-[72vh] overflow-y-scroll custom-small-scrollbar  shadow-gray-200 dark:shadow-gray-800">
 						{allBlogPosts?.map((blog,idx) => (
 							<div key={idx} className="group">
-
 								<div className="flex justify-between px-12 py-6 hover:bg-gray-50 dark:hover:bg-gray-900 transition ease-in-out">
 									<CardContent className="flex flex-col gap-2 pr-6 w-full">
 										<CardHeader className="flex flex-col gap-2 px-0">
@@ -83,14 +86,12 @@ export default function AllBlogPosts() {
 										</CardHeader>
 
 										<CardDescription className="text-md text-muted-foreground line-clamp-3">
-											{blog?.blogContentText &&
-												blog.blogContentText?.length > 0
+											{blog?.blogContentText && blog.blogContentText?.length > 0
 												? blog?.blogContentText?.slice(0,200) + "…"
 												: "No content available..."}
 										</CardDescription>
 
 										<div className="flex justify-between items-center">
-
 											<div className="text-[12px] flex items-center gap-2 text-gray-600 mt-2">
 												<div>{getLastModifiedText(blog?.lastEdited)}</div>
 												<span>•</span>

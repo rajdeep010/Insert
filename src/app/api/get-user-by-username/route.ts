@@ -1,6 +1,7 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 import { usernameValidation } from "@/schemas/signUpSchema";
+import { getToken } from "next-auth/jwt";
 import { z } from "zod";
 
 
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
     await dbConnect()
 
     try {
-        const {searchParams} = new URL(request.url)
+        const { searchParams } = new URL(request.url)
         const queryParam = {
             username: searchParams.get('username')
         }
@@ -29,20 +30,46 @@ export async function GET(request: Request) {
         }
 
         const { username } = result.data
-        if(!username){
+        if (!username) {
             return Response.json({
                 success: false,
                 message: 'Invalid username',
             },{ status: 404 })
         }
 
+        const token = await getToken({ req: request as any })
+        const tokenUsername = token?.username
+
         const getUserByUsername = await UserModel.findOne({ username }).select('-password -verifyCode -verifyCodeExpiry')
-        
+
         if (getUserByUsername) {
+            const userObj = getUserByUsername.toObject();
+
+            // Always send public fields
+            const publicFields = {
+                name: userObj.name,
+                about: userObj.about,
+                linkedin: userObj.linkedin,
+                profile: userObj.profile,
+                location: userObj.location,
+                company: userObj.company,
+                username: userObj.username,
+                avatar: userObj.avatar,
+            };
+
+            // If token user matches, add private fields
+            if (tokenUsername && tokenUsername === userObj.username) {
+                Object.assign(publicFields,{
+                    email: userObj.email,
+                    isVerified: userObj.isVerified,
+                    notifications: userObj.notifications,
+                });
+            }
+
             return Response.json({
                 success: true,
                 message: 'User found',
-                userdata: getUserByUsername
+                userdata: publicFields,
             },{ status: 201 })
         }
         else {
@@ -56,6 +83,6 @@ export async function GET(request: Request) {
         return Response.json({
             success: false,
             message: 'Error in finding user'
-        }, {status: 500})
+        },{ status: 500 })
     }
 }

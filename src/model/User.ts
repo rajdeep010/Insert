@@ -45,6 +45,7 @@ export interface User extends Document{
     company: string;
     // topic_ids: [string];
     notifications: NotificationData[]
+    avatar?: string
 }
 
 const UserSchema: Schema<User> = new Schema({
@@ -102,6 +103,10 @@ const UserSchema: Schema<User> = new Schema({
     }, 
     notifications: {
         type: [NotificationDataSchema],
+    },
+    avatar: {
+        type: String,
+        default: 'https://github.com/shadcn.png'
     }
 })
 

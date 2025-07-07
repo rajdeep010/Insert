@@ -43,7 +43,8 @@ const InsertNavbar = () => {
 	const { data: session,status } = useSession();
 	const params = useParams();
 	const router = useRouter();
-	const username = session?.user?.username;
+	const username = session?.user?.username
+	const param_username = params?.username as string
 
 	// Tab navigation handler
 	const handleTabClick = (tab: string) => {
@@ -72,7 +73,7 @@ const InsertNavbar = () => {
 									<li>
 										<NavigationMenuLink asChild>
 											<Link
-												href={`/u/${username}?tab=overview`}
+												href={`/u/${param_username}?tab=overview`}
 												className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
 											>
 												<User2 className="h-4 w-4" />
@@ -81,7 +82,7 @@ const InsertNavbar = () => {
 										</NavigationMenuLink>
 										<NavigationMenuLink asChild>
 											<Link
-												href={`/u/${username}?tab=topics`}
+												href={`/u/${param_username}?tab=topics`}
 												className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
 											>
 												<FileText className="h-4 w-4" />
@@ -90,7 +91,7 @@ const InsertNavbar = () => {
 										</NavigationMenuLink>
 										<NavigationMenuLink asChild>
 											<Link
-												href={`/u/${username}?tab=blogs`}
+												href={`/u/${param_username}?tab=blogs`}
 												className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
 											>
 												<LayoutPanelTop className="h-4 w-4" />

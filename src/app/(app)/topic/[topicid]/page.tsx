@@ -1,5 +1,4 @@
 "use client";
-// import TopicNavbar from '@/components/TopicNavbar'
 import { toast } from "@/components/ui/use-toast";
 import {
   ProblemDifficulty,
@@ -69,7 +68,6 @@ import Collaborator from "@/components/Collaborator";
 import CollaboratorsSkeleton from "@/components/skeletons/CollaboratorsSkeleton";
 import { NotificationData } from "@/types/types";
 import { useTopics } from "@/app/context/TopicProvider";
-import TopicNavbar from "@/components/TopicNavbar";
 import ProfileModal from "@/components/ProfileModal";
 import InsertNavbar from "@/components/InsertNavbar";
 import { ProblemsDataTable } from "@/components/ProblemTable";
