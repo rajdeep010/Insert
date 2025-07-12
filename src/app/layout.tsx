@@ -3,8 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "@/app/context/AuthProvider";
 import { Toaster } from "@/components/ui/toaster";
-import { UserProvider } from "./context/UserProvider";
-// import { TopicProvider } from "./context/TopicProvider";
 import "dotenv/config";
 import Script from "next/script";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
@@ -13,6 +11,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import Footer from "@/components/Footer";
 import { Analytics } from "@vercel/analytics/react";
 import { BlogProvider } from "./context/BlogProvider";
+import { InsertUserProvider } from "./context/InsertUserProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,29 +29,29 @@ export default function RootLayout({
     <html lang="en">
       <TooltipProvider>
         <AuthProvider>
-          <UserProvider>
-            <TopicProvider>
-              <BlogProvider>
-                <body className={inter.className}>
-                  <Script
-                    src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
-                    strategy="beforeInteractive"
-                  />
-                  <ThemeProvider
-                    attribute="class"
-                    defaultTheme="system"
-                    enableSystem
-                    disableTransitionOnChange
-                  >
-                    {children}
-                    <Toaster />
-                    <Footer />
-                    <Analytics />
-                  </ThemeProvider>
-                </body>
-              </BlogProvider>
-            </TopicProvider>
-          </UserProvider>
+          <InsertUserProvider>
+              <TopicProvider>
+                <BlogProvider>
+                  <body className={inter.className}>
+                    <Script
+                      src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
+                      strategy="beforeInteractive"
+                    />
+                    <ThemeProvider
+                      attribute="class"
+                      defaultTheme="system"
+                      enableSystem
+                      disableTransitionOnChange
+                    >
+                      {children}
+                      <Toaster />
+                      <Footer />
+                      <Analytics />
+                    </ThemeProvider>
+                  </body>
+                </BlogProvider>
+              </TopicProvider>
+          </InsertUserProvider>
         </AuthProvider>
       </TooltipProvider>
     </html>

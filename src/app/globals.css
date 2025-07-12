@@ -13,7 +13,7 @@
   content: attr(unread-count);
   position: absolute;
   top: -5px;
-  right: -5px;
+  right: 2px;
   width: 15px;
   height: 15px;
   border-radius: 50%;

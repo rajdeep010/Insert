@@ -7,7 +7,6 @@ import { uniqueId } from "@/helpers/unique-id"
 import { useSession } from "next-auth/react"
 import { useToast } from "@/components/ui/use-toast"
 import { useParams,useRouter } from "next/navigation"
-import { useUser } from "./UserProvider"
 
 
 

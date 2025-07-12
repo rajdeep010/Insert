@@ -27,6 +27,9 @@ const NotificationDataSchema: Schema<NotificationData> = new Schema({
     read: {
         type: Boolean,
         required: true,
+    },
+    createdAt: {
+        type: Date
     }
 })
 

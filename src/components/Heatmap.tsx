@@ -1,9 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import CalendarHeatmap from 'react-calendar-heatmap';
-import { useParams } from 'next/navigation';
-import { useUser } from '@/app/context/UserProvider';
-import { useSession } from 'next-auth/react';
 import { HeatmapDateValues } from '@/types/types';
 import HeatmapTooltip from './HeatmapTooltip';
 import { useTopics } from '@/app/context/TopicProvider';
@@ -18,19 +15,14 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 
-const Heatmap = () => {
-    const params = useParams()
-    const username = params.username as string
-    const { data: session, status } = useSession()
 
+const Heatmap = () => {
     const years = []
     for (let year = new Date().getFullYear(); year >= 2024; year--) {
         years.push(year)
     }
 
-    const { user_information } = useUser()
     const { isHeatmapLoading, user_heatmapValues } = useTopics()
-
     let heatmapValues = user_heatmapValues
 
     const [selectedYear, setSelectedYear] = useState(String(years[0]))
@@ -39,18 +31,13 @@ const Heatmap = () => {
     const [tooltipPosition, setTooltipPosition] = useState<{ x: number, y: number }>({ x: 0, y: 0 });
     const [showTooltip, setShowTooltip] = useState(false)
 
-
-    const handleYearChange = (value: string) => {
-        setSelectedYear(value);
-    }
-
-
+    const handleYearChange = (value: string) => { setSelectedYear(value) }
 
     const formatDate = (dateString: string): string => {
-        const date = new Date(dateString);
-        const day = date.getDate();
-        const month = date.toLocaleString('default', { month: 'short' });
-        const year = date.getFullYear();
+        const date = new Date(dateString)
+        const day = date.getDate()
+        const month = date.toLocaleString('default', { month: 'short' })
+        const year = date.getFullYear()
 
         const getOrdinalSuffix = (day: number): string => {
             if (day > 3 && day < 21) return 'th'
@@ -73,7 +60,6 @@ const Heatmap = () => {
         } else {
             const target = event.currentTarget as HTMLElement
             const date = target.getAttribute('data-date')
-            // // console.log(event, date)
             if (date) {
                 setTooltipContent(`0 actions on ${formatDate(date)}`)
                 setTooltipPosition({ x: event.clientX, y: event.clientY })
@@ -132,13 +118,6 @@ const Heatmap = () => {
                         </SelectContent>
                     </Select>
                 </div>
-
-                {/* 
-                <select className='border-2 cursor-pointer' id="year-select" value={selectedYear} onChange={handleYearChange}>
-                    {years.map((year) => (
-                        <option className='cursor-pointer' key={year} value={year}>{year}</option>
-                    ))}
-                </select> */}
             </div>
 
             <div className='px-6 py-4 border-2 rounded-md'>

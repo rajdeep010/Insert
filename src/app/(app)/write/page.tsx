@@ -1,19 +1,14 @@
 "use client";
-
 import * as React from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { CalendarCheck2,Clock3,FileText,Lightbulb,Rocket } from "lucide-react";
-import { Swiper,SwiperSlide } from "swiper/react";
-import { FreeMode,Pagination,Scrollbar } from "swiper/modules";
-import { Autoplay,Navigation } from "swiper/modules";
 import '../../swiper.css'
 import Link from "next/link";
 import BlogWriteSidebar from "@/components/BlogWriteSidebar";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import { useBlog } from "@/app/context/BlogProvider";
-import { useUser } from "@/app/context/UserProvider";
 
 const Write = () => {
 	const {allBlogs} = useBlog()

@@ -1,31 +1,32 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
+import { getToken } from "next-auth/jwt";
 
 
 export async function POST(request: Request) {
     await dbConnect()
+    const token = await getToken({ req: request as any });
 
     try {
-        const {username} = await request.json()
-        
-        const user = await UserModel.findOne({username})
-        if(!user){
+        const username = token?.username
+        const response = await UserModel.findOneAndUpdate(
+            { username },
+            { $set: { "notifications.$[].read": true } }, // set all to true
+            { new: true }
+        )
+
+        if (!response) {
             return Response.json({
                 success: false,
                 message: 'User not found',
-            }, {status: 404})
+            }, { status: 404 });
         }
-
-        const userNoties = user.notifications
-        userNoties.map((each) => each.read = false)
-
-        await user.save()
 
         return Response.json({
             success: true,
             message: 'Marked all as read',
-            notifications: userNoties
-        }, {status: 201})
+            notifications: response.notifications
+        }, { status: 201 })
 
     } catch (error) {
         return Response.json({

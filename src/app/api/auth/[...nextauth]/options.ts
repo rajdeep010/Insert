@@ -51,6 +51,7 @@ export const authOptions: NextAuthOptions = {
                 token.isVerified = user.isVerified
                 token.username = user.username
                 token.email = user.email
+                token.notifications = user.notifications
             }
             return token
         },
@@ -60,6 +61,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.isVerified = token.isVerified
                 session.user.username = token.username
                 session.user.email = token.email
+                session.user.notifications = token.notifications
             }
             return session
         }

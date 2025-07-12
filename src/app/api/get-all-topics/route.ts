@@ -1,34 +1,29 @@
 import dbConnect from "@/lib/dbConnect";
 import AlltopicModel from "@/model/Alltopic";
+import { getToken } from "next-auth/jwt";
+import { NextRequest, NextResponse } from "next/server";
 
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     await dbConnect()
+    const token = await getToken({ req: request })
+
     try {
-        const docs = await AlltopicModel.find({})
-  
-        const publicTopics = docs.reduce((acc, user) => {
-            if (user.topics) {
-                const filteredTopics = user.topics.filter((topic: any) => topic.visibility === 'public');
-                acc.push(...filteredTopics);
-            }
-            return acc;
-        }, [])
+        let topics
+        if (token?.username) {
+            // If logged in, show public topics + private topics created by the user
+            topics = await AlltopicModel.find({
+                $or: [
+                    { visibility: "public" },
+                    { visibility: "private", creator_username: token.username }
+                ]
+            }).sort({ createdAt: -1 });
+        } else {
+            topics = await AlltopicModel.find({ visibility: "public" }).sort({ createdAt: -1 })
+        }
 
-        // // console.log('these are the all topics: ', publicTopics)
-
-        return Response.json({
-            success: true,
-            message: 'Fetched all the topics',
-            topics: publicTopics,
-        }, { status: 200 })
-
-    } catch (error) {
-        // // console.log(error)
-
-        return Response.json({
-            success: false,
-            message: 'Error in fetching all topics'
-        }, { status: 500 })
+        return NextResponse.json({ success: true, topics })
+    } catch (err: any) {
+        return NextResponse.json({ success: false, message: 'Something wrong', error: err?.message }, { status: 500 })
     }
 }

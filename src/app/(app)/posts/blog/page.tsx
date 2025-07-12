@@ -30,6 +30,8 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Loader2,MoreHorizontal } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import InsertHoverCard from "@/components/InsertHoverCard";
 
 export default function AllBlogPosts() {
 	const { allBlogPosts,fetchAllBlogPosts,isAllBlogPostsLoading } = useBlog();
@@ -39,13 +41,6 @@ export default function AllBlogPosts() {
 	},[]);
 
 	const defaultBanner = "/insert.png";
-
-	const formatDate = (iso: string) =>
-		new Date(iso).toLocaleDateString("en-US",{
-			month: "short",
-			day: "numeric",
-			year: "numeric",
-		});
 
 	return (
 		<>
@@ -69,20 +64,34 @@ export default function AllBlogPosts() {
 									<CardContent className="flex flex-col gap-2 pr-6 w-full">
 										<CardHeader className="flex flex-col gap-2 px-0">
 											<div className="flex items-center gap-2">
-												<Avatar className="h-4 w-4">
-													<AvatarImage src="https://github.com/vercel.png" />
-													<AvatarFallback>VC</AvatarFallback>
-												</Avatar>
+												<InsertHoverCard
+													username={blog?.creator as string}
+													type={"avatar"}
+													avatarSize="small"
+												/>
 												<span className="text-sm text-gray-600 z-100 hover:text-blue-500 hover:underline">
-													@{blog?.creator}
+													<InsertHoverCard
+														username={blog?.creator as string}
+														type={"username"}
+														avatarSize="small"
+													/>
 												</span>
 											</div>
 
-											<Link href={`/posts/blog/${blog?.blogUrl}`}>
-												<CardTitle className="text-2xl font-bold ">
-													{blog?.blogTitle}
-												</CardTitle>
-											</Link>
+											<div className="flex items-center gap-4">
+												<Link href={`/posts/blog/${blog?.blogUrl}`}>
+													<CardTitle className="text-2xl font-bold ">
+														{blog?.blogTitle}
+													</CardTitle>
+												</Link>
+												{blog?.type === "private" && (
+													<Badge variant="destructive" className="flex items-center gap-2">private</Badge>
+												)}
+												{blog?.type === "public" && (
+													<Badge variant="default" className="bg-blue-500 text-white dark:bg-blue-600">public</Badge>
+												)}
+											</div>
+
 										</CardHeader>
 
 										<CardDescription className="text-md text-muted-foreground line-clamp-3">

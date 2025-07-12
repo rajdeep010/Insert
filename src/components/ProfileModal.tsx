@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import Link from "next/link";
-import { useUser } from "@/app/context/UserProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import axios from "axios";
 
 interface ProfileModalProps {
     creator_username: string;
@@ -10,19 +10,18 @@ interface ProfileModalProps {
 }
 
 const ProfileModal = ({creator_username, creator_name}: ProfileModalProps) => {
-    const [avatarURL, setAvatarURL] = useState<string | null>(null)
-    const { getAvatar } = useUser()
+    const [currentUser, setCurrentUser] = useState<any>(null)
 
     useEffect(() => {
-        const collectURL = async () => {
+        const collectUser = async () => {
             try {
-                const response = await getAvatar(creator_username)
-                setAvatarURL(response)
+                const response = await axios.get(`/api/get-user-by-username?username=${creator_username}`)
+                setCurrentUser(response.data?.userdata)
             } catch (error) {
-                setAvatarURL(null)
+                setCurrentUser(null)
             }
         }
-        collectURL()
+        collectUser()
     }, [creator_username])
 
     if(!creator_username) return
@@ -38,8 +37,8 @@ const ProfileModal = ({creator_username, creator_name}: ProfileModalProps) => {
                 <div className="flex gap-2 items-center justify-between px-3 py-4">
                     <div>
                         <Avatar className='cursor-pointer outline-2 outline-black'>
-                            <AvatarImage src={avatarURL || ''} />
-                            <AvatarFallback>{creator_username[0]}</AvatarFallback>
+                            <AvatarImage src={currentUser?.avatar|| ''} />
+                            <AvatarFallback>{currentUser?.username[0]}</AvatarFallback>
                         </Avatar>
                     </div>
 

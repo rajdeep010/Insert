@@ -1,19 +1,17 @@
 'use client'
-import { useSession } from 'next-auth/react'
 import React, { useEffect, useRef, useState } from 'react'
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import Image from 'next/image';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
-import {useUser} from '@/app/context/UserProvider'
+import { useInsertUser } from '@/app/context/InsertUserProvider';
+import { Loader2 } from 'lucide-react';
 
 
 const EditProfile = () => {
-    const { data: session, status} = useSession()
-    const { updateUser, user_information, uploadAvatar, user_avatar } = useUser()
-
-    const avatarURL = user_avatar
+    const {user, isAvatarUploading, updateUser, uploadAvatar} = useInsertUser()
+    const avatarURL = user?.avatar
 
     const [formData, setFormData] = useState({
         name: '',
@@ -23,8 +21,6 @@ const EditProfile = () => {
         company: '',
         location: ''
     })
-
-    // // console.log(user_information, formData)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target
@@ -51,27 +47,40 @@ const EditProfile = () => {
 
     const handleIconClick = () => { fileInputRef.current?.click() }
 
-    const handleAvatarSubmit = () => {
-        if (!file) return
-        uploadAvatar(file)
-    }
+    // const handleAvatarSubmit = () => {
+    //     if (!file) return
+    //     uploadAvatar(file)
+    // }
 
-    const handleSubmit = () => {
-        updateUser(formData)
-    }
+    // const handleSubmit = () => {
+    //     updateUser(formData)
+    // }
+
+    // useEffect(() => {
+    //     if (user_information) {
+    //         setFormData({
+    //             name: user_information.name || '',
+    //             about: user_information.about || '',
+    //             linkedin: user_information.linkedin || '',
+    //             profile: user_information.profile || '',
+    //             company: user_information.company || '',
+    //             location: user_information.location || ''
+    //         })
+    //     }
+    // }, [user_information])
 
     useEffect(() => {
-        if (user_information) {
+        if (user) {
             setFormData({
-                name: user_information.name || '',
-                about: user_information.about || '',
-                linkedin: user_information.linkedin || '',
-                profile: user_information.profile || '',
-                company: user_information.company || '',
-                location: user_information.location || ''
+                name: user?.name || '',
+                about: user?.about || '',
+                linkedin: user?.linkedin || '',
+                profile: user?.profile || '',
+                company: user?.company || '',
+                location: user?.location || ''
             })
         }
-    }, [user_information])
+    }, [user])
 
     return (
         <Sheet>
@@ -108,9 +117,17 @@ const EditProfile = () => {
                                 <Button className='cursor-pointer flex items-center gap-2' onClick={handleIconClick}>
                                     Update
                                 </Button>
-                                <Button className='cursor-pointer flex items-center gap-2' onClick={handleAvatarSubmit}>
+                                {/* {file && <Button className='cursor-pointer flex items-center gap-2' onClick={handleAvatarSubmit}>
                                     Save Avatar
-                                </Button>
+                                </Button>} */}
+
+                                {file && <Button type='submit' disabled={isAvatarUploading} onClick={() => uploadAvatar(file)}>
+                                    {isAvatarUploading ? (
+                                        <>
+                                            <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
+                                        </>
+                                    ) : ('Save Avatar')}
+                                </Button>}
                             </div>
                         </div>
                     </div>
@@ -123,7 +140,7 @@ const EditProfile = () => {
                 </div>
                 <SheetFooter>
                     <SheetClose asChild>
-                        <Button type="submit" onClick={handleSubmit}>Save changes</Button>
+                        <Button type="submit" onClick={() => updateUser(formData)}>Save changes</Button>
                     </SheetClose>
                 </SheetFooter>
             </SheetContent>

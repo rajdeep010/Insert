@@ -1,7 +1,5 @@
 'use client'
 import { useTopics } from '@/app/context/TopicProvider'
-import { useUser } from '@/app/context/UserProvider'
-import Page from '@/app/simple/page'
 import Blogs from '@/components/Blogs'
 import Dashboard from '@/components/Dashboard'
 import Heatmap from '@/components/Heatmap'
@@ -14,8 +12,6 @@ import React from 'react'
 
 export default function UserPage() {
     const params = useParams()
-    const username = params.username
-    const { user_information, isOverviewVisible, isDashboardVisible, isBlogEditorVisible } = useUser()
     const { user_Topics } = useTopics()
 
     const currentUserTopics = user_Topics

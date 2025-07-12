@@ -3,10 +3,9 @@ import { Button } from "./ui/button";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { NotificationData } from '@/types/types';
-import { useUser } from "@/app/context/UserProvider";
 import { useSession } from "next-auth/react";
 import { toast } from "./ui/use-toast";
-import axios from "axios";
+import { useInsertUser } from "@/app/context/InsertUserProvider";
 
 
 interface UserCardProps {
@@ -22,7 +21,7 @@ const UserCard = ({ username, name, topicid, topicname, creator_username }: User
     const { data: session } = useSession()
     const session_user_username = session?.user?.username as string
 
-    const { sendCollabInvite, isAlreadyCollaborator, isInviteAlreadySent } = useUser()
+    const { sendCollabInvite, isAlreadyCollaborator, isInviteAlreadySent } = useInsertUser()
 
 
     const handleAdd = async () => {

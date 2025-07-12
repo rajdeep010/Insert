@@ -9,14 +9,8 @@ export async function POST(request: Request) {
     const token = await getToken({ req: request as any })
     
     try {
-        const { username, ...formData } = await request.json()
-        const tokenUsername = token?.username
-        if(tokenUsername !== username){
-            return Response.json({
-                success: false,
-                message: 'Not authorized',
-            }, {status: 400})
-        }
+        const { ...formData } = await request.json()
+        const username = token?.username
 
         const existUserByUsername = await UserModel.findOne({ username })
         if (!existUserByUsername) {
@@ -46,6 +40,7 @@ export async function POST(request: Request) {
         return Response.json({
             success: true,
             message: 'User information updated',
+            userdata: updatedUser
         }, {status: 200})
 
     } catch (error) {

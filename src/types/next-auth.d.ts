@@ -12,6 +12,7 @@ declare module 'next-auth' {
         company?:string;
         location?:string;
         about?:string;
+        notifications?:[any]
     }
 
     interface Session{
@@ -25,6 +26,7 @@ declare module 'next-auth' {
             company?:string;
             about?:string;
             location?:string;
+            notifications?:[any]
         } & DefaultSession['user']
     }
 }
@@ -40,5 +42,6 @@ declare module 'next-auth/jwt' {
         company?:string;
         location?:string;
         about?:string;
+        notifications?:[any]
     }
 }

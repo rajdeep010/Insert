@@ -54,6 +54,7 @@ export interface Topic {
     creator_name?: string;
     creator_username: string;
     collaborators: Collaborator[];
+    createdAt: Date
 }
 
 export interface NotificationData{
@@ -66,6 +67,7 @@ export interface NotificationData{
     topicname?: string;
     message?: string;   // for general notify
     read: boolean
+    createdAt?: Date
 }
 
 interface UserInfo {
@@ -79,7 +81,8 @@ interface UserInfo {
     email?: string | null;
     isVerified?: boolean | null;
     _id?: string | null;
-    notifications?: NotificationData[] | null;
+    notifications?: NotificationData[] | [];
+    avatar?: string | null
 }
 
 type TopicVisibility = 'public' | 'private'

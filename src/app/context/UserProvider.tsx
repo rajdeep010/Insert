@@ -18,11 +18,8 @@ interface UserContextProps {
     userNotifications: NotificationData[]
 
     // loading states
-    isOverviewVisible: boolean
-    isDashboardVisible: boolean
     isProfileDataLoading: boolean
     isAvatarLoading: boolean
-    isBlogEditorVisible: boolean
 
     // functions
     updateUser: (formData: Partial<UserInfo>) => {}
@@ -63,34 +60,6 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
     const [isProfileDataLoading, setIsProfileDataLoading] = useState<boolean>(false)
     const [isAvatarLoading, setIsAvatarLoading] = useState<boolean>(false)
 
-    const [isOverviewVisible, setOverviewVisible] = useState(true)
-    const [isDashboardVisible, setDashboardVisible] = useState(false)
-    const [isBlogEditorVisible, setIsBlogEditorVisible] = useState(false)
-
-    //! FUNCTIONS
-    const handleDashboardClick = () => {
-        setOverviewVisible(false)
-        setDashboardVisible(true)
-        setIsBlogEditorVisible(false)
-    }
-
-    const handleOverViewClick = () => {
-        setDashboardVisible(false)
-        setOverviewVisible(true)
-        setIsBlogEditorVisible(false)
-    }
-
-    const handleAllTopicsClick = () => {
-        setDashboardVisible(false)
-        setOverviewVisible(false)
-    }
-
-    const handleBlogsClick = () => {
-        setDashboardVisible(false)
-        setOverviewVisible(false)
-        setIsBlogEditorVisible(true)
-    }
-
     //! user information & avatar functions
     const fetchUser = async (username: string) => {
         try {
@@ -109,7 +78,6 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
             }
 
             const userdata = await response.data.userdata as UserInfo
-            // // console.log(userdata)
 
             setUserNotifications(userdata.notifications ? userdata.notifications.reverse() : [])
             setUserInformation(userdata)
@@ -551,7 +519,6 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
 
         } catch (error) {
             const axiosError = error as AxiosError<ApiResponse>
-            // // console.log(axiosError)
 
             toast({
                 title: 'Oops',
@@ -614,7 +581,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
     }, [param_username])
 
 
-    return <UserContext.Provider value={{ isBlogEditorVisible, user_avatar, markAllRead, getAvatar, isInviteAlreadySent, sendDeclinedCollabNotification, isAlreadyCollaborator, deleteNotification, sendAcceptedCollabNotification, userNotifications, sendSuggestion, addCollab, sendCollabInvite, isAvatarLoading, isProfileDataLoading, isOverviewVisible, isDashboardVisible, uploadAvatar, fetchAvatar, user_information, updateUser, fetchUser }}>
+    return <UserContext.Provider value={{ user_avatar, markAllRead, getAvatar, isInviteAlreadySent, sendDeclinedCollabNotification, isAlreadyCollaborator, deleteNotification, sendAcceptedCollabNotification, userNotifications, sendSuggestion, addCollab, sendCollabInvite, isAvatarLoading, isProfileDataLoading, uploadAvatar, fetchAvatar, user_information, updateUser, fetchUser }}>
         {children}
     </UserContext.Provider>
 }

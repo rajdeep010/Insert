@@ -37,7 +37,7 @@ import {
 } from "./ui/dropdown-menu";
 import SuggestionNotificationCard from "./SuggestionNotificationCard";
 import InviteNotificationCard from "./InviteNotificationCard";
-import { useUser } from "@/app/context/UserProvider";
+import { useInsertUser } from "@/app/context/InsertUserProvider";
 
 const InsertNavbar = () => {
 	const { data: session,status } = useSession();
@@ -46,16 +46,12 @@ const InsertNavbar = () => {
 	const username = session?.user?.username
 	const param_username = params?.username as string
 
-	// Tab navigation handler
-	const handleTabClick = (tab: string) => {
-		if (username) router.push(`/u/${username}?tab=${tab}`);
-	};
-
-	const { userNotifications,markAllRead } = useUser();
+	const { user, markAllRead } = useInsertUser()
+	// console.log('user: ', user, session?.user)
 	let unread_cnt = 0;
-	userNotifications.map((each) => {
+	session?.user?.notifications?.map((each: any) => {
 		if (each.read === true) unread_cnt += 1;
-	});
+	})
 
 	return (
 		<nav className="flex justify-between items-center gap-10">
@@ -169,16 +165,16 @@ const InsertNavbar = () => {
 					{status === "authenticated" && username && (
 						<DropdownMenu>
 							<DropdownMenuTrigger
-								className={`flex items-center ${unread_cnt > 0 && "notify"}`}
+								className={`flex items-center border-none outline-none ${unread_cnt > 0 && "notify"}`}
 								unread-count={unread_cnt}
 							>
-								<MessageSquare className="text-xl mx-2" />
+								<MessageSquare className="h-6 w-6 mx-2" /> 
 							</DropdownMenuTrigger>
 
 							<DropdownMenuContent className="max-w-[300px] max-h-[500px] overflow-y-scroll custom-small-scrollbar">
 								<DropdownMenuLabel className="flex items-center justify-between">
 									<div>Notifications</div>
-									{userNotifications.length > 0 && (
+									{session.user?.notifications && session.user?.notifications.length > 0 && (
 										<div
 											className="p-1 cursor-pointer flex items-center gap-1 text-xs underline text-blue-400"
 											onClick={() => markAllRead(session?.user?.username!)}
@@ -189,12 +185,12 @@ const InsertNavbar = () => {
 								</DropdownMenuLabel>
 								<DropdownMenuSeparator />
 								<div>
-									{userNotifications.length === 0 && (
+									{!session.user?.notifications && (
 										<>
 											<div className="p-2 text-sm opacity-50">No notifications</div>
 										</>
 									)}
-									{userNotifications.map((msg,idx) => (
+									{session.user?.notifications && session.user?.notifications?.map((msg: any, idx: number) => (
 										<React.Fragment key={idx}>
 											{msg.noti_type === "collab_invitation" && (
 												<>

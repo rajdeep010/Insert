@@ -41,9 +41,11 @@ export async function POST(request: Request) {
         user.notifications = updatedNotifications
         await user.save()
 
+        
         return Response.json({
             success: true,
             message: 'Notification deleted successfully',
+            notifications: user.notifications
         }, { status: 200 })
 
     } catch (error) {

@@ -33,7 +33,8 @@ const TopicSchema: Schema<Topic> = new Schema({
     problems: { type: [QuestionSchema], default: [] },
     creator_name: { type: String, trim: true },
     creator_username: { type: String, required: true, trim: true },
-    collaborators: { type: [CollaboratorSchema], default: [] }
+    collaborators: { type: [CollaboratorSchema], default: [] },
+    createdAt: { type: Date,default: Date.now },
 })
 
 
