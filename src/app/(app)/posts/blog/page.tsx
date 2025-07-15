@@ -44,7 +44,7 @@ export default function AllBlogPosts() {
 
 	return (
 		<>
-			<div className="flex flex-col gap-6 py-24 justify-center px-64">
+			<div className="flex flex-col gap-6 py-24 justify-center px-12 lg:px-64">
 				{isAllBlogPostsLoading && (
 					<div className="flex justify-center items-center h-[60vh]">
 						<Loader2 className="h-12 w-12 animate-spin text-gray-500" />
@@ -60,7 +60,7 @@ export default function AllBlogPosts() {
 					<div className="flex flex-col gap-4 max-h-[72vh] overflow-y-scroll custom-small-scrollbar  shadow-gray-200 dark:shadow-gray-800">
 						{allBlogPosts?.map((blog,idx) => (
 							<div key={idx} className="group">
-								<div className="flex justify-between px-12 py-6 hover:bg-gray-50 dark:hover:bg-gray-900 transition ease-in-out">
+								<div className="flex justify-between px-2 md:px-12 py-6 hover:bg-gray-50 dark:hover:bg-gray-900 transition ease-in-out">
 									<CardContent className="flex flex-col gap-2 pr-6 w-full">
 										<CardHeader className="flex flex-col gap-2 px-0">
 											<div className="flex items-center gap-2">
@@ -139,7 +139,7 @@ export default function AllBlogPosts() {
 										</div>
 									</CardContent>
 
-									<div className="flex-shrink-0 overflow-hidden rounded-md">
+									<div className="flex-shrink-0 overflow-hidden rounded-md hidden lg:block">
 										<Image
 											src={blog?.blogBannerImage || defaultBanner}
 											alt={blog?.blogTitle}
