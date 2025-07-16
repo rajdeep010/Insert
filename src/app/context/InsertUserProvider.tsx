@@ -363,7 +363,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
         try {
             if (!username || !topicid || !creator_username) return true
 
-            const response = await axios.get(`/api/check-collaborator?creator_username=${creator_username}&topicid=${topicid}&check_whom=${username}`)
+            const response = await axios.get(`/api/check-collaborator?topicid=${topicid}&check_whom=${username}`)
 
             if (response.data.success) {
                 return false

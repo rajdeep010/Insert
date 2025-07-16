@@ -24,7 +24,8 @@ interface InsertTopicProviderProps {
     isTopicsLoading: boolean
     isHeatmapLoading: boolean
 
-    curr_topic: Topic | undefined
+    curr_topic: any
+    isTopicLoading: boolean
 
     // states
     addTopic: (data: z.infer<typeof topicSchema>,creator_username: string,creator_name: string) => void
@@ -32,9 +33,8 @@ interface InsertTopicProviderProps {
     deleteProblem: (topic_id: string,problem_id: string) => void
     deleteTopic: (topic_id: string) => void
     updateHeatmapActivity: (date: string) => void
-
-    fetchTopicById: (topic_id: string, username?: string) => void
-    deleteProblemFromTopic: (topic_id: string, problem_id: string) => void
+    fetchTopicById: (topic_id: string) => void
+    addCollaborator: (add_whom_username: string, add_whom_name: string) => void
 }
 
 const initialState: InsertTopicProviderProps = {
@@ -45,15 +45,16 @@ const initialState: InsertTopicProviderProps = {
     isTopicsLoading: false,
     isHeatmapLoading: false,
     curr_topic: undefined,
+    isTopicLoading: false,
 
     addTopic: () => { },
     addProblem: () => { },
     deleteProblem: () => { },
     deleteTopic: () => { },
     updateHeatmapActivity: () => { },
-    
-    fetchTopicById: () => {},
-    deleteProblemFromTopic: () => {}
+
+    fetchTopicById: () => { },
+    addCollaborator: () => {}
 }
 
 const InsertTopicContext = createContext<InsertTopicProviderProps | null>(null)
@@ -65,6 +66,8 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 
     const params = useParams()
     const param_username = params.username as string
+    const topic_id = params.topicid as string;
+    const router = useRouter()
 
     const [state,dispatch] = useReducer(InsertTopicReducer,initialState)
 
@@ -114,7 +117,7 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 
             if (response.data.success) {
                 const arr = response.data.topics;
-                dispatch({ type: "SET_USER_TOPICS", payload: arr });
+                dispatch({ type: "SET_USER_TOPICS",payload: arr });
             } else {
                 dispatch({ type: "SET_USER_TOPICS",payload: [] });
             }
@@ -275,7 +278,6 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
         try {
             const response = await axios.delete(`/api/delete-problem`,{
                 data: {
-                    creator_username: session_user_username,
                     topic_id,
                     problem_id
                 }
@@ -392,13 +394,86 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
         }
     }
 
+    const fetchTopicById = async (topic_id: string) => {
+        try {
+            dispatch({ type: 'SET_LOADING_TOPIC',payload: true })
+
+            const response = await axios.get(`/api/get-topic-by-topicid?topic_id=${topic_id}`)
+            if (!response.data.success) {
+                toast({
+                    title: "Error ⭕",
+                    description: response.data.message || "Topic not found",
+                    variant: "destructive"
+                })
+                router.replace('/')
+                return
+            }
+
+            dispatch({
+                type: 'SET_CURR_TOPIC',payload: {
+                    topic: response.data.topic,
+                    problems: response.data.problems
+                }
+            })
+
+
+        } catch (error) {
+            toast({
+                title: "Error ⭕",
+                description: "Error fetching topic",
+                variant: "destructive"
+            })
+        } finally {
+            dispatch({ type: 'SET_LOADING_TOPIC',payload: false })
+        }
+    }
+
+
+    const addCollaborator = async (add_whom_username: string, add_whom_name: string, topicid: string) => {
+        if(!session_user_username)  return
+
+        try {
+            const response = await axios.post(`/api/add-collaborator`, {
+                add_whom_username,
+                add_whom_name
+            })   
+            
+            if(response.data.success){
+                toast({
+                    title: "Done ✅",
+                    description: "Collaborator added successfully",
+                    variant: "default"
+                })
+            }
+            else{
+                toast({
+                    title: "Error 🔴 ",
+                    description: response.data.message,
+                    variant: "destructive"
+                })
+            }
+        } catch (error) {
+            toast({
+                title: "Error 🔴 ",
+                description: "Something went wrong",
+                variant: "destructive"
+            })
+        }
+    }
+
+    useEffect(() => {
+        if (status === "authenticated" && topic_id) {
+            fetchTopicById(topic_id)
+        }
+    }, [status, topic_id])
+
     useEffect(() => {
         if (status !== 'authenticated' || !param_username) return
 
         fetchTopics(param_username)
         fetchAllTopics()
         fetchHeatmapActivity(param_username)
-    }, [status, param_username])
+    },[status,param_username])
 
     const contextValue = {
         ...state,
@@ -406,7 +481,9 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
         addProblem,
         deleteProblem,
         deleteTopic,
-        updateHeatmapActivity
+        updateHeatmapActivity,
+        fetchTopicById,
+        addCollaborator
     }
 
     return (

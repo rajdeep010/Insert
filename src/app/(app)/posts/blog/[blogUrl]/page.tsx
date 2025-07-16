@@ -149,7 +149,7 @@ export default function BlogPost({ params }: any) {
 
     return (
         <>
-            <div className="flex items-center justify-center m-auto px-64 min-h-screen">
+            <div className="flex items-center justify-center m-auto px-6 lg:px-64 min-h-screen">
                 <div className="flex item-center justify-center flex-col gap-4">
                     {blogLoader
                         ? <div className="flex justify-center items-center h-screen">

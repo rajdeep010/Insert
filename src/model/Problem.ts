@@ -32,5 +32,5 @@ const ProblemSchema: Schema<Problem> = new Schema({
     timestamps: true
 });
 
-const Problem = mongoose.model<Problem>('Problem', ProblemSchema);
-export default Problem;
+const ProblemModel = (mongoose.models.Problem as mongoose.Model<Problem>) ||  mongoose.model<Problem>('Problem', ProblemSchema)
+export default ProblemModel;

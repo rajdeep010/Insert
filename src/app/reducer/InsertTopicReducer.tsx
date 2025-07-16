@@ -33,28 +33,57 @@ export default function InsertTopicReducer(state: any,action: any) {
             all_topics: state.all_topics.filter((topic: any) => topic.id !== action.payload)
         };
 
-    case "UPDATE_TOPICS_AFTER_PROBLEM_ADD":
-        return {
-            ...state,
-            user_Topics: state.user_Topics.map((topic: any) =>
-                topic.id === action.payload.topic_id
-                    ? { ...topic,problems: action.payload.topics.find((t: any) => t.id === topic.id)?.problems || topic.problems }
-                    : topic
-            )
-        };
+    case "UPDATE_TOPICS_AFTER_PROBLEM_ADD": {
+        const updatedUserTopics = state.user_Topics.map((topic: any) =>
+            topic?.id === action.payload?.topic?.id
+                ? {
+                    ...topic,
+                    problems: action.payload?.problems,
+                }
+                : topic
+        );
 
-    case "DELETE_PROBLEM_FROM_TOPIC":
         return {
             ...state,
-            user_Topics: state.user_Topics.map((topic: any) =>
-                topic.id === action.payload.topic_id
+            user_Topics: updatedUserTopics,
+            curr_topic:
+                state.curr_topic?.topic?.id === action.payload?.topic?.id
                     ? {
-                        ...topic,
-                        problems: topic.problems.filter((p: any) => p.id !== action.payload.problem_id)
+                        ...state.curr_topic,
+                        problems: action.payload.problems,
                     }
-                    : topic
-            )
+                    : state.curr_topic,
         };
+    }
+
+    case "DELETE_PROBLEM_FROM_TOPIC": {
+        const updatedUserTopics = state.user_Topics.map((topic: any) =>
+            topic.id === action.payload.topic_id
+                ? {
+                    ...topic,
+                    problems: topic.problems.filter(
+                        (p: any) => p.id !== action.payload._id
+                    ),
+                }
+                : topic
+        );
+
+        const updatedCurrTopic =
+            state.curr_topic?.topic?.id === action.payload?.topic_id
+                ? {
+                    ...state.curr_topic,
+                    problems: state.curr_topic.problems.filter(
+                        (p: any) => p.id !== action.payload?._id
+                    ),
+                }
+                : state.curr_topic;
+
+        return {
+            ...state,
+            user_Topics: updatedUserTopics,
+            curr_topic: updatedCurrTopic,
+        };
+    }
 
     case 'SET_HEATMAP_VALUES': {
         return {
@@ -87,7 +116,7 @@ export default function InsertTopicReducer(state: any,action: any) {
             user_heatmapValues: action.payload
         }
     }
-    
+
     case 'SET_HEATMAP_LOADING': {
         return {
             ...state,
@@ -95,6 +124,19 @@ export default function InsertTopicReducer(state: any,action: any) {
         }
     }
 
+    case 'SET_LOADING_TOPIC': {
+        return {
+            ...state,
+            isTopicLoading: action.payload
+        }
+    }
+
+    case 'SET_CURR_TOPIC': {
+        return {
+            ...state,
+            curr_topic: action.payload
+        }
+    }
 
     default:
         return state;

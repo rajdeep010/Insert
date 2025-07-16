@@ -44,7 +44,7 @@ export default function AllBlogPosts() {
 
 	return (
 		<>
-			<div className="flex flex-col gap-6 py-24 justify-center px-12 lg:px-64">
+			<div className="flex flex-col gap-6 py-12 lg:py-24 justify-center px-12 lg:px-64">
 				{isAllBlogPostsLoading && (
 					<div className="flex justify-center items-center h-[60vh]">
 						<Loader2 className="h-12 w-12 animate-spin text-gray-500" />

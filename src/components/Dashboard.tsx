@@ -31,18 +31,15 @@ import { useInsertTopics } from '@/app/context/InsertTopicProvider'
 
 
 
-interface DashboardProps {
-    topics: Topic[]
-}
 
-const Dashboard = ({ topics }: DashboardProps) => {
+const Dashboard = () => {
     const { data: session, status } = useSession()
     const params = useParams()
     const username = params.username
     const session_user_username = session?.user.username
 
     // const { addProblem, deleteProblem, addTopic, deleteTopic } = useTopics()
-    const { addProblem, deleteProblem, addTopic, deleteTopic } = useInsertTopics()
+    const { addProblem, deleteProblem, addTopic, deleteTopic, user_Topics } = useInsertTopics()
 
     const [isTopicModalOpen, setIsTopicModalOpen] = useState(false)
     const [isItemModalOpen, setIsItemModalOpen] = useState(false)
@@ -354,7 +351,7 @@ const Dashboard = ({ topics }: DashboardProps) => {
             <div className='my-5 flex flex-col gap-3 w-full'>
                 <Accordion className='flex flex-col gap-2' type="single" collapsible>
 
-                    {topics && topics.length > 0 && topics.filter((topic) => {
+                    {user_Topics && user_Topics.length > 0 && user_Topics.filter((topic: Topic) => {
                         if(topic.visibility === 'public')   return true
                         if(topic.visibility === 'private' && session?.user?.username === username)  return true
                         return false
@@ -471,7 +468,7 @@ const Dashboard = ({ topics }: DashboardProps) => {
                     ))}
 
                     {
-                        topics && topics.length == 0 && <div className='font-bold font-sans m-auto text-2xl'>No topics...</div>
+                        user_Topics && user_Topics.length == 0 && <div className='font-bold font-sans m-auto text-2xl'>No topics...</div>
                     }
                 </Accordion>
             </div>

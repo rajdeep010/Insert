@@ -1,6 +1,6 @@
 import dbConnect from "@/lib/dbConnect"
 import AlltopicModel from "@/model/Alltopic"
-import Problem from "@/model/Problem"
+import ProblemModel from "@/model/Problem"
 import TopicModel from "@/model/Topic"
 import TopicPublicOrPrivateModel from "@/model/Topicvisible"
 import UserModel from "@/model/User"
@@ -33,7 +33,7 @@ export async function DELETE(request: Request) {
         }
 
         await TopicModel.deleteOne({ _id: topic._id });
-        await Problem.deleteMany({ topicId: topic._id });
+        await ProblemModel.deleteMany({ topicId: topic._id });
 
         return Response.json(
             {

@@ -81,209 +81,106 @@ const EachTopic = () => {
 	const { data: session,status } = useSession();
 	const router = useRouter();
 
-	const [curr_topic,setCurrTopic] = useState<Topic>();
+	const {
+		curr_topic,
+		isTopicLoading,
+		fetchTopicById,
+		addProblem,
+		deleteProblem,
+	} = useInsertTopics();
 
-	// const { addProblem,deleteProblem } = useTopics();
-	const { addProblem,deleteProblem } = useInsertTopics();
-	const { sendSuggestion } = useInsertUser()
+	const { sendSuggestion } = useInsertUser();
 
-	const [currentTopicId,setCurrentTopicId] = useState<string | null>(topic_id);
+	// Modal state
 	const [currentProblemId,setCurrentProblemId] = useState<string | null>(null);
 	const [isItemModalOpen,setIsItemModalOpen] = useState(false);
 	const [isItemDeleteModalOpen,setIsItemDeleteModalOpen] = useState(false);
-	const [iscollabModalOpen,setIsCollabModalOpen] = useState(false);
 	const [isSuggestProblemOpen,setIsSuggestProblemOpen] = useState(false);
 
-	const [topicLoading,setTopicLoading] = useState(false);
-
-	const [searchUsername,setSearchUsername] = useState<string>("");
-	const [isSearchingUsername,setIsSearchingUsername] =
-		useState<boolean>(false);
-	const [searchUsernameMessage,setSearchUsernameMessage] =
-		useState<string>("");
+	// collaborator search
+	const [searchUsername,setSearchUsername] = useState("");
+	const [isSearchingUsername,setIsSearchingUsername] = useState(false);
+	const [searchUsernameMessage,setSearchUsernameMessage] = useState("");
 	const [similarUsers,setSimilarUsers] = useState<UserInfo[]>([]);
+	const debounced = useDebounceCallback(setSearchUsername,500);
 
-	const debouned = useDebounceCallback(setSearchUsername,500);
+	// ————————————————————————————————————————————————
+	// 2) Handlers
 
-	const handleOpenItemModal = (id: string) => {
-		setCurrentTopicId(id);
-		setIsItemModalOpen(true);
-	};
-
-	const handleCollabModal = (id: string) => {
-		setCurrentTopicId(id);
-		setIsCollabModalOpen(true);
-	};
-
-	const handleOpenDeleteProblemModal = (topicId: string,problemId: string) => {
-		setCurrentTopicId(topicId);
+	const handleOpenItemModal = () => setIsItemModalOpen(true);
+	const handleOpenDeleteProblemModal = (problemId: string) => {
 		setCurrentProblemId(problemId);
 		setIsItemDeleteModalOpen(true);
 	};
-
-	const checkAndFetchTopic = async () => {
-		try {
-			if (status === "loading") return;
-
-			setTopicLoading(true);
-			const accessResponse = await axios.get(
-				`/api/check-topic-access?topicid=${topic_id}&username=${session?.user?.username}`
-			);
-			if (!accessResponse.data.success) {
-				toast({
-					title: "Error",
-					description: accessResponse?.data?.message || "Something went wrong",
-					variant: "destructive"
-				})
-				router.replace('/')
-				return;
-			}
-
-			const topicResponse = await axios.get(
-				`/api/get-topic-by-topicid?topic_id=${topic_id}`
-			);
-
-			if (!topicResponse) {
-				toast({
-					title: "Error",
-					description: "Topic not found",
-					variant: "destructive",
-				});
-				return;
-			}
-			setCurrTopic(topicResponse.data.curr_topic);
-
-			console.log("this is curr_topic",topicResponse.data);
-		} catch (error) {
-			router.push(`/`)
-		} finally {
-			setTopicLoading(false);
-		}
-	};
+	const handleOpenSuggestProblem = () => setIsSuggestProblemOpen(true);
 
 	const handleDeleteProblem = async () => {
-		if (currentTopicId !== null && currentProblemId !== null) {
-			try {
-				deleteProblem(currentTopicId,currentProblemId);
-				setIsItemDeleteModalOpen(false);
-				// Fetch the updated topic to refresh the UI
-				const response = await axios.get(
-					`/api/get-topic-by-topicid?topic_id=${currentTopicId}`
-				);
-				if(!response.data.success){
-					toast({
-						title: "Error",
-						description: response?.data?.message || "Something went wrong",
-						variant: "destructive"
-					})
-					router.replace('/')
-					return
-				}
-				setCurrTopic(response.data.curr_topic);
-
-				checkAndFetchTopic();
-			} catch (error) {
-				toast({
-					title: "Error",
-					description: "Error deleting the problem",
-					variant: "destructive",
-				});
-			}
-		}
+		if (!topic_id || !currentProblemId) return;
+		await deleteProblem(topic_id, currentProblemId);
+		setIsItemDeleteModalOpen(false);
 	};
 
-	const handleOpenSuggestProblem = (id: string) => {
-		setCurrentTopicId(id);
-		setIsSuggestProblemOpen(true);
-	};
-
-	const questionform = useForm<z.infer<typeof questionSchema>>({
+	const questionForm = useForm<z.infer<typeof questionSchema>>({
 		resolver: zodResolver(questionSchema),
-		defaultValues: {
-			qname: "",
-			url: "",
-			difficulty: "Easy",
-		},
-	});
-
-	const suggestionform = useForm<z.infer<typeof suggestionSchema>>({
-		resolver: zodResolver(suggestionSchema),
-		defaultValues: {
-			problemurl: "",
-			problemname: "",
-		},
+		defaultValues: { qname: "",url: "",difficulty: "Easy" },
 	});
 
 	const problemSubmit = async (data: z.infer<typeof questionSchema>) => {
-		try {
-			if (!topic_id) return;
-			if (!session?.user?.username) return;
-
-			addProblem(data,topic_id,session?.user?.username);
-			setIsItemModalOpen(false);
-			const response = await axios.get(`/api/get-topic-by-topicid?topic_id=${topic_id}`);
-			setCurrTopic(response.data.curr_topic);
-
-			checkAndFetchTopic();
-		} catch (error) {
-			const axiosError = error as AxiosError<ApiResponse>;
-			let errorMessage = axiosError.response?.data.message;
-			toast({
-				title: "Problem add Failed",
-				description: errorMessage,
-				variant: "destructive",
-			});
-		} finally {
-			// setIsProblemSubmitting(false)
-		}
+		if (!topic_id || !session?.user?.username) return;
+		await addProblem(data,topic_id,session.user.username);
+		setIsItemModalOpen(false);
 	};
 
-	const suggestionSubmit = async (data: z.infer<typeof suggestionSchema>) => {
-		if (!topic_id) return;
-		if (!session?.user?.username) return;
-		if (!curr_topic?.creator_username) return;
+	const suggestionForm = useForm<z.infer<typeof suggestionSchema>>({
+		resolver: zodResolver(suggestionSchema),
+		defaultValues: { problemname: "",problemurl: "" },
+	});
 
-		const suggestNotify: NotificationData = {
+	const suggestionSubmit = (data: z.infer<typeof suggestionSchema>) => {
+		if (!curr_topic || !session?.user?.username) return;
+		sendSuggestion(curr_topic.topic?.creator_username,{
 			noti_type: "suggestion",
-			from: session?.user?.username,
-			topicid: curr_topic?.id,
-			topicname: curr_topic?.title,
+			from: session.user.username,
+			topicid: curr_topic.topic.id,
+			topicname: curr_topic.topic.title,
 			read: true,
-		};
-
-		sendSuggestion(curr_topic?.creator_username!,suggestNotify);
+		});
 	};
+
+	const [iscollabModalOpen,setIsCollabModalOpen] = useState(false);
+	const handleCollabModal = (id: string) => {
+		setIsCollabModalOpen(true);
+	};
+
+	// ————————————————————————————————————————————————
+	// 3) Optional collaborator search (unchanged)
 
 	useEffect(() => {
-		const findSimilarUsers = async () => {
-			if (searchUsername) {
-				setIsSearchingUsername(true);
-				setSearchUsernameMessage("");
-
-				try {
-					const response = await axios.get(`/api/get-similar-users?username=${searchUsername}`);
-					setSearchUsernameMessage(response.data.message);
-					setSimilarUsers(response.data.similar_users);
-				} catch (error) {
-					const axiosError = error as AxiosError<ApiResponse>;
-					setSearchUsernameMessage(
-						axiosError.response?.data.message ?? "Error seaching collaborators"
-					);
-				} finally {
-					setIsSearchingUsername(false);
-				}
+		if (!searchUsername) return;
+		(async () => {
+			setIsSearchingUsername(true);
+			setSearchUsernameMessage("");
+			try {
+				const res = await axios.get<ApiResponse>(
+					`/api/get-similar-users?username=${searchUsername}`
+				);
+				setSearchUsernameMessage(res.data.message);
+				setSimilarUsers(res.data.similar_users || []);
+			} catch (err) {
+				const e = err as AxiosError<ApiResponse>;
+				setSearchUsernameMessage(e.response?.data.message ?? "Error searching");
+			} finally {
+				setIsSearchingUsername(false);
 			}
-		};
-
-		findSimilarUsers();
+		})();
 	},[searchUsername]);
 
-	useEffect(() => {
-		checkAndFetchTopic();
-	},[status]);
+	// ————————————————————————————————————————————————
+	// 4) Render
+	if (isTopicLoading || !curr_topic) return <p>Loading topic…</p>;
 
 	return (
-		<div className="flex flex-col gap-6 py-24 justify-center px-64">
+		<div className="flex flex-col gap-6 py-12 lg:py-24 justify-center px-12 lg:px-64">
 			<div>
 				{" "}
 				<InsertNavbar />{" "}
@@ -294,15 +191,15 @@ const EachTopic = () => {
 
 					<div className="flex justify-between gap-6">
 						<div className="flex flex-col gap-1">
-							<p className="text-3xl font-bold">{curr_topic?.title}</p>
+							<p className="text-3xl font-bold">{curr_topic?.topic?.title}</p>
 							<p className="text-xs">{curr_topic && <p className="text-gray-400 flex gap-2 items-center">Author: {" "} <InsertHoverCard
-								username={curr_topic?.creator_username as string}
+								username={curr_topic?.topic?.creator_username as string}
 								type={"username"}
 							/></p>}</p>
 						</div>
 
 						<div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
-							{curr_topic?.collaborators.map((each,idx) => (
+							{curr_topic?.topic?.collaborators.map((each: any, idx: any) => (
 								<InsertHoverCard
 									key={idx}
 									username={each?.username as string}
@@ -313,10 +210,10 @@ const EachTopic = () => {
 					</div>
 
 					<div className="flex justify-between gap-6">
-						<p className="max-w-[50%] break-words text-gray-700 italic text-sm">{curr_topic?.about}</p>
-						<div className="flex gap-2 items-center">
+						<p className="max-w-[50%] break-words text-gray-700 italic text-sm">{curr_topic?.topic?.about}</p>
+						<div className="flex flex-col lg:flex-row gap-2 items-center">
 							{
-								!topicLoading && status === "authenticated" && session?.user.username === curr_topic?.creator_username &&
+								!isTopicLoading && status === "authenticated" && session?.user.username === curr_topic?.topic?.creator_username &&
 								<Button onClick={() => handleCollabModal(topic_id)}
 									className="rounded-md w-fit"
 									variant={"outline"}
@@ -326,20 +223,20 @@ const EachTopic = () => {
 							}
 
 							{
-								!topicLoading && status === "authenticated" && (session?.user.username === curr_topic?.creator_username || curr_topic?.collaborators.find((each) => each.username === session?.user?.username)) && (
+								!isTopicLoading && status === "authenticated" && (session?.user.username === curr_topic?.topic?.creator_username || curr_topic?.topic?.collaborators.find((each: any) => each.username === session?.user?.username)) && (
 									<Button
-										onClick={() => handleOpenItemModal(topic_id)}
+										onClick={() => handleOpenItemModal()}
 										className="rounded-md w-fit"
-										variant="default"
+										variant={"default"}
 									>
 										Add Problem
 									</Button>
 								)}
 
 							{
-								!topicLoading && status === "authenticated" && curr_topic && session.user?.username !== curr_topic?.creator_username && !curr_topic?.collaborators.find((each) => each.username === session?.user?.username) && (
+								!isTopicLoading && status === "authenticated" && curr_topic && session.user?.username !== curr_topic?.topic?.creator_username && !curr_topic?.topic?.collaborators.find((each: any) => each.username === session?.user?.username) && (
 									<Button
-										onClick={() => handleOpenSuggestProblem(topic_id)}
+										onClick={() => handleOpenSuggestProblem()}
 										className="rounded-md w-fit"
 										variant={"outline"}
 									>
@@ -361,7 +258,7 @@ const EachTopic = () => {
 							placeholder="Search username"
 							onChange={(e) => {
 								setSearchUsername(e.target.value);
-								debouned(e.target.value);
+								debounced(e.target.value);
 							}}
 						/>
 						{isSearchingUsername && <Loader2 className="animate-spin" />}
@@ -377,13 +274,13 @@ const EachTopic = () => {
 						<div className="flex flex-col gap-2 p-2 overflow-y-scroll custom-scrollbar">
 							{similarUsers.map(({ username,name }) => (
 								<>
-									{username !== curr_topic?.creator_username && (
+									{username !== curr_topic?.topic?.creator_username && (
 										<UserCard
 											username={username as string}
 											name={name as string}
 											topicid={topic_id}
-											topicname={curr_topic?.title as string}
-											creator_username={curr_topic?.creator_username as string}
+											topicname={curr_topic?.topic?.title as string}
+											creator_username={curr_topic?.topic?.creator_username as string}
 										/>
 									)}
 								</>
@@ -397,13 +294,13 @@ const EachTopic = () => {
 						<DialogHeader>
 							<DialogTitle>Problem Details</DialogTitle>
 						</DialogHeader>
-						<Form {...questionform}>
+						<Form {...questionForm}>
 							<form
-								onSubmit={questionform.handleSubmit(problemSubmit)}
+								onSubmit={questionForm.handleSubmit(problemSubmit)}
 								className="space-y-6"
 							>
 								<FormField
-									control={questionform.control}
+									control={questionForm.control}
 									name="qname"
 									render={({ field }) => (
 										<FormItem>
@@ -415,7 +312,7 @@ const EachTopic = () => {
 									)}
 								/>
 								<FormField
-									control={questionform.control}
+									control={questionForm.control}
 									name="url"
 									render={({ field }) => (
 										<FormItem>
@@ -427,7 +324,7 @@ const EachTopic = () => {
 									)}
 								/>
 								<FormField
-									control={questionform.control}
+									control={questionForm.control}
 									name="difficulty"
 									render={({ field }) => (
 										<FormItem>
@@ -505,13 +402,13 @@ const EachTopic = () => {
 						<DialogHeader>
 							<DialogTitle>Problem Details</DialogTitle>
 						</DialogHeader>
-						<Form {...suggestionform}>
+						<Form {...suggestionForm}>
 							<form
-								onSubmit={suggestionform.handleSubmit(suggestionSubmit)}
+								onSubmit={suggestionForm.handleSubmit(suggestionSubmit)}
 								className="space-y-6"
 							>
 								<FormField
-									control={suggestionform.control}
+									control={suggestionForm.control}
 									name="problemname"
 									render={({ field }) => (
 										<FormItem>
@@ -523,7 +420,7 @@ const EachTopic = () => {
 									)}
 								/>
 								<FormField
-									control={suggestionform.control}
+									control={suggestionForm.control}
 									name="problemurl"
 									render={({ field }) => (
 										<FormItem>
@@ -550,18 +447,18 @@ const EachTopic = () => {
 					</DialogContent>
 				</Dialog>
 
-				{!topicLoading && <ProblemsDataTable
+				{!isTopicLoading && <ProblemsDataTable
 					problems={curr_topic?.problems || []}
 					showDelete={
 						status === "authenticated" &&
-						session?.user.username === curr_topic?.creator_username
+						session?.user.username === curr_topic?.topic?.creator_username
 					}
 					onDelete={(problemId) =>
-						handleOpenDeleteProblemModal(topic_id,problemId)
+						handleOpenDeleteProblemModal(problemId)
 					}
 				/>}
 
-				{topicLoading && <TableSkeleton />}
+				{isTopicLoading && <TableSkeleton />}
 			</div>
 		</div>
 	);

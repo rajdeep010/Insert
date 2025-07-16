@@ -9,13 +9,10 @@ import { Badge } from "./ui/badge";
 import { Lock } from "lucide-react";
 import { useInsertTopics } from "@/app/context/InsertTopicProvider";
 
-interface OverviewProps {
-  topics: Topic[];
-}
 
-const Overview = ({ topics }: OverviewProps) => {
+const Overview = () => {
   // const { isTopicsLoading } = useTopics();
-  const { isTopicsLoading } = useInsertTopics();
+  const { isTopicsLoading, user_Topics } = useInsertTopics();
   const { data: session, status } = useSession();
 
   return (
@@ -24,9 +21,9 @@ const Overview = ({ topics }: OverviewProps) => {
 
       <div className="flex flex-col lg:grid lg:grid-cols-2 gap-5">
         {!isTopicsLoading &&
-          topics &&
-          topics.length > 0 &&
-          topics.map(
+          user_Topics &&
+          user_Topics.length > 0 &&
+          user_Topics.map(
             (topic, idx: number) =>
               (topic.visibility === "public" ||
                 (status === "authenticated" &&
@@ -68,7 +65,7 @@ const Overview = ({ topics }: OverviewProps) => {
               )
           )}
 
-        {!isTopicsLoading && topics && topics.length == 0 && (
+        {!isTopicsLoading && user_Topics && user_Topics.length == 0 && (
           <div className="font-bold font-sans">
             No topics !!! &nbsp; &nbsp; Create one now..
           </div>

@@ -1,6 +1,6 @@
 import dbConnect from "@/lib/dbConnect"
 import AlltopicModel from "@/model/Alltopic"
-import Problem from "@/model/Problem"
+import ProblemModel from "@/model/Problem"
 import TopicModel from "@/model/Topic"
 import { topicidValidation } from "@/schemas/signUpSchema"
 import { getToken } from "next-auth/jwt"
@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
         }
 
         const { topic_id } = result.data
+        console.log('topic_id: ', topic_id)
         if (!topic_id) {
             return Response.json({
                 success: false,
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
         }
 
         if (topic?.creator_username === token?.username || topic?.visibility === "public") {
-            const problems = await Problem.find({ topicId: topic._id });
+            const problems = await ProblemModel.find({ topicId: topic._id });
             return Response.json(
                 {
                     success: true,

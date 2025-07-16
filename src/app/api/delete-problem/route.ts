@@ -1,6 +1,7 @@
 import dbConnect from "@/lib/dbConnect"
 import AlltopicModel from "@/model/Alltopic"
-import Problem from "@/model/Problem"
+import ProblemModel from "@/model/Problem"
+import TopicModel from "@/model/Topic"
 import { getToken } from "next-auth/jwt"
 import { NextRequest } from "next/server"
 
@@ -11,9 +12,9 @@ export async function DELETE(request: NextRequest) {
 
     try {
         const username = token?.username
-        const { creator_username,topic_id,problem_id } = await request.json()
+        const { topic_id,problem_id } = await request.json()
 
-        if (!creator_username || !topic_id || !problem_id) {
+        if (!topic_id || !problem_id) {
             return Response.json(
                 {
                     success: false,
@@ -23,7 +24,18 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        if (username !== creator_username) {
+        const topic = await TopicModel.findOne({id: topic_id})
+        if(!topic){
+            return Response.json(
+                {
+                    success: false,
+                    message: "Topic does not exist",
+                },
+                { status: 404 }
+            );
+        }
+
+        if (username !== topic?.creator_username) {
             return Response.json(
                 {
                     success: false,
@@ -33,7 +45,7 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        const deletedProblem = await Problem.findOneAndDelete({
+        const deletedProblem = await ProblemModel.findOneAndDelete({
             _id: problem_id,
             topicId: topic_id,
         });

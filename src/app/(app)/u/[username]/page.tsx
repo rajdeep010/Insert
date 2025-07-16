@@ -28,8 +28,8 @@ export default function UserPage() {
             <div className='w-3/5 flex flex-col gap-5 full-width'>
                 <div><InsertNavbar /></div>
                 <div>
-                    {tab === 'topics' && <Dashboard topics={currentUserTopics} />}
-                    {tab === 'overview' && <Overview topics={currentUserTopics} />}
+                    {tab === 'topics' && <Dashboard />}
+                    {tab === 'overview' && <Overview />}
                     {tab === 'blogs' && <Blogs />}
                 </div>
                 <div>
