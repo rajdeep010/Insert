@@ -7,13 +7,15 @@ import OverviewSkeleton from "./skeletons/OverviewSkeleton";
 import { useSession } from "next-auth/react";
 import { Badge } from "./ui/badge";
 import { Lock } from "lucide-react";
+import { useInsertTopics } from "@/app/context/InsertTopicProvider";
 
 interface OverviewProps {
   topics: Topic[];
 }
 
 const Overview = ({ topics }: OverviewProps) => {
-  const { isTopicsLoading } = useTopics();
+  // const { isTopicsLoading } = useTopics();
+  const { isTopicsLoading } = useInsertTopics();
   const { data: session, status } = useSession();
 
   return (

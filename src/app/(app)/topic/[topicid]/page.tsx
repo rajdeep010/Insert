@@ -73,6 +73,7 @@ import { ProblemsDataTable } from "@/components/ProblemTable";
 import { useInsertUser } from "@/app/context/InsertUserProvider";
 import InsertHoverCard from "@/components/InsertHoverCard";
 import { Avatar,AvatarFallback,AvatarImage } from "@/components/ui/avatar";
+import { useInsertTopics } from "@/app/context/InsertTopicProvider";
 
 const EachTopic = () => {
 	const params = useParams();
@@ -82,7 +83,8 @@ const EachTopic = () => {
 
 	const [curr_topic,setCurrTopic] = useState<Topic>();
 
-	const { addProblem,deleteProblem } = useTopics();
+	// const { addProblem,deleteProblem } = useTopics();
+	const { addProblem,deleteProblem } = useInsertTopics();
 	const { sendSuggestion } = useInsertUser()
 
 	const [currentTopicId,setCurrentTopicId] = useState<string | null>(topic_id);
@@ -288,9 +290,6 @@ const EachTopic = () => {
 			</div>
 
 			<div className="flex flex-col mt-6">
-				{/* title and buttons */}
-				{/* <div className="flex justify-between items-center gap-6"> */}
-
 				<div className="flex flex-col gap-4">
 
 					<div className="flex justify-between gap-6">
@@ -350,136 +349,6 @@ const EachTopic = () => {
 						</div>
 					</div>
 				</div>
-
-				{/* <div className="flex flex-col gap-4">
-						<div className="mb-2 flex gap-2 items-end">
-							{topicLoading 
-								? <Skeleton className="h-8 w-[250px]" />
-							 	: <div className="text-3xl font-sans transition hover:text-gray-600">
-									{curr_topic?.title}
-								</div>
-							}
-							{topicLoading ? (
-								<Skeleton className="h-6 w-[100px]" />
-							) : (
-								<div className="text-[13px] mb-[2px]">
-									{curr_topic &&
-										`(` +
-										curr_topic.problems.length +
-										`${curr_topic.problems.length > 1
-											? " problems"
-											: " problem"
-										})`}
-								</div>
-							)}
-						</div>
-						<div className="flex flex-col gap-1">
-							{topicLoading && curr_topic?.creator_username ? (
-								<Skeleton className="h-4 w-[200px]" />
-							) : (
-								<div className="text-xs text-gray-400 flex items-center gap-2">
-									Created by
-									<InsertHoverCard
-										username={curr_topic?.creator_username as string}
-										trigger={<div>@{curr_topic?.creator_username}</div>}
-										type={"username"}
-									/>
-								</div>
-							)}
-
-							{topicLoading ? (
-								<Skeleton className="h-6 w-[600px]" />
-							) : (
-								<div className="dark:text-gray-100 text-gray-500 font-sans">
-									{curr_topic?.about}
-								</div>
-							)}
-						</div>
-					</div>
-
-					<div className="flex items-center gap-5">
-						{topicLoading && (
-							<div className="flex gap-5 items-center">
-								<Skeleton className="h-9 w-[140px]" />
-								<Skeleton className="h-9 w-[120px]" />
-							</div>
-						)}
-
-						{!topicLoading &&
-							status === "authenticated" &&
-							session?.user.username === curr_topic?.creator_username && (
-								<Button
-									onClick={() => handleCollabModal(topic_id)}
-									className="rounded-md w-fit"
-									variant={"outline"}
-								>
-									Add Collaborator
-								</Button>
-							)}
-						{!topicLoading &&
-							status === "authenticated" &&
-							(session?.user.username === curr_topic?.creator_username ||
-								curr_topic?.collaborators.find(
-									(each) => each.username === session?.user?.username
-								)) && (
-								<Button
-									onClick={() => handleOpenItemModal(topic_id)}
-									className="rounded-md w-fit"
-									variant="default"
-								>
-									Add Problem
-								</Button>
-							)}
-						{!topicLoading &&
-							status === "authenticated" &&
-							session?.user.username !== curr_topic?.creator_username &&
-							!curr_topic?.collaborators.find(
-								(each) => each.username === session?.user?.username
-							) && (
-								<Button
-									onClick={() => handleOpenSuggestProblem(topic_id)}
-									className="rounded-md w-fit"
-									variant={"outline"}
-								>
-									Suggest Problem
-								</Button>
-							)}
-					</div> */}
-				{/* </div> */}
-
-				{/* about and collaborators */}
-				{/* <div className="flex justify-end items-end">
-					<div className="flex flex-col gap-2">
-						{topicLoading ? (
-							<Skeleton className="h-6 w-[120px]" />
-						) : (
-							curr_topic &&
-							curr_topic?.collaborators.length > 0 && (
-								<div className="text-md text-gray-400">Collaborators</div>
-							)
-						)}
-
-						{topicLoading ? (
-							<CollaboratorsSkeleton />
-						) : (
-							// <div className="flex items-center gap-3">
-							<div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
-								{curr_topic?.collaborators.map((each, idx) => (
-									<InsertHoverCard
-										key={idx}
-										username={each?.username as string}
-										trigger={<Avatar className='cursor-pointer outline-2 outline-black'>
-												<AvatarImage src={each?.username || ''} />
-												<AvatarFallback>{each?.username[0]}</AvatarFallback>
-											</Avatar>
-										}
-										type={"avatar"}
-									/>
-								))}
-							</div>
-						)}
-					</div>
-				</div> */}
 			</div>
 
 			<div className="rounded-md">

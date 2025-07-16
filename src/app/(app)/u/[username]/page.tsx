@@ -1,4 +1,5 @@
 'use client'
+import { useInsertTopics } from '@/app/context/InsertTopicProvider'
 import { useTopics } from '@/app/context/TopicProvider'
 import Blogs from '@/components/Blogs'
 import Dashboard from '@/components/Dashboard'
@@ -12,7 +13,8 @@ import React from 'react'
 
 export default function UserPage() {
     const params = useParams()
-    const { user_Topics } = useTopics()
+    // const { user_Topics } = useTopics()
+    const { user_Topics } = useInsertTopics()
 
     const currentUserTopics = user_Topics
     const searchParams = useSearchParams()

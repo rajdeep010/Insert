@@ -34,9 +34,10 @@ export async function GET(request: Request) {
 
         if (!topics || topics.length === 0) {
             return Response.json({
-                success: false,
-                message: 'No topics found'
-            },{ status: 404 })
+                success: true,
+                message: 'No topics found',
+                topics: []
+            },{ status: 200 })
         }
 
         return Response.json(

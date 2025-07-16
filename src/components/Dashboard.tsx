@@ -27,6 +27,7 @@ import { Loader2 } from 'lucide-react'
 import { useTopics } from '@/app/context/TopicProvider'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from './ui/badge'
+import { useInsertTopics } from '@/app/context/InsertTopicProvider'
 
 
 
@@ -40,7 +41,8 @@ const Dashboard = ({ topics }: DashboardProps) => {
     const username = params.username
     const session_user_username = session?.user.username
 
-    const { addProblem, deleteProblem, addTopic, deleteTopic } = useTopics()
+    // const { addProblem, deleteProblem, addTopic, deleteTopic } = useTopics()
+    const { addProblem, deleteProblem, addTopic, deleteTopic } = useInsertTopics()
 
     const [isTopicModalOpen, setIsTopicModalOpen] = useState(false)
     const [isItemModalOpen, setIsItemModalOpen] = useState(false)

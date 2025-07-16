@@ -14,6 +14,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { useInsertTopics } from '@/app/context/InsertTopicProvider';
 
 
 const Heatmap = () => {
@@ -22,7 +23,8 @@ const Heatmap = () => {
         years.push(year)
     }
 
-    const { isHeatmapLoading, user_heatmapValues } = useTopics()
+    // const { isHeatmapLoading, user_heatmapValues } = useTopics()
+    const { isHeatmapLoading, user_heatmapValues } = useInsertTopics()
     let heatmapValues = user_heatmapValues
 
     const [selectedYear, setSelectedYear] = useState(String(years[0]))

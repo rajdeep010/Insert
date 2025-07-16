@@ -12,6 +12,7 @@ import Footer from "@/components/Footer";
 import { Analytics } from "@vercel/analytics/react";
 import { BlogProvider } from "./context/BlogProvider";
 import { InsertUserProvider } from "./context/InsertUserProvider";
+import { InsertTopicProvider } from "./context/InsertTopicProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,7 +31,8 @@ export default function RootLayout({
       <TooltipProvider>
         <AuthProvider>
           <InsertUserProvider>
-              <TopicProvider>
+            <InsertTopicProvider>
+              {/* <TopicProvider> */}
                 <BlogProvider>
                   <body className={inter.className}>
                     <Script
@@ -50,7 +52,8 @@ export default function RootLayout({
                     </ThemeProvider>
                   </body>
                 </BlogProvider>
-              </TopicProvider>
+              {/* </TopicProvider> */}
+            </InsertTopicProvider>
           </InsertUserProvider>
         </AuthProvider>
       </TooltipProvider>

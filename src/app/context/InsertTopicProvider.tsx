@@ -24,12 +24,17 @@ interface InsertTopicProviderProps {
     isTopicsLoading: boolean
     isHeatmapLoading: boolean
 
+    curr_topic: Topic | undefined
+
     // states
     addTopic: (data: z.infer<typeof topicSchema>,creator_username: string,creator_name: string) => void
     addProblem: (data: z.infer<typeof questionSchema>,currentTopicId: string,creator_username: string) => void
     deleteProblem: (topic_id: string,problem_id: string) => void
     deleteTopic: (topic_id: string) => void
     updateHeatmapActivity: (date: string) => void
+
+    fetchTopicById: (topic_id: string, username?: string) => void
+    deleteProblemFromTopic: (topic_id: string, problem_id: string) => void
 }
 
 const initialState: InsertTopicProviderProps = {
@@ -39,12 +44,16 @@ const initialState: InsertTopicProviderProps = {
     isAllSheetsLoading: false,
     isTopicsLoading: false,
     isHeatmapLoading: false,
+    curr_topic: undefined,
 
     addTopic: () => { },
     addProblem: () => { },
     deleteProblem: () => { },
     deleteTopic: () => { },
-    updateHeatmapActivity: () => { }
+    updateHeatmapActivity: () => { },
+    
+    fetchTopicById: () => {},
+    deleteProblemFromTopic: () => {}
 }
 
 const InsertTopicContext = createContext<InsertTopicProviderProps | null>(null)

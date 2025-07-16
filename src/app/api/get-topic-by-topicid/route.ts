@@ -3,6 +3,8 @@ import AlltopicModel from "@/model/Alltopic"
 import Problem from "@/model/Problem"
 import TopicModel from "@/model/Topic"
 import { topicidValidation } from "@/schemas/signUpSchema"
+import { getToken } from "next-auth/jwt"
+import { NextRequest } from "next/server"
 import { z } from "zod"
 
 
@@ -10,8 +12,9 @@ const TopicQueryValidation = z.object({
     topic_id: topicidValidation
 })
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     await dbConnect()
+    const token = await getToken({ req: request })
 
     try {
         const { searchParams } = new URL(request.url)
@@ -49,15 +52,25 @@ export async function GET(request: Request) {
             );
         }
 
-        const problems = await Problem.find({ topicId: topic._id });
+        if (topic?.creator_username === token?.username || topic?.visibility === "public") {
+            const problems = await Problem.find({ topicId: topic._id });
+            return Response.json(
+                {
+                    success: true,
+                    message: "Topic and problems fetched successfully",
+                    topic,
+                    problems,
+                },
+                { status: 200 }
+            );
+        }
+
         return Response.json(
             {
-                success: true,
-                message: "Topic and problems fetched successfully",
-                topic,
-                problems,
+                success: false,
+                message: "Topic not found",
             },
-            { status: 200 }
+            { status: 404 }
         );
 
     } catch (error) {
