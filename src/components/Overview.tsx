@@ -20,7 +20,7 @@ const Overview = ({ topics }: OverviewProps) => {
     <div className="py-6">
       {isTopicsLoading && <OverviewSkeleton />}
 
-      <div className="grid grid-cols-2 gap-5">
+      <div className="flex flex-col lg:grid lg:grid-cols-2 gap-5">
         {!isTopicsLoading &&
           topics &&
           topics.length > 0 &&

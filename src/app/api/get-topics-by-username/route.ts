@@ -1,5 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
 import AlltopicModel from "@/model/Alltopic";
+import TopicModel from "@/model/Topic";
 import { usernameValidation } from "@/schemas/signUpSchema";
 import { z } from "zod";
 
@@ -10,9 +11,9 @@ const UsernameQueryValidation = z.object({
 
 export async function GET(request: Request) {
     await dbConnect()
-    
+
     try {
-        const {searchParams} = new URL(request.url)
+        const { searchParams } = new URL(request.url)
         const queryParam = {
             username: searchParams.get('username')
         }
@@ -29,28 +30,28 @@ export async function GET(request: Request) {
         }
 
         const { username } = result.data
-        // // console.log('get topics by username', username)
+        const topics = await TopicModel.find({ creator_username: username }).sort({ createdAt: -1,});
 
-        const response = await AlltopicModel.findOne({username})
-        // // console.log(response)
-
-        if(!response){
+        if (!topics || topics.length === 0) {
             return Response.json({
                 success: false,
                 message: 'No topics found'
-            }, {status: 404})
+            },{ status: 404 })
         }
 
-        return Response.json({
-            success: true,
-            message: 'Topics found',
-            topics: response.topics
-        }, {status: 201})
+        return Response.json(
+            {
+                success: true,
+                message: "Topics found",
+                topics,
+            },
+            { status: 200 }
+        );
 
     } catch (error) {
         return Response.json({
             success: true,
             message: 'Error in finding topic'
-        }, {status: 500})
+        },{ status: 500 })
     }
 }

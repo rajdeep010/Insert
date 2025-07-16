@@ -1,42 +1,52 @@
 import dbConnect from "@/lib/dbConnect"
 import AlltopicModel from "@/model/Alltopic"
+import Problem from "@/model/Problem"
+import TopicModel from "@/model/Topic"
 import TopicPublicOrPrivateModel from "@/model/Topicvisible"
 import UserModel from "@/model/User"
 
 
 export async function DELETE(request: Request) {
     await dbConnect()
-    
-    try {
-        const {creator_username, topic_id} = await request.json()
-        
-        const response = await AlltopicModel.findOneAndUpdate(
-            { username: creator_username },
-            { $pull: { topics: { id: topic_id } } },
-            { new: true }
-        )
 
-        if(!response){
-            return Response.json({
-                success: false,
-                message: 'Topic not found',
-            }, {status: 404})
+    try {
+        const { creator_username,topic_id } = await request.json()
+        if (!creator_username || !topic_id) {
+            return Response.json(
+                {
+                    success: false,
+                    message: "Sufficient details required",
+                },
+                { status: 400 }
+            );
         }
 
-        await TopicPublicOrPrivateModel.findOneAndDelete({
-            topicid: topic_id,
-            creator_username
-        })
+        const topic = await TopicModel.findOne({ id: topic_id,creator_username });
+        if (!topic) {
+            return Response.json(
+                {
+                    success: false,
+                    message: "Topic not found or not owned by user",
+                },
+                { status: 404 }
+            );
+        }
 
-        return Response.json({
-            success: true,
-            message: 'Topic deleted successfully'
-        }, {status: 201})
-        
+        await TopicModel.deleteOne({ _id: topic._id });
+        await Problem.deleteMany({ topicId: topic._id });
+
+        return Response.json(
+            {
+                success: true,
+                message: "Topic and related problems deleted successfully",
+            },
+            { status: 200 }
+        );
+
     } catch (error) {
         return Response.json({
             success: false,
             message: 'Error in deleteing topic',
-        }, {status: 500})
+        },{ status: 500 })
     }
 }

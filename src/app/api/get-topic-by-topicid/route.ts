@@ -1,5 +1,7 @@
 import dbConnect from "@/lib/dbConnect"
 import AlltopicModel from "@/model/Alltopic"
+import Problem from "@/model/Problem"
+import TopicModel from "@/model/Topic"
 import { topicidValidation } from "@/schemas/signUpSchema"
 import { z } from "zod"
 
@@ -10,9 +12,9 @@ const TopicQueryValidation = z.object({
 
 export async function GET(request: Request) {
     await dbConnect()
-    
+
     try {
-        const {searchParams} = new URL(request.url)
+        const { searchParams } = new URL(request.url)
         const queryParam = {
             topic_id: searchParams.get('topic_id')
         }
@@ -29,40 +31,39 @@ export async function GET(request: Request) {
         }
 
         const { topic_id } = result.data
-        if(!topic_id){
+        if (!topic_id) {
             return Response.json({
                 success: false,
                 message: 'Invalid topic id',
             },{ status: 404 })
         }
 
-        const userWithTopic = await AlltopicModel.findOne({
-            "topics.id": topic_id
-        })
-
-        // // console.log(userWithTopic)
-
-        if (!userWithTopic) {
-            return Response.json({
-                success: false,
-                message: 'User not found',
-            }, {status: 404})
+        const topic = await TopicModel.findOne({ id: topic_id });
+        if (!topic) {
+            return Response.json(
+                {
+                    success: false,
+                    message: "Topic not found",
+                },
+                { status: 404 }
+            );
         }
 
-        // Find the specific topic
-        const topic = userWithTopic.topics.find((t: any) => t.id === topic_id);
-        // // console.log(topic)
-
-        return Response.json({
-            success: true,
-            message: 'Topic found',
-            curr_topic: topic
-        }, {status: 200})
+        const problems = await Problem.find({ topicId: topic._id });
+        return Response.json(
+            {
+                success: true,
+                message: "Topic and problems fetched successfully",
+                topic,
+                problems,
+            },
+            { status: 200 }
+        );
 
     } catch (error) {
         return Response.json({
             success: false,
-            message: 'Error in deleteing topic',
-        }, { status: 500 })
+            message: 'Error in getting topic by topicid',
+        },{ status: 500 })
     }
 }
