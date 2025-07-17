@@ -52,6 +52,7 @@ export const authOptions: NextAuthOptions = {
                 token.username = user.username
                 token.email = user.email
                 token.notifications = user.notifications
+                token.name = user.name
             }
             return token
         },
@@ -62,6 +63,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.username = token.username
                 session.user.email = token.email
                 session.user.notifications = token.notifications
+                session.user.name = token.name
             }
             return session
         }

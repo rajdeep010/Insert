@@ -2,11 +2,11 @@
 import { uniqueId } from '@/helpers/unique-id'
 import { useSession } from 'next-auth/react'
 import { useParams } from 'next/navigation'
-import React, { useState } from 'react'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@radix-ui/react-tooltip';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, } from "@/components/ui/select"
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
-import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import React,{ useEffect,useState } from 'react'
+import { Tooltip,TooltipContent,TooltipTrigger } from '@radix-ui/react-tooltip';
+import { Select,SelectContent,SelectGroup,SelectItem,SelectLabel,SelectTrigger,SelectValue,} from "@/components/ui/select"
+import { Accordion,AccordionItem,AccordionTrigger,AccordionContent } from '@/components/ui/accordion';
+import { Dialog,DialogContent,DialogHeader,DialogFooter,DialogTitle,DialogDescription } from "@/components/ui/dialog";
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import Link from 'next/link';
@@ -14,18 +14,18 @@ import { FaTrash } from 'react-icons/fa';
 import { FiExternalLink } from 'react-icons/fi';
 // import { useTopics } from '@/app/context/TopicProvider';
 import { useForm } from 'react-hook-form';
-import { questionSchema, topicSchema } from '@/schemas/topicSchema';
+import { questionSchema,topicSchema } from '@/schemas/topicSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
+import { Form,FormControl,FormField,FormItem,FormLabel,FormMessage } from './ui/form';
 import { toast } from './ui/use-toast';
-import axios, { AxiosError } from 'axios';
+import axios,{ AxiosError } from 'axios';
 import { ApiResponse } from '@/types/ApiResponse';
 // import { Item } from '@/model/Alltopic'
-import { ProblemDifficulty, Topic, TopicVisibility } from '@/types/types'
+import { ProblemDifficulty,Topic,TopicVisibility } from '@/types/types'
 import { Loader2 } from 'lucide-react'
 import { useTopics } from '@/app/context/TopicProvider'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table,TableBody,TableCell,TableHead,TableHeader,TableRow } from "@/components/ui/table";
 import { Badge } from './ui/badge'
 import { useInsertTopics } from '@/app/context/InsertTopicProvider'
 
@@ -33,46 +33,33 @@ import { useInsertTopics } from '@/app/context/InsertTopicProvider'
 
 
 const Dashboard = () => {
-    const { data: session, status } = useSession()
-    const params = useParams()
-    const username = params.username
-    const session_user_username = session?.user.username
+    const { data: session,status } = useSession();
+    const params = useParams();
+    const username = params.username as string;
 
-    // const { addProblem, deleteProblem, addTopic, deleteTopic } = useTopics()
-    const { addProblem, deleteProblem, addTopic, deleteTopic, user_Topics } = useInsertTopics()
+    const {
+        addTopic,
+        deleteTopic,
+        addProblem,
+        deleteProblem,
+        user_Topics,
+    } = useInsertTopics();
 
-    const [isTopicModalOpen, setIsTopicModalOpen] = useState(false)
-    const [isItemModalOpen, setIsItemModalOpen] = useState(false)
-    const [isTopicDeleteModalOpen, setIsTopicDeleteModalOpen] = useState(false)
-    const [isItemDeleteModalOpen, setIsItemDeleteModalOpen] = useState(false)
 
-    const [currentTopicId, setCurrentTopicId] = useState<string | null>(null)
-    const [currentProblemId, setCurrentProblemId] = useState<string | null>(null)
-    const [expandedTopicId, setExpandedTopicId] = useState<number | null>(null)
-
-    const [isTopicSubmitting, setIsTopicSubmitting] = useState<boolean>(false)
     const [isProblemSubmitting, setIsProblemSubmitting] = useState<boolean>(false)
+    const [isTopicSubmitting, setIsTopicSubmitting] = useState<boolean>(false)
 
+    const [isTopicModalOpen,setIsTopicModalOpen] = useState(false);
+    const [isItemModalOpen,setIsItemModalOpen] = useState(false);
+    const [isTopicDeleteModalOpen,setIsTopicDeleteModalOpen] = useState(false);
+    const [isItemDeleteModalOpen,setIsItemDeleteModalOpen] = useState(false);
 
-    const handleAccordionChange = (id: number) => {
-        setExpandedTopicId(prevId => (prevId === id ? null : id));
-    }
+    const [currentTopicId,setCurrentTopicId] = useState<string | null>(null);
+    const [currentProblemId,setCurrentProblemId] = useState<string | null>(null);
+    const [expandedTopicId,setExpandedTopicId] = useState<string | undefined>(undefined);
 
-    const handleOpenItemModal = (id: string) => {
-        setCurrentTopicId(id)
-        setIsItemModalOpen(true)
-    }
-
-    const handleOpenDeleteTopicModal = (id: string) => {
-        setCurrentTopicId(id)
-        setIsTopicDeleteModalOpen(true)
-    }
-
-    const handleOpenDeleteProblemModal = (topicId: string, problemId: string) => {
-        setCurrentTopicId(topicId)
-        setCurrentProblemId(problemId)
-        setIsItemDeleteModalOpen(true)
-    }
+    const [problemsByTopic,setProblemsByTopic] = useState<Record<string,any[]>>({});
+    const [loadingProblems,setLoadingProblems] = useState<Record<string,boolean>>({});
 
     //! Implementing all functions for firebase db
 
@@ -86,11 +73,10 @@ const Dashboard = () => {
 
     const handleDeleteProblem = () => {
         if (currentTopicId !== null && currentProblemId !== null) {
-            deleteProblem(currentTopicId, currentProblemId)
+            deleteProblem(currentTopicId,currentProblemId)
             setIsItemDeleteModalOpen(false)
         }
     }
-
 
     const topicform = useForm<z.infer<typeof topicSchema>>(
         {
@@ -115,23 +101,9 @@ const Dashboard = () => {
     )
 
     const topicSubmit = async (data: z.infer<typeof topicSchema>) => {
-        try {            
-            if (!session?.user?.username) return
-            const userDetails = await axios.get(`/api/get-user-by-username?username=${session?.user?.username}`)
-            const currentUserName = userDetails.data.userdata.name
-
-            if(!userDetails)    return
-            if(!currentUserName)    {
-                toast({
-                    title: 'Sorry',
-                    description: 'Complete your profile',
-                    variant: 'destructive'
-                })
-                return
-            }
-
+        try {
             setIsTopicSubmitting(true)
-            addTopic(data, session?.user?.username, currentUserName)
+            addTopic(data)
             setIsTopicModalOpen(false)
         } catch (error) {
             const axiosError = error as AxiosError<ApiResponse>
@@ -149,10 +121,9 @@ const Dashboard = () => {
     const problemSubmit = async (data: z.infer<typeof questionSchema>) => {
         try {
             if (!currentTopicId) return
-            if (!session_user_username) return
 
             setIsProblemSubmitting(true)
-            addProblem(data, currentTopicId, session_user_username)
+            addProblem(data,currentTopicId)
             setIsItemModalOpen(false)
         } catch (error) {
             const axiosError = error as AxiosError<ApiResponse>
@@ -166,6 +137,50 @@ const Dashboard = () => {
             setIsProblemSubmitting(false)
         }
     }
+
+    useEffect(() => {
+        const topicId = expandedTopicId;
+
+        const fetchProblemsByTopicID = async (topicId: any) => {
+            try {
+                if (!topicId) return;
+                // if (problemsByTopic[topicId]) return;
+
+                setLoadingProblems((p) => ({ ...p,[topicId]: true }));
+
+                const response = await axios.get(`/api/get-problem-by-topicid?topic_id=${topicId}`)
+                if (response.data.success) {
+                    setProblemsByTopic((p) => ({ ...p,[topicId]: response.data.problems }));
+                } else {
+                    toast({ title: "Error",description: response.data.message,variant: "destructive" });
+                }
+            } catch (error) {
+                toast({ title: "Error",description: "Could not load problems",variant: "destructive" });
+            } finally {
+                setLoadingProblems((p) => ({ ...p,[topicId]: false }));
+            }
+        }
+
+        fetchProblemsByTopicID(topicId)
+
+
+    },[expandedTopicId]);
+
+    const handleOpenItemModal = (id: string) => {
+        setCurrentTopicId(id);
+        setIsItemModalOpen(true);
+    };
+
+    const handleOpenDeleteTopicModal = (id: string) => {
+        setCurrentTopicId(id);
+        setIsTopicDeleteModalOpen(true);
+    };
+
+    const handleOpenDeleteProblemModal = (topicId: string,problemId: string) => {
+        setCurrentTopicId(topicId);
+        setCurrentProblemId(problemId);
+        setIsItemDeleteModalOpen(true);
+    };
 
     return (
         <div>
@@ -348,130 +363,189 @@ const Dashboard = () => {
                 </DialogContent>
             </Dialog>
 
-            <div className='my-5 flex flex-col gap-3 w-full'>
-                <Accordion className='flex flex-col gap-2' type="single" collapsible>
-
-                    {user_Topics && user_Topics.length > 0 && user_Topics.filter((topic: Topic) => {
-                        if(topic.visibility === 'public')   return true
-                        if(topic.visibility === 'private' && session?.user?.username === username)  return true
-                        return false
-                    }).map(({ title, about, id, problems, visibility, creator_username }, idx) => (
-                        <AccordionItem className='border-2 px-6 rounded-lg accordion-width' key={idx} value={`item-${idx}`}>
-                            <AccordionTrigger className={expandedTopicId === idx ? 'text-blue-500' : 'text-black dark:text-white'} onClick={() => handleAccordionChange(idx)}>
-                              	<div className='flex gap-4 items-center'>
-							<div className='text-2xl'>{title}</div>
-								{visibility === "private" && (
-									<Badge variant="destructive" className="flex items-center gap-2">private</Badge>
-								)}
-								{visibility === "public" && (
-									<Badge variant="default" className="bg-blue-500 text-white dark:bg-blue-600">public</Badge>
-								)}
-							</div>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <div className='flex flex-col gap-2'>
-                                    <div>
-                                        {
-                                            about && about.length > 0 && (
-                                                about.length < 70
-                                                    ? `${about}`
-                                                    : `${about.substring(0, Math.min(about.length, 70))}... `
-                                            )
-                                        }
-                                        {
-                                            about && about.length >= 70 && (
-                                                <Link href={`/topic/${id}`} className='text-blue-500' rel="noopener noreferrer">
-                                                    open in new tab
-                                                </Link>
-                                            )
-                                        }
-                                    </div>
-
-                                    <div className='flex justify-between mb-4'>
-
-                                        <div className='flex gap-2 justify-center items-center text-md'>
-                                            <div>{problems?.length ?? 0} Problems</div>
-                                            <div className='text-blue-400'><Link href={`/topic/${id}`}><FiExternalLink /></Link></div>
-                                        </div>
-
-                                        {status === 'authenticated' && session?.user.username === username && (
-                                            <div className='flex gap-2'>
-                                                <Button onClick={() => handleOpenItemModal(id)} className='rounded-md w-fit' variant="default">Add Problem</Button>
-                                                <Button variant="destructive" onClick={() => handleOpenDeleteTopicModal(id)} className='rounded-md w-fit'>Delete Topic</Button>
-                                            </div>
+            <div className="my-5 flex flex-col gap-3 w-full">
+                <Accordion
+                    className="flex flex-col gap-2"
+                    type="single"
+                    collapsible
+                    value={expandedTopicId}
+                    onValueChange={(val) => setExpandedTopicId(val)}
+                >
+                    {user_Topics && user_Topics.length > 0 ? (
+                        user_Topics.map(({ title,about,id,visibility }, idx) => (
+                            <AccordionItem
+                                key={idx}
+                                value={id}
+                                className="border-2 px-6 rounded-lg accordion-width"
+                            >
+                                <AccordionTrigger
+                                    className={
+                                        expandedTopicId === id
+                                            ? "text-blue-500"
+                                            : "text-black dark:text-white"
+                                    }
+                                >
+                                    <div className="flex gap-4 items-center">
+                                        <div className="text-2xl">{title}</div>
+                                        {visibility === "private" && (
+                                            <Badge variant="destructive" className="flex items-center gap-2">
+                                                private
+                                            </Badge>
+                                        )}
+                                        {visibility === "public" && (
+                                            <Badge
+                                                variant="default"
+                                                className="bg-blue-500 text-white dark:bg-blue-600"
+                                            >
+                                                public
+                                            </Badge>
                                         )}
                                     </div>
+                                </AccordionTrigger>
 
-                                    <Table className="border-collapse separate md:table px-8 py-2">
-                                        {problems && problems.length === 0 && <div className='text-2xl'>No problems</div>}
-
-                                        {problems && problems.length > 0 && (
-                                            <>
-                                                <TableHeader className="block md:table-header-group">
-                                                    <TableRow className="border border-grey-500 md:border-none block md:table-row">
-                                                        <TableHead className="rounded-tl-md rounded-bl-md bg-black dark:bg-white text-white dark:text-gray-900 font-bold text-center md:border md:border-grey-500 block md:table-cell">
-                                                            Problem Name
-                                                        </TableHead>
-                                                        <TableHead className="bg-black dark:bg-white text-white dark:text-gray-900 font-bold text-center md:border md:border-grey-500 block md:table-cell">
-                                                            Link
-                                                        </TableHead>
-                                                        <TableHead className="bg-black dark:bg-white text-white dark:text-gray-900 font-bold text-center md:border md:border-grey-500 block md:table-cell">
-                                                            Difficulty
-                                                        </TableHead>
-                                                        {status === 'authenticated' && session?.user.username === username && (
-                                                            <TableHead className="rounded-tr-md rounded-br-md bg-black dark:bg-white text-white dark:text-gray-900 font-bold text-center md:border md:border-grey-500 block md:table-cell">
-                                                                Delete
-                                                            </TableHead>
-                                                        )}
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody className="block md:table-row-group px-6">
-                                                    {problems.map(({ id: problemId, qname, url, difficulty }, index) => (
-                                                        <TableRow key={index} className="bg-gray-50 dark:bg-gray-900 my-4 border-2 rounded-md block md:table-row">
-                                                            <TableCell className="p-2 px-4 text-center block md:table-cell">
-                                                                <Tooltip>
-                                                                    <TooltipTrigger>
-                                                                        <span>
-                                                                            {qname && qname.length < 22 ? `${qname}` : `${qname.substring(0, Math.min(qname.length, 22))}...`}
-                                                                        </span>
-                                                                    </TooltipTrigger>
-                                                                    <TooltipContent className='bg-black dark:bg-white text-white dark:text-gray-900 px-2 py-1 rounded-md'>
-                                                                        {qname}
-                                                                    </TooltipContent>
-                                                                </Tooltip>
-                                                            </TableCell>
-                                                            <TableCell className="p-2 px-4 text-center block md:table-cell ">
-                                                                <Link href={url} target="_blank" rel="noopener noreferrer">
-                                                                    {/* {url.substring(0, Math.min(url.length, 30)) + '...'} */}
-                                                                    Go Problem
+                                <AccordionContent>
+                                    {loadingProblems[id] ? (
+                                        <>Loading…</>
+                                    ) : (
+                                        <>
+                                            <div className="flex flex-col gap-2">
+                                                <div>
+                                                    {about && about.length > 0 && (
+                                                        <>
+                                                            {about.length < 70 ? about : `${about.substring(0,70)}... `}
+                                                            {about.length >= 70 && (
+                                                                <Link
+                                                                    href={`/topic/${id}`}
+                                                                    className="text-blue-500"
+                                                                    rel="noopener noreferrer"
+                                                                >
+                                                                    open in new tab
                                                                 </Link>
-                                                            </TableCell>
-                                                            <TableCell className="p-2 px-4 text-center block md:table-cell">
-                                                                {difficulty}
-                                                            </TableCell>
-                                                            {status === 'authenticated' && session?.user.username === username && (
-                                                                <TableCell className="p-2 px-4 text-center block md:table-cell">
-                                                                    <Button variant="destructive" onClick={() => handleOpenDeleteProblemModal(id, problemId)}>
-                                                                        Delete
-                                                                    </Button>
-                                                                </TableCell>
                                                             )}
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                            </>
-                                        )}
-                                    </Table>
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                    ))}
+                                                        </>
+                                                    )}
+                                                </div>
 
-                    {
-                        user_Topics && user_Topics.length == 0 && <div className='font-bold font-sans m-auto text-2xl'>No topics...</div>
-                    }
+                                                <div className="flex justify-between mb-4">
+                                                    <div className="flex gap-2 justify-center items-center text-md">
+                                                        <div>
+                                                            {(problemsByTopic[id]?.length ?? 0) + " Problems"}
+                                                        </div>
+                                                        <div className="text-blue-400">
+                                                            <Link href={`/topic/${id}`}>
+                                                                <FiExternalLink />
+                                                            </Link>
+                                                        </div>
+                                                    </div>
+
+                                                    {status === "authenticated" &&
+                                                        session?.user.username === username && (
+                                                            <div className="flex gap-2">
+                                                                <Button
+                                                                    onClick={() => handleOpenItemModal(id)}
+                                                                    className="rounded-md w-fit"
+                                                                    variant="default"
+                                                                >
+                                                                    Add Problem
+                                                                </Button>
+                                                                <Button
+                                                                    variant="destructive"
+                                                                    onClick={() => handleOpenDeleteTopicModal(id)}
+                                                                    className="rounded-md w-fit"
+                                                                >
+                                                                    Delete Topic
+                                                                </Button>
+                                                            </div>
+                                                        )}
+                                                </div>
+
+                                                <Table className="border-collapse separate md:table px-8 py-2">
+                                                    {(!problemsByTopic[id] || problemsByTopic[id].length === 0) && (
+                                                        <div className="text-2xl">No problems</div>
+                                                    )}
+
+                                                    {problemsByTopic[id] && problemsByTopic[id].length > 0 && (
+                                                        <>
+                                                            <TableHeader className="block md:table-header-group">
+                                                                <TableRow className="border border-grey-500 md:border-none block md:table-row">
+                                                                    <TableHead className="rounded-tl-md rounded-bl-md bg-black dark:bg-white text-white dark:text-gray-900 font-bold text-center md:border md:border-grey-500 block md:table-cell">
+                                                                        Problem Name
+                                                                    </TableHead>
+                                                                    <TableHead className="bg-black dark:bg-white text-white dark:text-gray-900 font-bold text-center md:border md:border-grey-500 block md:table-cell">
+                                                                        Link
+                                                                    </TableHead>
+                                                                    <TableHead className="bg-black dark:bg-white text-white dark:text-gray-900 font-bold text-center md:border md:border-grey-500 block md:table-cell">
+                                                                        Difficulty
+                                                                    </TableHead>
+                                                                    {status === "authenticated" &&
+                                                                        session?.user.username === username && (
+                                                                            <TableHead className="rounded-tr-md rounded-br-md bg-black dark:bg-white text-white dark:text-gray-900 font-bold text-center md:border md:border-grey-500 block md:table-cell">
+                                                                                Delete
+                                                                            </TableHead>
+                                                                        )}
+                                                                </TableRow>
+                                                            </TableHeader>
+                                                            <TableBody className="block md:table-row-group px-6">
+                                                                {problemsByTopic[id].map(
+                                                                    ({ id: problemId,qname,url,difficulty }) => (
+                                                                        <TableRow
+                                                                            key={problemId}
+                                                                            className="bg-gray-50 dark:bg-gray-900 my-4 border-2 rounded-md block md:table-row"
+                                                                        >
+                                                                            <TableCell className="p-2 px-4 text-center block md:table-cell">
+                                                                                <Tooltip>
+                                                                                    <TooltipTrigger>
+                                                                                        <span>
+                                                                                            {qname.length < 22
+                                                                                                ? qname
+                                                                                                : `${qname.substring(0,22)}...`}
+                                                                                        </span>
+                                                                                    </TooltipTrigger>
+                                                                                    <TooltipContent className="bg-black dark:bg-white text-white dark:text-gray-900 px-2 py-1 rounded-md">
+                                                                                        {qname}
+                                                                                    </TooltipContent>
+                                                                                </Tooltip>
+                                                                            </TableCell>
+                                                                            <TableCell className="p-2 px-4 text-center block md:table-cell ">
+                                                                                <Link href={url} target="_blank" rel="noopener noreferrer">
+                                                                                    Go Problem
+                                                                                </Link>
+                                                                            </TableCell>
+                                                                            <TableCell className="p-2 px-4 text-center block md:table-cell">
+                                                                                {difficulty}
+                                                                            </TableCell>
+                                                                            {status === "authenticated" &&
+                                                                                session?.user.username === username && (
+                                                                                    <TableCell className="p-2 px-4 text-center block md:table-cell">
+                                                                                        <Button
+                                                                                            variant="destructive"
+                                                                                            onClick={() =>
+                                                                                                handleOpenDeleteProblemModal(id,problemId)
+                                                                                            }
+                                                                                        >
+                                                                                            Delete
+                                                                                        </Button>
+                                                                                    </TableCell>
+                                                                                )}
+                                                                        </TableRow>
+                                                                    )
+                                                                )}
+                                                            </TableBody>
+                                                        </>
+                                                    )}
+                                                </Table>
+                                            </div>
+                                        </>
+                                    )}
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))
+                    ) : (
+                        <div className="font-bold font-sans m-auto text-2xl">No topics...</div>
+                    )}
                 </Accordion>
             </div>
+
         </div>
     )
 }

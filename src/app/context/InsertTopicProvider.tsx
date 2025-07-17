@@ -28,8 +28,8 @@ interface InsertTopicProviderProps {
     isTopicLoading: boolean
 
     // states
-    addTopic: (data: z.infer<typeof topicSchema>,creator_username: string,creator_name: string) => void
-    addProblem: (data: z.infer<typeof questionSchema>,currentTopicId: string,creator_username: string) => void
+    addTopic: (data: z.infer<typeof topicSchema>) => void
+    addProblem: (data: z.infer<typeof questionSchema>, currentTopicId: string) => void
     deleteProblem: (topic_id: string,problem_id: string) => void
     deleteTopic: (topic_id: string) => void
     updateHeatmapActivity: (date: string) => void
@@ -132,17 +132,11 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
         }
     };
 
-    const addTopic = async (
-        data: z.infer<typeof topicSchema>,
-        creator_username: string,
-        creator_name: string
-    ) => {
+    const addTopic = async (data: z.infer<typeof topicSchema>) => {
+        if(!session?.user?.username)    return
+
         try {
-            const response = await axios.post("/api/add-topic",{
-                creator_username,
-                creator_name,
-                topic: data,
-            });
+            const response = await axios.post("/api/add-topic",{topic: data});
 
             if (!response.data.success) {
                 toast({
@@ -213,12 +207,8 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
         }
     }
 
-    const addProblem = async (
-        data: z.infer<typeof questionSchema>,
-        currentTopicId: string,
-        creator_username: string
-    ) => {
-        if (!creator_username) return;
+    const addProblem = async (data: z.infer<typeof questionSchema>, currentTopicId: string) => {
+        if(!session?.user?.username)    return
 
         if (data.qname.trim() === '' || data.url.trim() === '') {
             toast({
@@ -231,7 +221,6 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 
         try {
             const response = await axios.post('/api/add-problem',{
-                creator_username,
                 topic_id: currentTopicId,
                 question: data
             });
@@ -245,13 +234,11 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
                 return;
             }
 
-            const updatedTopicList = response.data.topics?.topics || [];
-
             dispatch({
                 type: 'UPDATE_TOPICS_AFTER_PROBLEM_ADD',
                 payload: {
-                    topic_id: currentTopicId,
-                    topics: updatedTopicList
+                    topic: response.data.topic,
+                    problems: response.data.problems
                 }
             });
 
@@ -261,7 +248,7 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
                 variant: 'default'
             });
 
-            await addActivity();
+            // await addActivity();
 
         } catch (error: any) {
             toast({
@@ -472,7 +459,7 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 
         fetchTopics(param_username)
         fetchAllTopics()
-        fetchHeatmapActivity(param_username)
+        // fetchHeatmapActivity(param_username)
     },[status,param_username])
 
     const contextValue = {

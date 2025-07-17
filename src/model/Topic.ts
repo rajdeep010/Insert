@@ -16,7 +16,6 @@ const TopicSchema: Schema<Topic> = new Schema({
         required: true,
         enum: ['public', 'private'],
     },
-    creator_name: { type: String, trim: true },
     creator_username: { type: String, required: true, trim: true },
     collaborators: { type: [CollaboratorSchema], default: [] },
     createdAt: { type: Date, default: Date.now },

@@ -3,14 +3,24 @@ import dbConnect from "@/lib/dbConnect";
 import AlltopicModel from "@/model/Alltopic";
 import TopicModel from "@/model/Topic";
 import TopicPublicOrPrivateModel from "@/model/Topicvisible";
+import { getToken } from "next-auth/jwt";
+import { NextRequest } from "next/server";
 
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     await dbConnect()
-    
-    try {
-        const { creator_username, creator_name, topic } = await request.json();
+    const token = await getToken({ req: request })
 
+    try {
+        if (!token) {
+            return Response.json({
+                success: false,
+                message: 'Authentication required',
+            },{ status: 401 })
+        }
+
+        const { topic } = await request.json();
+        
         const newtopicid = uniqueId
         const newItem = new TopicModel({
             id: newtopicid,
@@ -18,8 +28,7 @@ export async function POST(request: Request) {
             about: topic.about,
             visibility: topic.visibility,
             problems: topic.problems || [],
-            creator_username,
-            creator_name,
+            creator_username: token?.username,
             collaborators: topic.collaborators || []
         })
 
@@ -29,12 +38,12 @@ export async function POST(request: Request) {
             success: true,
             message: 'Adding topic done',
             topic: savedTopic
-        }, { status: 200 })
+        },{ status: 200 })
 
     } catch (error) {
         return Response.json({
             success: false,
             message: 'Error in adding topic'
-        }, { status: 500 })
+        },{ status: 500 })
     }
 }

@@ -93,9 +93,14 @@ const EachTopic = () => {
 
 	// Modal state
 	const [currentProblemId,setCurrentProblemId] = useState<string | null>(null);
+	// const [currentProblem,setCurrentProblem] = useState<any>({})
+
 	const [isItemModalOpen,setIsItemModalOpen] = useState(false);
 	const [isItemDeleteModalOpen,setIsItemDeleteModalOpen] = useState(false);
 	const [isSuggestProblemOpen,setIsSuggestProblemOpen] = useState(false);
+
+	const [isAddingProblem,setIsAddingProblem] = useState(false)
+	const [isDeletingProblem,setIsDeletingProblem] = useState(false)
 
 	// collaborator search
 	const [searchUsername,setSearchUsername] = useState("");
@@ -104,9 +109,6 @@ const EachTopic = () => {
 	const [similarUsers,setSimilarUsers] = useState<UserInfo[]>([]);
 	const debounced = useDebounceCallback(setSearchUsername,500);
 
-	// ————————————————————————————————————————————————
-	// 2) Handlers
-
 	const handleOpenItemModal = () => setIsItemModalOpen(true);
 	const handleOpenDeleteProblemModal = (problemId: string) => {
 		setCurrentProblemId(problemId);
@@ -114,12 +116,20 @@ const EachTopic = () => {
 	};
 	const handleOpenSuggestProblem = () => setIsSuggestProblemOpen(true);
 
+	// const handleCurrentProblem = (obj: any) => {
+	// 	setCurrentProblem(obj)
+	// }
+
 	const handleDeleteProblem = async () => {
 		if (!topic_id || !currentProblemId) return;
-		await deleteProblem(topic_id, currentProblemId);
+		setIsDeletingProblem(true);
+		await deleteProblem(topic_id,currentProblemId);
 		setIsItemDeleteModalOpen(false);
+		setIsDeletingProblem(false);
+		setCurrentProblemId(null); // reset
 	};
 
+	// ------------------------------------------
 	const questionForm = useForm<z.infer<typeof questionSchema>>({
 		resolver: zodResolver(questionSchema),
 		defaultValues: { qname: "",url: "",difficulty: "Easy" },
@@ -127,33 +137,37 @@ const EachTopic = () => {
 
 	const problemSubmit = async (data: z.infer<typeof questionSchema>) => {
 		if (!topic_id || !session?.user?.username) return;
-		await addProblem(data,topic_id,session.user.username);
+		setIsAddingProblem(true);
+		await addProblem(data,topic_id);
+		questionForm.reset()
+		setIsAddingProblem(false)
 		setIsItemModalOpen(false);
 	};
+
+
+	// ------------------------------------
 
 	const suggestionForm = useForm<z.infer<typeof suggestionSchema>>({
 		resolver: zodResolver(suggestionSchema),
 		defaultValues: { problemname: "",problemurl: "" },
 	});
 
-	const suggestionSubmit = (data: z.infer<typeof suggestionSchema>) => {
+	const suggestionSubmit = async (data: z.infer<typeof suggestionSchema>) => {
 		if (!curr_topic || !session?.user?.username) return;
-		sendSuggestion(curr_topic.topic?.creator_username,{
+		await sendSuggestion(curr_topic.topic?.creator_username,{
 			noti_type: "suggestion",
 			from: session.user.username,
 			topicid: curr_topic.topic.id,
 			topicname: curr_topic.topic.title,
 			read: true,
 		});
+		suggestionForm.reset()
 	};
 
 	const [iscollabModalOpen,setIsCollabModalOpen] = useState(false);
 	const handleCollabModal = (id: string) => {
 		setIsCollabModalOpen(true);
 	};
-
-	// ————————————————————————————————————————————————
-	// 3) Optional collaborator search (unchanged)
 
 	useEffect(() => {
 		if (!searchUsername) return;
@@ -175,8 +189,7 @@ const EachTopic = () => {
 		})();
 	},[searchUsername]);
 
-	// ————————————————————————————————————————————————
-	// 4) Render
+
 	if (isTopicLoading || !curr_topic) return <p>Loading topic…</p>;
 
 	return (
@@ -199,7 +212,7 @@ const EachTopic = () => {
 						</div>
 
 						<div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
-							{curr_topic?.topic?.collaborators.map((each: any, idx: any) => (
+							{curr_topic?.topic?.collaborators.map((each: any,idx: any) => (
 								<InsertHoverCard
 									key={idx}
 									username={each?.username as string}
@@ -353,10 +366,15 @@ const EachTopic = () => {
 									)}
 								/>
 								<DialogFooter>
-									<Button type="submit" variant="default">
-										Save
+									<Button type="submit" variant="default" disabled={isAddingProblem}>
+										{isAddingProblem ? (
+											<>
+												<Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
+											</>
+										) : ('Save')}
 									</Button>
 									<Button
+										disabled={isAddingProblem}
 										variant="destructive"
 										onClick={() => setIsItemModalOpen(false)}
 									>
@@ -382,9 +400,14 @@ const EachTopic = () => {
 						</DialogHeader>
 						<DialogFooter>
 							<Button variant="destructive" onClick={handleDeleteProblem}>
-								Delete
+								{isDeletingProblem ? (
+									<>
+										<Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
+									</>
+								) : ('Delete')}
 							</Button>
 							<Button
+								disabled={isDeletingProblem}
 								variant="default"
 								onClick={() => setIsItemDeleteModalOpen(false)}
 							>
@@ -451,11 +474,9 @@ const EachTopic = () => {
 					problems={curr_topic?.problems || []}
 					showDelete={
 						status === "authenticated" &&
-						session?.user.username === curr_topic?.topic?.creator_username
+						session.user?.username === curr_topic?.topic?.creator_username
 					}
-					onDelete={(problemId) =>
-						handleOpenDeleteProblemModal(problemId)
-					}
+					onDelete={handleOpenDeleteProblemModal}
 				/>}
 
 				{isTopicLoading && <TableSkeleton />}

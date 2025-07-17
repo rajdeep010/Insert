@@ -34,6 +34,7 @@ export default function InsertTopicReducer(state: any,action: any) {
         };
 
     case "UPDATE_TOPICS_AFTER_PROBLEM_ADD": {
+        console.log('after adding problem: ',action.payload,state.user_Topics)
         const updatedUserTopics = state.user_Topics.map((topic: any) =>
             topic?.id === action.payload?.topic?.id
                 ? {
@@ -43,7 +44,9 @@ export default function InsertTopicReducer(state: any,action: any) {
                 : topic
         );
 
-        return {
+        console.log('this is updated user topics: ',updatedUserTopics)
+
+        const res = {
             ...state,
             user_Topics: updatedUserTopics,
             curr_topic:
@@ -54,26 +57,34 @@ export default function InsertTopicReducer(state: any,action: any) {
                     }
                     : state.curr_topic,
         };
+        console.log('this is curr topic: ',res.curr_topic)
+        return res
     }
 
     case "DELETE_PROBLEM_FROM_TOPIC": {
+        const { topic_id,problem_id } = action.payload;
+        console.log('payload', topic_id, problem_id)
+
         const updatedUserTopics = state.user_Topics.map((topic: any) =>
-            topic.id === action.payload.topic_id
+            topic?.id === topic_id
                 ? {
                     ...topic,
                     problems: topic.problems.filter(
-                        (p: any) => p.id !== action.payload._id
+                        (p: any) => {
+                            console.log('this is p:', p)
+                            return p._id !== problem_id
+                        }
                     ),
                 }
                 : topic
         );
 
         const updatedCurrTopic =
-            state.curr_topic?.topic?.id === action.payload?.topic_id
+            state.curr_topic?.topic?.id === topic_id
                 ? {
                     ...state.curr_topic,
                     problems: state.curr_topic.problems.filter(
-                        (p: any) => p.id !== action.payload?._id
+                        (p: any) => p._id !== problem_id
                     ),
                 }
                 : state.curr_topic;
@@ -84,6 +95,7 @@ export default function InsertTopicReducer(state: any,action: any) {
             curr_topic: updatedCurrTopic,
         };
     }
+
 
     case 'SET_HEATMAP_VALUES': {
         return {
