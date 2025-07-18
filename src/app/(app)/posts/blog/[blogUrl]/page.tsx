@@ -60,6 +60,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
+import InsertNavbar from "@/components/InsertNavbar";
+import BlogWriteSidebar from "@/components/BlogWriteSidebar";
 
 
 
@@ -149,6 +151,9 @@ export default function BlogPost({ params }: any) {
 
     return (
         <>
+            <div className="absolute top-5 left-5">
+                <BlogWriteSidebar />
+            </div>
             <div className="flex items-center justify-center m-auto px-6 lg:px-64 min-h-screen">
                 <div className="flex item-center justify-center flex-col gap-4">
                     {blogLoader
@@ -156,6 +161,7 @@ export default function BlogPost({ params }: any) {
                             <Loader2 className="h-12 w-12 animate-spin text-gray-500" />
                         </div>
                         : <EditorContext.Provider value={{ editor: previewEditor }}>
+                            {/* <div className="pt-8 lg:pt-12"><InsertNavbar /></div> */}
                             <div className="flex w-full flex-col gap-6">
                                 <div className="post-wrapper shadow-sm dark:shadow-grey-800">
                                     <EditorContent

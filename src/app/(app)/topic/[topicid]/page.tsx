@@ -193,7 +193,7 @@ const EachTopic = () => {
 	if (isTopicLoading || !curr_topic) return <p>Loading topic…</p>;
 
 	return (
-		<div className="flex flex-col gap-6 py-12 lg:py-24 justify-center px-12 lg:px-64">
+		<div className="flex flex-col gap-6 py-8 lg:py-12 justify-center px-8 lg:px-64">
 			<div>
 				{" "}
 				<InsertNavbar />{" "}

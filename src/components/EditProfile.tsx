@@ -1,8 +1,8 @@
 'use client'
-import React, { useEffect, useRef, useState } from 'react'
+import React,{ useEffect,useRef,useState } from 'react'
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet,SheetClose,SheetContent,SheetDescription,SheetFooter,SheetHeader,SheetTitle,SheetTrigger } from "@/components/ui/sheet";
 import Image from 'next/image';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { useInsertUser } from '@/app/context/InsertUserProvider';
@@ -10,10 +10,10 @@ import { Loader2 } from 'lucide-react';
 
 
 const EditProfile = () => {
-    const {user, isAvatarUploading, updateUser, uploadAvatar} = useInsertUser()
+    const { user,updateUser,uploadAvatar } = useInsertUser()
     const avatarURL = user?.avatar
 
-    const [formData, setFormData] = useState({
+    const [formData,setFormData] = useState({
         name: '',
         about: '',
         linkedin: '',
@@ -21,18 +21,20 @@ const EditProfile = () => {
         company: '',
         location: ''
     })
+    const [isAvatarUploading,setIsAvatarUploading] = useState(false)
+    const [isSavingUser,setSaveUser] = useState(false)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { id, value } = e.target
+        const { id,value } = e.target
         setFormData(prevState => ({
             ...prevState,
             [id]: value
         }))
     }
 
-    const [selectedImage, setSelectedImage] = useState<string | ArrayBuffer | null>(null)
+    const [selectedImage,setSelectedImage] = useState<string | ArrayBuffer | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
-    const [file, setFile] = useState<File | null>(null)
+    const [file,setFile] = useState<File | null>(null)
 
     const handleImageChange = (e: any) => {
         if (e.target.files && e.target.files[0]) {
@@ -46,28 +48,22 @@ const EditProfile = () => {
     }
 
     const handleIconClick = () => { fileInputRef.current?.click() }
+    const handleAvatarUpdate = async (file: File) => {
+        setIsAvatarUploading(true)
+        await uploadAvatar(file)
+        setIsAvatarUploading(false)
+    }
 
-    // const handleAvatarSubmit = () => {
-    //     if (!file) return
-    //     uploadAvatar(file)
-    // }
-
-    // const handleSubmit = () => {
-    //     updateUser(formData)
-    // }
-
-    // useEffect(() => {
-    //     if (user_information) {
-    //         setFormData({
-    //             name: user_information.name || '',
-    //             about: user_information.about || '',
-    //             linkedin: user_information.linkedin || '',
-    //             profile: user_information.profile || '',
-    //             company: user_information.company || '',
-    //             location: user_information.location || ''
-    //         })
-    //     }
-    // }, [user_information])
+    const handleSaveUser = async () => {
+        try {
+            setSaveUser(true)
+            await updateUser(formData)
+        } catch (error) {
+            setSaveUser(false)
+        } finally {
+            setSaveUser(false)
+        }
+    }
 
     useEffect(() => {
         if (user) {
@@ -80,7 +76,7 @@ const EditProfile = () => {
                 location: user?.location || ''
             })
         }
-    }, [user])
+    },[user])
 
     return (
         <Sheet>
@@ -114,14 +110,14 @@ const EditProfile = () => {
                                 className='hidden mb-8'
                             />
                             <div className='flex flex-col gap-2'>
-                                <Button className='cursor-pointer flex items-center gap-2' onClick={handleIconClick}>
+                                <Button className='cursor-pointer flex items-center gap-2' onClick={handleIconClick} disabled={isAvatarUploading}>
                                     Update
                                 </Button>
                                 {/* {file && <Button className='cursor-pointer flex items-center gap-2' onClick={handleAvatarSubmit}>
                                     Save Avatar
                                 </Button>} */}
 
-                                {file && <Button type='submit' disabled={isAvatarUploading} onClick={() => uploadAvatar(file)}>
+                                {file && <Button type='submit' disabled={isAvatarUploading} onClick={() => handleAvatarUpdate(file)} variant={'destructive'}>
                                     {isAvatarUploading ? (
                                         <>
                                             <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
@@ -140,7 +136,13 @@ const EditProfile = () => {
                 </div>
                 <SheetFooter>
                     <SheetClose asChild>
-                        <Button type="submit" onClick={() => updateUser(formData)}>Save changes</Button>
+                        <Button type="submit" onClick={() => handleSaveUser()}>
+                            {isSavingUser ? (
+                                <>
+                                    <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
+                                </>
+                            ) : ('Save Changes')}
+                        </Button>
                     </SheetClose>
                 </SheetFooter>
             </SheetContent>
