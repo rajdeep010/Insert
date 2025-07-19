@@ -63,11 +63,6 @@ const Dashboard = () => {
     const [isItemDeleteModalOpen,setIsItemDeleteModalOpen] = useState(false);
 
     const [currentTopicId,setCurrentTopicId] = useState<string | null>(null);
-    const [currentProblemId,setCurrentProblemId] = useState<string | null>(null);
-    const [expandedTopicId,setExpandedTopicId] = useState<string | undefined>(undefined);
-
-    const [problemsByTopic,setProblemsByTopic] = useState<Record<string,any[]>>({});
-    const [loadingProblems,setLoadingProblems] = useState<Record<string,boolean>>({});
 
     const [searchQuery,setSearchQuery] = useState('')
 
@@ -82,7 +77,6 @@ const Dashboard = () => {
         if (currentTopicId !== null) {
             setIsTopicDeleting(true)
             await deleteTopic(currentTopicId)
-
             setIsTopicDeleting(false)
             setIsTopicDeleteModalOpen(false)
         }

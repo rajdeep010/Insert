@@ -61,7 +61,7 @@ import { ApiResponse } from "@/types/ApiResponse";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounceCallback } from "usehooks-ts";
-import { Loader2 } from "lucide-react";
+import { CirclePlus,FileInput,Loader2,Trash2,UserPlus } from "lucide-react";
 import UserCard from "@/components/UserCard";
 import Collaborator from "@/components/Collaborator";
 import CollaboratorsSkeleton from "@/components/skeletons/CollaboratorsSkeleton";
@@ -74,6 +74,8 @@ import { useInsertUser } from "@/app/context/InsertUserProvider";
 import InsertHoverCard from "@/components/InsertHoverCard";
 import { Avatar,AvatarFallback,AvatarImage } from "@/components/ui/avatar";
 import { useInsertTopics } from "@/app/context/InsertTopicProvider";
+import NotFound from "@/app/not-found";
+import { Badge } from "@/components/ui/badge";
 
 const EachTopic = () => {
 	const params = useParams();
@@ -87,6 +89,7 @@ const EachTopic = () => {
 		fetchTopicById,
 		addProblem,
 		deleteProblem,
+		deleteTopic
 	} = useInsertTopics();
 
 	const { sendSuggestion } = useInsertUser();
@@ -109,6 +112,11 @@ const EachTopic = () => {
 	const [similarUsers,setSimilarUsers] = useState<UserInfo[]>([]);
 	const debounced = useDebounceCallback(setSearchUsername,500);
 
+	const [isTopicDeleting,setIsTopicDeleting] = useState(false)
+
+	const [isTopicModalOpen,setIsTopicModalOpen] = useState(false);
+	const [isTopicDeleteModalOpen,setIsTopicDeleteModalOpen] = useState(false);
+
 	const handleOpenItemModal = () => setIsItemModalOpen(true);
 	const handleOpenDeleteProblemModal = (problemId: string) => {
 		setCurrentProblemId(problemId);
@@ -116,17 +124,13 @@ const EachTopic = () => {
 	};
 	const handleOpenSuggestProblem = () => setIsSuggestProblemOpen(true);
 
-	// const handleCurrentProblem = (obj: any) => {
-	// 	setCurrentProblem(obj)
-	// }
-
 	const handleDeleteProblem = async () => {
 		if (!topic_id || !currentProblemId) return;
 		setIsDeletingProblem(true);
 		await deleteProblem(topic_id,currentProblemId);
 		setIsItemDeleteModalOpen(false);
 		setIsDeletingProblem(false);
-		setCurrentProblemId(null); // reset
+		setCurrentProblemId(null);
 	};
 
 	// ------------------------------------------
@@ -189,8 +193,22 @@ const EachTopic = () => {
 		})();
 	},[searchUsername]);
 
+	const handleOpenDeleteTopicModal = () => {
+		setIsTopicDeleteModalOpen(true);
+	};
 
-	if (isTopicLoading || !curr_topic) return <p>Loading topic…</p>;
+	const handleDeleteTopic = async () => {
+		if (topic_id !== null) {
+			setIsTopicDeleting(true)
+			await deleteTopic(topic_id)
+			setIsTopicDeleting(false)
+			setIsTopicDeleteModalOpen(false)
+		}
+	}
+
+
+	if (isTopicLoading) return <p>Loading topic…</p>;
+	if (!curr_topic) return <NotFound />
 
 	return (
 		<div className="flex flex-col gap-6 py-8 lg:py-12 justify-center px-8 lg:px-64">
@@ -204,7 +222,20 @@ const EachTopic = () => {
 
 					<div className="flex justify-between gap-6">
 						<div className="flex flex-col gap-1">
-							<p className="text-3xl font-bold">{curr_topic?.topic?.title}</p>
+							<div className="flex items-center gap-4">
+								<p className="text-3xl font-bold">
+									{curr_topic?.topic?.title}
+								</p>
+								<div>
+									{curr_topic?.topic?.visibility === "private" && (
+										<Badge variant="destructive" className="flex items-center gap-2">private</Badge>
+									)}
+									{curr_topic?.topic?.visibility === "public" && (
+										<Badge variant="default" className="bg-blue-500 text-white dark:bg-blue-600">public</Badge>
+									)}
+								</div>
+							</div>
+
 							<p className="text-xs">{curr_topic && <p className="text-gray-400 flex gap-2 items-center">Author: {" "} <InsertHoverCard
 								username={curr_topic?.topic?.creator_username as string}
 								type={"username"}
@@ -227,11 +258,8 @@ const EachTopic = () => {
 						<div className="flex flex-col lg:flex-row gap-2 items-center">
 							{
 								!isTopicLoading && status === "authenticated" && session?.user.username === curr_topic?.topic?.creator_username &&
-								<Button onClick={() => handleCollabModal(topic_id)}
-									className="rounded-md w-fit"
-									variant={"outline"}
-								>
-									Add Collaborator
+								<Button variant="outline" className="rounded-md w-fit" onClick={() => handleCollabModal(topic_id)}>
+									<UserPlus className="h-4 w-4" />
 								</Button>
 							}
 
@@ -242,9 +270,17 @@ const EachTopic = () => {
 										className="rounded-md w-fit"
 										variant={"default"}
 									>
-										Add Problem
+										<CirclePlus className="h-4 w-4" />
 									</Button>
-								)}
+								)
+							}
+
+							{
+								!isTopicLoading && status === "authenticated" && session?.user.username === curr_topic?.topic?.creator_username &&
+								<Button variant="destructive" className="rounded-md w-fit" onClick={() => handleOpenDeleteTopicModal()}>
+									<Trash2 className="h-4 w-4" />
+								</Button>
+							}
 
 							{
 								!isTopicLoading && status === "authenticated" && curr_topic && session.user?.username !== curr_topic?.topic?.creator_username && !curr_topic?.topic?.collaborators.find((each: any) => each.username === session?.user?.username) && (
@@ -253,7 +289,7 @@ const EachTopic = () => {
 										className="rounded-md w-fit"
 										variant={"outline"}
 									>
-										Suggest Problem
+										<FileInput className="h-4 w-4" />
 									</Button>
 								)}
 						</div>
@@ -264,8 +300,9 @@ const EachTopic = () => {
 			<div className="rounded-md">
 				<Dialog open={iscollabModalOpen} onOpenChange={setIsCollabModalOpen}>
 					<DialogContent>
-						<DialogHeader>
+						<DialogHeader className="mb-4">
 							<DialogTitle>Add collaborator</DialogTitle>
+							<DialogDescription>Start typing the username below...</DialogDescription>
 						</DialogHeader>
 						<Input
 							placeholder="Search username"
@@ -284,7 +321,7 @@ const EachTopic = () => {
 							{searchUsernameMessage}
 						</p>
 
-						<div className="flex flex-col gap-2 p-2 overflow-y-scroll custom-scrollbar">
+						<div className="flex flex-col gap-2 p-2 overflow-y-scroll custom-small-scrollbar">
 							{similarUsers.map(({ username,name }) => (
 								<>
 									{username !== curr_topic?.topic?.creator_username && (
@@ -305,7 +342,8 @@ const EachTopic = () => {
 				<Dialog open={isItemModalOpen} onOpenChange={setIsItemModalOpen}>
 					<DialogContent>
 						<DialogHeader>
-							<DialogTitle>Problem Details</DialogTitle>
+							<DialogTitle>Add Problem</DialogTitle>
+							<DialogDescription>Enter the following details to add problem</DialogDescription>
 						</DialogHeader>
 						<Form {...questionForm}>
 							<form
@@ -467,6 +505,25 @@ const EachTopic = () => {
 								</DialogFooter>
 							</form>
 						</Form>
+					</DialogContent>
+				</Dialog>
+
+				<Dialog open={isTopicDeleteModalOpen} onOpenChange={setIsTopicDeleteModalOpen}>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Confirm Delete Topic</DialogTitle>
+						</DialogHeader>
+						<DialogDescription>Are you sure you want to delete this topic?</DialogDescription>
+						<DialogFooter>
+							<Button variant="destructive" disabled={isTopicDeleting} onClick={() => setIsTopicDeleteModalOpen(false)}>Cancel</Button>
+							<Button variant="default" onClick={handleDeleteTopic} disabled={isTopicDeleting}>
+								{
+									isTopicDeleting ? (<>
+										<Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait
+									</>) : ('Confirm')
+								}
+							</Button>
+						</DialogFooter>
 					</DialogContent>
 				</Dialog>
 

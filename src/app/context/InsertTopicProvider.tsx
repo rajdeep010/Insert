@@ -402,12 +402,10 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
                     problems: response.data.problems
                 }
             })
-
-
-        } catch (error) {
+        } catch (error: any) {
             toast({
                 title: "Error ⭕",
-                description: "Error fetching topic",
+                description: error?.message || "Error fetching topic",
                 variant: "destructive"
             })
         } finally {
