@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import Link from 'next/link'
-import { useDebounceCallback } from 'usehooks-ts'
+import { useDebounceCallback, useDebounceValue } from 'usehooks-ts'
 import { useToast } from "@/components/ui/use-toast"
 import { signUpSchema } from '@/schemas/signUpSchema'
 import axios, { AxiosError } from 'axios'
@@ -23,13 +23,13 @@ import emailjs from 'emailjs-com'
 
 export default function SignUpForm() {
     const router = useRouter()
-    const [username, setUsername] = useState<string>('')
+    const [debouncedUsername, setUsername] = useDebounceValue<string>('', 500)
     const [usernameMessage, setUsernameMessage] = useState<string>()
     const [isCheckingUsername, setIsCheckingUsername] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
 
-    const debounced = useDebounceCallback(setUsername, 500)
+    // const debouncedUsername = useDebounceValue(setUsername, 500)
     const { toast } = useToast()
 
     const togglePasswordVisibility = () => setShowPassword(!showPassword)
@@ -45,11 +45,11 @@ export default function SignUpForm() {
 
     useEffect(() => {
         const checkUsernameUnique = async () => {
-            if (username) {
+            if (debouncedUsername) {
                 setIsCheckingUsername(true)
                 setUsernameMessage('')
                 try {
-                    const response = await axios.get(`/api/check-username-unique?username=${username}`)
+                    const response = await axios.get(`/api/check-username-unique?username=${debouncedUsername}`)
                     setUsernameMessage(response.data.message)
                 } catch (error) {
                     const axiosError = error as AxiosError<ApiResponse>
@@ -63,7 +63,7 @@ export default function SignUpForm() {
         }
 
         checkUsernameUnique()
-    }, [username])
+    }, [debouncedUsername])
 
     const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
         setIsSubmitting(true)
@@ -93,7 +93,7 @@ export default function SignUpForm() {
                             title: 'Enter Verify Code',
                             description: 'Verification code sent to your email'
                         })
-                        router.replace(`/verify/${username}`)
+                        router.replace(`/verify/${debouncedUsername}`)
                     },
                     function(error) {
                         // console.log(error)
@@ -149,7 +149,7 @@ export default function SignUpForm() {
                                             {...field}
                                             onChange={(e) => {
                                                 field.onChange(e)
-                                                debounced(e.target.value)
+                                                setUsername(e.target.value)
                                             }}
                                         />
                                     </FormControl>
