@@ -54,13 +54,25 @@ const InsertNavbar = () => {
 	const router = useRouter();
 	const username = session?.user?.username;
 	const param_username = params?.username as string;
+	const [notifyLoader, setNotifyLoader] = React.useState(false)
 
-	const { user,markAllRead } = useInsertUser();
+	const { user,markAllRead, unreadNotifyCount, notifications, getNotifications } = useInsertUser();
 	// console.log('user: ', user, session?.user)
 	let unread_cnt = 0;
 	session?.user?.notifications?.map((each: any) => {
 		if (each.read === true) unread_cnt += 1;
 	});
+
+	const handleGetNotifier = async () => {
+		try {
+			setNotifyLoader(true)
+			await getNotifications()
+		} catch (error) {
+			
+		} finally{
+			setNotifyLoader(false)
+		}
+	}
 
 	return (
 		<nav className="flex justify-between items-center gap-10">
@@ -187,9 +199,9 @@ const InsertNavbar = () => {
 						{status === "authenticated" && username && (
 							<DropdownMenu>
 								<DropdownMenuTrigger
-									className={`flex items-center border-none outline-none ${unread_cnt > 0 && "notify"
-										}`}
-									unread-count={unread_cnt}
+									className={`flex items-center border-none outline-none ${unreadNotifyCount > 0 && "notify"}`}
+									unread-count={unreadNotifyCount}
+									onClick={handleGetNotifier}
 								>
 									<MessageSquare className="h-6 w-6 mx-2" />
 								</DropdownMenuTrigger>
@@ -315,9 +327,8 @@ const InsertNavbar = () => {
 				{status === "authenticated" && username && (
 					<DropdownMenu>
 						<DropdownMenuTrigger
-							className={`flex items-center border-none outline-none ${unread_cnt > 0 && "notify"
-								}`}
-							unread-count={unread_cnt}
+							className={`flex items-center border-none outline-none ${unreadNotifyCount > 0 && "notify"}`}
+							unread-count={unreadNotifyCount}
 						>
 							<MessageSquare className="h-6 w-6 mx-2" />
 						</DropdownMenuTrigger>
@@ -494,25 +505,18 @@ const InsertNavbar = () => {
 
 						<DropdownMenuSeparator />
 
-						{/* <DropdownMenuItem>GitHub</DropdownMenuItem> */}
-						{/* <DropdownMenuItem>Support</DropdownMenuItem> */}
-						{/* <DropdownMenuItem disabled>API</DropdownMenuItem> */}
-
-						{/* <DropdownMenuSeparator /> */}
 
 						{status === "authenticated" ? (<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
 							<div className="flex items-center gap-2" onClick={() => signOut()}>
 								<LogOut className="h-4 w-4" /> <span>Logout</span>
 							</div>
 
-							{/* <DropdownMenuShortcut>⌘Q</DropdownMenuShortcut> */}
 						</DropdownMenuItem>) : (
 							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
 								<Link href="/sign-in" className="flex items-center gap-2">
 									<LogIn className="h-4 w-4" /> <span>Login</span>
 								</Link>
 
-								{/* <DropdownMenuShortcut>⌘Q</DropdownMenuShortcut> */}
 							</DropdownMenuItem>
 						)}
 					</DropdownMenuContent>

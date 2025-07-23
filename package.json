@@ -59,6 +59,7 @@
     "emailjs-com": "^3.2.0",
     "embla-carousel-react": "^8.6.0",
     "firebase": "^10.12.4",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.411.0",
     "mongoose": "^8.5.1",
     "next": "14.2.5",
@@ -83,6 +84,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-avatar-editor": "^13.0.2",

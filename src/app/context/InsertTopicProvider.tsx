@@ -35,6 +35,7 @@ interface InsertTopicProviderProps {
     updateHeatmapActivity: (date: string) => void
     fetchTopicById: (topic_id: string) => void
     addCollaborator: (add_whom_username: string, add_whom_name: string) => void
+    fetchAllTopicPosts: () => void 
 }
 
 const initialState: InsertTopicProviderProps = {
@@ -54,7 +55,8 @@ const initialState: InsertTopicProviderProps = {
     updateHeatmapActivity: () => { },
 
     fetchTopicById: () => { },
-    addCollaborator: () => {}
+    addCollaborator: () => {},
+    fetchAllTopicPosts: () => {}
 }
 
 const InsertTopicContext = createContext<InsertTopicProviderProps | null>(null)
@@ -84,28 +86,8 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
         updateHeatmapActivity(formattedDate)
     }
 
-    const fetchAllTopics = async () => {
-        try {
-            dispatch({ type: "SET_ALL_SHEETS_LOADING",payload: true });
-
-            const response = await axios.get(`/api/get-all-topics`);
-            if (response.data.success) {
-                dispatch({ type: "SET_ALL_TOPICS",payload: response.data.topics });
-            } else {
-                dispatch({ type: "SET_ALL_TOPICS",payload: [] });
-            }
-        } catch (error) {
-            toast({
-                title: "Error ⭕",
-                description: "Topics fetching error",
-                variant: "destructive",
-            });
-        } finally {
-            dispatch({ type: "SET_ALL_SHEETS_LOADING",payload: false });
-        }
-    };
-
-    const fetchTopics = async (username: string) => {
+    
+    const getTopicsByUsername = async (username: string) => {
         if (!username) return;
 
         try {
@@ -446,19 +428,59 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
         }
     }
 
-    useEffect(() => {
-        if (status === "authenticated" && topic_id) {
-            fetchTopicById(topic_id)
+    // useEffect(() => {
+    //     if (status === "authenticated" && topic_id) {
+    //         fetchTopicById(topic_id)
+    //     }
+    // }, [status, topic_id])
+
+    // useEffect(() => {
+    //     if (status !== 'authenticated' || !param_username) return
+
+    //     getTopicsByUsername(param_username)
+    //     fetchAllTopics()
+    //     // fetchHeatmapActivity(param_username)
+    // },[status,param_username])
+
+    const fetchAllTopicPosts = async () => {
+        try {
+            dispatch({ type: "SET_ALL_SHEETS_LOADING",payload: true });
+
+            const response = await axios.get(`/api/get-all-topics`);
+            if (response.data.success) {
+                dispatch({ type: "SET_ALL_TOPICS",payload: response.data.topics });
+            } else {
+                dispatch({ type: "SET_ALL_TOPICS",payload: [] });
+            }
+        } catch (error) {
+            toast({
+                title: "Error ⭕",
+                description: "Topics fetching error",
+                variant: "destructive",
+            });
+        } finally {
+            dispatch({ type: "SET_ALL_SHEETS_LOADING",payload: false });
         }
-    }, [status, topic_id])
+    };
+
 
     useEffect(() => {
-        if (status !== 'authenticated' || !param_username) return
+        if(status === "authenticated"){
+            if (param_username) {
+                getTopicsByUsername(param_username)
+            }
 
-        fetchTopics(param_username)
-        fetchAllTopics()
-        // fetchHeatmapActivity(param_username)
-    },[status,param_username])
+            if(!param_username && session && session?.user && session?.user?.username){
+                getTopicsByUsername(session?.user?.username)
+            }
+
+            if (topic_id) {
+                fetchTopicById(topic_id)
+            }
+        }
+        
+        // fetchAllTopics()
+    },[status, topic_id])
 
     const contextValue = {
         ...state,
@@ -468,7 +490,8 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
         deleteTopic,
         updateHeatmapActivity,
         fetchTopicById,
-        addCollaborator
+        addCollaborator,
+        fetchAllTopicPosts
     }
 
     return (

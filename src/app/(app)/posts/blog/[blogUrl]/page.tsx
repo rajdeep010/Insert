@@ -151,8 +151,8 @@ export default function BlogPost({ params }: any) {
 
     return (
         <>
-            <div className="absolute top-5 left-5">
-                <BlogWriteSidebar />
+            <div className="flex flex-col gap-6 pt-8 lg:pt-12 justify-center px-8 lg:px-64">
+                <InsertNavbar />
             </div>
             <div className="flex items-center justify-center m-auto px-6 lg:px-64 min-h-screen">
                 <div className="flex item-center justify-center flex-col gap-4">

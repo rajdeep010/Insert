@@ -164,6 +164,8 @@ const EachTopic = () => {
 			topicid: curr_topic.topic.id,
 			topicname: curr_topic.topic.title,
 			read: true,
+			problemname: data.problemname,
+			problemurl: data.problemurl
 		});
 		suggestionForm.reset()
 	};
@@ -207,8 +209,11 @@ const EachTopic = () => {
 	}
 
 
-	if (isTopicLoading) return <p>Loading topic…</p>;
-	if (!curr_topic) return <NotFound />
+	if (!curr_topic) return null
+
+	const existingCollabs = new Set(
+		curr_topic.topic.collaborators.map((c: any) => c.username)
+	);
 
 	return (
 		<div className="flex flex-col gap-6 py-8 lg:py-12 justify-center px-8 lg:px-64">
@@ -322,17 +327,19 @@ const EachTopic = () => {
 						</p>
 
 						<div className="flex flex-col gap-2 p-2 overflow-y-scroll custom-small-scrollbar">
-							{similarUsers.map(({ username,name }) => (
+							{similarUsers.filter(
+								user =>
+									user.username !== curr_topic.topic.creator_username &&
+									!existingCollabs.has(user.username)
+							).map((user,idx) => (
 								<>
-									{username !== curr_topic?.topic?.creator_username && (
-										<UserCard
-											username={username as string}
-											name={name as string}
-											topicid={topic_id}
-											topicname={curr_topic?.topic?.title as string}
-											creator_username={curr_topic?.topic?.creator_username as string}
-										/>
-									)}
+									<UserCard
+										key={idx}
+										user={user}
+										topicid={topic_id}
+										topic={curr_topic?.topic}
+										collaborators={curr_topic?.topic?.collaborators}
+									/>
 								</>
 							))}
 						</div>

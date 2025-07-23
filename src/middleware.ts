@@ -39,6 +39,6 @@ export const config = {
         '/',
         '/verify/:path*',
         '/api/:path*',
-        // '/u/:path*'
+        '/u/:path*'
     ]
 }

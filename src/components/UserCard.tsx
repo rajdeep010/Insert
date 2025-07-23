@@ -8,41 +8,28 @@ import { toast } from "./ui/use-toast";
 import { useInsertUser } from "@/app/context/InsertUserProvider";
 
 
-interface UserCardProps {
-    username: string;
-    name: string;
-    topicid: string;
-    topicname: string;
-    creator_username: string;
-}
 
-const UserCard = ({ username, name, topicid, topicname, creator_username }: UserCardProps) => {
+const UserCard = ({user, topicid, topic, collaborators}: any) => {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
     const { data: session } = useSession()
-    const session_user_username = session?.user?.username as string
-
-    const { sendCollabInvite, isAlreadyCollaborator, isInviteAlreadySent } = useInsertUser()
+    const { sendCollabInvite } = useInsertUser()
 
 
     const handleAdd = async () => {
         try {
             setIsSubmitting(true)
-            const collabNotification: NotificationData = {
-                noti_type: 'collab_invitation',
-                from: session_user_username,
-                topicid,
-                topicname,
-                read: true
-            }
-    
-            const isCollaborator = await isAlreadyCollaborator(username, topicid, creator_username)
-            const isAlreadySent = await isInviteAlreadySent(username, topicid, creator_username)
 
-            if(isCollaborator === false && isAlreadySent === false){
-                sendCollabInvite(username, collabNotification)
+            const data = {
+                from: session?.user?.username,
+                to: user?.username,
+                fromID: session?.user?._id,
+                toID: user?._id,
+                topicId: topicid,
+                topicName: topic?.title
             }
+
+            await sendCollabInvite(user?.username, data)
         } catch (error) {
-            // // console.log(error)
             toast({
                 title: 'Oops',
                 description: 'Something went wrong',
@@ -57,8 +44,8 @@ const UserCard = ({ username, name, topicid, topicname, creator_username }: User
         <>
             <div className='flex justify-between items-center py-2 px-3  bg-blue-200 rounded-md'>
                 <div className='flex gap-2 items-center '>
-                    <div className='text-sm text-black'>{name}</div>
-                    <div className='text-sm text-black'>({username})</div>
+                    <div className='text-sm text-black'>{user?.name}</div>
+                    <div className='text-sm text-black'>({user?.username})</div>
                 </div>
 
                 <Button className='py-1' variant="default" disabled={isSubmitting} onClick={handleAdd}>

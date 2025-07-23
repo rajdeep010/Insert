@@ -1,8 +1,9 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 import { NextAuthOptions } from "next-auth";
-import  CredentialsProvider  from "next-auth/providers/credentials";
+import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken';
 
 
 export const authOptions: NextAuthOptions = {
@@ -11,8 +12,8 @@ export const authOptions: NextAuthOptions = {
             id: 'credentials',
             name: 'Credentials',
             credentials: {
-                email: {label: 'email', type: 'text'},
-                password: {label: 'password', type: 'text'}
+                email: { label: 'email',type: 'text' },
+                password: { label: 'password',type: 'text' }
             },
             async authorize(credentials: any): Promise<any> {
                 await dbConnect()
@@ -20,22 +21,22 @@ export const authOptions: NextAuthOptions = {
                 try {
                     const user = await UserModel.findOne({
                         $or: [
-                            {email: credentials.identifier},
-                            {username: credentials.identifier}
+                            { email: credentials.identifier },
+                            { username: credentials.identifier }
                         ]
                     })
 
-                    if(!user){
+                    if (!user) {
                         throw new Error('No user found with this email')
                     }
-                    if(!user.isVerified){
+                    if (!user.isVerified) {
                         throw new Error('Please verify your account')
                     }
-                    
-                    const isPasswordCorrect = await bcrypt.compare(credentials.password, user.password)
-                    if(isPasswordCorrect){
+
+                    const isPasswordCorrect = await bcrypt.compare(credentials.password,user.password)
+                    if (isPasswordCorrect) {
                         return user
-                    }else{
+                    } else {
                         throw new Error('Incorrect credentials')
                     }
                 } catch (error: any) {
@@ -45,8 +46,9 @@ export const authOptions: NextAuthOptions = {
         })
     ],
     callbacks: {
-        async jwt({token, user}) {
-            if(user){
+        async jwt({ token,user,account }) {
+            if (user) {
+                // console.log('the user: ',user)
                 token._id = user._id?.toString()
                 token.isVerified = user.isVerified
                 token.username = user.username
@@ -54,17 +56,35 @@ export const authOptions: NextAuthOptions = {
                 token.notifications = user.notifications
                 token.name = user.name
             }
+            if (account) {
+                // console.log('account.access_token',account,account.access_token)
+                token.accessToken = account.access_token
+            }
             return token
         },
-        async session({session, token}) {
-            if(token){
+        async session({ session,token }) {
+
+            if (token) {
                 session.user._id = token._id
                 session.user.isVerified = token.isVerified
                 session.user.username = token.username
                 session.user.email = token.email
                 session.user.notifications = token.notifications
                 session.user.name = token.name
+
+                const SECRET = process.env.NEXTAUTH_SECRET as string
+                const rawJwt = jwt.sign(
+                    {
+                        _id: token._id,
+                        email: token.email,
+                        name: token.name,
+                        username: token.username,
+                    },
+                    SECRET
+                );
+                session.accessToken = rawJwt;
             }
+
             return session
         }
     },

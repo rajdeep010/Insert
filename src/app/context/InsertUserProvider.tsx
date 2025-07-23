@@ -1,6 +1,6 @@
 'use client'
 import { NotificationData,UserInfo } from "@/types/types";
-import { useSession } from "next-auth/react";
+import { getCsrfToken,getSession,useSession } from "next-auth/react";
 import { useParams,useRouter } from "next/navigation";
 import { createContext,useContext,useEffect,useReducer,useState } from "react";
 import InsertUserReducer from "../reducer/InserUserReducer";
@@ -9,21 +9,26 @@ import { toast } from "@/components/ui/use-toast";
 import { uniqueId } from "@/helpers/unique-id";
 
 
+const INSERT_NOTIFY_SERVICE = 'https://insert-notification-service-production.up.railway.app'
+
 interface InsertUserProviderProps {
     user: any
     isUserLoading: boolean
     isAvatarUploading: boolean
 
+    notifications: any[],
+    unreadNotifyCount: number
+
     updateUser: (formData: Partial<UserInfo>) => void
     fetchUser: (username: string) => void
-    sendCollabInvite: (to_whom: string,noti: NotificationData) => void
+    sendCollabInvite: (to_whom: string,noti: any) => void
     addCollab: (add_whom_username: string,add_whom_name: string,topicid: string,topicname: string,whose_topic: string,notifyid: string) => void
-    sendSuggestion: (to_whom: string,noti: NotificationData) => void
+    sendSuggestion: (to_whom: string,noti: any) => void
     markAllRead: (username: string) => void
+    getNotifications: () => void
 
-    sendAcceptedCollabNotification: (to_whom: string,noti: NotificationData) => void
-    sendDeclinedCollabNotification: (to_whom: string,noti: NotificationData) => void
-    deleteNotification: (whose_noti: string,notifyid: string) => void
+    sendAcceptedCollabNotification: (to_whom: string,noti: any) => void
+    sendDeclinedCollabNotification: (to_whom: string,noti: any) => void
 
     isAlreadyCollaborator: (username: string,topicid: string,creator_username: string) => Promise<boolean>
     isInviteAlreadySent: (username: string,topicid: string,creator_username: string) => Promise<boolean>
@@ -34,17 +39,19 @@ const initialState: InsertUserProviderProps = {
     user: {},
     isUserLoading: false,
     isAvatarUploading: false,
+    notifications: [],
+    unreadNotifyCount: 0,
 
     updateUser: (formData: Partial<UserInfo>) => { },
     fetchUser: (username: string) => { },
-    sendCollabInvite: (to_whom: string,noti: NotificationData) => { },
+    sendCollabInvite: (to_whom: string,noti: any) => { },
     addCollab: (add_whom_username: string,add_whom_name: string,topicid: string,topicname: string,whose_topic: string,notifyid: string) => { },
-    sendSuggestion: (to_whom: string,noti: NotificationData) => { },
+    sendSuggestion: (to_whom: string,noti: any) => { },
     markAllRead: (username: string) => { },
+    getNotifications: () => {},
 
-    sendAcceptedCollabNotification: (to_whom: string,noti: NotificationData) => { },
-    sendDeclinedCollabNotification: (to_whom: string,noti: NotificationData) => { },
-    deleteNotification: (whose_noti: string,notifyid: string) => { },
+    sendAcceptedCollabNotification: (to_whom: string,noti: any) => { },
+    sendDeclinedCollabNotification: (to_whom: string,noti: any) => { },
 
     isAlreadyCollaborator: async () => true,
     isInviteAlreadySent: async () => true,
@@ -67,16 +74,16 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
 
     const uploadAvatar = async (file: File) => {
         try {
-            if(!username)   return
-            dispatch({type: "SET_IS_AVATAR_LOADING", payload: true})
+            if (!username) return
+            dispatch({ type: "SET_IS_AVATAR_LOADING",payload: true })
 
             const uuid = uniqueId
             const formData = new FormData()
-            formData.append('file', file)
-            formData.append('upload_preset', NEXT_PUBLIC_CLOUD_PRESET)
-            formData.append('folder', 'insert')
-            formData.append('cloud_name', NEXT_PUBLIC_CLOUD_NAME)
-            formData.append('public_id', uuid)
+            formData.append('file',file)
+            formData.append('upload_preset',NEXT_PUBLIC_CLOUD_PRESET)
+            formData.append('folder','insert')
+            formData.append('cloud_name',NEXT_PUBLIC_CLOUD_NAME)
+            formData.append('public_id',uuid)
 
             const response = await axios.post(
                 `https://api.cloudinary.com/v1_1/${NEXT_PUBLIC_CLOUD_NAME}/image/upload`,
@@ -84,7 +91,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
             )
 
             const avatarUrl = response.data.secure_url
-            const res = await axios.post(`/api/save-user-avatar`, {avatarURL: avatarUrl})
+            const res = await axios.post(`/api/save-user-avatar`,{ avatarURL: avatarUrl })
 
             if (res.data.success) {
                 toast({
@@ -93,7 +100,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
                     variant: 'default'
                 })
 
-                dispatch({type: "UPDATE_USER_AVATAR", payload: res.data?.avatar})
+                dispatch({ type: "UPDATE_USER_AVATAR",payload: res.data?.avatar })
             } else {
                 toast({
                     title: 'Failed ⭕',
@@ -108,8 +115,8 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
                 description: 'Something wrong',
                 variant: 'destructive'
             })
-        } finally{
-            dispatch({type: "SET_IS_AVATAR_LOADING", payload: false})
+        } finally {
+            dispatch({ type: "SET_IS_AVATAR_LOADING",payload: false })
         }
     }
 
@@ -172,19 +179,23 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
         }
     }
 
-    const sendCollabInvite = async (to_whom: string,noti: NotificationData) => {
+    const sendCollabInvite = async (to_whom: string,noti: any) => {
         try {
             if (!to_whom || !noti) return
 
-            const response = await axios.post(`/api/add-notification`,{
-                to_whom,
-                notification: noti
-            })
+            const data = {
+                topicName: noti.title,
+                topicId: noti.topicid,
+                from: session?.user?.username,
+                to: noti.to,
+            }
+            const formatPayload = notifyFormatter("COLLAB_REQUEST",data)
+            const res = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/add-notification`,formatPayload)
 
-            if (!response.data.success) {
+            if (!res.data.success) {
                 toast({
                     title: 'Error',
-                    description: response.data.message,
+                    description: res.data.message,
                     variant: 'default'
                 })
                 return
@@ -205,6 +216,30 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
         }
     }
 
+    const getNotifications = async () => {
+        try {
+            const response = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/get-notifications`)
+            dispatch({ type: "SET_NOTIFICATIONS",payload: response.data.notifications })
+        } catch (error) {
+
+        }
+    }
+
+    const getUnreadNotifyCount = async () => {
+        try {
+            if(!session?.accessToken)   return
+            console.log(session)
+            const response = await axios.get(`${INSERT_NOTIFY_SERVICE}/api/notify/get-unread-count`,{
+                headers: {
+                    Authorization: `Bearer ${session?.accessToken}`,
+                },
+            })
+            dispatch({ type: "SET_NOTIFY_COUNT",payload: response.data.count})
+        } catch (error) {
+            // console.error()
+        }
+    }
+
     const addCollab = async (add_whom_username: string,add_whom_name: string,topicid: string,topicname: string,whose_topic: string,notifyid: string) => {
         try {
             if (!add_whom_username || !topicid) return
@@ -218,7 +253,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
 
             if (!response.data.success) {
                 toast({
-                    title: 'Error',
+                    title: 'Oops',
                     description: response.data.message,
                     variant: 'destructive'
                 })
@@ -230,10 +265,25 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
                 description: 'Successfully added as collaborator',
                 variant: 'default'
             })
-            
-            deleteNotification(add_whom_username, notifyid!)
-            // fetchNotifications(add_whom_username)
-            // fetchNotifications(whose_topic)
+
+            const data = {
+                topicName: topicname,
+                topicId: topicid,
+                from: session?.user?.username,
+                to: add_whom_username,
+            }
+            const formatPayload = notifyFormatter("COLLAB_ACCEPT",data)
+            const res = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/add-notification`,formatPayload)
+
+            if (!res.data.success) {
+                toast({
+                    title: 'Oops',
+                    description: response.data.message,
+                    variant: 'destructive'
+                })
+                return
+            }
+
         } catch (error) {
 
             toast({
@@ -244,71 +294,19 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
         }
     }
 
-    const deleteNotification = async (whose_noti: string,notifyid: string) => {
-        try {
-            if (!whose_noti) return
-
-            const response = await axios.post(`/api/delete-notification`,{
-                username: whose_noti,
-                notifyid,
-            })
-
-            if (!response.data.success) {
-                toast({
-                    title: 'Error',
-                    description: 'Error in deleting the notification',
-                    variant: 'destructive'
-                })
-                return
-            }
-
-            // fetchNotifications(whose_noti)
-            dispatch({
-                type: "UPDATE_USER_NOTIFICATIONS",
-                payload: response.data?.notifications
-            })
-        } catch (error) {
-            toast({
-                title: 'Error',
-                description: 'Something went wrong',
-                variant: 'destructive'
-            })
-        }
-    }
-
-    const sendAcceptedCollabNotification = async (to_whom: string,noti: NotificationData) => {
-        try {
-            if (!to_whom) return
-
-            const response = await axios.post(`/api/add-notification`,{
-                to_whom,
-                notification: noti
-            })
-
-            if (!response.data.success) {
-                toast({
-                    title: 'Error',
-                    description: response.data.message,
-                    variant: 'destructive'
-                })
-            }
-        } catch (error) {
-            toast({
-                title: 'Error',
-                description: 'Accept response not sent',
-                variant: 'destructive'
-            })
-        }
-    }
-
     const sendDeclinedCollabNotification = async (to_whom: string,noti: NotificationData) => {
         try {
             if (!to_whom) return
 
-            const response = await axios.post(`/api/add-notification`,{
-                to_whom,
-                notification: noti
-            })
+            const data = {
+                topicName: noti.topicname,
+                topicId: noti.topicid,
+                from: session?.user?.username,
+                to: to_whom,
+            }
+            const formatPayload = notifyFormatter("COLLAB_DECLINE",data)
+            const response = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/add-notification`,formatPayload)
+
 
             if (!response.data.success) {
                 toast({
@@ -317,7 +315,6 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
                     variant: 'destructive'
                 })
             }
-            // general notifacation no toast for sending properly.
         } catch (error) {
             toast({
                 title: 'Error',
@@ -327,14 +324,20 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
         }
     }
 
-    const sendSuggestion = async (to_whom: string,noti: NotificationData) => {
+    const sendSuggestion = async (to_whom: string,noti: any) => {
         try {
             if (!to_whom || !noti) return
 
-            const response = await axios.post(`/api/add-notification`,{
-                to_whom,
-                notification: noti
-            })
+            const data = {
+                topicName: noti.topicname,
+                topicId: noti.topicid,
+                from: session?.user?.username,
+                to: to_whom,
+                problemName: noti.problemname,
+                problemUrl: noti.problemurl
+            }
+            const formatPayload = notifyFormatter("SUGGEST_PROBLEM",data)
+            const response = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/add-notification`,formatPayload)
 
             if (!response.data.success) {
                 toast({
@@ -359,77 +362,18 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
         }
     }
 
-    const isAlreadyCollaborator = async (username: string,topicid: string,creator_username: string) => {
-        try {
-            if (!username || !topicid || !creator_username) return true
-
-            const response = await axios.get(`/api/check-collaborator?topicid=${topicid}&check_whom=${username}`)
-
-            if (response.data.success) {
-                return false
-            } else {
-                toast({
-                    title: 'Not possible',
-                    description: 'User is already a collaborator',
-                    variant: 'destructive'
-                })
-                return true
-            }
-
-        } catch (error: any) {
-            const axiosError = error
-            toast({
-                title: 'Oops',
-                description: axiosError.response?.data.message || 'Something went wrong',
-                variant: 'destructive'
-            })
-            return true
-        }
-    }
-
-    const isInviteAlreadySent = async (username: string,topicid: string,creator_username: string) => {
-        try {
-            if (!username || !topicid || !creator_username) return true
-
-            const response = await axios.get(`/api/check-invite-sent?from=${creator_username}&topicid=${topicid}&username=${username}`)
-            if (response.data.success) {
-                return false
-            } else {
-                toast({
-                    title: 'Not possible',
-                    description: 'Invite already sent',
-                    variant: 'destructive'
-                })
-                return true
-            }
-
-        } catch (error: any) {
-            const axiosError = error
-
-            toast({
-                title: 'Oops',
-                description: axiosError.response?.data.message || 'Something went wrong',
-                variant: 'destructive'
-            })
-            return true
-        }
-    }
-
     const markAllRead = async () => {
         try {
             if (!username) return
 
-            const response = await axios.post(`/api/mark-all-as-read`)
+            const response = await axios.patch(`${INSERT_NOTIFY_SERVICE}/api/notify/mark-all-read`)
             if (response.data.success) {
                 toast({
                     title: 'Done ✅',
                     description: 'Successfully marked all read',
                     variant: 'default'
                 })
-                dispatch({
-                    type: "UPDATE_USER_NOTIFICATIONS",
-                    payload: response.data?.notifications
-                })
+                dispatch({ type: "MARK_ALL_READ_NOTIFICATIONS" })
             }
         } catch (error) {
             toast({
@@ -441,19 +385,37 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
     }
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                await fetchUser(param_username)
-            } catch (error) {
-                dispatch({
-                    type: "SET_USER",
-                    user: null
-                })
+        if (status === "authenticated") {
+            const fetchData = async () => {
+                try {
+                    await fetchUser(param_username)
+
+                } catch (error) {
+                    dispatch({
+                        type: "SET_USER",
+                        user: null
+                    })
+                }
             }
+
+            fetchData()
         }
 
-        fetchData()
-    }, [param_username])
+    },[status,param_username])
+
+    useEffect(() => {
+        if (status === "authenticated") {
+            const fetchNoti = async () => {
+                try {
+                    await getUnreadNotifyCount()
+                } catch (error) {
+
+                }
+            }
+
+            fetchNoti()
+        }
+    },[status])
 
     return (
         <InsertUserContext.Provider
@@ -464,12 +426,11 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
                 updateUser,
                 sendCollabInvite,
                 addCollab,
-                sendAcceptedCollabNotification,
                 sendDeclinedCollabNotification,
                 sendSuggestion,
-                isAlreadyCollaborator,
-                isInviteAlreadySent,
-                markAllRead
+                markAllRead,
+                getNotifications,
+                getUnreadNotifyCount
             }}>
             {children}
         </InsertUserContext.Provider>)
