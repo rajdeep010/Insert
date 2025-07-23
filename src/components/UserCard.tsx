@@ -1,7 +1,7 @@
 'use client'
 import { Button } from "./ui/button";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Send } from "lucide-react";
 import { NotificationData } from '@/types/types';
 import { useSession } from "next-auth/react";
 import { toast } from "./ui/use-toast";
@@ -54,7 +54,7 @@ const UserCard = ({user, topicid, topic, collaborators}: any) => {
                             <>
                                 <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
                             </>
-                        ) : (<><span className='text-sm'>Add</span></>)
+                        ) : (<><Send className="h-4 w-4 animate-bounce"/></>)
                     }
                 </Button>
             </div>

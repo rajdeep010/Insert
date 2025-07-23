@@ -7,6 +7,7 @@ import InsertUserReducer from "../reducer/InserUserReducer";
 import axios from "axios";
 import { toast } from "@/components/ui/use-toast";
 import { uniqueId } from "@/helpers/unique-id";
+import { notifyFormatter } from "@/helpers/notify-format";
 
 
 const INSERT_NOTIFY_SERVICE = 'https://insert-notification-service-production.up.railway.app'
@@ -186,11 +187,15 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
             const data = {
                 topicName: noti.title,
                 topicId: noti.topicid,
-                from: session?.user?.username,
-                to: noti.to,
+                fromUsername: session?.user?.username,
+                toUsername: noti.to,
             }
             const formatPayload = notifyFormatter("COLLAB_REQUEST",data)
-            const res = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/add-notification`,formatPayload)
+            const res = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/add-notification`,formatPayload, {
+                headers: {
+                    Authorization: `Bearer ${session?.accessToken}`,
+                },
+            })
 
             if (!res.data.success) {
                 toast({
@@ -218,7 +223,11 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
 
     const getNotifications = async () => {
         try {
-            const response = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/get-notifications`)
+            const response = await axios.get(`${INSERT_NOTIFY_SERVICE}/api/notify/get-notifications`,{
+                headers: {
+                    Authorization: `Bearer ${session?.accessToken}`,
+                },
+            })
             dispatch({ type: "SET_NOTIFICATIONS",payload: response.data.notifications })
         } catch (error) {
 
@@ -269,11 +278,15 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
             const data = {
                 topicName: topicname,
                 topicId: topicid,
-                from: session?.user?.username,
-                to: add_whom_username,
+                fromUsername: session?.user?.username,
+                toUsername: add_whom_username,
             }
             const formatPayload = notifyFormatter("COLLAB_ACCEPT",data)
-            const res = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/add-notification`,formatPayload)
+            const res = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/add-notification`,formatPayload, {
+                headers: {
+                    Authorization: `Bearer ${session?.accessToken}`,
+                },
+            })
 
             if (!res.data.success) {
                 toast({
@@ -301,11 +314,15 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
             const data = {
                 topicName: noti.topicname,
                 topicId: noti.topicid,
-                from: session?.user?.username,
-                to: to_whom,
+                fromUsername: session?.user?.username,
+                toUsername: to_whom,
             }
             const formatPayload = notifyFormatter("COLLAB_DECLINE",data)
-            const response = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/add-notification`,formatPayload)
+            const response = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/add-notification`,formatPayload, {
+                headers: {
+                    Authorization: `Bearer ${session?.accessToken}`,
+                },
+            })
 
 
             if (!response.data.success) {
@@ -318,7 +335,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
         } catch (error) {
             toast({
                 title: 'Error',
-                description: 'Decline response not sent',
+                description: `Decline response not sent`,
                 variant: 'destructive'
             })
         }
@@ -331,13 +348,17 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
             const data = {
                 topicName: noti.topicname,
                 topicId: noti.topicid,
-                from: session?.user?.username,
-                to: to_whom,
+                fromUsername: session?.user?.username,
+                toUsername: to_whom,
                 problemName: noti.problemname,
                 problemUrl: noti.problemurl
             }
             const formatPayload = notifyFormatter("SUGGEST_PROBLEM",data)
-            const response = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/add-notification`,formatPayload)
+            const response = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/add-notification`,formatPayload, {
+                headers: {
+                    Authorization: `Bearer ${session?.accessToken}`,
+                },
+            })
 
             if (!response.data.success) {
                 toast({
@@ -366,7 +387,11 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
         try {
             if (!username) return
 
-            const response = await axios.patch(`${INSERT_NOTIFY_SERVICE}/api/notify/mark-all-read`)
+            const response = await axios.patch(`${INSERT_NOTIFY_SERVICE}/api/notify/mark-all-read`, {
+                headers: {
+                    Authorization: `Bearer ${session?.accessToken}`,
+                },
+            })
             if (response.data.success) {
                 toast({
                     title: 'Done ✅',

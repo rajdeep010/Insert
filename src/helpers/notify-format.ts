@@ -1,6 +1,6 @@
 
 
-const notifyFormatter = (type: string,data: any) => {
+export const notifyFormatter = (type: string,data: any) => {
 
     switch (type) {
 

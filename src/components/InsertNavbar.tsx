@@ -17,6 +17,7 @@ import {
 	Layout,
 	CircleCheckBig,
 	Menu,
+	Loader2,
 } from "lucide-react";
 import {
 	NavigationMenu,
@@ -54,23 +55,20 @@ const InsertNavbar = () => {
 	const router = useRouter();
 	const username = session?.user?.username;
 	const param_username = params?.username as string;
-	const [notifyLoader, setNotifyLoader] = React.useState(false)
+	const [notifyLoader,setNotifyLoader] = React.useState(false)
 
-	const { user,markAllRead, unreadNotifyCount, notifications, getNotifications } = useInsertUser();
-	// console.log('user: ', user, session?.user)
-	let unread_cnt = 0;
-	session?.user?.notifications?.map((each: any) => {
-		if (each.read === true) unread_cnt += 1;
-	});
+	const { user,markAllRead,unreadNotifyCount,notifications,getNotifications } = useInsertUser();
 
 	const handleGetNotifier = async () => {
 		try {
+			console.log('get notifications called',notifications)
 			setNotifyLoader(true)
 			await getNotifications()
 		} catch (error) {
-			
-		} finally{
+
+		} finally {
 			setNotifyLoader(false)
+			console.log('get notifications finished',notifications)
 		}
 	}
 
@@ -197,48 +195,51 @@ const InsertNavbar = () => {
 						)}
 
 						{status === "authenticated" && username && (
-							<DropdownMenu>
+							<DropdownMenu onOpenChange={(open) => open && handleGetNotifier()}>
 								<DropdownMenuTrigger
 									className={`flex items-center border-none outline-none ${unreadNotifyCount > 0 && "notify"}`}
 									unread-count={unreadNotifyCount}
-									onClick={handleGetNotifier}
 								>
 									<MessageSquare className="h-6 w-6 mx-2" />
 								</DropdownMenuTrigger>
 
-								<DropdownMenuContent className="max-w-[300px] max-h-[500px] overflow-y-scroll custom-small-scrollbar">
+								<DropdownMenuContent className="max-w-[300px] max-h-[300px] overflow-y-scroll custom-small-scrollbar">
 									<DropdownMenuLabel className="flex items-center justify-between">
 										<div>Notifications</div>
-										{session.user?.notifications &&
-											session.user?.notifications.length > 0 && (
+										{notifications &&
+											notifications.length > 0 && (
 												<div
 													className="p-1 cursor-pointer flex items-center gap-1 text-xs underline text-blue-400"
 													onClick={() => markAllRead(session?.user?.username!)}
 												>
 													<CircleCheckBig className="h-4 w-4" /> Mark all read
 												</div>
-											)}
+											)
+										}
 									</DropdownMenuLabel>
 									<DropdownMenuSeparator />
 									<div>
-										{!session.user?.notifications && (
+										{
+											notifyLoader && <Loader2 className="h-4 w-4 animate-spin" />
+										}
+										{!notifications && (
 											<>
 												<div className="p-2 text-sm opacity-50">
 													No notifications
 												</div>
 											</>
 										)}
-										{session.user?.notifications &&
-											session.user?.notifications?.map(
+										{!notifyLoader && notifications &&
+											notifications?.map(
 												(msg: any,idx: number) => (
-													<React.Fragment key={idx}>
-														{msg.noti_type === "collab_invitation" && (
+													<DropdownMenuItem key={idx}>
+														{msg?.actionType === "collab-request" && (
 															<>
 																<InviteNotificationCard
 																	key={idx}
 																	from={msg.from as string}
-																	topicid={msg.topicid as string}
-																	topicname={msg.topicname as string}
+																	topicid={msg.topicId as string}
+																	topicname={msg.topicName as string}
 																	notifyid={msg._id as string}
 																	read={msg.read}
 																/>
@@ -246,45 +247,45 @@ const InsertNavbar = () => {
 															</>
 														)}
 
-														{msg.noti_type === "suggestion" && (
+														{msg?.actionType === "suggestion" && (
 															<>
 																<SuggestionNotificationCard
 																	key={idx}
 																	from={msg.from as string}
-																	topicid={msg.topicid as string}
-																	problemurl={msg.problemurl as string}
-																	topicname={msg.topicname as string}
+																	topicid={msg.topicId as string}
+																	problemurl={msg.problemUrl as string}
+																	topicname={msg.topicName as string}
 																	read={msg.read}
 																/>
 																<DropdownMenuSeparator />
 															</>
 														)}
 
-														{msg.noti_type === "accept_invite" && (
+														{msg?.actionType === "collab-accept" && (
 															<>
 																<AcceptedInviteCard
 																	key={idx}
 																	from={msg.from as string}
-																	topicid={msg.topicid as string}
-																	topicname={msg.topicname as string}
+																	topicid={msg.topicId as string}
+																	topicname={msg.topicName as string}
 																	read={msg.read}
 																/>
 																<DropdownMenuSeparator />
 															</>
 														)}
 
-														{msg.noti_type === "decline_invite" && (
+														{msg?.actionType === "collab-decline" && (
 															<>
 																<DeclineInviteCard
 																	key={idx}
 																	from={msg.from as string}
-																	topicid={msg.topicid as string}
-																	topicname={msg.topicname as string}
+																	topicid={msg.topicId as string}
+																	topicname={msg.topicName as string}
 																	read={msg.read}
 																/>
 															</>
 														)}
-													</React.Fragment>
+													</DropdownMenuItem>
 												)
 											)}
 									</div>
@@ -325,7 +326,7 @@ const InsertNavbar = () => {
 
 			<div className="lg:hidden flex items-center gap-6">
 				{status === "authenticated" && username && (
-					<DropdownMenu>
+					<DropdownMenu onOpenChange={(open) => open && handleGetNotifier()}>
 						<DropdownMenuTrigger
 							className={`flex items-center border-none outline-none ${unreadNotifyCount > 0 && "notify"}`}
 							unread-count={unreadNotifyCount}
@@ -333,11 +334,11 @@ const InsertNavbar = () => {
 							<MessageSquare className="h-6 w-6 mx-2" />
 						</DropdownMenuTrigger>
 
-						<DropdownMenuContent className="max-w-[300px] max-h-[500px] overflow-y-scroll custom-small-scrollbar">
+						<DropdownMenuContent className="max-w-[300px] max-h-[300px] overflow-y-scroll custom-small-scrollbar">
 							<DropdownMenuLabel className="flex items-center justify-between">
 								<div>Notifications</div>
-								{session.user?.notifications &&
-									session.user?.notifications.length > 0 && (
+								{notifications &&
+									notifications.length > 0 && (
 										<div
 											className="p-1 cursor-pointer flex items-center gap-1 text-xs underline text-blue-400"
 											onClick={() => markAllRead(session?.user?.username!)}
@@ -348,72 +349,79 @@ const InsertNavbar = () => {
 							</DropdownMenuLabel>
 							<DropdownMenuSeparator />
 							<div>
-								{!session.user?.notifications && (
+								{
+									notifyLoader && <Loader2 className="h-4 w-4 animate-spin" />
+								}
+
+								{!notifications && !notifyLoader && (
 									<>
 										<div className="p-2 text-sm opacity-50">
 											No notifications
 										</div>
 									</>
 								)}
-								{session.user?.notifications &&
-									session.user?.notifications?.map(
+
+								{!notifyLoader &&
+									notifications?.map(
 										(msg: any,idx: number) => (
-											<React.Fragment key={idx}>
-												{msg.noti_type === "collab_invitation" && (
+											<DropdownMenuItem key={idx}>
+												
+												{msg?.actionType === "collab-request" && (
 													<>
 														<InviteNotificationCard
 															key={idx}
-															from={msg.from as string}
-															topicid={msg.topicid as string}
-															topicname={msg.topicname as string}
-															notifyid={msg._id as string}
-															read={msg.read}
+															from={msg?.from as string}
+															topicid={msg?.topicId as string}
+															topicname={msg?.topicName as string}
+															notifyid={msg?._id as string}
+															read={msg?.read}
 														/>
 														<DropdownMenuSeparator />
 													</>
 												)}
 
-												{msg.noti_type === "suggestion" && (
+												{msg?.actionType === "suggestion" && (
 													<>
 														<SuggestionNotificationCard
 															key={idx}
-															from={msg.from as string}
-															topicid={msg.topicid as string}
-															problemurl={msg.problemurl as string}
-															topicname={msg.topicname as string}
-															read={msg.read}
+															from={msg?.from as string}
+															topicid={msg?.topicId as string}
+															problemurl={msg?.problemUrl as string}
+															topicname={msg?.topicName as string}
+															read={msg?.read}
 														/>
 														<DropdownMenuSeparator />
 													</>
 												)}
 
-												{msg.noti_type === "accept_invite" && (
+												{msg?.actionType === "collab-accept" && (
 													<>
 														<AcceptedInviteCard
 															key={idx}
-															from={msg.from as string}
-															topicid={msg.topicid as string}
-															topicname={msg.topicname as string}
-															read={msg.read}
+															from={msg?.from as string}
+															topicid={msg?.topicId as string}
+															topicname={msg?.topicName as string}
+															read={msg?.read}
 														/>
 														<DropdownMenuSeparator />
 													</>
 												)}
 
-												{msg.noti_type === "decline_invite" && (
+												{msg?.actionType === "collab-decline" && (
 													<>
 														<DeclineInviteCard
 															key={idx}
-															from={msg.from as string}
-															topicid={msg.topicid as string}
-															topicname={msg.topicname as string}
-															read={msg.read}
+															from={msg?.from as string}
+															topicid={msg?.topicId as string}
+															topicname={msg?.topicName as string}
+															read={msg?.read}
 														/>
 													</>
 												)}
-											</React.Fragment>
+											</DropdownMenuItem>
 										)
-									)}
+									)
+								}
 							</div>
 						</DropdownMenuContent>
 					</DropdownMenu>

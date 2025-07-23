@@ -220,7 +220,7 @@ const Dashboard = () => {
                 </DialogContent>
             </Dialog>
 
-            <div className="my-5 flex flex-col gap-3 w-full">
+            <div className="my-5 flex flex-col gap-3 w-full h-[70vh] overflow-y-scroll custom-small-scrollbar">
                 {
                     filteredTopics && filteredTopics?.map(({ id,title,about,visibility,creator_username,collaborators,createdAt },idx) => {
                         return <>

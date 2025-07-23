@@ -60,7 +60,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiResponse } from "@/types/ApiResponse";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDebounceCallback } from "usehooks-ts";
+import { useDebounceCallback, useDebounceValue } from "usehooks-ts";
 import { CirclePlus,FileInput,Loader2,Trash2,UserPlus } from "lucide-react";
 import UserCard from "@/components/UserCard";
 import Collaborator from "@/components/Collaborator";
@@ -106,7 +106,7 @@ const EachTopic = () => {
 	const [isDeletingProblem,setIsDeletingProblem] = useState(false)
 
 	// collaborator search
-	const [searchUsername,setSearchUsername] = useState("");
+	const [debouncedUsername,setSearchUsername] = useDebounceValue<string>('', 500)
 	const [isSearchingUsername,setIsSearchingUsername] = useState(false);
 	const [searchUsernameMessage,setSearchUsernameMessage] = useState("");
 	const [similarUsers,setSimilarUsers] = useState<UserInfo[]>([]);
@@ -176,13 +176,13 @@ const EachTopic = () => {
 	};
 
 	useEffect(() => {
-		if (!searchUsername) return;
+		if (!debouncedUsername) return;
 		(async () => {
 			setIsSearchingUsername(true);
 			setSearchUsernameMessage("");
 			try {
 				const res = await axios.get<ApiResponse>(
-					`/api/get-similar-users?username=${searchUsername}`
+					`/api/get-similar-users?username=${debouncedUsername}`
 				);
 				setSearchUsernameMessage(res.data.message);
 				setSimilarUsers(res.data.similar_users || []);
@@ -193,7 +193,7 @@ const EachTopic = () => {
 				setIsSearchingUsername(false);
 			}
 		})();
-	},[searchUsername]);
+	},[debouncedUsername]);
 
 	const handleOpenDeleteTopicModal = () => {
 		setIsTopicDeleteModalOpen(true);
