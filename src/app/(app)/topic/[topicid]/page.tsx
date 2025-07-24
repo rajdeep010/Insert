@@ -76,6 +76,7 @@ import { Avatar,AvatarFallback,AvatarImage } from "@/components/ui/avatar";
 import { useInsertTopics } from "@/app/context/InsertTopicProvider";
 import NotFound from "@/app/not-found";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 const EachTopic = () => {
 	const params = useParams();
@@ -110,6 +111,7 @@ const EachTopic = () => {
 	const [isSearchingUsername,setIsSearchingUsername] = useState(false);
 	const [searchUsernameMessage,setSearchUsernameMessage] = useState("");
 	const [similarUsers,setSimilarUsers] = useState<UserInfo[]>([]);
+
 	const debounced = useDebounceCallback(setSearchUsername,500);
 
 	const [isTopicDeleting,setIsTopicDeleting] = useState(false)
@@ -327,11 +329,7 @@ const EachTopic = () => {
 						</p>
 
 						<div className="flex flex-col gap-2 p-2 overflow-y-scroll custom-small-scrollbar">
-							{similarUsers.filter(
-								user =>
-									user.username !== curr_topic.topic.creator_username &&
-									!existingCollabs.has(user.username)
-							).map((user,idx) => (
+							{similarUsers?.map((user,idx) => (
 								<>
 									<UserCard
 										key={idx}
@@ -340,6 +338,7 @@ const EachTopic = () => {
 										topic={curr_topic?.topic}
 										collaborators={curr_topic?.topic?.collaborators}
 									/>
+									<Separator className="my-1" />
 								</>
 							))}
 						</div>
@@ -444,7 +443,7 @@ const EachTopic = () => {
 							</DialogDescription>
 						</DialogHeader>
 						<DialogFooter>
-							<Button variant="destructive" onClick={handleDeleteProblem}>
+							<Button variant="destructive" disabled={isDeletingProblem} onClick={handleDeleteProblem}>
 								{isDeletingProblem ? (
 									<>
 										<Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
@@ -538,7 +537,7 @@ const EachTopic = () => {
 					problems={curr_topic?.problems || []}
 					showDelete={
 						status === "authenticated" &&
-						session.user?.username === curr_topic?.topic?.creator_username
+						(session?.user.username === curr_topic?.topic?.creator_username || curr_topic?.topic?.collaborators.find((each: any) => each.username === session?.user?.username))
 					}
 					onDelete={handleOpenDeleteProblemModal}
 				/>}

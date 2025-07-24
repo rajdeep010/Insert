@@ -55,7 +55,7 @@ const Dashboard = () => {
 
     const [isProblemSubmitting,setIsProblemSubmitting] = useState<boolean>(false)
     const [isTopicSubmitting,setIsTopicSubmitting] = useState<boolean>(false)
-    const [isTopicDeleting, setIsTopicDeleting] = useState(false)
+    const [isTopicDeleting,setIsTopicDeleting] = useState(false)
 
     const [isTopicModalOpen,setIsTopicModalOpen] = useState(false);
     const [isItemModalOpen,setIsItemModalOpen] = useState(false);
@@ -70,7 +70,7 @@ const Dashboard = () => {
         return user_Topics?.filter(topic =>
             topic.title.toLowerCase().includes(searchQuery.toLowerCase())
         )
-    },[searchQuery, user_Topics])
+    },[searchQuery,user_Topics])
 
     //! Implementing all functions
     const handleDeleteTopic = async () => {
@@ -240,7 +240,10 @@ const Dashboard = () => {
                                             )}
                                         </div>
 
-                                        <Button variant={'destructive'} onClick={() => handleOpenDeleteTopicModal(id)}> <Trash2 className='h-4 w-4' /> </Button>
+                                        {status === 'authenticated' && session?.user?.username === username && (
+                                            <Button variant={'destructive'} onClick={() => handleOpenDeleteTopicModal(id)}> <Trash2 className='h-4 w-4' /></Button>
+                                        )}
+                                        
                                     </div>
 
                                     <CardDescription>{about}...<Link href={`/topic/${id}`} className='text-blue-500'>read more</Link> </CardDescription>

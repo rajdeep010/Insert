@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
             topics = await TopicModel.find({
                 $or: [
                     { visibility: "public" },
-                    { visibility: "private", creator_username: token.username }
+                    { visibility: "private", creator_username: token.username },
+                    { visibility: "private", "collaborators.username": token.username },
                 ]
             }).sort({ createdAt: -1 });
         } else {

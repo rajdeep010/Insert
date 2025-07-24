@@ -18,6 +18,7 @@ import {
 	CircleCheckBig,
 	Menu,
 	Loader2,
+	LayoutDashboard,
 } from "lucide-react";
 import {
 	NavigationMenu,
@@ -136,7 +137,18 @@ const InsertNavbar = () => {
 							<NavigationMenuItem>
 								<NavigationMenuTrigger>Posts</NavigationMenuTrigger>
 								<NavigationMenuContent>
-									<ul className="flex flex-col gap-6 w-[220px] p-2">
+									<ul className="flex flex-col gap-2 w-[220px] p-2">
+										<li>
+											<NavigationMenuLink asChild>
+												<Link
+													href={`/posts/topic`}
+													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
+												>
+													<LayoutDashboard className="h-4 w-4" />
+													<span className="text-sm">Topics</span>
+												</Link>
+											</NavigationMenuLink>
+										</li>
 										<li>
 											<NavigationMenuLink asChild>
 												<Link
@@ -242,6 +254,8 @@ const InsertNavbar = () => {
 																	topicname={msg.topicName as string}
 																	notifyid={msg._id as string}
 																	read={msg.read}
+																	fromUserId={msg?.fromUserId}
+																	toUserId={msg?.toUserId}
 																/>
 																<DropdownMenuSeparator />
 															</>
@@ -375,6 +389,8 @@ const InsertNavbar = () => {
 															topicname={msg?.topicName as string}
 															notifyid={msg?._id as string}
 															read={msg?.read}
+															fromUserId={msg?.fromUserId}
+															toUserId={msg?.toUserId}
 														/>
 														<DropdownMenuSeparator />
 													</>
@@ -475,6 +491,15 @@ const InsertNavbar = () => {
 
 						{status === "authenticated" && username && <DropdownMenuGroup>
 							<DropdownMenuLabel>Posts</DropdownMenuLabel>
+							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
+								<Link
+									href={`/posts/topic`}
+									className=" flex gap-2 items-center"
+								>
+									<LayoutDashboard className="h-4 w-4" />
+									<span className="text-sm">Topics</span>
+								</Link>
+							</DropdownMenuItem>
 							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
 								<Link
 									href={`/posts/blog`}

@@ -58,14 +58,14 @@ export default function AllTopicPosts() {
                 )}
 
                 {!isAllSheetsLoading && (
-                    <div className="flex flex-col gap-4 max-h-[72vh] overflow-y-scroll custom-small-scrollbar  shadow-gray-200 dark:shadow-gray-800">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-[75vh] overflow-y-scroll custom-small-scrollbar  shadow-gray-200 dark:shadow-gray-800">
                         {all_topics?.map((topic,idx) => (
                             <div key={idx} className="group">
                                 <div className="flex justify-between px-2 lg:px-8 py-6 hover:bg-gray-50 dark:hover:bg-gray-900 transition ease-in-out">
                                     <TopicCard topic={topic} />
                                 </div>
 
-                                {idx < all_topics?.length - 1 && <Separator />}
+                                {/* {idx < all_topics?.length - 1 && <Separator />} */}
                             </div>
                         ))}
                     </div>

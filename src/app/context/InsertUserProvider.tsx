@@ -23,7 +23,7 @@ interface InsertUserProviderProps {
     updateUser: (formData: Partial<UserInfo>) => void
     fetchUser: (username: string) => void
     sendCollabInvite: (to_whom: string,noti: any) => void
-    addCollab: (add_whom_username: string,add_whom_name: string,topicid: string,topicname: string,whose_topic: string,notifyid: string) => void
+    addCollab: (add_whom_username: string,add_whom_name: string,topicid: string,topicname: string,whose_topic: string,notifyid: string, fromUserId: string, toUserId: string) => void
     sendSuggestion: (to_whom: string,noti: any) => void
     markAllRead: (username: string) => void
     getNotifications: () => void
@@ -46,7 +46,7 @@ const initialState: InsertUserProviderProps = {
     updateUser: (formData: Partial<UserInfo>) => { },
     fetchUser: (username: string) => { },
     sendCollabInvite: (to_whom: string,noti: any) => { },
-    addCollab: (add_whom_username: string,add_whom_name: string,topicid: string,topicname: string,whose_topic: string,notifyid: string) => { },
+    addCollab: (add_whom_username: string,add_whom_name: string,topicid: string,topicname: string,whose_topic: string,notifyid: string, fromUserId: string, toUserId: string) => { },
     sendSuggestion: (to_whom: string,noti: any) => { },
     markAllRead: (username: string) => { },
     getNotifications: () => {},
@@ -185,10 +185,12 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
             if (!to_whom || !noti) return
 
             const data = {
-                topicName: noti.title,
-                topicId: noti.topicid,
+                topicName: noti.topicName,
+                topicId: noti.topicId,
                 fromUsername: session?.user?.username,
                 toUsername: noti.to,
+                fromUserId: noti?.fromID,
+                toUserId: noti?.toID,
             }
             const formatPayload = notifyFormatter("COLLAB_REQUEST",data)
             const res = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/add-notification`,formatPayload, {
@@ -196,10 +198,10 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
                     Authorization: `Bearer ${session?.accessToken}`,
                 },
             })
-
+            // console.log(res)
             if (!res.data.success) {
                 toast({
-                    title: 'Error',
+                    title: 'Oops!',
                     description: res.data.message,
                     variant: 'default'
                 })
@@ -212,10 +214,11 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
                 variant: 'default'
             })
 
-        } catch (error) {
+        } catch (error: any) {
+            // console.log(error)
             toast({
-                title: 'Error',
-                description: 'Collab request not sent',
+                title: 'Oops',
+                description: error.message || 'Collab request not sent',
                 variant: 'destructive'
             })
         }
@@ -249,7 +252,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
         }
     }
 
-    const addCollab = async (add_whom_username: string,add_whom_name: string,topicid: string,topicname: string,whose_topic: string,notifyid: string) => {
+    const addCollab = async (add_whom_username: string,add_whom_name: string,topicid: string,topicname: string,whose_topic: string,notifyid: string, fromUserId: string, toUserId: string) => {
         try {
             if (!add_whom_username || !topicid) return
 
@@ -280,6 +283,9 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
                 topicId: topicid,
                 fromUsername: session?.user?.username,
                 toUsername: add_whom_username,
+                notifyId: notifyid,
+                fromUserId,
+                toUserId
             }
             const formatPayload = notifyFormatter("COLLAB_ACCEPT",data)
             const res = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/add-notification`,formatPayload, {
@@ -316,6 +322,9 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
                 topicId: noti.topicid,
                 fromUsername: session?.user?.username,
                 toUsername: to_whom,
+                notifyId: noti?._id,
+                fromUserId: noti?.fromUserId,
+                toUserId: noti?.toUserId
             }
             const formatPayload = notifyFormatter("COLLAB_DECLINE",data)
             const response = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/add-notification`,formatPayload, {
@@ -387,7 +396,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
         try {
             if (!username) return
 
-            const response = await axios.patch(`${INSERT_NOTIFY_SERVICE}/api/notify/mark-all-read`, {
+            const response = await axios.patch(`${INSERT_NOTIFY_SERVICE}/api/notify/mark-all-read`, {}, {
                 headers: {
                     Authorization: `Bearer ${session?.accessToken}`,
                 },

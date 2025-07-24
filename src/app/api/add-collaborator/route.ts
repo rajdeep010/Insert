@@ -21,12 +21,6 @@ export async function POST(request: NextRequest) {
             },{ status: 404 })
         }
 
-        if (topic?.creator_username !== token?.username) {
-            return Response.json({
-                success: false,
-                message: "Forbidden to add",
-            },{ status: 403 })
-        }
 
         console.log('collaborators: ', topic.collaborators)
         const alreadyExists = topic.collaborators?.some(

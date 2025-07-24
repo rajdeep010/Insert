@@ -36,7 +36,7 @@ export default function TopicCard({ topic }: TopicCardProps) {
                 </div>
                 {about && (
                     <CardDescription className="text-sm text-muted-foreground line-clamp-3">
-                        {about.length > 120 ? `${about.slice(0,120)}…` : about}
+                        {about.length > 80 ? `${about.slice(0,80)}…` : about}
                     </CardDescription>
                 )}
             </CardHeader>

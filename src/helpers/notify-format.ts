@@ -11,10 +11,12 @@ export const notifyFormatter = (type: string,data: any) => {
                 "notiType": "default",
                 "actionSource": "topic",
                 "actionType": "collab-request",
-                "from": data.fromUsername,
-                "to": data.toUsername,
-                "topicId": data.topicId,
-                "topicName": data.topicName,
+                "from": data?.fromUsername,
+                "to": data?.toUsername,
+                "topicId": data?.topicId,
+                "topicName": data?.topicName,
+                "fromUserId": data?.fromUserId,
+                "toUserId": data?.toUserId
             }
         }
 
@@ -26,10 +28,13 @@ export const notifyFormatter = (type: string,data: any) => {
                 "notiType": "default",
                 "actionSource": "topic",
                 "actionType": "collab-accept",
-                "from": data.fromUsername,
-                "to": data.toUsername,
-                "topicId": data.topicId,
-                "topicName": data.topicName,
+                "from": data?.fromUsername,
+                "to": data?.toUsername,
+                "topicId": data?.topicId,
+                "topicName": data?.topicName,
+                "notifyId": data?.notifyId,
+                "fromUserId": data?.toUserId,
+                "toUserId": data?.fromUserId
             }
         }
 
@@ -41,10 +46,13 @@ export const notifyFormatter = (type: string,data: any) => {
                 "notiType": "default",
                 "actionSource": "topic",
                 "actionType": "collab-decline",
-                "from": data.fromUsername,
-                "to": data.toUsername,
-                "topicId": data.topicId,
-                "topicName": data.topicName,
+                "from": data?.fromUsername,
+                "to": data?.toUsername,
+                "topicId": data?.topicId,
+                "topicName": data?.topicName,
+                "notifyId": data?.notifyId,
+                "fromUserId": data?.toUserId,
+                "toUserId": data?.fromUserId
             }
         }
 
@@ -56,12 +64,12 @@ export const notifyFormatter = (type: string,data: any) => {
                 "notiType": "default",
                 "actionSource": "topic",
                 "actionType": "suggestion",
-                "from": data.fromUsername,
-                "to": data.toUsername,
-                "topicId": data.topicId,
-                "topicName": data.topicName,
-                "problemUrl": data.problemUrl,
-                "problemName": data.problemName
+                "from": data?.fromUsername,
+                "to": data?.toUsername,
+                "topicId": data?.topicId,
+                "topicName": data?.topicName,
+                "problemUrl": data?.problemUrl,
+                "problemName": data?.problemName
             }
         }
 
@@ -72,8 +80,8 @@ export const notifyFormatter = (type: string,data: any) => {
             "payload": {
                 "noti_type": "signup",
                 "from": "admin",
-                "to": data.toUsername,
-                "toEmail": data.toEmail
+                "to": data?.toUsername,
+                "toEmail": data?.toEmail
             }
         }
 

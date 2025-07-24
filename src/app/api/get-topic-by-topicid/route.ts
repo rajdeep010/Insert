@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
         }
 
         const { topic_id } = result.data
-        console.log('topic_id: ', topic_id)
+        console.log('topic_id: ',topic_id)
         if (!topic_id) {
             return Response.json({
                 success: false,
@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
         }
 
         const topic = await TopicModel.findOne({ id: topic_id });
+
         if (!topic) {
             return Response.json(
                 {
@@ -53,25 +54,31 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        if (topic?.creator_username === token?.username || topic?.visibility === "public") {
-            const problems = await ProblemModel.find({ topicId: topic._id });
+        const isAuthorized =
+            topic.visibility === "public" ||
+            topic.creator_username === token?.username ||
+            topic.collaborators?.some((collab: any) => collab.username === token?.username);
+
+        if (!isAuthorized) {
             return Response.json(
                 {
-                    success: true,
-                    message: "Topic and problems fetched successfully",
-                    topic,
-                    problems,
+                    success: false,
+                    message: "You are not authorized to view this topic",
                 },
-                { status: 200 }
+                { status: 403 }
             );
         }
 
+        const problems = await ProblemModel.find({ topicId: topic._id });
+
         return Response.json(
             {
-                success: false,
-                message: "Topic not found",
+                success: true,
+                message: "Topic and problems fetched successfully",
+                topic,
+                problems,
             },
-            { status: 404 }
+            { status: 200 }
         );
 
     } catch (error) {

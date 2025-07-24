@@ -15,6 +15,8 @@ export interface InviteNotificationCardProps {
     topicname: string;
     notifyid?: string;
     read?:boolean;
+    fromUserId?:string;
+    toUserId?:string;
 }
 
 export interface DeclineNotificationProps {
@@ -22,6 +24,8 @@ export interface DeclineNotificationProps {
     topicid: string;
     topicname: string;
     read?:boolean;
+    fromUserId?:string;
+    toUserId?:string;
 }
 
 export interface SuggestionNotificationCardProps extends InviteNotificationCardProps {
@@ -66,8 +70,10 @@ export interface NotificationData{
     problemurl?: string;
     topicname?: string;
     message?: string;   // for general notify
-    read: boolean
-    createdAt?: Date
+    read: boolean;
+    createdAt?: Date;
+    fromUserId?: string;
+    toUserId?: string;
 }
 
 interface UserInfo {

@@ -36,11 +36,18 @@ export async function GET(request: NextRequest) {
         }
 
         const { username } = result.data;
-        let filter: any = { creator_username: username };
-        if (token?.username !== username) {
+        let filter: any = {};
+        if (token?.username === queryParam.username) {
+            // If you're looking up your own topics, show all
+            filter.creator_username = username;
+        } else {
+            // Show topics where you're either the creator or a collaborator
             filter.$or = [
-                { visibility: "public" },
-                { visibility: "private","collaborators.username": token?.username },
+                { creator_username: username,visibility: "public" }, // Public topics of the user you're viewing
+                {
+                    "collaborators.username": token?.username,
+                    creator_username: username, // Only collaboration on that user's topics
+                },
             ];
         }
 

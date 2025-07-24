@@ -59,7 +59,7 @@ const InsertHoverCard: React.FC<InsertHoverCardProps> = ({
 							<Link href={`/u/${currentUser?.username}`} className="text-xs text-slate-500 truncate hover:text-blue-500 hover:underline">@{currentUser?.username}</Link>
 						</div>
 
-						{currentUser?.about && (<p className="text-xs text-gray-300">{currentUser?.about}</p>)}
+						{currentUser?.about && (<p className="text-xs text-gray-700 dark:text-gray-300">{currentUser?.about}</p>)}
 					</div>
 				</div>
 			</HoverCardContent>

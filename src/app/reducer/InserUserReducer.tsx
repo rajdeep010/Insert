@@ -15,15 +15,7 @@ export default function InsertUserReducer(state: any,action: any) {
                 user: action.payload
             }
 
-        case "MARK_ALL_READ_NOTIFICATIONS": {
-            const marked = state.notifications.map((each: any) => {
-                each.read = true
-            })
-            return {
-                ...state,
-                notifications: marked
-            }
-        }
+        
 
         case "UPDATE_USER_AVATAR":
             return {
@@ -50,11 +42,27 @@ export default function InsertUserReducer(state: any,action: any) {
                 unreadNotifyCount: action.payload
             }
 
-        case "SET_NOTIFICATIONS":
+        case "SET_NOTIFICATIONS": {
+            const notifications = action.payload;
+            const unreadCount = notifications.filter((n: any) => !n.read).length;
+
             return {
                 ...state,
-                notifications: action.payload
+                notifications,
+                unreadNotifyCount: unreadCount,
             }
+        }
+
+        case "MARK_ALL_READ_NOTIFICATIONS": {
+            const marked = state.notifications.map((each: any) => {
+                each.read = true
+            })
+            return {
+                ...state,
+                notifications: marked,
+                unreadNotifyCount: 0,
+            }
+        }
         
         default:
             return state;

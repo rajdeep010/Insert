@@ -13,7 +13,7 @@ export async function DELETE(request: NextRequest) {
     try {
         const username = token?.username
         const { topic_id,problem_id } = await request.json()
-        console.log('delete prblm: ', topic_id, problem_id)
+        console.log('delete prblm: ',topic_id,problem_id)
 
         if (!topic_id || !problem_id) {
             return Response.json(
@@ -25,8 +25,8 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        const topic = await TopicModel.findOne({id: topic_id})
-        if(!topic){
+        const topic = await TopicModel.findOne({ id: topic_id })
+        if (!topic) {
             return Response.json(
                 {
                     success: false,
@@ -36,41 +36,43 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        if (username !== topic?.creator_username) {
+        if (username === topic?.creator_username || topic?.collaborators.find((each: any) => each.username === username)) {
+
+
+            const deletedProblem = await ProblemModel.findOneAndDelete({
+                _id: problem_id,
+                topicId: topic._id,
+            });
+
+            if (!deletedProblem) {
+                return Response.json(
+                    {
+                        success: false,
+                        message: "Problem not found or already deleted",
+                    },
+                    { status: 404 }
+                );
+            }
+
             return Response.json(
                 {
-                    success: false,
-                    message: "Forbidden from deleting",
+                    success: true,
+                    message: "Problem deleted successfully",
                 },
-                { status: 403 }
-            );
-        }
-
-        const deletedProblem = await ProblemModel.findOneAndDelete({
-            _id: problem_id,
-            topicId: topic._id,
-        });
-
-        if (!deletedProblem) {
-            return Response.json(
-                {
-                    success: false,
-                    message: "Problem not found or already deleted",
-                },
-                { status: 404 }
+                { status: 200 }
             );
         }
 
         return Response.json(
             {
-                success: true,
-                message: "Problem deleted successfully",
+                success: false,
+                message: "Forbidden from deleting",
             },
-            { status: 200 }
+            { status: 403 }
         );
 
     } catch (error) {
-        console.log('error in deleting problm: ', error)
+        console.log('error in deleting problm: ',error)
         return Response.json({
             success: false,
             message: 'Error in deleting problem',
