@@ -61,6 +61,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { Separator } from "./ui/separator";
 
 const BlogWriteSidebar = () => {
   const { data: session } = useSession();
@@ -111,30 +112,39 @@ const BlogWriteSidebar = () => {
 
             <DropdownMenuContent className="w-[--radix-popper-anchor-width]">
               <Link href={`/u/${username}?tab=overview`}>
-                <DropdownMenuItem className="hover:bg-gray-800 cursor-pointer flex gap-2 items-center">
+                <DropdownMenuItem className="hover:dark:bg-gray-800 hover:bg-gray-300  cursor-pointer flex gap-2 items-center">
                   <User2 className="h-4 w-4" />
                   Overview
                 </DropdownMenuItem>
               </Link>
 
               <Link href={`/u/${username}?tab=topics`}>
-                <DropdownMenuItem className="hover:bg-gray-800 cursor-pointer flex gap-2 items-center">
+                <DropdownMenuItem className="hover:dark:bg-gray-800 hover:bg-gray-300  cursor-pointer flex gap-2 items-center">
                   <FileText className="h-4 w-4" />
                   Topics
                 </DropdownMenuItem>
               </Link>
 
               <Link href={`/u/${username}?tab=blogs`}>
-                <DropdownMenuItem className="hover:bg-gray-800 cursor-pointer flex gap-2 items-center">
+                <DropdownMenuItem className="hover:dark:bg-gray-800 hover:bg-gray-300 cursor-pointer flex gap-2 items-center">
                   <LayoutPanelTop className="h-4 w-4" />
                   Blogs
                 </DropdownMenuItem>
               </Link>
 
+              <Separator className="my-1 mx-2" />
+
               <Link href={`/posts/blog`}>
-                <DropdownMenuItem className="hover:bg-gray-800 cursor-pointer flex gap-2 items-center">
+                <DropdownMenuItem className="hover:dark:bg-gray-800 hover:bg-gray-300  cursor-pointer flex gap-2 items-center">
                   <Layout className="h-4 w-4" />
                   Blog Posts
+                </DropdownMenuItem>
+              </Link>
+
+              <Link href={`/posts/topic`}>
+                <DropdownMenuItem className="hover:dark:bg-gray-800 hover:bg-gray-300  cursor-pointer flex gap-2 items-center">
+                  <Layout className="h-4 w-4" />
+                  Topic Posts
                 </DropdownMenuItem>
               </Link>
 

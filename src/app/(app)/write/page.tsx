@@ -29,9 +29,10 @@ const Write = () => {
 						<div className="grid w-full gap-4">
 							<Textarea
 								className="h-[8rem] resize-none w-full placeholder:text-sm lg:placeholder:text-md"
-								placeholder="Type your message for us"
+								placeholder="Type your message for us (this feature will be released soon)"
+								disabled
 							/>
-							<Button variant={"outline"}>Send message</Button>
+							<Button variant={"outline"} disabled>Send message</Button>
 						</div>
 					</div>
 
@@ -44,7 +45,7 @@ const Write = () => {
 							<Carousel>
 								<CarouselContent className="-ml-1">
 									{allBlogs.map((blog,index) => (
-										<CarouselItem key={index} className="pl-1 md:basis-1/2 lg:basis-1/3">
+										<CarouselItem key={index} className="pl-1 lg:basis-1/3">
 											<div className="p-1">
 												<Card className="bg-slate-100 dark:bg-slate-900 shadow-sm shadow-gray-200 dark:shadow-gray-800">
 													<CardContent className="flex aspect-square items-center justify-center p-6">
