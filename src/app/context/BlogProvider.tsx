@@ -44,7 +44,7 @@ const initialState: BlogProviderProps = {
     handleBlogUpdate: (content: any) => { },
     addBlog: (title: string,visibility: string) => { },
     setIsAddBlogModalOpen: (isOpen: boolean) => { },
-    fetchAllBlogPosts: () => {}
+    fetchAllBlogPosts: () => { }
 }
 
 const BlogContext = createContext<BlogProviderProps | null>(null)
@@ -56,7 +56,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
     const router = useRouter()
 
     const params = useParams()
-    const param_username = params.username as string   
+    const param_username = params.username as string
 
     const blogUrl = params.blogUrl as string
     // console.log("Blog URL from params:",blogUrl,params)
@@ -248,7 +248,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
             const response = await axios.get('/api/get-all-blogs')
             if (response.data.success) {
                 dispatch({ type: "SET_ALL_BLOG_POSTS_CONTENT",payload: response.data.blogs })
-            }else{
+            } else {
                 dispatch({ type: "SET_ALL_BLOG_POSTS_CONTENT",payload: [] })
             }
         } catch (error) {
@@ -259,32 +259,24 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     useEffect(() => {
-        if (status === 'unauthenticated') {
-            router.replace('/sign-in')
-            return
+        if (status === 'authenticated') {
+            if (blogUrl) {
+                getBlogByUrl(blogUrl)
+            }
         }
-
-        if (blogUrl) {
-            getBlogByUrl(blogUrl)
-        }
-
     },[state.allblogs,status,blogUrl])
 
     useEffect(() => {
-        if (status === 'unauthenticated') {
-            router.replace('/sign-in')
-            return
-        }
+        if (status === 'authenticated') {
+            if (param_username) {
+                getBlogsByUsername(param_username)
+            }
 
-        if (param_username) {
-            getBlogsByUsername(param_username)
+            if (!param_username && session && session?.user && session?.user?.username) {
+                getBlogsByUsername(session?.user?.username)
+            }
         }
-
-        if(!param_username && session && session?.user && session?.user?.username){
-            getBlogsByUsername(session?.user?.username)
-        }
-
-    }, [state.allblogs, status, param_username])
+    },[state.allblogs,status,param_username])
 
 
     return (

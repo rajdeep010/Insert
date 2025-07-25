@@ -419,7 +419,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
     }
 
     useEffect(() => {
-        console.log('param username: ', param_username)
+        // console.log('param username: ', param_username)
         if (status === "authenticated") {
             const fetchData = async () => {
                 try {
