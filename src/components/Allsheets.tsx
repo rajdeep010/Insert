@@ -6,12 +6,14 @@ import {
     AvatarImage,
 } from "@/components/ui/avatar"
 import Link from 'next/link'
+import { useInsertTopics } from '@/app/context/InsertTopicProvider'
 
 
 
 const Allsheets = () => {
 
-    const { all_topics } = useTopics()
+    // const { all_topics } = useTopics()
+    const { all_topics } = useInsertTopics();
     console.log('this is all sheets: ', all_topics)
 
     return (

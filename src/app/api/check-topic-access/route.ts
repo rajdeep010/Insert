@@ -1,7 +1,8 @@
 import dbConnect from "@/lib/dbConnect";
 import AlltopicModel from "@/model/Alltopic";
+import TopicModel from "@/model/Topic";
 import TopicPublicOrPrivateModel from "@/model/Topicvisible";
-import { topicidValidation, usernameValidation } from "@/schemas/signUpSchema";
+import { topicidValidation,usernameValidation } from "@/schemas/signUpSchema";
 import { z } from "zod";
 
 const TopicQuerySchema = z.object({
@@ -21,8 +22,7 @@ export async function GET(request: Request) {
         }
 
         const result = TopicQuerySchema.safeParse(queryParam)
-        if(!result.success)
-        {
+        if (!result.success) {
             const topicQueryErrors = result.error.format().username?._errors || result.error.format().topicid?._errors || []
             return Response.json({
                 success: false,
@@ -33,53 +33,49 @@ export async function GET(request: Request) {
         }
 
         const { topicid, username } = result.data
-        const topicInfo = await TopicPublicOrPrivateModel.findOne({ topicid })
+        const topic = await TopicModel.findOne({ id: topicid });
 
-        if (!topicInfo) {
+        if (!topic) {
             return Response.json({
                 success: false,
                 message: 'Topic not found'
-            }, { status: 404 })
+            },{ status: 404 })
         }
 
-        if (topicInfo.visibility === 'public') {
+        if (topic.visibility === 'public') {
             return Response.json({
                 success: true,
                 message: 'Authorized access'
-            }, { status: 200 });
+            },{ status: 200 });
         }
 
-        const topicDetails = await AlltopicModel.findOne(
-            { username: topicInfo.creator_username, 'topics.id': topicid },
-            { 'topics.$': 1 }
-        )
+        const isCreator = topic.creator_username === username;
+        const isCollaborator = topic.collaborators.some(
+            (collab: any) => collab.username === username
+        );
 
-        if (!topicDetails || !topicDetails.topics || topicDetails.topics.length === 0) {
-            return Response.json({
+        if (isCreator || isCollaborator) {
+            return Response.json(
+                {
+                    success: true,
+                    message: "Authorized access (private topic)",
+                },
+                { status: 200 }
+            );
+        }
+
+        return Response.json(
+            {
                 success: false,
-                message: 'Topic not found'
-            }, { status: 404 })
-        }
-
-        const topic = topicDetails.topics[0]
-        const isPresent = topic.collaborators.find((each: any) => each.username === username )
-
-        if (topic.creator_username === username || isPresent) {
-            return Response.json({
-                success: true,
-                message: 'Authorized access'
-            }, { status: 200 })
-        }
-
-        return Response.json({
-            success: false,
-            message: 'Unauthorized access'
-        }, { status: 403 })
+                message: "Unauthorized access to private topic",
+            },
+            { status: 403 }
+        );
 
     } catch (error) {
         return Response.json({
             success: false,
             message: 'Error in processing the visibility'
-        }, { status: 500 })
+        },{ status: 500 })
     }
 }

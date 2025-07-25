@@ -11,10 +11,13 @@ export interface TopicPublicOrPrivate {
 
 export interface InviteNotificationCardProps {
     from: string;
+    to: string;
     topicid: string;
     topicname: string;
     notifyid?: string;
     read?:boolean;
+    fromUserId?:string;
+    toUserId?:string;
 }
 
 export interface DeclineNotificationProps {
@@ -22,6 +25,8 @@ export interface DeclineNotificationProps {
     topicid: string;
     topicname: string;
     read?:boolean;
+    fromUserId?:string;
+    toUserId?:string;
 }
 
 export interface SuggestionNotificationCardProps extends InviteNotificationCardProps {
@@ -54,6 +59,7 @@ export interface Topic {
     creator_name?: string;
     creator_username: string;
     collaborators: Collaborator[];
+    createdAt: Date
 }
 
 export interface NotificationData{
@@ -65,7 +71,10 @@ export interface NotificationData{
     problemurl?: string;
     topicname?: string;
     message?: string;   // for general notify
-    read: boolean
+    read: boolean;
+    createdAt?: Date;
+    fromUserId?: string;
+    toUserId?: string;
 }
 
 interface UserInfo {
@@ -79,7 +88,8 @@ interface UserInfo {
     email?: string | null;
     isVerified?: boolean | null;
     _id?: string | null;
-    notifications?: NotificationData[] | null;
+    notifications?: NotificationData[] | [];
+    avatar?: string | null
 }
 
 type TopicVisibility = 'public' | 'private'

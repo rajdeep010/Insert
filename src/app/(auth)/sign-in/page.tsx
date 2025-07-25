@@ -79,10 +79,10 @@ export default function SignInForm() {
 
     return (
         <div className='flex justify-center items-center min-h-screen'>
-            <div className='w-full max-w-md p-8 space-y-8 rounded-lg shadow-md'>
+            <div className='w-full max-w-md p-8 space-y-8 rounded-lg shadow-lg dark:shadow-gray-800'>
                 <div className='flex flex-col justify-center items-center'>
                     <div className='flex flex-col items-center gap-2'>
-                        <span className='m-auto text-gray-300'>join</span>
+                        <span className='m-auto text-gray-400 dark:text-gray-600'>join</span>
                         <h1 className='flex gap-1 font-sans text-5xl tracking-wide lg:text-5xl mb-3'>
                             Insert
                         </h1>
@@ -146,7 +146,7 @@ export default function SignInForm() {
                     <div>
                         Not Registered Yet? {' '}
                         <Link href='/sign-up' className='underline text-blue-600 hover:text-blue-800'>
-                            Sign Up
+                            signup
                         </Link>
                     </div>
                 </div>

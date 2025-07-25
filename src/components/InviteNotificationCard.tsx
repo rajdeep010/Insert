@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React,{ useState } from 'react'
 import { Button } from './ui/button';
 import Link from 'next/link';
 import { InviteNotificationCardProps } from '@/types/types';
@@ -8,17 +8,22 @@ import { useUser } from '@/app/context/UserProvider';
 import { useSession } from 'next-auth/react';
 import { NotificationData } from '@/types/types';
 import { toast } from './ui/use-toast';
+import { useInsertUser } from '@/app/context/InsertUserProvider';
 
 
-// getting a collab request from 'FROM' and of his topic "TOPICNAME" which has id= 'TOPICID'
-// me now => rajdeep999 clicking accept button
-const InviteNotificationCard = ({ from, topicid, topicname, notifyid, read }: InviteNotificationCardProps) => {
-    const [isAccepting, setIsAccepting] = useState<boolean>(false)
-    const [isDeclining, setIsDeclining] = useState<boolean>(false)
-    const [isClicked, setIsClicked] = useState<boolean>(false)
 
-    const { addCollab, sendAcceptedCollabNotification, deleteNotification, isAlreadyCollaborator, sendDeclinedCollabNotification } = useUser()
+const InviteNotificationCard = ({ from, to, topicid,topicname,notifyid,read, fromUserId, toUserId }: InviteNotificationCardProps) => {
     const { data: session } = useSession()
+    const [isAccepting,setIsAccepting] = useState<boolean>(false)
+    const [isDeclining,setIsDeclining] = useState<boolean>(false)
+    const [isClicked,setIsClicked] = useState<boolean>(false)
+
+    const { user,
+        addCollab,
+        sendDeclinedCollabNotification
+    } = useInsertUser()
+
+    if (!user) return
 
     const session_user_username = session?.user?.username as string
     const session_user_name = session?.user?.name as string
@@ -28,27 +33,7 @@ const InviteNotificationCard = ({ from, topicid, topicname, notifyid, read }: In
             setIsAccepting(true)
             setIsClicked(true)
 
-            const canSend = await isAlreadyCollaborator(session_user_username, topicid, from)
-            if (canSend === false) {
-                addCollab(session_user_username, session_user_name, topicid, topicname, from, notifyid!)
-
-                const notifyMyself: NotificationData = {
-                    noti_type: 'accept_invite',
-                    from: session_user_username,
-                    topicid,
-                    topicname,
-                    read: true,
-                }
-
-                sendAcceptedCollabNotification(session_user_username, notifyMyself)
-                sendAcceptedCollabNotification(from, notifyMyself)
-            } else {
-                toast({
-                    title: 'Hey!!',
-                    description: 'You are already a collaborator',
-                    variant: 'default'
-                })
-            }
+            await addCollab(session_user_username,session_user_name,topicid,topicname,from,to,notifyid!, fromUserId!, toUserId!)
         } catch (error) {
 
         } finally {
@@ -62,27 +47,21 @@ const InviteNotificationCard = ({ from, topicid, topicname, notifyid, read }: In
             setIsDeclining(true)
             setIsClicked(true)
 
-            const isCollab = await isAlreadyCollaborator(session_user_username, topicid, from)
-            if (isCollab === false) {
-                const declineNoti: NotificationData = {
-                    noti_type: 'decline_invite',
-                    from: session_user_username,
-                    topicid,
-                    topicname,
-                    read: true,
-                }
-                sendDeclinedCollabNotification(from, declineNoti)
-            } else {
-                toast({
-                    title: 'Hey!!',
-                    description: 'You are already a collaborator',
-                    variant: 'default'
-                })
+            const declineNoti: NotificationData = {
+                noti_type: 'decline_invite',
+                from,
+                to,
+                topicid,
+                topicname,
+                read: true,
+                _id: notifyid,
+                fromUserId,
+                toUserId
             }
+            await sendDeclinedCollabNotification(from,declineNoti)
         } catch (error) {
 
         } finally {
-            deleteNotification(session_user_username, notifyid!)
             setIsDeclining(false)
             setIsClicked(false)
         }

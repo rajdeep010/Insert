@@ -1,6 +1,7 @@
 import { useUser } from '@/app/context/UserProvider';
 import React, { useEffect, useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import axios from 'axios';
 
 
 interface UserProfilePicProps{
@@ -9,27 +10,26 @@ interface UserProfilePicProps{
 
 const UserProfilePic = ({username}: UserProfilePicProps) => {
 
-    const [avatarURL, setAvatarURL] = useState<string | null>(null)
-    const { getAvatar } = useUser()
+    const [currentUser, setCurrentUser] = useState<any>(null)
 
     useEffect(() => {
-        const collecURL = async () => {
+        const collectUser = async () => {
             try {
-                const response = await getAvatar(username)
-                setAvatarURL(response)
+                const response = await axios.get(`/api/get-user-by-username?username=${username}`)
+                setCurrentUser(response.data?.userdata)
             } catch (error) {
-                setAvatarURL(null)
+                setCurrentUser(null)
             }
         }
-        collecURL()
+        collectUser()
     }, [username])
 
     return (
         <>
             <Avatar className='cursor-pointer outline-2 outline-black'>
-                    <AvatarImage src={avatarURL || ''} />
-                    <AvatarFallback>{username[0]}</AvatarFallback>
-                </Avatar>
+                <AvatarImage src={currentUser?.avatar || ''} />
+                <AvatarFallback>{currentUser?.username[0]}</AvatarFallback>
+            </Avatar>
         </>
     )
 }

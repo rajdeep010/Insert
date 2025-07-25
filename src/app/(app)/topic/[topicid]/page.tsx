@@ -1,522 +1,551 @@
-'use client'
-// import TopicNavbar from '@/components/TopicNavbar'
-import { toast } from '@/components/ui/use-toast'
-import { ProblemDifficulty,Topic,TopicVisibility,UserInfo } from '@/types/types'
-import axios,{ AxiosError } from 'axios'
-import { useParams,useRouter } from 'next/navigation'
-import React,{ useEffect,useState } from 'react'
+"use client";
+import { toast } from "@/components/ui/use-toast";
+import {
+	ProblemDifficulty,
+	Topic,
+	TopicVisibility,
+	UserInfo,
+} from "@/types/types";
+import axios,{ AxiosError } from "axios";
+import { useParams,useRouter } from "next/navigation";
+import React,{ useEffect,useState } from "react";
 // import { useTopics } from '@/app/context/TopicProvider'
-import { Table,TableBody,TableCell,TableHead,TableHeader,TableRow } from "@/components/ui/table";
-import { useSession } from 'next-auth/react'
-import { Tooltip,TooltipContent,TooltipProvider,TooltipTrigger } from '@radix-ui/react-tooltip';
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Dialog,DialogContent,DialogHeader,DialogFooter,DialogTitle,DialogDescription } from "@/components/ui/dialog";
-import { Select,SelectContent,SelectGroup,SelectItem,SelectLabel,SelectTrigger,SelectValue,} from "@/components/ui/select"
-import { Input } from '@/components/ui/input'
-import { Form,FormControl,FormField,FormItem,FormLabel,FormMessage } from '@/components/ui/form';
-import { useForm } from 'react-hook-form'
-import { questionSchema,suggestionSchema } from '@/schemas/topicSchema'
-import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { ApiResponse } from '@/types/ApiResponse'
-import TableSkeleton from '@/components/skeletons/TableSkeleton'
-import { Skeleton } from '@/components/ui/skeleton'
-import { useDebounceCallback } from 'usehooks-ts'
-import { Loader2 } from 'lucide-react'
-import UserCard from '@/components/UserCard'
-import { useUser } from '@/app/context/UserProvider'
-import Collaborator from '@/components/Collaborator'
-import CollaboratorsSkeleton from '@/components/skeletons/CollaboratorsSkeleton'
-import { NotificationData } from '@/types/types'
-import { useTopics } from '@/app/context/TopicProvider'
-import TopicNavbar from '@/components/TopicNavbar'
-
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { useSession } from "next-auth/react";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@radix-ui/react-tooltip";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogFooter,
+	DialogTitle,
+	DialogDescription,
+} from "@/components/ui/dialog";
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectLabel,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { questionSchema,suggestionSchema } from "@/schemas/topicSchema";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ApiResponse } from "@/types/ApiResponse";
+import TableSkeleton from "@/components/skeletons/TableSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDebounceCallback, useDebounceValue } from "usehooks-ts";
+import { CirclePlus,FileInput,Loader2,Trash2,UserPlus } from "lucide-react";
+import UserCard from "@/components/UserCard";
+import Collaborator from "@/components/Collaborator";
+import CollaboratorsSkeleton from "@/components/skeletons/CollaboratorsSkeleton";
+import { NotificationData } from "@/types/types";
+import { useTopics } from "@/app/context/TopicProvider";
+import ProfileModal from "@/components/ProfileModal";
+import InsertNavbar from "@/components/InsertNavbar";
+import { ProblemsDataTable } from "@/components/ProblemTable";
+import { useInsertUser } from "@/app/context/InsertUserProvider";
+import InsertHoverCard from "@/components/InsertHoverCard";
+import { Avatar,AvatarFallback,AvatarImage } from "@/components/ui/avatar";
+import { useInsertTopics } from "@/app/context/InsertTopicProvider";
+import NotFound from "@/app/not-found";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 const EachTopic = () => {
-    const params = useParams()
-    const topic_id = params.topicid as string
-    const { data: session,status } = useSession()
-    const router = useRouter()
+	const params = useParams();
+	const topic_id = params.topicid as string;
+	const { data: session,status } = useSession();
+	const router = useRouter();
 
-    const [curr_topic,setCurrTopic] = useState<Topic>()
+	const {
+		curr_topic,
+		isTopicLoading,
+		fetchTopicById,
+		addProblem,
+		deleteProblem,
+		deleteTopic
+	} = useInsertTopics();
 
-    const { addProblem,deleteProblem } = useTopics()
-    const { sendSuggestion } = useUser()
+	const { sendSuggestion } = useInsertUser();
 
-    const [currentTopicId,setCurrentTopicId] = useState<string | null>(topic_id)
+	// Modal state
+	const [currentProblemId,setCurrentProblemId] = useState<string | null>(null);
+	// const [currentProblem,setCurrentProblem] = useState<any>({})
 
-    const [currentProblemId,setCurrentProblemId] = useState<string | null>(null)
+	const [isItemModalOpen,setIsItemModalOpen] = useState(false);
+	const [isItemDeleteModalOpen,setIsItemDeleteModalOpen] = useState(false);
+	const [isSuggestProblemOpen,setIsSuggestProblemOpen] = useState(false);
 
-    const [isItemModalOpen,setIsItemModalOpen] = useState(false)
-    const [isItemDeleteModalOpen,setIsItemDeleteModalOpen] = useState(false)
-    const [iscollabModalOpen,setIsCollabModalOpen] = useState(false)
-    const [isSuggestProblemOpen,setIsSuggestProblemOpen] = useState(false)
+	const [isAddingProblem,setIsAddingProblem] = useState(false)
+	const [isDeletingProblem,setIsDeletingProblem] = useState(false)
 
-    // const session_user_username = session?.user.username
+	// collaborator search
+	const [debouncedUsername,setSearchUsername] = useDebounceValue<string>('', 500)
+	const [isSearchingUsername,setIsSearchingUsername] = useState(false);
+	const [searchUsernameMessage,setSearchUsernameMessage] = useState("");
+	const [similarUsers,setSimilarUsers] = useState<UserInfo[]>([]);
 
-    const [topicLoading,setTopicLoading] = useState(false)
+	const debounced = useDebounceCallback(setSearchUsername,500);
 
+	const [isTopicDeleting,setIsTopicDeleting] = useState(false)
 
-    const [searchUsername,setSearchUsername] = useState<string>('')
-    const [isSearchingUsername,setIsSearchingUsername] = useState<boolean>(false)
-    const [searchUsernameMessage,setSearchUsernameMessage] = useState<string>('')
-    const [similarUsers,setSimilarUsers] = useState<UserInfo[]>([])
+	const [isTopicModalOpen,setIsTopicModalOpen] = useState(false);
+	const [isTopicDeleteModalOpen,setIsTopicDeleteModalOpen] = useState(false);
 
-    const debouned = useDebounceCallback(setSearchUsername,500)
+	const handleOpenItemModal = () => setIsItemModalOpen(true);
+	const handleOpenDeleteProblemModal = (problemId: string) => {
+		setCurrentProblemId(problemId);
+		setIsItemDeleteModalOpen(true);
+	};
+	const handleOpenSuggestProblem = () => setIsSuggestProblemOpen(true);
 
+	const handleDeleteProblem = async () => {
+		if (!topic_id || !currentProblemId) return;
+		setIsDeletingProblem(true);
+		await deleteProblem(topic_id,currentProblemId);
+		setIsItemDeleteModalOpen(false);
+		setIsDeletingProblem(false);
+		setCurrentProblemId(null);
+	};
 
+	// ------------------------------------------
+	const questionForm = useForm<z.infer<typeof questionSchema>>({
+		resolver: zodResolver(questionSchema),
+		defaultValues: { qname: "",url: "",difficulty: "Easy" },
+	});
 
-    const handleOpenItemModal = (id: string) => {
-        setCurrentTopicId(id)
-        setIsItemModalOpen(true)
-    }
-
-    const handleCollabModal = (id: string) => {
-        setCurrentTopicId(id)
-        setIsCollabModalOpen(true)
-    }
-
-    const handleOpenDeleteProblemModal = (topicId: string,problemId: string) => {
-        setCurrentTopicId(topicId)
-        setCurrentProblemId(problemId)
-        setIsItemDeleteModalOpen(true)
-    }
-
-    const checkAndFetchTopic = async () => {
-        try {
-            if (status === 'loading') return
-
-            setTopicLoading(true)
-            const accessResponse = await axios.get(`/api/check-topic-access?topicid=${topic_id}&username=${session?.user?.username}`)
-            if (!accessResponse.data.success) {
-                // router.push(`/sheets`)
-                return
-            }
-
-            const topicResponse = await axios.get(`/api/get-topic-by-topicid?topic_id=${topic_id}`)
-
-            if (!topicResponse) {
-                toast({
-                    title: 'Error',
-                    description: 'Topic not found',
-                    variant: 'destructive'
-                })
-                return
-            }
-            setCurrTopic(topicResponse.data.curr_topic)
-
-        } catch (error) {
-            // router.push(`/sheets`)
-        } finally {
-            setTopicLoading(false)
-        }
-    }
-
-    const handleDeleteProblem = async () => {
-        if (currentTopicId !== null && currentProblemId !== null) {
-            try {
-                deleteProblem(currentTopicId,currentProblemId)
-                setIsItemDeleteModalOpen(false)
-                // Fetch the updated topic to refresh the UI
-                const response = await axios.get(`/api/get-topic-by-topicid?topic_id=${currentTopicId}`)
-                setCurrTopic(response.data.curr_topic)
-
-                checkAndFetchTopic()
-            } catch (error) {
-                toast({
-                    title: 'Error',
-                    description: 'Error deleting the problem',
-                    variant: 'destructive'
-                })
-            }
-        }
-    }
-
-    const handleOpenSuggestProblem = (id: string) => {
-        setCurrentTopicId(id)
-        setIsSuggestProblemOpen(true)
-    }
-
-    const questionform = useForm<z.infer<typeof questionSchema>>(
-        {
-            resolver: zodResolver(questionSchema),
-            defaultValues: {
-                qname: '',
-                url: '',
-                difficulty: 'Easy'
-            }
-        }
-    )
-
-    const suggestionform = useForm<z.infer<typeof suggestionSchema>>(
-        {
-            resolver: zodResolver(suggestionSchema),
-            defaultValues: {
-                problemurl: '',
-                problemname: '',
-            }
-        }
-    )
-
-    const problemSubmit = async (data: z.infer<typeof questionSchema>) => {
-        try {
-            if (!topic_id) return
-            if (!session?.user?.username) return
-
-            // setIsProblemSubmitting(true)
-            addProblem(data,topic_id,session?.user?.username)
-            setIsItemModalOpen(false)
-            // Fetch the updated topic to refresh the UI
-            const response = await axios.get(`/api/get-topic-by-topicid?topic_id=${topic_id}`)
-            setCurrTopic(response.data.curr_topic)
-
-            checkAndFetchTopic()
-
-        } catch (error) {
-            const axiosError = error as AxiosError<ApiResponse>
-            let errorMessage = axiosError.response?.data.message
-            toast({
-                title: 'Problem add Failed',
-                description: errorMessage,
-                variant: 'destructive'
-            })
-        } finally {
-            // setIsProblemSubmitting(false)
-        }
-    }
-
-    const suggestionSubmit = async (data: z.infer<typeof suggestionSchema>) => {
-        if (!topic_id) return
-        if (!session?.user?.username) return
-        if (!curr_topic?.creator_username) return
-
-        const suggestNotify: NotificationData = {
-            noti_type: 'suggestion',
-            from: session?.user?.username,
-            topicid: curr_topic?.id,
-            topicname: curr_topic?.title,
-            read: true,
-        }
-
-        sendSuggestion(curr_topic?.creator_username!,suggestNotify)
-    }
-
-    useEffect(() => {
-
-        const findSimilarUsers = async () => {
-            if (searchUsername) {
-                setIsSearchingUsername(true)
-                setSearchUsernameMessage('')
-
-                try {
-                    const response = await axios.get(`/api/get-similar-users?username=${searchUsername}`)
-                    setSearchUsernameMessage(response.data.message)
-                    setSimilarUsers(response.data.similar_users)
-                } catch (error) {
-                    const axiosError = error as AxiosError<ApiResponse>
-                    setSearchUsernameMessage(axiosError.response?.data.message ?? "Error seaching collaborators")
-                } finally {
-                    setIsSearchingUsername(false)
-                }
-            }
-        }
-
-        findSimilarUsers()
-    },[searchUsername])
+	const problemSubmit = async (data: z.infer<typeof questionSchema>) => {
+		if (!topic_id || !session?.user?.username) return;
+		setIsAddingProblem(true);
+		await addProblem(data,topic_id);
+		questionForm.reset()
+		setIsAddingProblem(false)
+		setIsItemModalOpen(false);
+	};
 
 
+	// ------------------------------------
 
-    useEffect(() => {
-        checkAndFetchTopic()
-    },[status])
+	const suggestionForm = useForm<z.infer<typeof suggestionSchema>>({
+		resolver: zodResolver(suggestionSchema),
+		defaultValues: { problemname: "",problemurl: "" },
+	});
 
+	const suggestionSubmit = async (data: z.infer<typeof suggestionSchema>) => {
+		if (!curr_topic || !session?.user?.username) return;
+		await sendSuggestion(curr_topic.topic?.creator_username,{
+			noti_type: "suggestion",
+			from: session.user.username,
+			topicid: curr_topic.topic.id,
+			topicname: curr_topic.topic.title,
+			read: true,
+			problemname: data.problemname,
+			problemurl: data.problemurl
+		});
+		suggestionForm.reset()
+	};
 
-    return (
-        <div className='flex flex-col gap-6 py-16 justify-center px-32'>
-            <div> <TopicNavbar /> </div>
+	const [iscollabModalOpen,setIsCollabModalOpen] = useState(false);
+	const handleCollabModal = (id: string) => {
+		setIsCollabModalOpen(true);
+	};
 
-            <div className='flex flex-col mt-6'>
+	useEffect(() => {
+		if (!debouncedUsername) return;
+		(async () => {
+			setIsSearchingUsername(true);
+			setSearchUsernameMessage("");
+			try {
+				const res = await axios.get<ApiResponse>(
+					`/api/get-similar-users?username=${debouncedUsername}`
+				);
+				setSearchUsernameMessage(res.data.message);
+				setSimilarUsers(res.data.similar_users || []);
+			} catch (err) {
+				const e = err as AxiosError<ApiResponse>;
+				setSearchUsernameMessage(e.response?.data.message ?? "Error searching");
+			} finally {
+				setIsSearchingUsername(false);
+			}
+		})();
+	},[debouncedUsername]);
 
-                {/* title and buttons */}
-                <div className='flex justify-between items-center gap-6'>
+	const handleOpenDeleteTopicModal = () => {
+		setIsTopicDeleteModalOpen(true);
+	};
 
-                    <div className='flex flex-col gap-4'>
-                        <div className='mb-2 flex gap-2 items-end'>
-                            {topicLoading ? <Skeleton className='h-8 w-[250px]' /> : <div className='text-3xl font-sans transition hover:text-gray-600'>{curr_topic?.title}</div>}
-                            {
-                                topicLoading ? <Skeleton className='h-6 w-[100px]' /> :
-                                <div className="text-[13px] mb-[2px]">
-                                    {curr_topic && `(` + curr_topic.problems.length + `${curr_topic.problems.length > 1 ? ' problems' : ' problem'})`}
-                                </div>
-                            }
-                        </div>
-                        <div className='flex flex-col gap-1'>
-                            {topicLoading ? <Skeleton className='h-4 w-[200px]' /> : <div className='text-xs text-gray-400'>Created by <Link className='text-blue-400 underline' href={`/u/${curr_topic?.creator_username}`}>@{curr_topic?.creator_username}</Link> </div>}
-                            {topicLoading ? <Skeleton className='h-6 w-[600px]' /> : <div className='dark:text-gray-100 text-gray-500 font-sans'>{curr_topic?.about}</div>}
-                        </div>
-                    </div>
-
-                    <div className='flex items-center gap-5'>
-
-                        {topicLoading && <div className='flex gap-5 items-center'>
-                            <Skeleton className='h-9 w-[140px]' />
-                            <Skeleton className='h-9 w-[120px]' />
-                        </div>}
-
-                        {!topicLoading && status === 'authenticated' && (session?.user.username === curr_topic?.creator_username) && <Button onClick={() => handleCollabModal(topic_id)} className='rounded-md w-fit' variant={'outline'}>Add Collaborator</Button>}
-                        {!topicLoading && status === 'authenticated' && ((session?.user.username === curr_topic?.creator_username) || (curr_topic?.collaborators.find((each) => each.username === session?.user?.username))) && <Button onClick={() => handleOpenItemModal(topic_id)} className='rounded-md w-fit' variant="default">Add Problem</Button>}
-                        {!topicLoading && status === 'authenticated' && ((session?.user.username !== curr_topic?.creator_username) && !(curr_topic?.collaborators.find((each) => each.username === session?.user?.username))) && <Button onClick={() => handleOpenSuggestProblem(topic_id)} className='rounded-md w-fit' variant={'outline'}>Suggest Problem</Button>}
-                    </div>
-                </div>
-
-                {/* about and collaborators */}
-                <div className='flex justify-end items-end'>
-                    <div className='flex flex-col gap-2'>
-                        {topicLoading ? (<Skeleton className='h-6 w-[120px]' />) : ((curr_topic && curr_topic?.collaborators.length > 0) && <div className='text-md text-gray-400'>Collaborators</div>)}
-
-                        {topicLoading ? <CollaboratorsSkeleton /> : <div className='flex items-center gap-3'>
-                            {
-                                curr_topic?.collaborators.map((each) => (
-                                    <Link key={each.username} href={`/u/${each.username}`}>
-                                        <Collaborator key={each.username} username={each.username} name={each.name} />
-                                    </Link>
-                                ))
-                            }
-                        </div>
-                        }
-                    </div>
-                </div>
-            </div>
+	const handleDeleteTopic = async () => {
+		if (topic_id !== null) {
+			setIsTopicDeleting(true)
+			await deleteTopic(topic_id)
+			setIsTopicDeleting(false)
+			setIsTopicDeleteModalOpen(false)
+		}
+	}
 
 
-            <div className='border-2 rounded-md'>
+	if (!curr_topic) return null
 
-                <Dialog open={iscollabModalOpen} onOpenChange={setIsCollabModalOpen}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Add collaborator</DialogTitle>
-                        </DialogHeader>
-                        <Input
-                            placeholder='Search username'
-                            onChange={
-                                (e) => {
-                                    setSearchUsername(e.target.value)
-                                    debouned(e.target.value)
-                                }}
-                        />
-                        {isSearchingUsername && <Loader2 className='animate-spin' />}
-                        <p className={`text-sm ${searchUsernameMessage === "Found" ? 'text-green-500' : 'text-red-500'}`}>
-                            {searchUsernameMessage}
-                        </p>
+	const existingCollabs = new Set(
+		curr_topic.topic.collaborators.map((c: any) => c.username)
+	);
 
-                        <div className='flex flex-col gap-2 p-2 overflow-y-scroll custom-scrollbar'>
-                            {
-                                similarUsers.map(({ username,name }) => (
-                                    <>
-                                        {(username !== curr_topic?.creator_username) && <UserCard
-                                            username={username as string}
-                                            name={name as string}
-                                            topicid={topic_id}
-                                            topicname={curr_topic?.title as string}
-                                            creator_username={curr_topic?.creator_username as string}
-                                        />}
-                                    </>
-                                ))
-                            }
-                        </div>
-                    </DialogContent>
-                </Dialog>
+	return (
+		<div className="flex flex-col gap-6 py-8 lg:py-12 justify-center px-8 lg:px-64">
+			<div>
+				{" "}
+				<InsertNavbar />{" "}
+			</div>
 
-                <Dialog open={isItemModalOpen} onOpenChange={setIsItemModalOpen}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Problem Details</DialogTitle>
-                        </DialogHeader>
-                        <Form {...questionform}>
-                            <form onSubmit={questionform.handleSubmit(problemSubmit)} className='space-y-6'>
-                                <FormField
-                                    control={questionform.control}
-                                    name="qname"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormControl>
-                                                <Input placeholder="Problem Name" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={questionform.control}
-                                    name="url"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormControl>
-                                                <Input placeholder="URL" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={questionform.control}
-                                    name="difficulty"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormControl>
-                                                <Select onValueChange={field.onChange} value={field.value}>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Difficulty" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectGroup>
-                                                            <SelectItem value="Easy">Easy</SelectItem>
-                                                            <SelectItem value="Easy-Med">Easy-Med</SelectItem>
-                                                            <SelectItem value="Medium">Medium</SelectItem>
-                                                            <SelectItem value="Med-Hard">Med-Hard</SelectItem>
-                                                            <SelectItem value="Hard">Hard</SelectItem>
-                                                            <SelectItem value="Advanced">Advanced</SelectItem>
-                                                        </SelectGroup>
-                                                    </SelectContent>
-                                                </Select>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <DialogFooter>
-                                    <Button type="submit" variant="default">Save</Button>
-                                    <Button variant="destructive" onClick={() => setIsItemModalOpen(false)}>Cancel</Button>
-                                </DialogFooter>
-                            </form>
-                        </Form>
-                    </DialogContent>
-                </Dialog>
+			<div className="flex flex-col mt-6">
+				<div className="flex flex-col gap-4">
 
-                <Dialog open={isItemDeleteModalOpen} onOpenChange={setIsItemDeleteModalOpen}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Delete Problem</DialogTitle>
-                            <DialogDescription>
-                                Are you sure you want to delete this problem? This action cannot be undone.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                            <Button variant="destructive" onClick={handleDeleteProblem}>Delete</Button>
-                            <Button variant="default" onClick={() => setIsItemDeleteModalOpen(false)}>Cancel</Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
+					<div className="flex justify-between gap-6">
+						<div className="flex flex-col gap-1">
+							<div className="flex items-center gap-4">
+								<p className="text-3xl font-bold">
+									{curr_topic?.topic?.title}
+								</p>
+								<div>
+									{curr_topic?.topic?.visibility === "private" && (
+										<Badge variant="destructive" className="flex items-center gap-2">private</Badge>
+									)}
+									{curr_topic?.topic?.visibility === "public" && (
+										<Badge variant="default" className="bg-blue-500 text-white dark:bg-blue-600">public</Badge>
+									)}
+								</div>
+							</div>
 
-                <Dialog open={isSuggestProblemOpen} onOpenChange={setIsSuggestProblemOpen}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Problem Details</DialogTitle>
-                        </DialogHeader>
-                        <Form {...suggestionform}>
-                            <form onSubmit={suggestionform.handleSubmit(suggestionSubmit)} className='space-y-6'>
-                                <FormField
-                                    control={suggestionform.control}
-                                    name="problemname"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormControl>
-                                                <Input placeholder="Problem Name" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={suggestionform.control}
-                                    name="problemurl"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormControl>
-                                                <Input placeholder="Problem URL" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <DialogFooter>
-                                    <Button type="submit" variant="default">Send</Button>
-                                    <Button variant="destructive" onClick={() => setIsSuggestProblemOpen(false)}>Cancel</Button>
-                                </DialogFooter>
-                            </form>
-                        </Form>
-                    </DialogContent>
-                </Dialog>
+							<p className="text-xs">{curr_topic && <p className="text-gray-400 flex gap-2 items-center">Author: {" "} <InsertHoverCard
+								username={curr_topic?.topic?.creator_username as string}
+								type={"username"}
+							/></p>}</p>
+						</div>
 
-                {!topicLoading && <Table className="border-collapse separate md:table px-8 py-2">
-                    {curr_topic && curr_topic.problems && curr_topic.problems.length === 0 && <div className='text-2xl p-3'>No problems</div>}
+						<div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
+							{curr_topic?.topic?.collaborators.map((each: any,idx: any) => (
+								<InsertHoverCard
+									key={idx}
+									username={each?.username as string}
+									type={"avatar"}
+								/>
+							))}
+						</div>
+					</div>
 
-                    {curr_topic && curr_topic.problems && curr_topic.problems.length > 0 && (
-                        <>
-                            <TableHeader className="block md:table-header-group">
-                                <TableRow className="border border-grey-500 md:border-none block md:table-row">
-                                    <TableHead className="rounded-tl-md rounded-bl-md bg-slate-50 dark:bg-gray-900 p-2 text-black dark:text-white font-bold text-center md:border md:border-grey-500 block md:table-cell">
-                                        Problem Name
-                                    </TableHead>
-                                    <TableHead className=" bg-slate-50 dark:bg-gray-900 p-2 text-black dark:text-white font-bold text-center md:border md:border-grey-500 block md:table-cell">
-                                        Link
-                                    </TableHead>
-                                    <TableHead className=" bg-slate-50 dark:bg-gray-900 p-2 text-black dark:text-white font-bold text-center md:border md:border-grey-500 block md:table-cell">
-                                        Difficulty
-                                    </TableHead>
-                                    {status === 'authenticated' && session?.user.username === curr_topic.creator_username && (
-                                        <TableHead className="rounded-tr-md rounded-br-md  bg-slate-50 dark:bg-gray-900 p-2 text-black dark:text-white font-bold text-center md:border md:border-grey-500 block md:table-cell">
-                                            Delete
-                                        </TableHead>
-                                    )}
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody className="block md:table-row-group px-6">
-                                {curr_topic.problems.map(({ id: problemId,qname,url,difficulty },index) => (
-                                    <TableRow key={index} className="bg-gray-50 dark:bg-gray-900 my-4 border-2 rounded-md block md:table-row">
-                                        <TableCell className="p-2 px-4 text-center block md:table-cell">
-                                            <Tooltip>
-                                                <TooltipTrigger>
-                                                    <span>
-                                                        {qname && qname.length < 22 ? `${qname}` : `${qname.substring(0,Math.min(qname.length,70))}`}
-                                                        {qname.length >= 70 ? '...' : ''}
-                                                    </span>
-                                                </TooltipTrigger>
-                                                <TooltipContent className='bg-black dark:bg-white text-white dark:text-gray-900 px-2 py-1 rounded-md'>
-                                                    {qname}
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TableCell>
-                                        <TableCell className="p-2 px-4 text-center block md:table-cell ">
-                                            <Link href={url} target="_blank" rel="noopener noreferrer" className='text-blue-500 hover:text-blue-300 hover:underline'>
+					<div className="flex justify-between gap-6">
+						<p className="max-w-[50%] break-words text-gray-700 italic text-sm">{curr_topic?.topic?.about}</p>
+						<div className="flex flex-col lg:flex-row gap-2 items-center">
+							{
+								!isTopicLoading && status === "authenticated" && session?.user.username === curr_topic?.topic?.creator_username &&
+								<Button variant="outline" className="rounded-md w-fit" onClick={() => handleCollabModal(topic_id)}>
+									<UserPlus className="h-4 w-4" />
+								</Button>
+							}
 
-                                                Go Problem
-                                            </Link>
-                                        </TableCell>
-                                        <TableCell className="p-2 px-4 text-center block md:table-cell">
-                                            {difficulty}
-                                        </TableCell>
-                                        {status === 'authenticated' && session?.user.username === curr_topic.creator_username && (
-                                            <TableCell className="p-2 px-4 text-center block md:table-cell">
-                                                <Button variant="destructive" onClick={() => handleOpenDeleteProblemModal(topic_id,problemId)}>
-                                                    Delete
-                                                </Button>
-                                            </TableCell>
-                                        )}
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </>
-                    )}
-                </Table>}
+							{
+								!isTopicLoading && status === "authenticated" && (session?.user.username === curr_topic?.topic?.creator_username || curr_topic?.topic?.collaborators.find((each: any) => each.username === session?.user?.username)) && (
+									<Button
+										onClick={() => handleOpenItemModal()}
+										className="rounded-md w-fit"
+										variant={"default"}
+									>
+										<CirclePlus className="h-4 w-4" />
+									</Button>
+								)
+							}
 
-                {
-                    topicLoading && <TableSkeleton />
-                }
-            </div>
-        </div>
-    )
-}
+							{
+								!isTopicLoading && status === "authenticated" && session?.user.username === curr_topic?.topic?.creator_username &&
+								<Button variant="destructive" className="rounded-md w-fit" onClick={() => handleOpenDeleteTopicModal()}>
+									<Trash2 className="h-4 w-4" />
+								</Button>
+							}
 
-export default EachTopic
+							{
+								!isTopicLoading && status === "authenticated" && curr_topic && session.user?.username !== curr_topic?.topic?.creator_username && !curr_topic?.topic?.collaborators.find((each: any) => each.username === session?.user?.username) && (
+									<Button
+										onClick={() => handleOpenSuggestProblem()}
+										className="rounded-md w-fit"
+										variant={"outline"}
+									>
+										<FileInput className="h-4 w-4" />
+									</Button>
+								)}
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div className="rounded-md">
+				<Dialog open={iscollabModalOpen} onOpenChange={setIsCollabModalOpen}>
+					<DialogContent>
+						<DialogHeader className="mb-4">
+							<DialogTitle>Add collaborator</DialogTitle>
+							<DialogDescription>Start typing the username below...</DialogDescription>
+						</DialogHeader>
+						<Input
+							placeholder="Search username"
+							onChange={(e) => {
+								setSearchUsername(e.target.value);
+								debounced(e.target.value);
+							}}
+						/>
+						{isSearchingUsername && <Loader2 className="animate-spin" />}
+						<p
+							className={`text-sm ${searchUsernameMessage === "Found"
+								? "text-green-500"
+								: "text-red-500"
+								}`}
+						>
+							{searchUsernameMessage}
+						</p>
+
+						<div className="flex flex-col gap-2 p-2 overflow-y-scroll custom-small-scrollbar">
+							{similarUsers?.map((user,idx) => (
+								<>
+									<UserCard
+										key={idx}
+										user={user}
+										topicid={topic_id}
+										topic={curr_topic?.topic}
+										collaborators={curr_topic?.topic?.collaborators}
+									/>
+									<Separator className="my-1" />
+								</>
+							))}
+						</div>
+					</DialogContent>
+				</Dialog>
+
+				<Dialog open={isItemModalOpen} onOpenChange={setIsItemModalOpen}>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Add Problem</DialogTitle>
+							<DialogDescription>Enter the following details to add problem</DialogDescription>
+						</DialogHeader>
+						<Form {...questionForm}>
+							<form
+								onSubmit={questionForm.handleSubmit(problemSubmit)}
+								className="space-y-6"
+							>
+								<FormField
+									control={questionForm.control}
+									name="qname"
+									render={({ field }) => (
+										<FormItem>
+											<FormControl>
+												<Input placeholder="Problem Name" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={questionForm.control}
+									name="url"
+									render={({ field }) => (
+										<FormItem>
+											<FormControl>
+												<Input placeholder="URL" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={questionForm.control}
+									name="difficulty"
+									render={({ field }) => (
+										<FormItem>
+											<FormControl>
+												<Select
+													onValueChange={field.onChange}
+													value={field.value}
+												>
+													<SelectTrigger>
+														<SelectValue placeholder="Difficulty" />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectGroup>
+															<SelectItem value="Easy">Easy</SelectItem>
+															<SelectItem value="Easy-Med">Easy-Med</SelectItem>
+															<SelectItem value="Medium">Medium</SelectItem>
+															<SelectItem value="Med-Hard">Med-Hard</SelectItem>
+															<SelectItem value="Hard">Hard</SelectItem>
+															<SelectItem value="Advanced">Advanced</SelectItem>
+														</SelectGroup>
+													</SelectContent>
+												</Select>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<DialogFooter>
+									<Button type="submit" variant="default" disabled={isAddingProblem}>
+										{isAddingProblem ? (
+											<>
+												<Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
+											</>
+										) : ('Save')}
+									</Button>
+									<Button
+										disabled={isAddingProblem}
+										variant="destructive"
+										onClick={() => setIsItemModalOpen(false)}
+									>
+										Cancel
+									</Button>
+								</DialogFooter>
+							</form>
+						</Form>
+					</DialogContent>
+				</Dialog>
+
+				<Dialog
+					open={isItemDeleteModalOpen}
+					onOpenChange={setIsItemDeleteModalOpen}
+				>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Delete Problem</DialogTitle>
+							<DialogDescription>
+								Are you sure you want to delete this problem? This action cannot
+								be undone.
+							</DialogDescription>
+						</DialogHeader>
+						<DialogFooter>
+							<Button variant="destructive" disabled={isDeletingProblem} onClick={handleDeleteProblem}>
+								{isDeletingProblem ? (
+									<>
+										<Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
+									</>
+								) : ('Delete')}
+							</Button>
+							<Button
+								disabled={isDeletingProblem}
+								variant="default"
+								onClick={() => setIsItemDeleteModalOpen(false)}
+							>
+								Cancel
+							</Button>
+						</DialogFooter>
+					</DialogContent>
+				</Dialog>
+
+				<Dialog
+					open={isSuggestProblemOpen}
+					onOpenChange={setIsSuggestProblemOpen}
+				>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Problem Details</DialogTitle>
+						</DialogHeader>
+						<Form {...suggestionForm}>
+							<form
+								onSubmit={suggestionForm.handleSubmit(suggestionSubmit)}
+								className="space-y-6"
+							>
+								<FormField
+									control={suggestionForm.control}
+									name="problemname"
+									render={({ field }) => (
+										<FormItem>
+											<FormControl>
+												<Input placeholder="Problem Name" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={suggestionForm.control}
+									name="problemurl"
+									render={({ field }) => (
+										<FormItem>
+											<FormControl>
+												<Input placeholder="Problem URL" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<DialogFooter>
+									<Button type="submit" variant="default">
+										Send
+									</Button>
+									<Button
+										variant="destructive"
+										onClick={() => setIsSuggestProblemOpen(false)}
+									>
+										Cancel
+									</Button>
+								</DialogFooter>
+							</form>
+						</Form>
+					</DialogContent>
+				</Dialog>
+
+				<Dialog open={isTopicDeleteModalOpen} onOpenChange={setIsTopicDeleteModalOpen}>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Confirm Delete Topic</DialogTitle>
+						</DialogHeader>
+						<DialogDescription>Are you sure you want to delete this topic?</DialogDescription>
+						<DialogFooter>
+							<Button variant="destructive" disabled={isTopicDeleting} onClick={() => setIsTopicDeleteModalOpen(false)}>Cancel</Button>
+							<Button variant="default" onClick={handleDeleteTopic} disabled={isTopicDeleting}>
+								{
+									isTopicDeleting ? (<>
+										<Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait
+									</>) : ('Confirm')
+								}
+							</Button>
+						</DialogFooter>
+					</DialogContent>
+				</Dialog>
+
+				{!isTopicLoading && <ProblemsDataTable
+					problems={curr_topic?.problems || []}
+					showDelete={
+						status === "authenticated" &&
+						(session?.user.username === curr_topic?.topic?.creator_username || curr_topic?.topic?.collaborators.find((each: any) => each.username === session?.user?.username))
+					}
+					onDelete={handleOpenDeleteProblemModal}
+				/>}
+
+				{isTopicLoading && <TableSkeleton />}
+			</div>
+		</div>
+	);
+};
+
+export default EachTopic;

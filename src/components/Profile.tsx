@@ -1,5 +1,4 @@
 'use client'
-import { useUser } from '@/app/context/UserProvider'
 import EditProfile from '@/components/EditProfile'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
@@ -11,6 +10,7 @@ import { FaLink, FaLocationDot } from 'react-icons/fa6';
 import { Skeleton } from './ui/skeleton'
 import ProfileSkeleton from './skeletons/ProfileSkeleton'
 import AvatarSkeleton from './skeletons/AvatarSkeleton'
+import { useInsertUser } from '@/app/context/InsertUserProvider'
 
 
 
@@ -18,14 +18,7 @@ const Profile = () => {
     const params = useParams()
     const username = params.username
     const { data: session } = useSession()
-    const { user_information, user_avatar, isAvatarLoading, isProfileDataLoading } = useUser()
-
-    // // console.log(user_avatar)
-
-    const currentUser =  user_information
-    const avatarURL = user_avatar
-
-    // // console.log(user_avatar)
+    const {user, isAvatarUploading, isUserLoading} = useInsertUser()
 
     return (
         <div className='flex justify-between'>
@@ -33,10 +26,10 @@ const Profile = () => {
             <div className='profile-row flex flex-col px-4 items-start profile-flex-row custom-lg-gap'>
 
                 <div className='flex flex-col gap-4'>
-                    {isAvatarLoading && <AvatarSkeleton />}
+                    {isAvatarUploading && <AvatarSkeleton />}
 
-                    {!isAvatarLoading && <Image
-                        src={avatarURL || '/user_png.png'}
+                    {!isAvatarUploading && <Image
+                        src={user?.avatar || '/user_png.png'}
                         width={260}
                         height={260}
                         alt='profile_img'
@@ -51,21 +44,21 @@ const Profile = () => {
                 </div>
                 
                 {
-                    isProfileDataLoading && <ProfileSkeleton/>
+                    isUserLoading && <ProfileSkeleton/>
                 }
 
-                {!isProfileDataLoading && <div className='flex flex-col items-start justify-between mt-4 gap-6 profile-details-gap'>
+                {!isUserLoading && <div className='flex flex-col items-start justify-between mt-4 gap-6 profile-details-gap'>
                     <div className='flex flex-col'>
-                        <p className='text-md text-slate-500 profile-text-sm'>@{currentUser?.username}</p>
-                        <p className='text-2xl font-bold mb-1 profile-text-md'>{currentUser?.name}</p>
-                        <p className='text-sm '>{currentUser?.about}</p>
+                        <p className='text-md text-slate-500 profile-text-sm'>@{user?.username}</p>
+                        <p className='text-2xl font-bold mb-1 profile-text-md'>{user?.name}</p>
+                        <p className='text-sm '>{user?.about}</p>
                     </div>
 
                     <div className='flex flex-col gap-1'>
-                        {currentUser?.company && <div className='flex items-center gap-2 text-sm '> <FaBuilding /> {currentUser?.company} </div>}
-                        {currentUser?.location && <div className='flex items-center gap-2 text-sm '> <FaLocationDot /> {currentUser?.location} </div>}
-                        {currentUser?.profile && <Link href={`${currentUser?.profile}`} className='transition hover:text-blue-500 flex items-center gap-2 text-sm '> <FaLink /> {currentUser?.profile}</Link>}
-                        {currentUser?.linkedin && <Link href={`${currentUser?.linkedin}`} className='transition hover:text-blue-500 flex items-center gap-2 text-sm '> <FaLinkedin /> {currentUser?.linkedin}</Link>}
+                        {user?.company && <div className='flex items-center gap-2 text-sm '> <FaBuilding /> {user?.company} </div>}
+                        {user?.location && <div className='flex items-center gap-2 text-sm '> <FaLocationDot /> {user?.location} </div>}
+                        {user?.profile && <Link href={`${user?.profile}`} className='transition hover:text-blue-500 flex items-center gap-2 text-sm '> <FaLink /> {user?.profile}</Link>}
+                        {user?.linkedin && <Link href={`${user?.linkedin}`} className='transition hover:text-blue-500 flex items-center gap-2 text-sm '> <FaLinkedin /> {user?.linkedin}</Link>}
                     </div>
                 </div>}
 

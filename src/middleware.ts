@@ -1,6 +1,5 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
-
 export { default } from 'next-auth/middleware'
 
 
@@ -23,7 +22,7 @@ export async function middleware(request: NextRequest) {
 
     if (!token &&
         (
-            (url.pathname.startsWith('/dashboard'))
+            (url.pathname.startsWith('/write')) 
         )
     ) {
         return NextResponse.redirect(new URL('/sign-in', request.url))
@@ -38,9 +37,8 @@ export const config = {
         '/sign-in',
         '/sign-up',
         '/',
-        '/dashboard/:path*',
         '/verify/:path*',
         '/api/:path*',
-        // '/u/:path*'
+        '/u/:path*'
     ]
 }

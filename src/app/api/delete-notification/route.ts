@@ -1,12 +1,21 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
-import NotificationData from '@/types/types'
+import { getToken } from "next-auth/jwt";
 
 
 export async function POST(request: Request) {
     await dbConnect()
+    const token = await getToken({ req: request as any })
+
     try {
         const { username, notifyid } = await request.json()
+
+        if(username !== token?.username){
+            return Response.json({
+                success: false,
+                message: 'Not authorized',
+            }, { status: 400 })
+        }
 
         const user = await UserModel.findOne({ username })
 
@@ -32,9 +41,11 @@ export async function POST(request: Request) {
         user.notifications = updatedNotifications
         await user.save()
 
+        
         return Response.json({
             success: true,
             message: 'Notification deleted successfully',
+            notifications: user.notifications
         }, { status: 200 })
 
     } catch (error) {

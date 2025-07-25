@@ -113,8 +113,6 @@ export const TopicProvider = ({ children }: { children: React.ReactNode }) => {
                 topic: data
             })
 
-            // // console.log(session_user_username, session, creator_username, creator_name)
-
             if(!response.data.success){
                 toast({
                     title: 'Error ⭕',

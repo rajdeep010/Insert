@@ -1,52 +1,46 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
-import { usernameValidation } from "@/schemas/signUpSchema";
-import { z } from "zod";
+import { getToken } from "next-auth/jwt";
+import { NextRequest } from "next/server";
 
 
-// const UsernameQuerySchema = z.object({
-//     username: usernameValidation
-// })
-
-export async function GET(request: Request) {
-    await dbConnect()
+export async function GET(request: NextRequest) {
+    await dbConnect();
+    const token = await getToken({ req: request });
+    if (!token?.username) {
+        return Response.json(
+            { success: false,message: "Not authenticated" },
+            { status: 401 }
+        );
+    }
 
     try {
-        const { searchParams } = new URL(request.url)
-        // const queryParam = {
-        //     username: searchParams.get('username')
-        // }
+        const { searchParams } = new URL(request.url);
+        const q = searchParams.get("username") || "";
 
-        const username = searchParams.get('username')
-
-        // // console.log(queryParam.username)
-
-        // const result = UsernameQuerySchema.safeParse(queryParam)
-        // if (!result.success) {
-        //     const usernameErrors = result.error.format().username?._errors || []
-        //     return Response.json({
-        //         success: false,
-        //         message: usernameErrors?.length > 0
-        //             ? usernameErrors.join(', ')
-        //             : 'Invalid Query Parameters'
-        //     }, { status: 400 })
-        // }
-
-        // const { username } = result.data
         const users = await UserModel.find({
-            username: { $regex: username, $options: 'i' } // 'i' for case-insensitive search
-        })
+            $and: [
+                { username: { $regex: q,$options: "i" } },
+                { username: { $ne: token.username } },
+            ],
+        });
 
-        return Response.json({
-            success: true,
-            message: 'Found',
-            similar_users: users
-        }, { status: 200 })
-
+        return Response.json(
+            {
+                success: true,
+                message: "Found",
+                similar_users: users,
+            },
+            { status: 200 }
+        );
     } catch (error) {
-        return Response.json({
-            success: false,
-            message: 'Error in finding collaborators'
-        }, { status: 500 })
+        console.error(error);
+        return Response.json(
+            {
+                success: false,
+                message: "Error in finding collaborators",
+            },
+            { status: 500 }
+        );
     }
 }

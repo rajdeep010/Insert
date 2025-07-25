@@ -9,7 +9,7 @@ const AcceptedInviteCard = ({from, topicid, topicname, read}: InviteNotification
     const session_user_username = session?.user?.username
 
     return (
-        <div className={`flex flex-col gap-3 px-3 py-2 ${read === true ? 'bg-green-50 dark:bg-green-800' : 'bg-white dark:bg-gray-800'} text-gray-800 dark:text-gray-200`}>
+        <div className={`flex flex-col gap-3 px-3 py-2 ${read === true ? 'bg-green-100 dark:bg-green-900' : 'bg-white dark:bg-gray-950'} text-gray-800 dark:text-white`}>
             <div className='text-sm'>
                 {
                     (from === session_user_username) && <>
@@ -19,7 +19,7 @@ const AcceptedInviteCard = ({from, topicid, topicname, read}: InviteNotification
 
                 {
                     (from !== session_user_username) && <>
-                        <Link href={`/u/${from}`} className='underline text-blue-400 dark:text-blue-300'>{from}</Link> has accepted the invitation for <Link href={`/topic/${topicid}`} className='text-blue-500 underline dark:text-blue-300'>{topicname}</Link>
+                        <Link href={`/u/${from}`} className='underline text-blue-500 dark:text-blue-300'>{from}</Link> has accepted the invitation for <Link href={`/topic/${topicid}`} className='text-blue-500 underline dark:text-blue-300'>{topicname}</Link>
                     </>
                 }
             </div>

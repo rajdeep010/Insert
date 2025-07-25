@@ -57,15 +57,8 @@ export async function POST(request: Request) {
             location: '',
         })
 
-        const all_topics = new AlltopicModel({
-            username,
-            topics: []
-        })
-
 
         await newUser.save()
-        await all_topics.save()
-
 
         return Response.json({
             success: true,
