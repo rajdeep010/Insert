@@ -56,6 +56,8 @@ export default function AllBlogPosts() {
 					</div>
 				)}
 
+				<div className="text-2xl font-bold mx-auto text-gray-500 dark:text-gray-400">Blogs</div>
+
 				{!isAllBlogPostsLoading && (
 					<div className="flex flex-col gap-4 max-h-[72vh] overflow-y-scroll custom-small-scrollbar  shadow-gray-200 dark:shadow-gray-800">
 						{allBlogPosts?.map((blog,idx) => (

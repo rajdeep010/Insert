@@ -263,6 +263,19 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
             router.replace('/sign-in')
             return
         }
+
+        if (blogUrl) {
+            getBlogByUrl(blogUrl)
+        }
+
+    },[state.allblogs,status,blogUrl])
+
+    useEffect(() => {
+        if (status === 'unauthenticated') {
+            router.replace('/sign-in')
+            return
+        }
+
         if (param_username) {
             getBlogsByUsername(param_username)
         }
@@ -271,11 +284,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
             getBlogsByUsername(session?.user?.username)
         }
 
-        if (blogUrl) {
-            getBlogByUrl(blogUrl)
-        }
-
-    },[state.allblogs,status,blogUrl])
+    }, [state.allblogs, status, param_username])
 
 
     return (

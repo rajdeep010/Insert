@@ -89,7 +89,7 @@ const InsertNavbar = () => {
 							<NavigationMenuItem>
 								<NavigationMenuTrigger>Sections</NavigationMenuTrigger>
 								<NavigationMenuContent>
-									<ul className="flex flex-col gap-6 w-[220px] p-2">
+									<ul className="flex flex-col gap-2 w-[220px] p-2">
 										<li>
 											<NavigationMenuLink asChild>
 												<Link
@@ -103,6 +103,8 @@ const InsertNavbar = () => {
 													<span className="text-sm">Overview</span>
 												</Link>
 											</NavigationMenuLink>
+										</li>
+										<li>
 											<NavigationMenuLink asChild>
 												<Link
 													href={`/u/${!param_username
@@ -115,6 +117,8 @@ const InsertNavbar = () => {
 													<span className="text-sm">Topics</span>
 												</Link>
 											</NavigationMenuLink>
+										</li>
+										<li>
 											<NavigationMenuLink asChild>
 												<Link
 													href={`/u/${!param_username
@@ -250,6 +254,7 @@ const InsertNavbar = () => {
 																<InviteNotificationCard
 																	key={idx}
 																	from={msg.from as string}
+																	to={msg.to as string}
 																	topicid={msg.topicId as string}
 																	topicname={msg.topicName as string}
 																	notifyid={msg._id as string}
@@ -266,6 +271,7 @@ const InsertNavbar = () => {
 																<SuggestionNotificationCard
 																	key={idx}
 																	from={msg.from as string}
+																	to={msg.to as string}
 																	topicid={msg.topicId as string}
 																	problemurl={msg.problemUrl as string}
 																	topicname={msg.topicName as string}
@@ -280,6 +286,7 @@ const InsertNavbar = () => {
 																<AcceptedInviteCard
 																	key={idx}
 																	from={msg.from as string}
+																	to={msg.to as string}
 																	topicid={msg.topicId as string}
 																	topicname={msg.topicName as string}
 																	read={msg.read}
@@ -385,6 +392,7 @@ const InsertNavbar = () => {
 														<InviteNotificationCard
 															key={idx}
 															from={msg?.from as string}
+															to={msg.to as string}
 															topicid={msg?.topicId as string}
 															topicname={msg?.topicName as string}
 															notifyid={msg?._id as string}
@@ -401,6 +409,7 @@ const InsertNavbar = () => {
 														<SuggestionNotificationCard
 															key={idx}
 															from={msg?.from as string}
+															to={msg.to as string}
 															topicid={msg?.topicId as string}
 															problemurl={msg?.problemUrl as string}
 															topicname={msg?.topicName as string}
@@ -415,6 +424,7 @@ const InsertNavbar = () => {
 														<AcceptedInviteCard
 															key={idx}
 															from={msg?.from as string}
+															to={msg.to as string}
 															topicid={msg?.topicId as string}
 															topicname={msg?.topicName as string}
 															read={msg?.read}

@@ -473,14 +473,18 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
             if(!param_username && session && session?.user && session?.user?.username){
                 getTopicsByUsername(session?.user?.username)
             }
+        }
+        
+    },[status, param_username])
+
+    useEffect(() => {
+        if(status === "authenticated"){
 
             if (topic_id) {
                 fetchTopicById(topic_id)
             }
         }
-        
-        // fetchAllTopics()
-    },[status, topic_id])
+    }, [status, topic_id])
 
     const contextValue = {
         ...state,

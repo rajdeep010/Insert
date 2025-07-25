@@ -23,7 +23,7 @@ interface InsertUserProviderProps {
     updateUser: (formData: Partial<UserInfo>) => void
     fetchUser: (username: string) => void
     sendCollabInvite: (to_whom: string,noti: any) => void
-    addCollab: (add_whom_username: string,add_whom_name: string,topicid: string,topicname: string,whose_topic: string,notifyid: string, fromUserId: string, toUserId: string) => void
+    addCollab: (add_whom_username: string,add_whom_name: string,topicid: string,topicname: string,whose_topic: string,to: string,notifyid: string, fromUserId: string, toUserId: string) => void
     sendSuggestion: (to_whom: string,noti: any) => void
     markAllRead: (username: string) => void
     getNotifications: () => void
@@ -46,7 +46,7 @@ const initialState: InsertUserProviderProps = {
     updateUser: (formData: Partial<UserInfo>) => { },
     fetchUser: (username: string) => { },
     sendCollabInvite: (to_whom: string,noti: any) => { },
-    addCollab: (add_whom_username: string,add_whom_name: string,topicid: string,topicname: string,whose_topic: string,notifyid: string, fromUserId: string, toUserId: string) => { },
+    addCollab: (add_whom_username: string,add_whom_name: string,topicid: string,topicname: string,whose_topic: string,to: string,notifyid: string, fromUserId: string, toUserId: string) => { },
     sendSuggestion: (to_whom: string,noti: any) => { },
     markAllRead: (username: string) => { },
     getNotifications: () => {},
@@ -252,7 +252,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
         }
     }
 
-    const addCollab = async (add_whom_username: string,add_whom_name: string,topicid: string,topicname: string,whose_topic: string,notifyid: string, fromUserId: string, toUserId: string) => {
+    const addCollab = async (add_whom_username: string,add_whom_name: string,topicid: string,topicname: string,whose_topic: string,to:string, notifyid: string, fromUserId: string, toUserId: string) => {
         try {
             if (!add_whom_username || !topicid) return
 
@@ -281,8 +281,8 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
             const data = {
                 topicName: topicname,
                 topicId: topicid,
-                fromUsername: session?.user?.username,
-                toUsername: add_whom_username,
+                fromUsername: whose_topic,
+                toUsername: to,
                 notifyId: notifyid,
                 fromUserId,
                 toUserId
@@ -320,8 +320,8 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
             const data = {
                 topicName: noti.topicname,
                 topicId: noti.topicid,
-                fromUsername: session?.user?.username,
-                toUsername: to_whom,
+                fromUsername: noti.from,
+                toUsername: noti.to,
                 notifyId: noti?._id,
                 fromUserId: noti?.fromUserId,
                 toUserId: noti?.toUserId
@@ -419,6 +419,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
     }
 
     useEffect(() => {
+        console.log('param username: ', param_username)
         if (status === "authenticated") {
             const fetchData = async () => {
                 try {

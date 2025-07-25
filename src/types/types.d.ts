@@ -11,6 +11,7 @@ export interface TopicPublicOrPrivate {
 
 export interface InviteNotificationCardProps {
     from: string;
+    to: string;
     topicid: string;
     topicname: string;
     notifyid?: string;

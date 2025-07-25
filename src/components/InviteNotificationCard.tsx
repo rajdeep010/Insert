@@ -12,7 +12,7 @@ import { useInsertUser } from '@/app/context/InsertUserProvider';
 
 
 
-const InviteNotificationCard = ({ from,topicid,topicname,notifyid,read, fromUserId, toUserId }: InviteNotificationCardProps) => {
+const InviteNotificationCard = ({ from, to, topicid,topicname,notifyid,read, fromUserId, toUserId }: InviteNotificationCardProps) => {
     const { data: session } = useSession()
     const [isAccepting,setIsAccepting] = useState<boolean>(false)
     const [isDeclining,setIsDeclining] = useState<boolean>(false)
@@ -33,7 +33,7 @@ const InviteNotificationCard = ({ from,topicid,topicname,notifyid,read, fromUser
             setIsAccepting(true)
             setIsClicked(true)
 
-            await addCollab(session_user_username,session_user_name,topicid,topicname,from,notifyid!, fromUserId!, toUserId!)
+            await addCollab(session_user_username,session_user_name,topicid,topicname,from,to,notifyid!, fromUserId!, toUserId!)
         } catch (error) {
 
         } finally {
@@ -49,7 +49,8 @@ const InviteNotificationCard = ({ from,topicid,topicname,notifyid,read, fromUser
 
             const declineNoti: NotificationData = {
                 noti_type: 'decline_invite',
-                from: session_user_username,
+                from,
+                to,
                 topicid,
                 topicname,
                 read: true,
