@@ -74,7 +74,7 @@ export default function VerifyAccount() {
                                 <FormItem>
                                     <FormLabel>Verification Code</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Enter Code" {...field} />
+                                        <Input placeholder="Enter Code"  autoComplete='off' {...field} />
                                     </FormControl>
                                 </FormItem>
                             )}
