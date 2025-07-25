@@ -6,7 +6,7 @@ import Image from "next/image";
 
 export function About() {
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-7xl mx-auto w-full my-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-7xl mx-auto w-full my-16 px-4">
             <WobbleCard
                 containerClassName="col-span-1 lg:col-span-2 h-full bg-pink-800 min-h-[500px] lg:min-h-[300px]"
                 className=""
@@ -15,7 +15,7 @@ export function About() {
                     <h2 className="text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
                         Craft & Collaborate on Coding Sheets with 2.0
                     </h2>
-                    <p className="mt-4 text-left  text-base/6 text-neutral-200">
+                    <p className="mt-4 text-left text-sm lg:text-base/4 text-neutral-200">
                         Create, share, and collaborate on custom problem sheets — with public, private modes built in. Coding just got more connected.
                     </p>
                 </div>
@@ -31,7 +31,7 @@ export function About() {
                 <h2 className="max-w-80  text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
                     Build slow. Ship fast. Iterate smarter.
                 </h2>
-                <p className="mt-4 max-w-[26rem] text-left  text-base/6 text-neutral-200">
+                <p className="mt-4 max-w-[26rem] text-left text-sm lg:text-base/4 text-neutral-200">
                     It&apos;s not just pixels and commits — it&apos;s the craft, the chaos, and the coffee.
                     Embrace the bumps, celebrate the breakthroughs.
 
@@ -42,7 +42,7 @@ export function About() {
                     <h2 className="max-w-sm md:max-w-lg  text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
                         Signup for cutting-edge art of writing Blogs with Insert 2.0
                     </h2>
-                    <p className="mt-4 max-w-[26rem] text-left  text-base/6 text-neutral-200">
+                    <p className="mt-4 max-w-[26rem] text-left text-sm lg:text-base/4 text-neutral-200">
                         Whether you&apos;re sharing ideas or documenting deep dives, our editor adapts to your flow — crisp, intuitive, and always in sync with your thoughts.
                     </p>
                 </div>
