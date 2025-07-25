@@ -5,7 +5,6 @@ import '../globals.css'
 import { DiamondMinus,Linkedin } from 'lucide-react'
 import { ThreeDMarqueeDemoSecond } from '@/components/Hero'
 import { About } from '@/components/About'
-import { GlobeConnect } from '@/components/GlobeConnect'
 import { GitHubLogoIcon,InstagramLogoIcon } from '@radix-ui/react-icons'
 
 export default function Home() {
