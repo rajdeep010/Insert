@@ -18,23 +18,23 @@ export const ThreeDMarquee = ({
     return (
         <div
             className={cn(
-                "mx-auto block h-screen overflow-hidden rounded-2xl max-sm:h-100",
+                "mx-auto block h-screen w-screen overflow-hidden rounded-2xl max-sm:h-100",
                 className,
             )}
         >
             <div className="flex size-full items-center justify-center">
-                <div className="h-[3720px] w-[3720px] shrink-0 scale-50 sm:scale-75 lg:scale-100">
+                <div className=" h-screen w-screen shrink-0 scale-50 sm:scale-75 lg:scale-100">
                     <div
                         style={{
                             transform: "rotateX(55deg) rotateY(0deg) rotateZ(-45deg)",
                         }}
-                        className="relative top-[30%] right-[50%] grid size-full origin-top-left grid-cols-4 gap-8 transform-3d"
+                        className="relative top-0 right-[50%] grid size-full origin-top-left grid-cols-4 gap-8 transform-3d"
                     >
                         {chunks.map((subarray,colIndex) => (
                             <motion.div
-                                animate={{ y: colIndex % 2 === 0 ? 300 : -300 }}
+                                animate={{ y: colIndex % 2 === 0 ? 100 : -100 }}
                                 transition={{
-                                    duration: colIndex % 2 === 0 ? 40 : 45,
+                                    duration: colIndex % 2 === 0 ? 10 : 15,
                                     repeat: Infinity,
                                     repeatType: "reverse",
                                 }}
@@ -44,21 +44,21 @@ export const ThreeDMarquee = ({
                                 <GridLineVertical className="-left-4" offset="80px" />
                                 {subarray.map((image,imageIndex) => (
                                     <div className="relative" key={imageIndex + image}>
-                                        <GridLineHorizontal className="-top-4" offset="50px" />
+                                        <GridLineHorizontal className="-top-4" offset="20px" />
                                         <motion.img
                                             whileHover={{
                                                 y: -10,
                                             }}
                                             transition={{
-                                                duration: 1,
+                                                duration: 0.3,
                                                 ease: "easeInOut",
                                             }}
                                             key={imageIndex + image}
                                             src={image}
                                             alt={`Image ${imageIndex + 1}`}
-                                            className="aspect-[1270/900] rounded-lg object-cover ring ring-gray-950/5 hover:shadow-2xl"
+                                            className="aspect-[1270/1000] rounded-lg object-cover ring ring-gray-950/5 hover:shadow-2xl"
                                             width={1270}
-                                            height={900}
+                                            height={1000}
                                         />
                                     </div>
                                 ))}
