@@ -78,10 +78,13 @@ export const notifyFormatter = (type: string,data: any) => {
         return {
             "type": "user.signup.successful",
             "payload": {
-                "noti_type": "signup",
+                "notiType": "email",
+                "actionSource": "normal",
+                "actionType": "signup-successful",
                 "from": "admin",
                 "to": data?.toUsername,
-                "toEmail": data?.toEmail
+                "toEmail": data?.toEmail,
+                "toUserId": data?.toUserId
             }
         }
 

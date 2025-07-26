@@ -14,6 +14,8 @@ import { Loader2 } from 'lucide-react'
 import { verifySchema } from '@/schemas/verifySchema'
 
 
+const INSERT_NOTIFY_SERVICE = 'https://insert-notification-service-production.up.railway.app'
+
 
 export default function VerifyAccount() {
     const router = useRouter()
