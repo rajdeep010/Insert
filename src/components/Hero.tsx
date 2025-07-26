@@ -13,7 +13,7 @@ export function ThreeDMarqueeDemoSecond() {
 
             {/* <div className='text-3xl z-20 font-sans text-white mt-[-0.5rem]'>2.0</div> */}
             <p className="relative z-20 mx-auto max-w-[70%] lg:max-w-[40%] text-center font-sans text-md lg:text-2xl my-2 font-semibold text-white dark:text-gray-400">
-                Simple, more powerful and made for developers
+                Simple, More Powerful and made for Developers
             </p>
 
             <div className="relative z-20 flex mt-2 flex-wrap items-center justify-center gap-4">
