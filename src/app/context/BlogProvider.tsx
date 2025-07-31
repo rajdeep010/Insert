@@ -23,6 +23,7 @@ interface BlogProviderProps {
 
     deleteBlog: (blog_id: string) => void
     handleBlogUpdate: (content: any) => void
+    handleAutoSaveBlog: (content: any) => void
     addBlog: (title: string,visibility: string) => void
     setIsAddBlogModalOpen: (isOpen: boolean) => void
     fetchAllBlogPosts: () => void
@@ -42,6 +43,7 @@ const initialState: BlogProviderProps = {
 
     deleteBlog: (blog_id: string) => { },
     handleBlogUpdate: (content: any) => { },
+    handleAutoSaveBlog: () => {},
     addBlog: (title: string,visibility: string) => { },
     setIsAddBlogModalOpen: (isOpen: boolean) => { },
     fetchAllBlogPosts: () => { }
@@ -222,6 +224,29 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }
 
+    const handleAutoSaveBlog = async (blogData: any) => {
+        if (!username) return
+
+        const blogContent = blogData?.blogContent
+        const blogContentText = blogData?.blogContentText || ""
+        const blogBannerImage = blogData?.blogBannerImage || ""
+
+        const response = await axios.put('/api/update-blog',{
+            blogContent,
+            blogUrl,
+            creator: username,
+            blogContentText,
+            blogBannerImage
+        })
+
+        if (response.data.success) {
+            const data = response.data
+            // dispatch({ type: "SET_CURRENT_BLOG",payload: data.blog })
+        } else {
+
+        }
+    }
+
     const getBlogsByUsername = async (query_username: string) => {
         if (!username) return
         dispatch({ type: "SET_ALL_BLOGS_LOADING",payload: true })
@@ -287,7 +312,8 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
                 handleBlogUpdate,
                 addBlog,
                 setIsAddBlogModalOpen,
-                fetchAllBlogPosts
+                fetchAllBlogPosts,
+                handleAutoSaveBlog
             }}>
             {children}
         </BlogContext.Provider>

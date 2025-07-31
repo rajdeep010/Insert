@@ -49,6 +49,7 @@ import {
 import SuggestionNotificationCard from "./SuggestionNotificationCard";
 import InviteNotificationCard from "./InviteNotificationCard";
 import { useInsertUser } from "@/app/context/InsertUserProvider";
+import { Separator } from "./ui/separator";
 
 const InsertNavbar = () => {
 	const { data: session,status } = useSession();
@@ -132,6 +133,29 @@ const InsertNavbar = () => {
 												</Link>
 											</NavigationMenuLink>
 										</li>
+										<Separator/>
+										<li>
+											<NavigationMenuLink asChild>
+												<Link
+													href={`/u/${session.user?.username}`}
+													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
+												>
+													<User className="h-4 w-4" />
+													<span className="text-sm">Profile</span>
+												</Link>
+											</NavigationMenuLink>
+										</li>
+										<li>
+											<NavigationMenuLink asChild>
+												<Link
+													href={`/write`}
+													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
+												>
+													<FilePenLine className="h-4 w-4" />
+													<span className="text-sm">Write</span>
+												</Link>
+											</NavigationMenuLink>
+										</li>
 									</ul>
 								</NavigationMenuContent>
 							</NavigationMenuItem>
@@ -177,30 +201,6 @@ const InsertNavbar = () => {
 										asChild
 										className={navigationMenuTriggerStyle()}
 									>
-										<Link href={`/u/${session.user?.username}`}>
-											<User className="inline mr-2 h-4 w-4" />
-											Profile
-										</Link>
-									</NavigationMenuLink>
-								</NavigationMenuItem>
-
-								<NavigationMenuItem>
-									<NavigationMenuLink
-										asChild
-										className={navigationMenuTriggerStyle()}
-									>
-										<Link href="/write">
-											<FilePenLine className="inline mr-2 h-4 w-4" />
-											Write
-										</Link>
-									</NavigationMenuLink>
-								</NavigationMenuItem>
-
-								<NavigationMenuItem>
-									<NavigationMenuLink
-										asChild
-										className={navigationMenuTriggerStyle()}
-									>
 										<Link href="mailto:insertcontact999@gmail.com">
 											<Contact className="inline mr-2 h-4 w-4" />
 											Contact
@@ -238,9 +238,9 @@ const InsertNavbar = () => {
 										{
 											notifyLoader && <Loader2 className="h-4 w-4 animate-spin" />
 										}
-										{!notifications && (
+										{!notifyLoader && notifications && notifications?.length === 0 && (
 											<>
-												<div className="p-2 text-sm opacity-50">
+												<div className="p-2 text-xs opacity-50">
 													No notifications
 												</div>
 											</>

@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { EditorContent,EditorContext,useEditor } from "@tiptap/react";
+import { EditorContent, EditorContext, useEditor } from "@tiptap/react";
 import { StarterKit } from "@tiptap/starter-kit";
 import { Image } from "@tiptap/extension-image";
 import { TaskItem } from "@tiptap/extension-task-item";
@@ -51,7 +51,7 @@ import { useMobile } from "@/hooks/use-mobile";
 import { useWindowSize } from "@/hooks/use-window-size";
 import { useCursorVisibility } from "@/hooks/use-cursor-visibility";
 import { Button as Btn } from "@/components/ui/button";
-import { handleImageUpload,MAX_FILE_SIZE } from "@/lib/tiptap-utils";
+import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 import "@/components/tiptap-templates/simple/simple-editor.scss";
 import { Placeholder } from "@/components/tiptap-extension/placeholder-extension";
 import BlogWriteSidebar from "@/components/BlogWriteSidebar";
@@ -64,7 +64,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useDebounceCallback } from "usehooks-ts";
+import { useDebounceCallback, useDebounceValue } from "usehooks-ts";
 import { useParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2 } from "lucide-react";
@@ -95,11 +95,17 @@ const MainToolbarContent = ({
 	onHighlighterClick,
 	onLinkClick,
 	isMobile,
+	isSaving,
+	onToggleAutoSave,
+	autoSave,
 	onSaveClick,
 }: {
 	onHighlighterClick: () => void;
 	onLinkClick: () => void;
 	isMobile: boolean;
+	isSaving: boolean,
+	onToggleAutoSave: () => void,
+	autoSave: boolean,
 	onSaveClick: () => void;
 }) => {
 
@@ -115,8 +121,8 @@ const MainToolbarContent = ({
 			<ToolbarSeparator />
 
 			<ToolbarGroup>
-				<HeadingDropdownMenu levels={[1,2,3,4]} />
-				<ListDropdownMenu types={["bulletList","orderedList","taskList"]} />
+				<HeadingDropdownMenu levels={[1, 2, 3, 4]} />
+				<ListDropdownMenu types={["bulletList", "orderedList", "taskList"]} />
 				<BlockQuoteButton />
 				<CodeBlockButton />
 			</ToolbarGroup>
@@ -161,18 +167,23 @@ const MainToolbarContent = ({
 
 			<ToolbarSeparator />
 
-			{/* <Tooltip>
-        <TooltipTrigger asChild>
-          <span>
-            <Switch checked={autoSave} onCheckedChange={onToggleAutoSave} />
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Auto Save</p>
-        </TooltipContent>
-      </Tooltip> */}
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<span>
+						{/* {
+							isSaving 
+							? <Loader2 className="animate-spin h-4 w-4" /> */}
+							<Switch checked={autoSave} onCheckedChange={onToggleAutoSave} />
+						{/* } */}
+					</span>
+				</TooltipTrigger>
+				<TooltipContent>
+					<p>Auto Save</p>
+				</TooltipContent>
+			</Tooltip>
 
-			{!isBlogLoading && <Btn onClick={onSaveClick}>Save</Btn>}
+
+			{!isBlogLoading && <Btn onClick={onSaveClick} disabled={autoSave} >Save</Btn>}
 		</>
 	);
 };
@@ -208,32 +219,23 @@ const MobileToolbarContent = ({
 
 const SimpleEditor = () => {
 	const { data: session, status } = useSession()
-	
+
 
 	const isMobile = useMobile();
 	const windowSize = useWindowSize();
-	const [mobileView,setMobileView] = React.useState<"main" | "highlighter" | "link">("main")
+	const [mobileView, setMobileView] = React.useState<"main" | "highlighter" | "link">("main")
 	const toolbarRef = React.useRef<HTMLDivElement>(null);
 
-	const { currentBlog,handleBlogUpdate,isBlogLoading } = useBlog();
-	const [editorContent,setEditorContent] = React.useState<any>(currentBlog?.blogContent)
-	const [editorTextContent,setEditorTextContent] = React.useState<string>(currentBlog?.blogContentText || "");
+	const { currentBlog, handleBlogUpdate, isBlogLoading, handleAutoSaveBlog } = useBlog();
+	const [editorContent, setEditorContent] = React.useState<any>(currentBlog?.blogContent)
+	const [editorTextContent, setEditorTextContent] = React.useState<string>(currentBlog?.blogContentText || "");
 
-	// const [autoSave,setAutoSave] = React.useState(currentBlog?.autosave || false)
+	const [debouncedEditorContent, setDebouncedEditorContent] = useDebounceValue<any>(currentBlog?.blogContent, 300)
+	const [debouncedEditorTextContent, setDebouncedEditorTextContent] = useDebounceValue<any>(currentBlog?.blogContentText || "", 300)
 
-	// const debounced = useDebounceCallback(setEditorContent, 5000)
+	const [autoSave, setAutoSave] = React.useState(currentBlog?.autosave || false)
+	const [isSaving, setIsSaving] = React.useState(false)
 
-	const handleSaveContent = React.useCallback(() => {
-		if (!editorContent && !currentBlog) return;
-
-		handleBlogUpdate({
-			blogContent: JSON.stringify(editorContent),
-			blogContentText: editorTextContent,
-			blogBannerImage: getFirstImageFromBlogContent(editorContent),
-		})
-
-		// console.log("banner: ",  getFirstImageFromBlogContent(editorContent))
-	},[editorContent,currentBlog,handleBlogUpdate])
 
 	const getFirstImageFromBlogContent = (blogContent: string) => {
 		try {
@@ -259,10 +261,6 @@ const SimpleEditor = () => {
 		}
 	}
 
-	// React.useEffect(() => {
-	//   handleSaveContent()
-	// }, [editorContent])
-
 	const editor = useEditor({
 		immediatelyRender: false,
 		editorProps: {
@@ -275,7 +273,7 @@ const SimpleEditor = () => {
 		},
 		extensions: [
 			StarterKit,
-			TextAlign.configure({ types: ["heading","paragraph"] }),
+			TextAlign.configure({ types: ["heading", "paragraph"] }),
 			Underline,
 			TaskList,
 			TaskItem.configure({ nested: true }),
@@ -284,7 +282,7 @@ const SimpleEditor = () => {
 			Typography,
 			Superscript,
 			Placeholder.configure({
-				placeholder: ({ node,pos }) => {
+				placeholder: ({ node, pos }) => {
 					if (pos === 0 && node.type.name === "heading") {
 						return "Enter title";
 					}
@@ -300,7 +298,7 @@ const SimpleEditor = () => {
 				maxSize: MAX_FILE_SIZE,
 				limit: 3,
 				upload: handleImageUpload,
-				onError: (error) => console.error("Upload failed:",error),
+				onError: (error) => console.error("Upload failed:", error),
 			}),
 			TrailingNode,
 			Link.configure({ openOnClick: false }),
@@ -309,9 +307,16 @@ const SimpleEditor = () => {
 		onUpdate: ({ editor }) => {
 			const json = editor.getJSON() || "";
 			const plainText = editor?.getText().trim() || ""
-			console.log("Plain Text:",typeof plainText);
+			console.log("Plain Text:", typeof plainText);
+
 			setEditorContent(json)
 			setEditorTextContent(plainText)
+			
+			if (autoSave) {
+				setDebouncedEditorContent(json)
+				setDebouncedEditorTextContent(plainText)
+				// debouncedSave(json, plainText)
+			} 
 		},
 	})
 
@@ -319,7 +324,7 @@ const SimpleEditor = () => {
 		immediatelyRender: false,
 		extensions: [
 			StarterKit,
-			TextAlign.configure({ types: ["heading","paragraph"] }),
+			TextAlign.configure({ types: ["heading", "paragraph"] }),
 			Underline,
 			TaskList,
 			TaskItem.configure({ nested: true }),
@@ -334,7 +339,7 @@ const SimpleEditor = () => {
 				maxSize: MAX_FILE_SIZE,
 				limit: 3,
 				upload: handleImageUpload,
-				onError: (error) => console.error("Upload failed:",error),
+				onError: (error) => console.error("Upload failed:", error),
 			}),
 			TrailingNode,
 			Link.configure({ openOnClick: false }),
@@ -348,6 +353,18 @@ const SimpleEditor = () => {
 		overlayHeight: toolbarRef.current?.getBoundingClientRect().height ?? 0,
 	});
 
+	const handleSaveContent = async () => {
+		console.log('handle normal save content: ', editorContent, currentBlog)
+		if (!editorContent && !currentBlog) return;
+		console.log('this is autosave: ', autoSave)
+
+		await handleBlogUpdate({
+			blogContent: JSON.stringify(editorContent),
+			blogContentText: editorTextContent,
+			blogBannerImage: getFirstImageFromBlogContent(editorContent),
+		})
+	}
+
 	React.useEffect(() => {
 		if (!isMobile && mobileView !== "main") {
 			setMobileView("main");
@@ -357,69 +374,104 @@ const SimpleEditor = () => {
 		}
 
 		editor.chain().focus().setImageUploadNode().run();
-	},[isMobile,mobileView])
+	}, [isMobile, mobileView])
+
+	// const debouncedSave = useDebounceCallback(async (json, plainText) => {
+	// 	if (autoSave) {
+	// 		setIsSaving(true);
+	// 		await handleAutoSaveBlog({
+	// 			blogContent: JSON.stringify(json),
+	// 			blogContentText: plainText,
+	// 			blogBannerImage: getFirstImageFromBlogContent(json),
+	// 		});
+	// 		setIsSaving(false);
+	// 	}
+	// }, 500);
+
+	React.useEffect(() => {
+		const handleAutoSave = async () => {
+			if(debouncedEditorContent){
+				try {
+					setIsSaving(true);
+					await handleAutoSaveBlog({
+						blogContent: JSON.stringify(debouncedEditorContent),
+						blogContentText: debouncedEditorTextContent,
+						blogBannerImage: getFirstImageFromBlogContent(debouncedEditorContent),
+					});
+					setIsSaving(false);
+				} catch (error) {
+					console.log('this is error: ', error)
+				}
+			}
+		}
+
+		handleAutoSave()
+	}, [debouncedEditorContent])
 
 
 	React.useEffect(() => {
 		if (previewEditor && editorContent) {
 			previewEditor.commands.setContent(editorContent)
 		}
-	},[editorContent,previewEditor])
+	}, [editorContent, previewEditor])
 
 	return (
 		<EditorContext.Provider value={{ editor }}>
 
 			<div className="flex w-full flex-col gap-6">
-				{status === 'authenticated' && session?.user?.username === currentBlog?.creator && 
-				<Tabs defaultValue="write">
-					<TabsList>
-						<TabsTrigger value="write">Write</TabsTrigger>
-						<TabsTrigger value="preview">Preview</TabsTrigger>
-					</TabsList>
-					<TabsContent value="write">
-						<Toolbar
-							ref={toolbarRef}
-							style={isMobile ? { bottom: `calc(100% - ${windowSize.height - bodyRect.y}px)`,} : {}}
-						>
-							{mobileView === "main" ?
-								isBlogLoading ? <Skeleton className="w-32 h-6" /> : (
+				{status === 'authenticated' && session?.user?.username === currentBlog?.creator &&
+					<Tabs defaultValue="write">
+						<TabsList>
+							<TabsTrigger value="write">Write</TabsTrigger>
+							<TabsTrigger value="preview">Preview</TabsTrigger>
+						</TabsList>
+						<TabsContent value="write">
+							<Toolbar
+								ref={toolbarRef}
+								style={isMobile ? { bottom: `calc(100% - ${windowSize.height - bodyRect.y}px)`, } : {}}
+							>
+								{mobileView === "main" ?
+									isBlogLoading ? <Skeleton className="w-32 h-6" /> : (
 
-									<MainToolbarContent
-										onHighlighterClick={() => setMobileView("highlighter")}
-										onLinkClick={() => setMobileView("link")}
-										isMobile={isMobile}
-										onSaveClick={handleSaveContent}
-									/>
-								) : (
-									<MobileToolbarContent
-										type={mobileView === "highlighter" ? "highlighter" : "link"}
-										onBack={() => setMobileView("main")}
-									/>
-								)}
-						</Toolbar>
+										<MainToolbarContent
+											onHighlighterClick={() => setMobileView("highlighter")}
+											onLinkClick={() => setMobileView("link")}
+											isMobile={isMobile}
+											isSaving={isSaving}
+											autoSave={autoSave}
+											onToggleAutoSave={() => setAutoSave(!autoSave)}
+											onSaveClick={handleSaveContent}
+										/>
+									) : (
+										<MobileToolbarContent
+											type={mobileView === "highlighter" ? "highlighter" : "link"}
+											onBack={() => setMobileView("main")}
+										/>
+									)}
+							</Toolbar>
 
-						<div className="content-wrapper shadow-sm dark:shadow-grey-800">
-							<EditorContent
-								editor={editor}
-								role="presentation"
-								className="simple-editor-content"
-							/>
-						</div>
-					</TabsContent>
+							<div className="content-wrapper shadow-sm dark:shadow-grey-800">
+								<EditorContent
+									editor={editor}
+									role="presentation"
+									className="simple-editor-content"
+								/>
+							</div>
+						</TabsContent>
 
 
-					<TabsContent value="preview">
+						<TabsContent value="preview">
 
-						<div className="content-wrapper shadow-sm dark:shadow-grey-800">
-							<EditorContent
-								editor={previewEditor}
-								role="presentation"
-								className="simple-editor-content"
-							/>
-						</div>
+							<div className="content-wrapper shadow-sm dark:shadow-grey-800">
+								<EditorContent
+									editor={previewEditor}
+									role="presentation"
+									className="simple-editor-content"
+								/>
+							</div>
 
-					</TabsContent>
-				</Tabs>}
+						</TabsContent>
+					</Tabs>}
 
 				{
 					status === 'unauthenticated' && <>
@@ -446,7 +498,7 @@ const Write = () => {
 		<>
 			<div className="absolute top-5 left-5">
 				{" "}
-				{status === 'authenticated' && <BlogWriteSidebar /> }
+				{status === 'authenticated' && <BlogWriteSidebar />}
 			</div>
 
 			<div className="px-6 lg:px-64 pt-8 min-h-screen">
