@@ -71,13 +71,13 @@ export default function AllBlogPosts() {
 													type={"avatar"}
 													avatarSize="small"
 												/>
-												<span className="text-sm text-gray-600 z-100 hover:text-blue-500 hover:underline">
+												<div className="text-sm text-gray-600 z-100 hover:text-blue-500 hover:underline">
 													<InsertHoverCard
 														username={blog?.creator as string}
 														type={"username"}
 														avatarSize="small"
 													/>
-												</span>
+												</div>
 											</div>
 
 											<div className="flex items-center gap-4">

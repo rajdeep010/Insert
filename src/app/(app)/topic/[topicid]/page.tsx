@@ -233,20 +233,21 @@ const EachTopic = () => {
 								<p className="text-3xl font-bold">
 									{curr_topic?.topic?.title}
 								</p>
-								<div>
+								<div className="flex items-center gap-2">
 									{curr_topic?.topic?.visibility === "private" && (
 										<Badge variant="destructive" className="flex items-center gap-2">private</Badge>
 									)}
 									{curr_topic?.topic?.visibility === "public" && (
 										<Badge variant="default" className="bg-blue-500 text-white dark:bg-blue-600">public</Badge>
 									)}
+									<Badge variant="default">{curr_topic?.problems?.length} Problems</Badge>
 								</div>
 							</div>
 
-							<p className="text-xs">{curr_topic && <p className="text-gray-400 flex gap-2 items-center">Author: {" "} <InsertHoverCard
+							<div className="text-xs">{curr_topic && <div className="text-gray-400 flex gap-2 items-center">Author: {" "} <InsertHoverCard
 								username={curr_topic?.topic?.creator_username as string}
 								type={"username"}
-							/></p>}</p>
+							/></div>}</div>
 						</div>
 
 						<div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
@@ -261,7 +262,7 @@ const EachTopic = () => {
 					</div>
 
 					<div className="flex justify-between gap-6">
-						<p className="max-w-[50%] break-words text-gray-700 italic text-sm">{curr_topic?.topic?.about}</p>
+						<div className="max-w-[50%] break-words text-gray-700 italic text-sm">{curr_topic?.topic?.about}</div>
 						<div className="flex flex-col lg:flex-row gap-2 items-center">
 							{
 								!isTopicLoading && status === "authenticated" && session?.user.username === curr_topic?.topic?.creator_username &&

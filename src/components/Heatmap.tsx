@@ -1,21 +1,20 @@
-'use client'
-import React, { useState, useEffect } from 'react';
-import CalendarHeatmap from 'react-calendar-heatmap';
-import { HeatmapDateValues } from '@/types/types';
-import HeatmapTooltip from './HeatmapTooltip';
-import { useTopics } from '@/app/context/TopicProvider';
-import HeatmapSkeleton from './skeletons/HeatmapSkeleton';
+import React, { useEffect, useState } from 'react'
+import CalendarHeatmap from 'react-calendar-heatmap'
+import { Tooltip } from 'react-tooltip'
+import 'react-calendar-heatmap/dist/styles.css'
+import 'react-tooltip/dist/react-tooltip.css'
+import { useInsertTopics } from '@/app/context/InsertTopicProvider'
 import {
     Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
     SelectTrigger,
+    SelectContent,
     SelectValue,
-} from "@/components/ui/select"
-import { useInsertTopics } from '@/app/context/InsertTopicProvider';
-
+    SelectGroup,
+    SelectLabel,
+    SelectItem
+} from '@/components/ui/select'
+import { HeatmapDateValues } from '@/types/types'
+import HeatmapSkeleton from './skeletons/HeatmapSkeleton'
 
 const Heatmap = () => {
     const years = []
@@ -23,87 +22,99 @@ const Heatmap = () => {
         years.push(year)
     }
 
-    // const { isHeatmapLoading, user_heatmapValues } = useTopics()
     const { isHeatmapLoading, user_heatmapValues } = useInsertTopics()
-    let heatmapValues = user_heatmapValues
-
     const [selectedYear, setSelectedYear] = useState(String(years[0]))
-    const [filteredValues, setFilteredValues] = useState<HeatmapDateValues[]>([]);
-    const [tooltipContent, setTooltipContent] = useState('');
-    const [tooltipPosition, setTooltipPosition] = useState<{ x: number, y: number }>({ x: 0, y: 0 });
-    const [showTooltip, setShowTooltip] = useState(false)
+    const [filteredValues, setFilteredValues] = useState<HeatmapDateValues[]>([])
+    const [startDate, setStartDate] = useState<Date>(new Date())
+    const [endDate, setEndDate] = useState<Date>(new Date())
 
-    const handleYearChange = (value: string) => { setSelectedYear(value) }
+    const handleYearChange = (value: string) => setSelectedYear(value)
 
-    const formatDate = (dateString: string): string => {
-        const date = new Date(dateString)
+    function shiftDate(date: Date, numDays: number): Date {
+        const newDate = new Date(date)
+        newDate.setDate(newDate.getDate() + numDays)
+        return newDate
+    }
+
+    function formatDate(dateInput: Date | string): string {
+        const date = new Date(dateInput)
         const day = date.getDate()
-        const month = date.toLocaleString('default', { month: 'short' })
+        const month = date.toLocaleString('default', { month: 'long' })
         const year = date.getFullYear()
 
-        const getOrdinalSuffix = (day: number): string => {
-            if (day > 3 && day < 21) return 'th'
-            switch (day % 10) {
-                case 1: return 'st'
-                case 2: return 'nd'
-                case 3: return 'rd'
-                default: return 'th'
-            }
-        }
+        const suffix =
+            day > 3 && day < 21
+                ? 'th'
+                : ['st', 'nd', 'rd'][(day % 10) - 1] || 'th'
 
-        return `${day}${getOrdinalSuffix(day)} ${month} ${year}`
-    }
-
-    const handleMouseOver = (event: React.MouseEvent, value: HeatmapDateValues | null) => {
-        if (value) {
-            setTooltipContent(`${value.count} actions on ${formatDate(value.date)}`)
-            setTooltipPosition({ x: event.clientX, y: event.clientY })
-            setShowTooltip(true)
-        } else {
-            const target = event.currentTarget as HTMLElement
-            const date = target.getAttribute('data-date')
-            if (date) {
-                setTooltipContent(`0 actions on ${formatDate(date)}`)
-                setTooltipPosition({ x: event.clientX, y: event.clientY })
-                setShowTooltip(true)
-            } else {
-                setTooltipContent(`No actions`)
-                setTooltipPosition({ x: event.clientX, y: event.clientY })
-                setShowTooltip(true)
-            }
-        }
-    }
-
-    const handleMouseOut = () => {
-        setShowTooltip(false)
-        setTooltipContent('')
+        return `${day}${suffix} ${month}, ${year}`
     }
 
     useEffect(() => {
-        const startOfYear = new Date(Number(selectedYear), 0, 1)
-        const endOfYear = selectedYear === new Date().getFullYear().toString() ? new Date() : new Date(Number(selectedYear), 11, 31)
+        const now = new Date()
+        const selected = Number(selectedYear)
+        const currentYear = now.getFullYear()
 
-        const filtered = heatmapValues.filter(value => {
-            const date = new Date(value.date)
-            const valueDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-            return valueDate >= startOfYear && valueDate <= endOfYear
-        })
+        let start: Date
+        let end: Date
+
+        if (selected === currentYear) {
+            // Last 365 days
+            end = now
+            start = shiftDate(end, -364)
+        } else if (selected < currentYear) {
+            // Full calendar year (Jan 1 - Dec 31)
+            start = new Date(selected, 0, 1)
+            end = new Date(selected, 11, 31)
+        } else {
+            // Future year: show trailing 12 months
+            end = new Date(selected, now.getMonth(), now.getDate())
+            start = new Date(selected - 1, now.getMonth(), now.getDate() + 1)
+        }
+
+        setStartDate(start)
+        setEndDate(end)
+
+        const filtered = user_heatmapValues?.filter(({ date }) => {
+            const d = new Date(date)
+            return d >= start && d <= end
+        }) ?? []
 
         setFilteredValues(filtered)
-    }, [selectedYear, heatmapValues])
+    }, [selectedYear, user_heatmapValues])
 
+    if (!user_heatmapValues) return null
+    if (isHeatmapLoading) return <HeatmapSkeleton />
 
-    if (isHeatmapLoading) {
-        return <HeatmapSkeleton />
+    // Map dates for quick lookup
+    const valueMap = new Map<string, number>()
+    filteredValues.forEach(({ date, count }) => {
+        valueMap.set(new Date(date).toDateString(), count)
+    })
+
+    // Build data array between startDate and endDate
+    const oneDay = 24 * 60 * 60 * 1000
+    const data: { date: Date; count: number }[] = []
+
+    for (
+        let d = new Date(startDate);
+        d <= endDate;
+        d = new Date(d.getTime() + oneDay)
+    ) {
+        const key = d.toDateString()
+        data.push({
+            date: new Date(d),
+            count: valueMap.get(key) ?? 0
+        })
     }
 
     return (
-        <div className='my-6'>
-            <div className='flex items-center mb-[20px] text-md'>
-
-                <label htmlFor="year-select" className='mr-2 font-medium'>Select Year:</label>
-
-                <div className='min-w-[80px]'>
+        <div className="my-6">
+            <div className="flex items-center mb-[20px] text-md">
+                <label htmlFor="year-select" className="mr-2 font-medium">
+                    Select Year:
+                </label>
+                <div className="min-w-[80px]">
                     <Select value={selectedYear} onValueChange={handleYearChange}>
                         <SelectTrigger className="border-2 cursor-pointer w-full">
                             <SelectValue placeholder="Select a year" />
@@ -122,29 +133,31 @@ const Heatmap = () => {
                 </div>
             </div>
 
-            <div className='px-6 py-4 border-2 rounded-md'>
+            <p className="text-sm text-muted-foreground mb-4">
+                Showing: {formatDate(startDate)} – {formatDate(endDate)}
+            </p>
+
+            <div className="px-6 py-4 border-2 rounded-md">
                 <CalendarHeatmap
-                    startDate={new Date(`${selectedYear}-01-01`)}
-                    endDate={new Date(`${selectedYear}-12-31`)}
-                    values={filteredValues}
-                    classForValue={(value: any) => {
-                        if (!value) {
-                            return 'color-empty';
-                        }
-                        return `color-scale-${value.count}`;
+                    startDate={startDate}
+                    endDate={endDate}
+                    values={data}
+                    classForValue={(value) => {
+                        if (!value || !value.count) return 'color-empty'
+                        return value.count < 5
+                            ? `color-github-${value.count}`
+                            : `color-github-5`
                     }}
                     tooltipDataAttrs={(value: any) => {
-                        return { 'data-date': value.date };
+                        const dateStr = formatDate(value.date)
+                        return {
+                            'data-tooltip-id': 'heatmap-tooltip',
+                            'data-tooltip-content': `${value.count ?? 0} submissions on ${dateStr}`
+                        }
                     }}
-                    onMouseOver={(event, value) => handleMouseOver(event, value as HeatmapDateValues)}
-                    onMouseLeave={handleMouseOut}
+                    showWeekdayLabels={false}
                 />
-
-                <HeatmapTooltip
-                    content={tooltipContent}
-                    position={tooltipPosition}
-                    show={showTooltip}
-                />
+                <Tooltip id="heatmap-tooltip" />
             </div>
         </div>
     )

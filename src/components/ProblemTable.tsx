@@ -163,6 +163,7 @@ export function ProblemsDataTable({
 					}
 					className="max-w-sm"
 				/>
+				
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<Button variant="outline" className="ml-auto">

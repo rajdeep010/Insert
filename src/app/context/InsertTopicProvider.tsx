@@ -230,7 +230,7 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
                 variant: 'default'
             });
 
-            // await addActivity();
+            await addActivity();
 
         } catch (error: any) {
             toast({
@@ -428,20 +428,6 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
         }
     }
 
-    // useEffect(() => {
-    //     if (status === "authenticated" && topic_id) {
-    //         fetchTopicById(topic_id)
-    //     }
-    // }, [status, topic_id])
-
-    // useEffect(() => {
-    //     if (status !== 'authenticated' || !param_username) return
-
-    //     getTopicsByUsername(param_username)
-    //     fetchAllTopics()
-    //     // fetchHeatmapActivity(param_username)
-    // },[status,param_username])
-
     const fetchAllTopicPosts = async () => {
         try {
             dispatch({ type: "SET_ALL_SHEETS_LOADING",payload: true });
@@ -468,10 +454,12 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
         if(status === "authenticated"){
             if (param_username) {
                 getTopicsByUsername(param_username)
+                fetchHeatmapActivity(param_username)
             }
 
             if(!param_username && session && session?.user && session?.user?.username){
                 getTopicsByUsername(session?.user?.username)
+                fetchHeatmapActivity(session?.user?.username)
             }
         }
         

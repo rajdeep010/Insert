@@ -224,7 +224,7 @@ const Dashboard = () => {
                 {
                     filteredTopics && filteredTopics?.map(({ id,title,about,visibility,creator_username,collaborators,createdAt },idx) => {
                         return <>
-                            <Card className='rounded-sm'>
+                            <Card className='rounded-sm' key={idx}>
                                 <CardHeader>
 
                                     <div className="flex justify-between">

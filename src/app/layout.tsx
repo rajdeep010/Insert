@@ -27,36 +27,34 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <TooltipProvider>
-        <AuthProvider>
-          <InsertUserProvider>
-            <InsertTopicProvider>
-              {/* <TopicProvider> */}
-                <BlogProvider>
-                  <body className={inter.className}>
+    <html lang="en" className={inter.className}>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TooltipProvider>
+            <AuthProvider>
+              <InsertUserProvider>
+                <InsertTopicProvider>
+                  <BlogProvider>
                     <Script
                       src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
                       strategy="beforeInteractive"
                     />
-                    <ThemeProvider
-                      attribute="class"
-                      defaultTheme="system"
-                      enableSystem
-                      disableTransitionOnChange
-                    >
-                      {children}
-                      <Toaster />
-                      <Footer />
-                      <Analytics />
-                    </ThemeProvider>
-                  </body>
-                </BlogProvider>
-              {/* </TopicProvider> */}
-            </InsertTopicProvider>
-          </InsertUserProvider>
-        </AuthProvider>
-      </TooltipProvider>
+                    {children}
+                    <Toaster />
+                    <Footer />
+                    <Analytics />
+                  </BlogProvider>
+                </InsertTopicProvider>
+              </InsertUserProvider>
+            </AuthProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
