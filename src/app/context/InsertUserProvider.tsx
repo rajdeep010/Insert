@@ -240,7 +240,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
     const getUnreadNotifyCount = async () => {
         try {
             if(!session?.accessToken)   return
-            console.log(session)
+            // console.log(session)
             const response = await axios.get(`${INSERT_NOTIFY_SERVICE}/api/notify/get-unread-count`,{
                 headers: {
                     Authorization: `Bearer ${session?.accessToken}`,
