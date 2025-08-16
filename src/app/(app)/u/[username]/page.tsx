@@ -7,6 +7,7 @@ import Heatmap from '@/components/Heatmap'
 import InsertNavbar from '@/components/InsertNavbar'
 import Overview from '@/components/Overview'
 import Profile from '@/components/Profile'
+import Projects from '@/components/Projects'
 import { useParams, useSearchParams } from 'next/navigation'
 import React from 'react'
 
@@ -31,6 +32,7 @@ export default function UserPage() {
                     {tab === 'topics' && <Dashboard />}
                     {tab === 'overview' && <Overview />}
                     {tab === 'blogs' && <Blogs />}
+                    {tab === 'projects' && <Projects/>}
                 </div>
                 <div>
                     {tab === 'overview' && <Heatmap />}

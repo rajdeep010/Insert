@@ -15,8 +15,6 @@ export default function InsertUserReducer(state: any,action: any) {
                 user: action.payload
             }
 
-        
-
         case "UPDATE_USER_AVATAR":
             return {
                 ...state,

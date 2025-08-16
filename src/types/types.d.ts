@@ -100,3 +100,16 @@ export interface Alltopic extends Document {
     username: string;
     topics: Topic[];
 }
+
+export type ReleaseBlog = {
+    id: string
+    [key: string]: any // Placeholder for future fields
+}
+
+export type Project = {
+    id: string
+    title: string
+    githubRepo: any // Placeholder for repo details
+    releaseBlogs: ReleaseBlog[]
+    [key: string]: any // Placeholder for future fields
+}

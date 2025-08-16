@@ -20,13 +20,6 @@ import {
 	DropdownMenuContent,
 	DropdownMenuGroup,
 	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuPortal,
-	DropdownMenuSeparator,
-	DropdownMenuShortcut,
-	DropdownMenuSub,
-	DropdownMenuSubContent,
-	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Loader2,MoreHorizontal } from "lucide-react";
@@ -62,7 +55,7 @@ export default function page() {
 					<div className="flex flex-col gap-4 max-h-[72vh] overflow-y-scroll custom-small-scrollbar  shadow-gray-200 dark:shadow-gray-800">
 						{allBlogPosts?.map((blog,idx) => (
 							<div key={idx} className="group">
-								<div className="flex gap-8 justify-between px-2 lg:px-8 py-6 hover:bg-blue-50 dark:hover:bg-slate-900 transition ease-in-out border-2 rounded-md">
+								<div className="flex gap-8 justify-between px-2 lg:px-8 py-6 hover:bg-blue-50 dark:hover:bg-slate-900 transition ease-in-out border-[1px] rounded-md">
 									
                                     <div className="flex-shrink-0 overflow-hidden rounded-md hidden lg:block">
 										<Image
@@ -92,7 +85,7 @@ export default function page() {
 											</div>
 
 											<div className="flex items-center gap-4">
-												<Link href={`/projects/${blog?.blogUrl}`}>
+												<Link href={`/posts/projects/${blog?.blogUrl}`}>
 													<CardTitle className="text-2xl font-bold ">
 														{blog?.blogTitle}
 													</CardTitle>

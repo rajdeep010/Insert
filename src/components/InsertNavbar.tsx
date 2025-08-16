@@ -19,6 +19,7 @@ import {
 	Menu,
 	Loader2,
 	LayoutDashboard,
+	PanelsTopLeft,
 } from "lucide-react";
 import {
 	NavigationMenu,
@@ -114,7 +115,7 @@ const InsertNavbar = () => {
 														}?tab=topics`}
 													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
 												>
-													<FileText className="h-4 w-4" />
+													<LayoutDashboard className="h-4 w-4" />
 													<span className="text-sm">Topics</span>
 												</Link>
 											</NavigationMenuLink>
@@ -130,6 +131,20 @@ const InsertNavbar = () => {
 												>
 													<LayoutPanelTop className="h-4 w-4" />
 													<span className="text-sm">Blogs</span>
+												</Link>
+											</NavigationMenuLink>
+										</li>
+										<li>
+											<NavigationMenuLink asChild>
+												<Link
+													href={`/u/${!param_username
+														? session?.user?.username
+														: param_username
+														}?tab=projects`}
+													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
+												>
+													<PanelsTopLeft className="h-4 w-4" />
+													<span className="text-sm">Projects</span>
 												</Link>
 											</NavigationMenuLink>
 										</li>
@@ -185,6 +200,17 @@ const InsertNavbar = () => {
 												>
 													<LayoutPanelTop className="h-4 w-4" />
 													<span className="text-sm">Blogs</span>
+												</Link>
+											</NavigationMenuLink>
+										</li>
+										<li>
+											<NavigationMenuLink asChild>
+												<Link
+													href={`/posts/projects`}
+													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
+												>
+													<PanelsTopLeft className="h-4 w-4" />
+													<span className="text-sm">Projects</span>
 												</Link>
 											</NavigationMenuLink>
 										</li>

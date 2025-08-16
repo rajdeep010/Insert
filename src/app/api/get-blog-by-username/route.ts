@@ -57,7 +57,7 @@ export async function GET(request: Request) {
             return Response.json({
                 success: false,
                 message: 'No blogs found for this user',
-            }, { status: 404 })
+            }, { status: 204 })
         }
 
     } catch (error) {

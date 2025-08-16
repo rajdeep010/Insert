@@ -20,28 +20,24 @@ export async function POST(request: Request) {
             },{ status: 404 })
         }
 
-        const updateData = {
-            ...(formData.name && { name: formData.name }),
-            ...(formData.about && { about: formData.about }),
-            ...(formData.linkedin && { linkedin: formData.linkedin }),
-            ...(formData.profile && { profile: formData.profile }),
-            ...(formData.company && { company: formData.company }),
-            ...(formData.location && { location: formData.location }),
-        }
+        const updateData: Record<string, any> = {}
+        Object.keys(formData).forEach(key => {
+            updateData[key] = formData[key]
+        })
 
-        const updatedUser = await UserModel.updateOne({username}, {$set: updateData})
-        if(updatedUser.modifiedCount === 0){
+        const updatedUser = await UserModel.updateOne({ username }, { $set: updateData })
+        if (updatedUser.modifiedCount === 0) {
             return Response.json({
                 success: false,
                 message: 'Data is same as before'
-            }, {status: 400})
+            }, { status: 400 })
         }
 
         return Response.json({
             success: true,
             message: 'User information updated',
             userdata: updatedUser
-        }, {status: 200})
+        }, { status: 200 })
 
     } catch (error) {
         return Response.json({
