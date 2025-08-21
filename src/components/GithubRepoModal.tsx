@@ -138,7 +138,7 @@ const GithubRepoModal: React.FC<GithubRepoModalProps> = ({ isOpen, onClose }) =>
             <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <InsertIcon className='border-2 p-[4px] border-gray-950 dark:border-gray-800' />
+                        <InsertIcon className='border-2 p-[4px] bg-white border-gray-950 dark:border-gray-800' />
                         Import Project
                     </DialogTitle>
                 </DialogHeader>
