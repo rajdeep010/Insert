@@ -15,6 +15,16 @@ declare module 'next-auth' {
         about?:string;
         notifications?:[any];
         accessToken: any;
+
+        // GitHub fields
+        githubAccessToken?: string;
+        githubLogin?: string;
+        githubId?: number;
+        githubScopes?: string[];
+        githubConnectedAt?: string;
+        githubAvatarUrl?: string;
+        githubName?: string;
+        githubEmail?: string;
     }
 
     interface Session{
@@ -31,6 +41,15 @@ declare module 'next-auth' {
             location?:string;
             notifications?:[any];
            
+            // GitHub fields
+            githubAccessToken?: string;
+            githubLogin?: string;
+            githubId?: number;
+            githubScopes?: string[];
+            githubConnectedAt?: string;
+            githubAvatarUrl?: string;
+            githubName?: string;
+            githubEmail?: string;
         } & DefaultSession['user']
     }
 }
@@ -48,5 +67,15 @@ declare module 'next-auth/jwt' {
         about?:string;
         notifications?:[any];
         accessToken: any;
+
+        // GitHub fields
+        githubAccessToken?: string;
+        githubLogin?: string;
+        githubId?: number;
+        githubScopes?: string[];
+        githubConnectedAt?: string;
+        githubAvatarUrl?: string;
+        githubName?: string;
+        githubEmail?: string;
     }
 }

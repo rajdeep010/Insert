@@ -13,6 +13,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { BlogProvider } from "./context/BlogProvider";
 import { InsertUserProvider } from "./context/InsertUserProvider";
 import { InsertTopicProvider } from "./context/InsertTopicProvider";
+import { InsertProjectProvider } from "./context/InsertProjectProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,16 +40,18 @@ export default function RootLayout({
             <AuthProvider>
               <InsertUserProvider>
                 <InsertTopicProvider>
-                  <BlogProvider>
-                    <Script
-                      src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
-                      strategy="beforeInteractive"
-                    />
-                    {children}
-                    <Toaster />
-                    <Footer />
-                    <Analytics />
-                  </BlogProvider>
+                  <InsertProjectProvider>
+                    <BlogProvider>
+                      <Script
+                        src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
+                        strategy="beforeInteractive"
+                      />
+                      {children}
+                      <Toaster />
+                      <Footer />
+                      <Analytics />
+                    </BlogProvider>
+                  </InsertProjectProvider>
                 </InsertTopicProvider>
               </InsertUserProvider>
             </AuthProvider>

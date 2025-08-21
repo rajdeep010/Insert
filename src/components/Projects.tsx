@@ -41,6 +41,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from './ui/separator'
 import { GitHubLogoIcon } from '@radix-ui/react-icons'
+import { useInsertProjects } from '@/app/context/InsertProjectProvider'
+import GithubRepoModal from './GithubRepoModal'
 
 
 const Projects = () => {
@@ -48,38 +50,44 @@ const Projects = () => {
     const params = useParams();
     const username = params.username as string;
 
-    const {
-        user_Topics,
-    } = useInsertTopics();
-
-
+    const { user_projects } = useInsertProjects();
+    const [isRepoModalOpen, setIsRepoModalOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
 
-    const filteredTopics = useMemo(() => {
-        return user_Topics?.filter(topic =>
-            topic.title.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredProjects = useMemo(() => {
+        return user_projects?.filter(project =>
+            project.title.toLowerCase().includes(searchQuery.toLowerCase())
         )
-    }, [searchQuery, user_Topics])
+    }, [searchQuery, user_projects])
 
-    console.log('session: ', session)
+    // console.log('session: ', session)
 
 
     return (
         <div>
-            <div className='flex gap-4 justify-between mb-4'>
+            {session?.user?.githubAccessToken && <div className='flex gap-4 justify-between mb-4'>
                 <Input type="text" placeholder='Search Project...' className='w-[60vw] lg:w-[40vw]' value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
 
                 <div className="flex justify-between gap-2 items-center py-[-1rem]">
-                    {/* <div className="text-sm text-gray-600 dark:text-gray-500 font-semibold">Projects</div> */}
-                    <Button className="gap-2 flex items-center px-4 py-2 rounded-md cursor-pointer bg-green-700 text-white hover:bg-green-800"><Album className="h-4 w-4" /> <span className="text-sm">New</span></Button>
+                    <Button 
+                        className="gap-2 flex items-center px-4 py-2 rounded-md cursor-pointer bg-green-700 text-white hover:bg-green-800"
+                        onClick={() => setIsRepoModalOpen(true)}
+                    >
+                        <Album className="h-4 w-4" /> <span className="text-sm">New</span>
+                    </Button>
                     <Button className='cursor-pointer' variant={'outline'}><ListFilter className="h-4 w-4" /> <span className="text-sm">Filter</span></Button>
                 </div>
 
-            </div>
+            </div>}
+
+            <GithubRepoModal 
+                isOpen={isRepoModalOpen} 
+                onClose={() => setIsRepoModalOpen(false)} 
+            />
 
             <Separator />
 
-            <div className='h-[50vh] flex justify-center items-center flex-col gap-4'>
+            {!session?.user?.githubAccessToken && <div className='h-[50vh] flex justify-center items-center flex-col gap-4'>
                 <div className='text-gray-400'>You don't have any projects as of now</div>
                 <div className=''>
                     <Button
@@ -90,11 +98,11 @@ const Projects = () => {
                         Authorize With Github
                     </Button>
                 </div>
-            </div>
+            </div>}
 
-            <div className="my-5 flex flex-col gap-3 w-full h-[70vh] overflow-y-scroll custom-small-scrollbar">
+            {session?.user?.githubAccessToken && <div className="my-5 flex flex-col gap-3 w-full h-[70vh] overflow-y-scroll custom-small-scrollbar">
                 {
-                    filteredTopics && filteredTopics?.map(({ id, title, about, visibility, creator_username, collaborators, createdAt }, idx) => {
+                    filteredProjects && filteredProjects?.map(({ id, name, username, repoUrl, defaultBranch, userId, releaseTriggerKeyword, lastMonitoredCommitSha,  createdAt, updatedAt, visibility}, idx) => {
                         return <>
                             <div className='rounded-sm mb-4' key={idx}>
                                 <CardHeader>
@@ -103,7 +111,7 @@ const Projects = () => {
 
                                         <div className="flex gap-4 items-center">
                                             <CardTitle className='text-xl font-semibold'>
-                                                <Link href={`/posts/projects/${id}`} className='hover:text-blue-500 transition'>{title}</Link>
+                                                <Link href={`/posts/projects/${id}`} className='hover:text-blue-500 transition'>{name}</Link>
                                             </CardTitle>
                                             <div className="flex gap-2 items-center border-2 py-1 px-3 rounded-md">
                                                 <GitBranch className="h-4 w-4 text-sm" />
@@ -146,7 +154,7 @@ const Projects = () => {
                         </>
                     })
                 }
-            </div>
+            </div>}
         </div>
     )
 }

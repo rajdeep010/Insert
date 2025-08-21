@@ -174,9 +174,9 @@ export default function page() {
 
             {/* Feed Section */}
             <div className="flex flex-col gap-4 max-h-[75vh] overflow-y-scroll custom-small-scrollbar  shadow-gray-200 dark:shadow-gray-800">
-                {dummyFeed.map((item) => (
+                {dummyFeed.map((item, index) => (
                     <div
-                        key={item.id}
+                        key={index}
                         className="bg-[#e6f2ffc5] dark:bg-gray-950 rounded-lg px-6 py-8 border border-gray-300 dark:border-gray-700 shadow-sm dark:hover:bg-gray-900 hover:bg-[#cee6fec5] transition-colors duration-200"
                     >
                         {/* Top Row */}
