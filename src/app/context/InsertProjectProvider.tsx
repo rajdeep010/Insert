@@ -12,7 +12,8 @@ import { useParams, useRouter } from "next/navigation"
 const API_BASE = "http://localhost:8080"
 
 interface InsertProjectProviderProps {
-    all_projects: Project[]
+    curr_project: Project | null,
+    all_projects: Project[],
     user_projects: Project[],
     githubRepos: any[],
     releaseBlogs: any[],
@@ -24,6 +25,7 @@ interface InsertProjectProviderProps {
     isReleaseBlogLoading?: boolean
 
     fetchAllProjects: () => void
+    fetchProjectById: (_: string) => void,
     fetchProjectsByUserGithubId: (githubId: number) => void
     fetchProjectsByUsername: (username: string) => void
     addProject: (project: Partial<Project>) => void
@@ -37,9 +39,11 @@ interface InsertProjectProviderProps {
     removeReleaseBlog: (projectId: string, blogId: string) => void
     syncRelease: (projectId: string) => Promise<void>
     fetchReleaseBlogForProject: (projectId: string) => Promise<void>
+    fetchRepositoryBranches: (githubId: string, repoName: string, token: string) => Promise<string[]>
 }
 
 const initialState = {
+    curr_project: null,
     all_projects: [],
     user_projects: [],
     releaseBlogs: [],
@@ -53,6 +57,7 @@ const initialState = {
     isReleaseBlogLoading: false,
 
     fetchAllProjects: () => {},
+    fetchProjectById: (_: string) => {},
     fetchProjectsByUserGithubId: (_: number) => {},
     fetchProjectsByUsername: (_: string) => {},
     addProject: (_: Partial<Project>) => {},
@@ -63,7 +68,8 @@ const initialState = {
     updateReleaseBlog: (_: string, __: ReleaseBlog) => {},
     removeReleaseBlog: (_: string, __: string) => {},
     syncRelease: (_: string) => Promise<void>,
-    fetchReleaseBlogForProject: (projectId: string) => Promise<void>
+    fetchReleaseBlogForProject: (projectId: string) => Promise<void>,
+    fetchRepositoryBranches: (githubId: string, repoName: string, token: string) => Promise<string[]>
 }
 
 const InsertProjectContext = createContext<InsertProjectProviderProps|null>(null)
@@ -92,7 +98,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             dispatch({ type: "SET_GITHUB_REPOS", payload: res.data })
         } catch (error: any) {
             toast({
-                title: "Error",
+                title: "Error ⭕",
                 description: error?.response?.data?.message || "Failed to fetch projects",
                 variant: "destructive",
             })
@@ -108,7 +114,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             dispatch({ type: "SET_USER_PROJECTS", payload: res.data })
         } catch (error: any) {
             toast({
-                title: "Error",
+                title: "Error ⭕",
                 description: error?.response?.data?.message || "Failed to fetch projects",
                 variant: "destructive",
             })
@@ -126,7 +132,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             dispatch({ type: "SET_ALL_PROJECTS", payload: res.data })
         } catch (error: any) {
             toast({
-                title: "Error",
+                title: "Error ⭕",
                 description: error?.response?.data?.message || "Failed to fetch projects",
                 variant: "destructive",
             })
@@ -142,13 +148,13 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             const res = await axios.post(`${API_BASE}/projects`, project)
             dispatch({ type: "ADD_PROJECT", payload: res.data })
             toast({
-                title: "Success",
+                title: "Success ✅",
                 description: "Project added successfully",
                 variant: "default",
             })
         } catch (error: any) {
             toast({
-                title: "Error",
+                title: "Error ⭕",
                 description: error?.response?.data?.message || "Failed to add project",
                 variant: "destructive",
             })
@@ -164,13 +170,13 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             const res = await axios.put(`${API_BASE}/projects/${project.id}`, project)
             dispatch({ type: "UPDATE_PROJECT", payload: res.data })
             toast({
-                title: "Success",
+                title: "Success ✅",
                 description: "Project updated successfully",
                 variant: "default",
             })
         } catch (error: any) {
             toast({
-                title: "Error",
+                title: "Error ⭕",
                 description: error?.response?.data?.message || "Failed to update project",
                 variant: "destructive",
             })
@@ -186,13 +192,13 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             await axios.delete(`${API_BASE}/projects/${projectId}`)
             dispatch({ type: "REMOVE_PROJECT", payload: projectId })
             toast({
-                title: "Success",
+                title: "Success ✅",
                 description: "Project removed successfully",
                 variant: "default",
             })
         } catch (error: any) {
             toast({
-                title: "Error",
+                title: "Error ⭕",
                 description: error?.response?.data?.message || "Failed to remove project",
                 variant: "destructive",
             })
@@ -212,13 +218,13 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             const res = await axios.post(`${API_BASE}/projects/${projectId}/release-blogs`, blog)
             dispatch({ type: "ADD_RELEASE_BLOG", payload: { projectId, blog: res.data } })
             toast({
-                title: "Success",
+                title: "Success ✅",
                 description: "Release blog added successfully",
                 variant: "default",
             })
         } catch (error: any) {
             toast({
-                title: "Error",
+                title: "Error ⭕",
                 description: error?.response?.data?.message || "Failed to add release blog",
                 variant: "destructive",
             })
@@ -231,13 +237,13 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             const res = await axios.put(`${API_BASE}/projects/${projectId}/release-blogs/${blog.id}`, blog)
             dispatch({ type: "UPDATE_RELEASE_BLOG", payload: { projectId, blog: res.data } })
             toast({
-                title: "Success",
+                title: "Success ✅",
                 description: "Release blog updated successfully",
                 variant: "default",
             })
         } catch (error: any) {
             toast({
-                title: "Error",
+                title: "Error ⭕",
                 description: error?.response?.data?.message || "Failed to update release blog",
                 variant: "destructive",
             })
@@ -250,13 +256,13 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             await axios.delete(`${API_BASE}/projects/${projectId}/release-blogs/${blogId}`)
             dispatch({ type: "REMOVE_RELEASE_BLOG", payload: { projectId, blogId } })
             toast({
-                title: "Success",
+                title: "Success ✅",
                 description: "Release blog removed successfully",
                 variant: "default",
             })
         } catch (error: any) {
             toast({
-                title: "Error",
+                title: "Error ⭕",
                 description: error?.response?.data?.message || "Failed to remove release blog",
                 variant: "destructive",
             })
@@ -268,13 +274,13 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
         try {
             await axios.post(`${API_BASE}/release/${projectId}/sync-release`)
             toast({
-                title: "Success",
+                title: "Success ✅",
                 description: "Release sync triggered",
                 variant: "default",
             })
         } catch (error: any) {
             toast({
-                title: "Error",
+                title: "Error ⭕",
                 description: error?.response?.data?.message || "Failed to sync release",
                 variant: "destructive",
             })
@@ -288,12 +294,46 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             dispatch({ type: "SET_RELEASE_BLOGS", payload: { projectId, blogs: res.data } })
         } catch (error: any) {
             toast({
-                title: "Error",
+                title: "Error ⭕",
                 description: error?.response?.data?.message || "Failed to fetch release blogs",
                 variant: "destructive",
             })
         } finally {
             dispatch({ type: "SET_IS_RELEASE_BLOG_LOADING", payload: false })
+        }
+    }
+
+    const fetchRepositoryBranches = async (githubId: string, repoName: string, token: string) => {
+        try {
+            const res = await axios.get(`${API_BASE}/github/repos/${githubId}/${repoName}/branches`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            return res.data
+        } catch (error: any) {
+            toast({
+                title: "Error ⭕",
+                description: error?.response?.data?.message || "Failed to fetch repository branches",
+                variant: "destructive",
+            })
+            return []
+        }
+    }
+
+    const fetchProjectById = async (projectId: string) => {
+        try {
+            dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
+            const res = await axios.get(`${API_BASE}/projects/${projectId}`)
+            dispatch({ type: "SET_PROJECT", payload: res.data })
+        } catch (error: any) {
+            toast({
+                title: "Error ⭕",
+                description: error?.response?.data?.message || "Failed to fetch project",
+                variant: "destructive",
+            })
+        } finally {
+            dispatch({ type: "SET_IS_PROJECT_LOADING", payload: false })
         }
     }
 
@@ -315,14 +355,14 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 
     useEffect(() => {
         if (status === "authenticated" && project_id) {
-            // You need to define fetchProjectById if you want to fetch a single project
-            fetchReleaseBlogForProject(project_id)
+            fetchProjectById(project_id)
         }
     }, [status, project_id])
 
     return (
         <InsertProjectContext.Provider
             value={{
+                curr_project: state.curr_project,
                 all_projects: state.all_projects,
                 user_projects: state.user_projects,
                 githubRepos: state.githubRepos,
@@ -333,6 +373,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 isProjectLoading: state.isProjectLoading,
                 isReleaseBlogLoading: state.isReleaseBlogLoading,
                 fetchProjectsByUsername,
+                fetchProjectById,
                 fetchAllProjects,
                 fetchProjectsByUserGithubId,
                 addProject,
@@ -343,7 +384,8 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 updateReleaseBlog,
                 removeReleaseBlog,
                 syncRelease,
-                fetchReleaseBlogForProject
+                fetchReleaseBlogForProject,
+                fetchRepositoryBranches
             }}
         >
             {children}

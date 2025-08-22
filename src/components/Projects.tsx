@@ -21,7 +21,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { toast } from './ui/use-toast';
 import axios, { AxiosError } from 'axios';
 import { ApiResponse } from '@/types/ApiResponse';
-import { Album, Bookmark, Delete, GitBranch, ListFilter, Loader2, MoreHorizontal, Trash2 } from 'lucide-react'
+import { Album, Bookmark, Delete, Edit, Edit2, GitBranch, ListFilter, Loader2, MoreHorizontal, Trash2 } from 'lucide-react'
 import { useTopics } from '@/app/context/TopicProvider'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from './ui/badge'
@@ -50,26 +50,24 @@ const Projects = () => {
     const params = useParams();
     const username = params.username as string;
 
-    const { user_projects } = useInsertProjects();
+    const { user_projects, removeProject, updateProject } = useInsertProjects();
     const [isRepoModalOpen, setIsRepoModalOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
 
     const filteredProjects = useMemo(() => {
         return user_projects?.filter(project =>
-            project.title.toLowerCase().includes(searchQuery.toLowerCase())
+            project?.name?.toLowerCase().includes(searchQuery.toLowerCase())
         )
     }, [searchQuery, user_projects])
 
-    // console.log('session: ', session)
-
-
+    
     return (
         <div>
             {session?.user?.githubAccessToken && <div className='flex gap-4 justify-between mb-4'>
                 <Input type="text" placeholder='Search Project...' className='w-[60vw] lg:w-[40vw]' value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
 
                 <div className="flex justify-between gap-2 items-center py-[-1rem]">
-                    <Button 
+                    <Button
                         className="gap-2 flex items-center px-4 py-2 rounded-md cursor-pointer bg-green-700 text-white hover:bg-green-800"
                         onClick={() => setIsRepoModalOpen(true)}
                     >
@@ -80,9 +78,9 @@ const Projects = () => {
 
             </div>}
 
-            <GithubRepoModal 
-                isOpen={isRepoModalOpen} 
-                onClose={() => setIsRepoModalOpen(false)} 
+            <GithubRepoModal
+                isOpen={isRepoModalOpen}
+                onClose={() => setIsRepoModalOpen(false)}
             />
 
             <Separator />
@@ -102,42 +100,98 @@ const Projects = () => {
 
             {session?.user?.githubAccessToken && <div className="my-5 flex flex-col gap-3 w-full h-[70vh] overflow-y-scroll custom-small-scrollbar">
                 {
-                    filteredProjects && filteredProjects?.map(({ id, name, username, repoUrl, defaultBranch, userId, releaseTriggerKeyword, lastMonitoredCommitSha,  createdAt, updatedAt, visibility}, idx) => {
-                        return <>
-                            <div className='rounded-sm mb-4' key={idx}>
-                                <CardHeader>
+                    filteredProjects && filteredProjects?.map(({ id, name, username, repoUrl, defaultBranch, userId, releaseTriggerKeyword, lastMonitoredCommitSha, createdAt, updatedAt, visibility, description, language }, idx) => {
+                        const formatDate = (dateString: string) => {
+                            return new Date(dateString).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            })
+                        }
 
-                                    <div className="flex justify-between">
+                        return (
+                            <Card key={id} className='mb-4 hover:shadow-md transition-shadow duration-200'>
+                                <CardHeader className="pb-4">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <CardTitle className='text-xl font-semibold'>
+                                                    <Link
+                                                        href={`/project/${id}`}
+                                                        className='hover:text-blue-600 dark:hover:text-blue-400 transition-colors'
+                                                    >
+                                                        {name}
+                                                    </Link>
+                                                </CardTitle>
 
-                                        <div className="flex gap-4 items-center">
-                                            <CardTitle className='text-xl font-semibold'>
-                                                <Link href={`/posts/projects/${id}`} className='hover:text-blue-500 transition'>{name}</Link>
-                                            </CardTitle>
-                                            <div className="flex gap-2 items-center border-2 py-1 px-3 rounded-md">
-                                                <GitBranch className="h-4 w-4 text-sm" />
-                                                <p className="text-sm">master</p>
+                                                {/* Visibility Badge */}
+                                                <Badge variant={visibility === 'private' ? 'destructive' : 'secondary'} className="text-xs">
+                                                    {visibility}
+                                                </Badge>
                                             </div>
-                                            <Badge variant="destructive" className="flex items-center gap-2">10 release blogs</Badge>
+
+                                            <div className="flex flex-wrap items-center gap-3 mb-3">
+                                                {/* Default Branch */}
+                                                <div className="flex gap-1 items-center bg-gray-100 dark:bg-gray-800 py-1 px-2 rounded-md text-sm border-[1px]">
+                                                    <GitBranch className="h-3 w-3" />
+                                                    <span>{defaultBranch}</span>
+                                                </div>
+
+                                                {/* Language */}
+                                                {language && (
+                                                    <div className="flex gap-1 items-center bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 py-1 px-2 rounded-md text-sm">
+                                                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                                        <span className='text-sm'>{language}</span>
+                                                    </div>
+                                                )}
+
+                                                {/* Release Blogs Count */}
+                                                {/* <Badge variant="outline" className="text-xs">
+                                                    10 release blogs
+                                                </Badge> */}
+
+                                                {/* Repository URL */}
+                                                {repoUrl && (
+                                                    <Link
+                                                        href={repoUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm transition-colors"
+                                                    >
+                                                        <FiExternalLink className="h-4 w-4" />
+                                                        <span>View Repository</span>
+                                                    </Link>
+                                                )}
+                                            </div>
+
+                                            <CardDescription className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                                {description || 'No description available for this project.'}
+                                                <Link href={`/posts/projects/${id}`} className='text-blue-500 hover:text-blue-700 ml-1'>
+                                                    Learn more →
+                                                </Link>
+                                            </CardDescription>
                                         </div>
 
+                                        {/* Actions Menu */}
                                         {status === 'authenticated' && session?.user?.username === username && (
-                                            <div className="z-100 hover:bg-gray-200 dark:hover:bg-gray-800 p-2 flex justify-end rounded-md">
+                                            <div className="ml-4">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <MoreHorizontal className="h-4 w-4" />
+                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                        </Button>
                                                     </DropdownMenuTrigger>
-                                                    <DropdownMenuContent className="w-56" align="start">
+                                                    <DropdownMenuContent className="w-56" align="end">
                                                         <DropdownMenuGroup>
-                                                            <DropdownMenuItem disabled>
-                                                                Show less like this
-                                                            </DropdownMenuItem>
+                                                            {/* <DropdownMenuItem>
+                                                                <Edit className="h-4 w-4 mr-2" />
+                                                                Edit Project
+                                                            </DropdownMenuItem> */}
                                                         </DropdownMenuGroup>
                                                         <DropdownMenuGroup>
-                                                            <DropdownMenuItem
-                                                                className="text-red-500"
-                                                                disabled
-                                                            >
-                                                                Report post...
+                                                            <DropdownMenuItem className="text-red-500" onClick={() => removeProject(id)}>
+                                                                <Trash2 className="h-4 w-4 mr-2" />
+                                                                Delete Project
                                                             </DropdownMenuItem>
                                                         </DropdownMenuGroup>
                                                     </DropdownMenuContent>
@@ -146,12 +200,30 @@ const Projects = () => {
                                         )}
                                     </div>
 
-                                    <CardDescription>Lorem ipsum dolor sit amet, consectetur adipisicing elit. sint at voluptas. Ducimus dignissimos magni quam...<Link href={`/topic/${id}`} className='text-blue-500'>read more</Link> </CardDescription>
-                                </CardHeader>
+                                    {/* Project Meta Information */}
+                                    <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-200 dark:border-gray-700">
+                                        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                                            <span>Created {formatDate(createdAt)}</span>
+                                            <span>•</span>
+                                            <span>Updated {formatDate(updatedAt)}</span>
+                                            {lastMonitoredCommitSha && (
+                                                <>
+                                                    <span>•</span>
+                                                    <span>Last commit: {lastMonitoredCommitSha.substring(0, 7)}</span>
+                                                </>
+                                            )}
+                                        </div>
 
-                                <Separator />
-                            </div>
-                        </>
+                                        <div className="flex items-center gap-2">
+                                            {/* <Button variant="outline" size="sm" className="h-7 px-3 text-xs">
+                                                <Bookmark className="h-3 w-3 mr-1" />
+                                                Monitor
+                                            </Button> */}
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                            </Card>
+                        )
                     })
                 }
             </div>}

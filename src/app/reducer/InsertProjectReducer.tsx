@@ -17,6 +17,10 @@ export default function InsertProjectReducer(state: any, action: any) {
             return { ...state, isGithubReposLoading: action.payload }
         case "SET_GITHUB_REPOS":
             return { ...state, githubRepos: action.payload }
+        case "SET_PROJECT":
+            return { ...state, project: action.payload }
+        case "SET_IS_PROJECT_LOADING":
+            return {...state, isProjectLoading: action.payload}
         // cover update, delete, and add project
         case "SET_IS_PROJECT_LOADING":
             return { ...state, isProjectLoading: action.payload }
@@ -29,14 +33,18 @@ export default function InsertProjectReducer(state: any, action: any) {
         case "UPDATE_PROJECT":
             return {
                 ...state,
-                projects: state.projects.map((p: Project) =>
+                user_projects: state.user_projects.map((p: Project) =>
+                    p.id === action.payload.id ? action.payload : p
+                ),
+                all_projects: state.all_projects.map((p: Project) =>
                     p.id === action.payload.id ? action.payload : p
                 ),
             }
         case "REMOVE_PROJECT":
             return {
                 ...state,
-                projects: state.projects.filter((p: Project) => p.id !== action.payload),
+                user_projects: state.user_projects.filter((p: Project) => p.id !== action.payload),
+                all_projects: state.all_projects.filter((p: Project) => p.id !== action.payload),
             }
         
         case "SET_GITHUB_REPOS":

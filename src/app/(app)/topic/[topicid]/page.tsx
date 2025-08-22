@@ -213,10 +213,6 @@ const EachTopic = () => {
 
 	if (!curr_topic) return null
 
-	const existingCollabs = new Set(
-		curr_topic.topic.collaborators.map((c: any) => c.username)
-	);
-
 	return (
 		<div className="flex flex-col gap-6 py-8 lg:py-12 justify-center px-8 lg:px-64">
 			<div>
