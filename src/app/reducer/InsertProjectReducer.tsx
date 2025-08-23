@@ -42,7 +42,6 @@ export default function InsertProjectReducer(state: any, action: any) {
                 ),
             }
 
-            // If this is the current project, also update curr_project
             if (action.payload.id === state.curr_project?.project?.id) {
                 updatedState.curr_project = {
                     ...state.curr_project,
