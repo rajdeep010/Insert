@@ -8,11 +8,12 @@ import { useInsertUser } from "./InsertUserProvider"
 import { useSession } from "next-auth/react"
 import { sync } from "motion/react"
 import { useParams, useRouter } from "next/navigation"
+import { useWebSocket } from "@/hooks/use-web-socket"
 
 const API_BASE = "http://localhost:8080"
 
 interface InsertProjectProviderProps {
-    curr_project: Project | null,
+    curr_project: any | null,
     all_projects: Project[],
     user_projects: Project[],
     githubRepos: any[],
@@ -23,6 +24,14 @@ interface InsertProjectProviderProps {
     isUserProjectsLoading: boolean
     isProjectLoading: boolean
     isReleaseBlogLoading?: boolean
+
+    webSocketConnected: boolean
+    releaseSyncStatus: Record<string, {
+        buildStatus: string
+        message: string
+        timestamp: string
+    }>
+    isSyncingRelease: Record<string, boolean>
 
     fetchAllProjects: () => void
     fetchProjectById: (_: string) => void,
@@ -40,6 +49,8 @@ interface InsertProjectProviderProps {
     syncRelease: (projectId: string) => Promise<void>
     fetchReleaseBlogForProject: (projectId: string) => Promise<void>
     fetchRepositoryBranches: (githubId: string, repoName: string, token: string) => Promise<string[]>
+
+    clearReleaseSyncStatus: (projectId: string) => void
 }
 
 const initialState = {
@@ -56,23 +67,28 @@ const initialState = {
     isProjectLoading: false,
     isReleaseBlogLoading: false,
 
-    fetchAllProjects: () => {},
-    fetchProjectById: (_: string) => {},
-    fetchProjectsByUserGithubId: (_: number) => {},
-    fetchProjectsByUsername: (_: string) => {},
-    addProject: (_: Partial<Project>) => {},
-    updateProject: (_: Project) => {},
-    removeProject: (_: string) => {},
-    setGithubRepos: (_: any[]) => {},
-    addReleaseBlog: (_: string, __: ReleaseBlog) => {},
-    updateReleaseBlog: (_: string, __: ReleaseBlog) => {},
-    removeReleaseBlog: (_: string, __: string) => {},
+    webSocketConnected: false,
+    releaseSyncStatus: {},
+    isSyncingRelease: {},
+
+    fetchAllProjects: () => { },
+    fetchProjectById: (_: string) => { },
+    fetchProjectsByUserGithubId: (_: number) => { },
+    fetchProjectsByUsername: (_: string) => { },
+    addProject: (_: Partial<Project>) => { },
+    updateProject: (_: Project) => { },
+    removeProject: (_: string) => { },
+    setGithubRepos: (_: any[]) => { },
+    addReleaseBlog: (_: string, __: ReleaseBlog) => { },
+    updateReleaseBlog: (_: string, __: ReleaseBlog) => { },
+    removeReleaseBlog: (_: string, __: string) => { },
     syncRelease: (_: string) => Promise<void>,
     fetchReleaseBlogForProject: (projectId: string) => Promise<void>,
-    fetchRepositoryBranches: (githubId: string, repoName: string, token: string) => Promise<string[]>
+    fetchRepositoryBranches: (githubId: string, repoName: string, token: string) => Promise<string[]>,
+    clearReleaseSyncStatus: (projectId: string) => { }
 }
 
-const InsertProjectContext = createContext<InsertProjectProviderProps|null>(null)
+const InsertProjectContext = createContext<InsertProjectProviderProps | null>(null)
 
 export const InsertProjectProvider = ({ children }: { children: React.ReactNode }) => {
     const [state, dispatch] = useReducer(InsertProjectReducer, initialState)
@@ -269,16 +285,31 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
         }
     }
 
-    // Optionally: Sync releases for a project
+    // Update syncRelease to handle real-time tracking
     const syncRelease = async (projectId: string) => {
         try {
+            // Set syncing status
+            dispatch({
+                type: "SET_IS_SYNCING_RELEASE",
+                payload: { projectId, isLoading: true }
+            })
+
+            // Clear any existing status
+            clearReleaseSyncStatus(projectId)
+
             await axios.post(`${API_BASE}/release/${projectId}/sync-release`)
+
             toast({
-                title: "Success ✅",
-                description: "Release sync triggered",
+                title: "Release Sync Started 🚀",
+                description: "Release sync has been triggered. You'll receive real-time updates.",
                 variant: "default",
             })
         } catch (error: any) {
+            dispatch({
+                type: "SET_IS_SYNCING_RELEASE",
+                payload: { projectId, isLoading: false }
+            })
+
             toast({
                 title: "Error ⭕",
                 description: error?.response?.data?.message || "Failed to sync release",
@@ -286,6 +317,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             })
         }
     }
+
 
     const fetchReleaseBlogForProject = async (projectId: string) => {
         try {
@@ -337,6 +369,69 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
         }
     }
 
+    const { connected, lastMessage } = useWebSocket(project_id)
+
+    // Handle WebSocket connection status
+    useEffect(() => {
+        dispatch({ type: "SET_WEBSOCKET_STATUS", payload: connected })
+    }, [connected])
+
+
+    // Handle incoming WebSocket messages
+    useEffect(() => {
+        if (lastMessage) {
+            console.log('Processing WebSocket message:', lastMessage)
+
+            dispatch({
+                type: "SET_RELEASE_SYNC_STATUS",
+                payload: {
+                    projectId: lastMessage.projectId,
+                    buildStatus: lastMessage.buildStatus,
+                    message: lastMessage.message,
+                    timestamp: lastMessage.timestamp
+                }
+            })
+
+            // Handle sync completion - turn off loading state
+            if (lastMessage.buildStatus === 'READY' || lastMessage.buildStatus === 'ERROR') {
+                dispatch({
+                    type: "SET_IS_SYNCING_RELEASE",
+                    payload: { projectId: lastMessage.projectId, isLoading: false }
+                })
+
+                // If sync completed successfully, refresh release blogs
+                if (lastMessage.buildStatus === 'READY') {
+                    fetchReleaseBlogForProject(lastMessage.projectId)
+
+                    toast({
+                        title: "Release Ready ✅",
+                        description: lastMessage.message,
+                        variant: "default",
+                    })
+                } else if (lastMessage.buildStatus === 'ERROR') {
+                    toast({
+                        title: "Release Failed ❌",
+                        description: lastMessage.message,
+                        variant: "destructive",
+                    })
+                }
+            } else if (lastMessage.buildStatus === 'BUILDING') {
+                // Show building status as info toast
+                toast({
+                    title: "Building Release 🔄",
+                    description: lastMessage.message,
+                    variant: "default",
+                })
+            }
+        }
+    }, [lastMessage])
+
+
+    // Add clearReleaseSyncStatus function
+    const clearReleaseSyncStatus = (projectId: string) => {
+        dispatch({ type: "CLEAR_RELEASE_SYNC_STATUS", payload: projectId })
+    }
+
     useEffect(() => {
         if (status === "authenticated") {
             // Fetch projects for the logged-in user's GitHub ID
@@ -372,6 +467,11 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 isUserProjectsLoading: state.isUserProjectsLoading,
                 isProjectLoading: state.isProjectLoading,
                 isReleaseBlogLoading: state.isReleaseBlogLoading,
+
+                webSocketConnected: state.webSocketConnected,
+                releaseSyncStatus: state.releaseSyncStatus,
+                isSyncingRelease: state.isSyncingRelease,
+
                 fetchProjectsByUsername,
                 fetchProjectById,
                 fetchAllProjects,
@@ -385,7 +485,8 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 removeReleaseBlog,
                 syncRelease,
                 fetchReleaseBlogForProject,
-                fetchRepositoryBranches
+                fetchRepositoryBranches,
+                clearReleaseSyncStatus
             }}
         >
             {children}

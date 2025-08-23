@@ -18,7 +18,7 @@ export default function InsertProjectReducer(state: any, action: any) {
         case "SET_GITHUB_REPOS":
             return { ...state, githubRepos: action.payload }
         case "SET_PROJECT":
-            return { ...state, project: action.payload }
+            return { ...state, curr_project: action.payload }
         case "SET_IS_PROJECT_LOADING":
             return {...state, isProjectLoading: action.payload}
         // cover update, delete, and add project
@@ -30,8 +30,9 @@ export default function InsertProjectReducer(state: any, action: any) {
                 user_projects: [...state.user_projects, action.payload] ,
                 all_projects: [...state.all_projects, action.payload]
             }
+
         case "UPDATE_PROJECT":
-            return {
+            const updatedState = {
                 ...state,
                 user_projects: state.user_projects.map((p: Project) =>
                     p.id === action.payload.id ? action.payload : p
@@ -40,6 +41,17 @@ export default function InsertProjectReducer(state: any, action: any) {
                     p.id === action.payload.id ? action.payload : p
                 ),
             }
+
+            // If this is the current project, also update curr_project
+            if (action.payload.id === state.curr_project?.project?.id) {
+                updatedState.curr_project = {
+                    ...state.curr_project,
+                    project: action.payload
+                }
+            }
+
+            return updatedState
+
         case "REMOVE_PROJECT":
             return {
                 ...state,
@@ -49,6 +61,22 @@ export default function InsertProjectReducer(state: any, action: any) {
         
         case "SET_GITHUB_REPOS":
             return { ...state, githubRepos: action.payload }
+        
+        // New action for setting release blogs for a specific project
+        case "SET_RELEASE_BLOGS":
+            return {
+                ...state,
+                all_projects: state.all_projects.map((p: Project) =>
+                    p.id === action.payload.projectId
+                        ? { ...p, releaseBlogs: action.payload.blogs }
+                        : p
+                ),
+                user_projects: state.user_projects.map((p: Project) =>
+                    p.id === action.payload.projectId
+                        ? { ...p, releaseBlogs: action.payload.blogs }
+                        : p
+                ),
+            }
         
         case "ADD_RELEASE_BLOG":
             return {
@@ -114,6 +142,42 @@ export default function InsertProjectReducer(state: any, action: any) {
                         : p
                 ),
             }
+
+        // New WebSocket and real-time tracking actions
+        case "SET_WEBSOCKET_STATUS":
+            return { ...state, webSocketConnected: action.payload }
+        
+        case "SET_RELEASE_SYNC_STATUS":
+            return { 
+                ...state, 
+                releaseSyncStatus: {
+                    ...state.releaseSyncStatus,
+                    [action.payload.projectId]: {
+                        buildStatus: action.payload.buildStatus,
+                        message: action.payload.message,
+                        timestamp: action.payload.timestamp
+                    }
+                }
+            }
+
+        case "CLEAR_RELEASE_SYNC_STATUS":
+            return {
+                ...state,
+                releaseSyncStatus: {
+                    ...state.releaseSyncStatus,
+                    [action.payload]: undefined
+                }
+            }
+
+        case "SET_IS_SYNCING_RELEASE":
+            return { 
+                ...state, 
+                isSyncingRelease: {
+                    ...state.isSyncingRelease,
+                    [action.payload.projectId]: action.payload.isLoading
+                }
+            }
+            
         default:
             return state
     }

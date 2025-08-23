@@ -43,6 +43,7 @@ import { Separator } from './ui/separator'
 import { GitHubLogoIcon } from '@radix-ui/react-icons'
 import { useInsertProjects } from '@/app/context/InsertProjectProvider'
 import GithubRepoModal from './GithubRepoModal'
+import { languageColors } from '@/types/master-data'
 
 
 const Projects = () => {
@@ -60,7 +61,7 @@ const Projects = () => {
         )
     }, [searchQuery, user_projects])
 
-    
+
     return (
         <div>
             {session?.user?.githubAccessToken && <div className='flex gap-4 justify-between mb-4'>
@@ -140,7 +141,10 @@ const Projects = () => {
                                                 {/* Language */}
                                                 {language && (
                                                     <div className="flex gap-1 items-center bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 py-1 px-2 rounded-md text-sm">
-                                                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                                        <div
+                                                            className="w-3 h-3 rounded-full"
+                                                            style={{ backgroundColor: languageColors[language] || '#586069' }}
+                                                        />
                                                         <span className='text-sm'>{language}</span>
                                                     </div>
                                                 )}
@@ -166,7 +170,7 @@ const Projects = () => {
 
                                             <CardDescription className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                                                 {description || 'No description available for this project.'}
-                                                <Link href={`/posts/projects/${id}`} className='text-blue-500 hover:text-blue-700 ml-1'>
+                                                <Link href={`/project/${id}`} className='text-blue-500 hover:text-blue-700 ml-1'>
                                                     Learn more →
                                                 </Link>
                                             </CardDescription>

@@ -1,37 +1,71 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import {
-    Star,
     GitBranch,
     ExternalLink,
     Calendar,
-    Users,
     BookOpen,
     Tag,
     Clock,
     Eye,
     GitCommit,
     Download,
-    Loader2
+    Loader2,
+    Rocket,
+    CheckCircle,
+    XCircle,
+    AlertCircle,
+    Settings,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
 import { useInsertProjects } from '@/app/context/InsertProjectProvider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
+import InsertNavbar from '@/components/InsertNavbar'
 import { Button } from '@/components/ui/button'
-import { ProjectResponse } from '@/types/types'
+import { useSession } from 'next-auth/react'
+import { useParams } from 'next/navigation'
+import EditProjectModal from '@/components/EditProjectModal'
+import { languageColors } from '@/types/master-data'
+
+
 
 
 
 
 export default function page() {
-    const params = useParams()
-    const { curr_project, releaseBlogs, isProjectLoading } = useInsertProjects()
+    const { data: session, status } = useSession()
+    const {
+        curr_project,
+        isProjectLoading,
+        syncRelease,
+        isSyncingRelease,
+        releaseSyncStatus,
+        webSocketConnected,
+        clearReleaseSyncStatus
+    } = useInsertProjects()
 
+    const params = useParams()
+    const projectId = params.id as string
+
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+    const [isUpdatingProject, setIsUpdatingProject] = useState(false)
+
+    const handleEditProject = () => {
+        setIsEditModalOpen(true)
+    }
+
+    const handleCloseEditModal = () => {
+        setIsEditModalOpen(false)
+        setIsUpdatingProject(false)
+    }
+
+    const isLoading = isSyncingRelease[projectId] || false
+    const syncStatus = releaseSyncStatus[projectId]
 
     const formatDate = (dateString: string) => {
+        if (!dateString) return ''
         return new Date(dateString).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
@@ -40,10 +74,10 @@ export default function page() {
     }
 
     const formatRelativeTime = (dateString: string) => {
+        if (!dateString) return ''
         const date = new Date(dateString)
         const now = new Date()
         const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-
         if (diffInHours < 24) {
             return `${diffInHours} hours ago`
         } else {
@@ -52,113 +86,222 @@ export default function page() {
         }
     }
 
+    const handleSyncRelease = async () => {
+        await syncRelease(projectId)
+    }
+
+    const handleClearStatus = () => {
+        clearReleaseSyncStatus(projectId)
+    }
+
+    const getBlogCardStyle = (blog: any) => {
+        // If blog is in building state, make it look disabled
+        if (blog?.buildStatus === 'BUILDING' || blog?.status === 'PROCESSING') {
+            return "opacity-60 cursor-not-allowed hover:shadow-none"
+        }
+        return "hover:shadow-md transition-shadow duration-200 cursor-pointer"
+    }
+
+    const isBlogClickable = (blog: any) => {
+        return blog?.buildStatus === 'READY' && blog?.status === 'COMPLETED'
+    }
+
     if (!curr_project) return null
 
     return (
-        <div className="max-w-6xl mx-auto p-6 space-y-8">
+        <div className="flex flex-col gap-6 py-8 lg:py-12 justify-center px-8 lg:px-64">
+            <InsertNavbar />
+
+            {isProjectLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+
             {/* Project Header */}
-            
-            {curr_project && <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-                <CardHeader className="pb-6">
+            <Card className="shadow-md bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-950 dark:to-gray-900 mt-8">
+                <CardHeader className="pb-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg">
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-4">
                             <Avatar className="h-16 w-16">
-                                <AvatarImage src={`https://github.com/${curr_project.username}.png`} />
-                                <AvatarFallback>{curr_project.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                                <AvatarImage src={session?.user?.githubAvatarUrl} />
+                                <AvatarFallback>
+                                    {curr_project?.project?.username?.slice(0, 2).toUpperCase()}
+                                </AvatarFallback>
                             </Avatar>
                             <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <CardTitle className="text-3xl font-bold text-gray-900 dark:text-white">
-                                        {curr_project.name}
+                                <div className="flex items-center gap-3">
+                                    <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+                                        {curr_project?.project?.name}
                                     </CardTitle>
-                                    <Badge variant={curr_project.visibility === 'private' ? 'destructive' : 'secondary'}>
-                                        {curr_project.visibility}
+                                    <Badge variant={curr_project?.project?.visibility === 'private' ? 'destructive' : 'secondary'}>
+                                        {curr_project?.project?.visibility}
+                                    </Badge>
+                                    <Badge variant={webSocketConnected ? "default" : "destructive"} className="text-xs">
+                                        {webSocketConnected ? "🟢 Connected" : "🔴 Offline"}
                                     </Badge>
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                                    <span>{curr_project.username}</span>
+                                    <span className='text-sm'>{curr_project?.project?.username}</span>
                                     <span>•</span>
-                                    <span>Updated {formatRelativeTime(curr_project.updatedAt)}</span>
+                                    <span className='text-sm'>Updated {formatRelativeTime(curr_project?.project?.updatedAt)}</span>
                                 </div>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <Button variant="outline" size="sm">
-                                <Star className="h-4 w-4 mr-2" />
-                                Star
-                            </Button>
-                            <Button asChild size="sm">
-                                <Link href={curr_project.repoUrl} target="_blank" rel="noopener noreferrer">
+                            <Link href={curr_project?.project?.repoUrl || '/'} target="_blank" rel="noopener noreferrer">
+                                <span className="inline-flex items-center px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
                                     <ExternalLink className="h-4 w-4 mr-2" />
                                     View Repository
-                                </Link>
-                            </Button>
+                                </span>
+                            </Link>
                         </div>
                     </div>
 
-                    <CardDescription className="text-lg text-gray-700 dark:text-gray-300 mt-4">
-                        {curr_project.description || 'No description available for this project.'}
+                    <CardDescription className="text-sm text-gray-600 dark:text-gray-300 mt-4">
+                        {curr_project?.project?.description || 'No description available for this project.'}
                     </CardDescription>
 
                     {/* Project Stats */}
                     <div className="flex items-center gap-6 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center gap-2">
+                        {/* <div className="flex items-center gap-2">
                             <GitBranch className="h-4 w-4 text-gray-500" />
-                            <span className="text-sm text-gray-600 dark:text-gray-400">{curr_project.defaultBranch}</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">{curr_project?.project?.defaultBranch}</span>
                         </div>
-                        {curr_project.language && (
+                        {curr_project?.project?.language && (
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                <span className="text-sm text-gray-600 dark:text-gray-400">{curr_project.language}</span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">{curr_project?.project?.language}</span>
                             </div>
-                        )}
+                        )} */}
                         <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-gray-500" />
                             <span className="text-sm text-gray-600 dark:text-gray-400">
-                                Created {formatDate(curr_project.createdAt)}
+                                Created {formatDate(curr_project?.project?.createdAt)}
                             </span>
                         </div>
-                        {curr_project.lastMonitoredCommitSha && (
+                        {curr_project?.project?.lastMonitoredCommitSha && (
                             <div className="flex items-center gap-2">
                                 <GitCommit className="h-4 w-4 text-gray-500" />
                                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                                    {curr_project.lastMonitoredCommitSha.substring(0, 7)}
+                                    {curr_project?.project?.lastMonitoredCommitSha.substring(0, 7)}
                                 </span>
                             </div>
                         )}
                     </div>
                 </CardHeader>
-            </Card>}
+            </Card>
 
-            {curr_project && <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Release Blogs */}
+            {/* Real-time Sync Status */}
+            {syncStatus && (
+                <Card className="border-2 border-dashed">
+                    <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                {syncStatus.buildStatus === 'BUILDING' && <Loader2 className="h-4 w-4 animate-spin text-blue-500" />}
+                                {syncStatus.buildStatus === 'READY' && <CheckCircle className="h-4 w-4 text-green-500" />}
+                                {syncStatus.buildStatus === 'ERROR' && <XCircle className="h-4 w-4 text-red-500" />}
+                                <CardTitle className="text-lg">Release Sync Status</CardTitle>
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={handleClearStatus}>
+                                Clear
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <Badge
+                                    variant={
+                                        syncStatus.buildStatus === 'READY' ? 'default' :
+                                            syncStatus.buildStatus === 'ERROR' ? 'destructive' :
+                                                'secondary'
+                                    }
+                                >
+                                    {syncStatus.buildStatus}
+                                </Badge>
+                                <span className="text-sm text-muted-foreground">
+                                    {new Date(syncStatus.timestamp).toLocaleTimeString()}
+                                </span>
+                            </div>
+                            <p className="text-sm">{syncStatus.message}</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Release Blogs */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                             <BookOpen className="h-6 w-6" />
                             Release Blogs
                         </h2>
-                        <Badge variant="outline" className="text-sm">
-                            {releaseBlogs?.length || 0} releases
-                        </Badge>
+                        <div className="flex items-center gap-3">
+                            <Badge variant="outline" className="text-sm">
+                                {curr_project?.releaseBlogs?.length || 0} releases
+                            </Badge>
+                            <Button
+                                onClick={handleSyncRelease}
+                                disabled={isLoading}
+                                size="sm"
+                                className="relative"
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Syncing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Rocket className="h-4 w-4 mr-2" />
+                                        Sync Release
+                                    </>
+                                )}
+                            </Button>
+                        </div>
                     </div>
 
-                    {releaseBlogs && releaseBlogs.length > 0 ? (
+                    {curr_project?.releaseBlogs && curr_project?.releaseBlogs.length > 0 ? (
                         <div className="space-y-4">
-                            {releaseBlogs.map((blog) => (
-                                <Card key={blog.id} className="hover:shadow-md transition-shadow duration-200">
+                            {curr_project?.releaseBlogs.map((blog: any, idx: number) => (
+                                <Card
+                                    key={idx}
+                                    className={getBlogCardStyle(blog)}
+                                    onClick={() => {
+                                        if (isBlogClickable(blog)) {
+                                            // Navigate to blog detail page
+                                            console.log('Navigate to blog:', blog.id)
+                                        }
+                                    }}
+                                >
                                     <CardHeader className="pb-4">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-3 mb-2">
                                                     <CardTitle className="text-xl font-semibold">
-                                                        {blog.title}
+                                                        {blog?.releaseTitle || blog?.title}
                                                     </CardTitle>
-                                                    {blog.version && (
+
+                                                    {/* Build Status Badge */}
+                                                    {blog?.buildStatus && (
+                                                        <Badge
+                                                            variant={
+                                                                blog.buildStatus === 'READY' ? 'default' :
+                                                                    blog.buildStatus === 'ERROR' ? 'destructive' :
+                                                                        'secondary'
+                                                            }
+                                                            className="text-xs"
+                                                        >
+                                                            {blog.buildStatus === 'BUILDING' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+                                                            {blog.buildStatus === 'READY' && <CheckCircle className="h-3 w-3 mr-1" />}
+                                                            {blog.buildStatus === 'ERROR' && <AlertCircle className="h-3 w-3 mr-1" />}
+                                                            {blog.buildStatus}
+                                                        </Badge>
+                                                    )}
+
+                                                    {blog?.version && (
                                                         <Badge variant="secondary" className="text-xs">
                                                             <Tag className="h-3 w-3 mr-1" />
-                                                            {blog.version}
+                                                            {blog?.version}
                                                         </Badge>
                                                     )}
                                                 </div>
@@ -166,64 +309,35 @@ export default function page() {
                                                 <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                                                     <div className="flex items-center gap-1">
                                                         <Clock className="h-4 w-4" />
-                                                        {formatDate(blog.publishedAt)}
+                                                        {formatDate(blog?.createdAt || blog?.publishedAt)}
                                                     </div>
-                                                    {blog.author && (
-                                                        <div className="flex items-center gap-2">
-                                                            <Avatar className="h-5 w-5">
-                                                                <AvatarImage src={blog.author.avatar} />
-                                                                <AvatarFallback>
-                                                                    {blog.author.name.slice(0, 2).toUpperCase()}
-                                                                </AvatarFallback>
-                                                            </Avatar>
-                                                            <span>{blog.author.name}</span>
+                                                    {blog?.commitId && (
+                                                        <div className="flex items-center gap-1">
+                                                            <GitCommit className="h-4 w-4" />
+                                                            <code className="text-xs bg-gray-100 dark:bg-gray-800 px-1 rounded">
+                                                                {blog.commitId.substring(0, 7)}
+                                                            </code>
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {blog.content && (
+                                        {blog?.content && (
                                             <CardDescription className="mt-3 text-gray-600 dark:text-gray-300 leading-relaxed">
-                                                {blog.content.length > 200
-                                                    ? `${blog.content.substring(0, 200)}...`
-                                                    : blog.content
+                                                {blog?.content?.length > 200
+                                                    ? `${blog?.content?.substring(0, 200)}...`
+                                                    : blog?.content
                                                 }
                                             </CardDescription>
                                         )}
 
-                                        {/* Blog Stats */}
-                                        <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-200 dark:border-gray-700">
-                                            <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                                                {blog.viewCount && (
-                                                    <div className="flex items-center gap-1">
-                                                        <Eye className="h-3 w-3" />
-                                                        {blog.viewCount} views
-                                                    </div>
-                                                )}
-                                                {blog.downloadCount && (
-                                                    <div className="flex items-center gap-1">
-                                                        <Download className="h-3 w-3" />
-                                                        {blog.downloadCount} downloads
-                                                    </div>
-                                                )}
+                                        {/* Click hint for ready blogs */}
+                                        {isBlogClickable(blog) && (
+                                            <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
+                                                Click to view details →
                                             </div>
-
-                                            {blog.tags && blog.tags.length > 0 && (
-                                                <div className="flex items-center gap-2">
-                                                    {blog.tags.slice(0, 3).map((tag: any, index: number) => (
-                                                        <Badge key={index} variant="outline" className="text-xs">
-                                                            {tag}
-                                                        </Badge>
-                                                    ))}
-                                                    {blog.tags.length > 3 && (
-                                                        <span className="text-xs text-gray-500">
-                                                            +{blog.tags.length - 3}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
+                                        )}
                                     </CardHeader>
                                 </Card>
                             ))}
@@ -237,7 +351,7 @@ export default function page() {
                                         No release blogs yet
                                     </h3>
                                     <p className="text-gray-500 dark:text-gray-400 mt-2">
-                                        Release blogs will appear here when they are published.
+                                        Click "Sync Release" to create your first release blog.
                                     </p>
                                 </div>
                             </CardContent>
@@ -245,13 +359,12 @@ export default function page() {
                     )}
                 </div>
 
-                {/* Sidebar */}
+                {/* Sidebar - Rest of your existing sidebar code remains the same */}
                 <div className="space-y-6">
                     {/* Project Info */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2">
-                                <Users className="h-5 w-5" />
                                 Project Information
                             </CardTitle>
                         </CardHeader>
@@ -259,19 +372,27 @@ export default function page() {
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
                                     <span className="text-gray-500 dark:text-gray-400">Owner</span>
-                                    <p className="font-medium">{curr_project.username}</p>
+                                    <p className="font-medium">{curr_project?.project?.username}</p>
                                 </div>
                                 <div>
-                                    <span className="text-gray-500 dark:text-gray-400">Visibility</span>
-                                    <p className="font-medium capitalize">{curr_project.visibility}</p>
+                                    <span className="text-gray-500 dark:text-gray-400">Keyword</span>
+                                    <p className="font-medium capitalize">{curr_project?.project?.releaseTriggerKeyword}</p>
                                 </div>
                                 <div>
                                     <span className="text-gray-500 dark:text-gray-400">Language</span>
-                                    <p className="font-medium">{curr_project.language || 'N/A'}</p>
+                                    {curr_project?.project?.language && (
+                                        <div className="flex gap-1 items-center rounded-md text-sm">
+                                            <div
+                                                className="w-3 h-3 rounded-full"
+                                                style={{ backgroundColor: languageColors[curr_project?.project?.language] || '#586069' }}
+                                            />
+                                            <span className='text-sm'>{curr_project?.project?.language}</span>
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
-                                    <span className="text-gray-500 dark:text-gray-400">Default Branch</span>
-                                    <p className="font-medium">{curr_project.defaultBranch}</p>
+                                    <span className="text-gray-500 dark:text-gray-400">Branch</span>
+                                    <p className="font-medium">{curr_project?.project?.defaultBranch}</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -283,25 +404,32 @@ export default function page() {
                             <CardTitle className="text-lg">Quick Actions</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            <Button asChild className="w-full" variant="outline">
-                                <Link href={curr_project.repoUrl} target="_blank">
+                            <Link href={curr_project?.project?.repoUrl || '/'} target="_blank">
+                                <Button className="w-full" variant="outline">
                                     <ExternalLink className="h-4 w-4 mr-2" />
                                     View Repository
-                                </Link>
-                            </Button>
-                            <Button className="w-full" variant="outline">
-                                <Star className="h-4 w-4 mr-2" />
-                                Star Project
-                            </Button>
-                            <Button className="w-full" variant="outline">
-                                <BookOpen className="h-4 w-4 mr-2" />
-                                Documentation
+                                </Button>
+                            </Link>
+                            <Button
+                                className="w-full"
+                                variant="default"
+                                onClick={handleEditProject}
+                                disabled={isProjectLoading}
+                            >
+                                <Settings className="h-4 w-4 mr-2" />
+                                Edit Project
                             </Button>
                         </CardContent>
                     </Card>
                 </div>
-            </div>}
+            </div>
+
+            <EditProjectModal
+                isOpen={isEditModalOpen}
+                onClose={handleCloseEditModal}
+                project={curr_project}
+                isUpdating={isUpdatingProject}
+            />
         </div>
     )
 }
-

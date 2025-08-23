@@ -15,18 +15,18 @@ export interface InviteNotificationCardProps {
     topicid: string;
     topicname: string;
     notifyid?: string;
-    read?:boolean;
-    fromUserId?:string;
-    toUserId?:string;
+    read?: boolean;
+    fromUserId?: string;
+    toUserId?: string;
 }
 
 export interface DeclineNotificationProps {
     from: string;
     topicid: string;
     topicname: string;
-    read?:boolean;
-    fromUserId?:string;
-    toUserId?:string;
+    read?: boolean;
+    fromUserId?: string;
+    toUserId?: string;
 }
 
 export interface SuggestionNotificationCardProps extends InviteNotificationCardProps {
@@ -62,12 +62,12 @@ export interface Topic {
     createdAt: Date
 }
 
-export interface NotificationData{
+export interface NotificationData {
     _id?: string;
     noti_type: string;  // always
     to?: string;
     from?: string;   // not for general notify eg. rajdeep010 accepted invitation, don't need from whom he is getting
-    topicid?: string;   
+    topicid?: string;
     problemurl?: string;
     topicname?: string;
     message?: string;   // for general notify
@@ -168,4 +168,37 @@ interface ProjectDetail {
 interface ProjectResponse {
     project: ProjectDetail
     releaseBlogs: ReleaseBlog[]
+}
+
+interface WebSocketMessage {
+    projectId: string;
+    buildStatus: 'BUILDING' | 'READY' | 'ERROR';
+    message: string;
+    timestamp: string;
+}
+
+export interface WebSocketMessage {
+    projectId: string;
+    buildStatus: 'BUILDING' | 'READY' | 'ERROR';
+    message: string;
+    timestamp: string;
+}
+
+export interface WebSocketState {
+    connected: boolean;
+    messages: Record<string, WebSocketMessage>;
+    syncing: Record<string, boolean>;
+}
+
+export enum WebSocketActionType {
+    CONNECT = 'WEBSOCKET_CONNECT',
+    DISCONNECT = 'WEBSOCKET_DISCONNECT',
+    MESSAGE_RECEIVED = 'WEBSOCKET_MESSAGE_RECEIVED',
+    SYNC_START = 'WEBSOCKET_SYNC_START',
+    SYNC_END = 'WEBSOCKET_SYNC_END',
+}
+
+export interface WebSocketAction {
+    type: WebSocketActionType;
+    payload?: any;
 }
