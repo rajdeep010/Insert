@@ -14,7 +14,7 @@ import { Loader2 } from 'lucide-react'
 import { verifySchema } from '@/schemas/verifySchema'
 
 
-const INSERT_NOTIFY_SERVICE = 'https://insert-notification-service-production.up.railway.app'
+const INSERT_NOTIFY_SERVICE = 'https://insert-notification-service.onrender.com'
 
 
 export default function VerifyAccount() {
