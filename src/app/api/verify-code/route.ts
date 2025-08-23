@@ -5,7 +5,8 @@ import UserModel from "@/model/User";
 import axios from "axios";
 import jwt from 'jsonwebtoken';
 
-const INSERT_NOTIFY_SERVICE = 'https://insert-notification-service-production.up.railway.app'
+const INSERT_NOTIFY_SERVICE = 'https://insert-notification-service.onrender.com'
+// const INSERT_NOTIFY_SERVICE = 'http://localhost:4000'
 
 
 export async function POST(request: Request) {

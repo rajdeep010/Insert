@@ -10,7 +10,9 @@ import { uniqueId } from "@/helpers/unique-id";
 import { notifyFormatter } from "@/helpers/notify-format";
 
 
-const INSERT_NOTIFY_SERVICE = 'https://insert-notification-service-production.up.railway.app'
+const INSERT_NOTIFY_SERVICE = 'https://insert-notification-service.onrender.com'
+// const INSERT_NOTIFY_SERVICE = 'http://localhost:4000'
+
 
 interface InsertUserProviderProps {
     user: any
