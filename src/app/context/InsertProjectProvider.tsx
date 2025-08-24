@@ -170,10 +170,10 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 variant: "default",
             })
 
-            console.log('Project added, response:', res.data);
+            // console.log('Project added, response:', res.data);
 
             if (res.data?.projectId && res.data?.needsWebhookSetup) {
-                console.log('Setting up webhook for projectId:', res.data.projectId);
+                // console.log('Setting up webhook for projectId:', res.data.projectId);
                 const hookRes = await setupWebhook(res.data.projectId);
                 if(hookRes){
                     toast({
@@ -204,19 +204,19 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 
     const setupWebhook = async (projectId: string) => {
         try {
-            console.log('Setting up webhook for projectId:', projectId, 'with github token: ', session?.user?.githubAccessToken);
+            // console.log('Setting up webhook for projectId:', projectId, 'with github token: ', session?.user?.githubAccessToken);
             
             const result = await axios.post(
                 `${API_BASE}/api/webhook/auto-setup/${projectId}`, 
-                {}, // Empty request body (or add body data if needed)
-                {   // Config object with headers
+                {},
+                {
                     headers: {
                         Authorization: `Bearer ${session?.user?.githubAccessToken}`
                     }
                 }
             );
 
-            console.log('Webhook setup result:', result?.data);
+            // console.log('Webhook setup result:', result?.data);
 
             if (result?.data?.webhookCreated) {
                 return true
