@@ -44,6 +44,7 @@ import { GitHubLogoIcon } from '@radix-ui/react-icons'
 import { useInsertProjects } from '@/app/context/InsertProjectProvider'
 import GithubRepoModal from './GithubRepoModal'
 import { languageColors } from '@/types/master-data'
+import ConfirmDeleteProject from './ConfirmDeleteProject'
 
 
 const Projects = () => {
@@ -60,6 +61,59 @@ const Projects = () => {
             project?.name?.toLowerCase().includes(searchQuery.toLowerCase())
         )
     }, [searchQuery, user_projects])
+
+
+    const [deleteConfirm, setDeleteConfirm] = useState({
+        isOpen: false,
+        projectId: '',
+        projectName: '',
+        isDeleting: false
+    })
+
+    const handleDeleteProject = (id: string, name: string) => {
+        setDeleteConfirm({
+            isOpen: true,
+            projectId: id,
+            projectName: name,
+            isDeleting: false
+        })
+    }
+
+    // Confirm delete action
+    const confirmDelete = async () => {
+        try {
+            setDeleteConfirm(prev => ({ ...prev, isDeleting: true }))
+            await removeProject(deleteConfirm.projectId)
+            setDeleteConfirm({
+                isOpen: false,
+                projectId: '',
+                projectName: '',
+                isDeleting: false
+            })
+            toast({
+                title: "Project Deleted ✅",
+                description: `${deleteConfirm.projectName} has been successfully deleted.`,
+                variant: "default",
+            })
+        } catch (error) {
+            setDeleteConfirm(prev => ({ ...prev, isDeleting: false }))
+            toast({
+                title: "Delete Failed ❌",
+                description: "Failed to delete the project. Please try again.",
+                variant: "destructive",
+            })
+        }
+    }
+
+    // Cancel delete action
+    const cancelDelete = () => {
+        setDeleteConfirm({
+            isOpen: false,
+            projectId: '',
+            projectName: '',
+            isDeleting: false
+        })
+    }
 
 
     return (
@@ -193,7 +247,7 @@ const Projects = () => {
                                                             </DropdownMenuItem> */}
                                                         </DropdownMenuGroup>
                                                         <DropdownMenuGroup>
-                                                            <DropdownMenuItem className="text-red-500" onClick={() => removeProject(id)}>
+                                                            <DropdownMenuItem className="text-red-500" onClick={() => handleDeleteProject(id, name)}>
                                                                 <Trash2 className="h-4 w-4 mr-2" />
                                                                 Delete Project
                                                             </DropdownMenuItem>
@@ -231,6 +285,12 @@ const Projects = () => {
                     })
                 }
             </div>}
+
+            <ConfirmDeleteProject
+                deleteConfirm={deleteConfirm}
+                onConfirm={confirmDelete}
+                onCancel={cancelDelete}
+            />
         </div>
     )
 }

@@ -245,11 +245,17 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
         }
     }
 
-    // Remove a project
     const removeProject = async (projectId: string) => {
         try {
             dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
-            await axios.delete(`${API_BASE}/projects/${projectId}`)
+
+            // Fix the endpoint URL - add '/delete' before the projectId
+            await axios.delete(`${API_BASE}/projects/delete/${projectId}`, {
+                headers: {
+                    'Authorization': `Bearer ${session?.user?.githubAccessToken}`
+                }
+            })
+
             dispatch({ type: "REMOVE_PROJECT", payload: projectId })
             toast({
                 title: "Success ✅",
@@ -461,7 +467,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 })
 
                 if (lastMessage.buildStatus === 'READY') {
-                    if(lastMessage.releaseBlog) {
+                    if (lastMessage.releaseBlog) {
                         dispatch({
                             type: "ADD_RELEASE_BLOG",
                             payload: {
@@ -469,7 +475,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                                 blog: lastMessage.releaseBlog
                             }
                         })
-                    } else{
+                    } else {
                         fetchReleaseBlogForProject(lastMessage.projectId)
                     }
 
