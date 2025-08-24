@@ -347,7 +347,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 payload: { projectId, isLoading: false }
             })
 
-            console.log('res data: ', res.data)
+            // console.log('res data: ', res.data)
 
             if (res.data?.releaseBlog) {
                 dispatch({

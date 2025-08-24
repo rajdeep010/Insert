@@ -29,7 +29,7 @@ export const useWebSocket = (projectId: string | null) => {
                 client.subscribe(`/topic/release-updates/${projectId}`, (message) => {
                     const update: WebSocketMessage = JSON.parse(message.body);
                     setLastMessage(update);
-                    console.log('Received update:', update);
+                    // console.log('Received update:', update);
                 });
             },
             (error: Error) => {

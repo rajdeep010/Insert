@@ -248,12 +248,12 @@ export default function page() {
                             >
                                 {isLoading ? (
                                     <>
-                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        <Loader2 className="h-4 w-4 animate-spin" />
                                         Syncing...
                                     </>
                                 ) : (
                                     <>
-                                        <Rocket className="h-4 w-4 mr-2" />
+                                        <Rocket className="h-4 w-4" />
                                         Sync Release
                                     </>
                                 )}
@@ -262,7 +262,7 @@ export default function page() {
                     </div>
 
                     {curr_project?.releaseBlogs && curr_project?.releaseBlogs.length > 0 ? (
-                        <div className="space-y-4">
+                        <div className="space-y-4 overflow-y-scroll custom-small-scrollbar max-h-[40vh]">
                             {curr_project?.releaseBlogs.map((blog: any, idx: number) => (
                                 <Card
                                     key={idx}
@@ -406,18 +406,18 @@ export default function page() {
                         </CardHeader>
                         <CardContent className="space-y-3">
                             <Link href={curr_project?.project?.repoUrl || '/'} target="_blank">
-                                <Button className="w-full" variant="outline">
-                                    <ExternalLink className="h-4 w-4 mr-2" />
-                                    View Repository
+                                <Button className="w-full flex items-center" variant="outline">
+                                    <ExternalLink className="h-4 w-4" />
+                                    View Repo
                                 </Button>
                             </Link>
                             <Button
-                                className="w-full"
+                                className="w-full flex items-center"
                                 variant="default"
                                 onClick={handleEditProject}
                                 disabled={isProjectLoading}
                             >
-                                <Settings className="h-4 w-4 mr-2" />
+                                <Settings className="h-4 w-4" />
                                 Edit Project
                             </Button>
                         </CardContent>
