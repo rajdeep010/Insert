@@ -28,6 +28,7 @@ import { useSession } from 'next-auth/react'
 import { useParams } from 'next/navigation'
 import EditProjectModal from '@/components/EditProjectModal'
 import { languageColors } from '@/types/master-data'
+import { getLastModifiedText } from '@/helpers/last-modified'
 
 
 
@@ -309,7 +310,7 @@ export default function page() {
                                                 <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                                                     <div className="flex items-center gap-1">
                                                         <Clock className="h-4 w-4" />
-                                                        {formatDate(blog?.createdAt || blog?.publishedAt)}
+                                                        {getLastModifiedText(blog?.createdAt || blog?.publishedAt)}
                                                     </div>
                                                     {blog?.commitId && (
                                                         <div className="flex items-center gap-1">

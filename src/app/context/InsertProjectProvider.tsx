@@ -173,13 +173,13 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 
             if (res.data?.projectId && res.data?.needsWebhookSetup) {
                 const hookRes = await setupWebhook(res.data.projectId);
-                if(hookRes){
+                if (hookRes) {
                     toast({
                         title: "Success ✅",
                         description: "Project will be monitored for changes.",
                         variant: "default",
                     });
-                }else{
+                } else {
                     toast({
                         title: "Error ⭕",
                         description: "Failed to setup the monitoring, ask admin",
@@ -188,7 +188,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 }
             }
 
-            
+
         } catch (error: any) {
             toast({
                 title: "Error ⭕",
@@ -201,9 +201,9 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     }
 
     const setupWebhook = async (projectId: string) => {
-        try {            
+        try {
             const result = await axios.post(
-                `${API_BASE}/api/webhook/auto-setup/${projectId}`, 
+                `${API_BASE}/api/webhook/auto-setup/${projectId}`,
                 {},
                 {
                     headers: {
@@ -349,7 +349,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 
             console.log('res data: ', res.data)
 
-            if(res.data?.releaseBlog){
+            if (res.data?.releaseBlog) {
                 dispatch({
                     type: "ADD_RELEASE_BLOG",
                     payload: { projectId, blog: res.data.releaseBlog }
@@ -375,12 +375,17 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
         }
     }
 
-
     const fetchReleaseBlogForProject = async (projectId: string) => {
         try {
             dispatch({ type: "SET_IS_RELEASE_BLOG_LOADING", payload: true })
             const res = await axios.get(`${API_BASE}/projects/${projectId}/release-blogs`)
-            dispatch({ type: "SET_RELEASE_BLOGS", payload: { projectId, blogs: res.data } })
+            dispatch({
+                type: "SET_RELEASE_BLOGS",
+                payload: {
+                    projectId,
+                    blogs: res.data
+                }
+            })
         } catch (error: any) {
             toast({
                 title: "Error ⭕",
@@ -456,7 +461,17 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 })
 
                 if (lastMessage.buildStatus === 'READY') {
-                    fetchReleaseBlogForProject(lastMessage.projectId)
+                    if(lastMessage.releaseBlog) {
+                        dispatch({
+                            type: "ADD_RELEASE_BLOG",
+                            payload: {
+                                projectId: lastMessage.projectId,
+                                blog: lastMessage.releaseBlog
+                            }
+                        })
+                    } else{
+                        fetchReleaseBlogForProject(lastMessage.projectId)
+                    }
 
                     toast({
                         title: "Release Ready ✅",
@@ -498,7 +513,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             // If no username param in route, fetch by session username
             if (!param_username && session?.user?.username) {
                 // You need to define getProjectsByUsername or use fetchProjectsByUserGithubId if appropriate
-                
+
             }
         }
     }, [status, session?.user?.githubId, param_username])

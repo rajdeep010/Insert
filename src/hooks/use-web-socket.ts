@@ -22,7 +22,7 @@ export const useWebSocket = (projectId: string | null) => {
 
         client.connect({},
             (frame: any) => {
-                console.log('Connected to WebSocket:', frame);
+                // console.log('Connected to WebSocket:', frame);
                 setConnected(true);
 
                 // Subscribe to project-specific updates

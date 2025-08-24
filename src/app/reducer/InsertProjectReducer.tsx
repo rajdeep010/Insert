@@ -20,14 +20,15 @@ export default function InsertProjectReducer(state: any, action: any) {
         case "SET_PROJECT":
             return { ...state, curr_project: action.payload }
         case "SET_IS_PROJECT_LOADING":
-            return {...state, isProjectLoading: action.payload}
+            return { ...state, isProjectLoading: action.payload }
         // cover update, delete, and add project
         case "SET_IS_PROJECT_LOADING":
             return { ...state, isProjectLoading: action.payload }
 
         case "ADD_PROJECT":
-            return { ...state, 
-                user_projects: [...state.user_projects, action.payload] ,
+            return {
+                ...state,
+                user_projects: [...state.user_projects, action.payload],
                 all_projects: [...state.all_projects, action.payload]
             }
 
@@ -57,98 +58,139 @@ export default function InsertProjectReducer(state: any, action: any) {
                 user_projects: state.user_projects.filter((p: Project) => p.id !== action.payload),
                 all_projects: state.all_projects.filter((p: Project) => p.id !== action.payload),
             }
-        
+
         case "SET_GITHUB_REPOS":
             return { ...state, githubRepos: action.payload }
-        
+
         // New action for setting release blogs for a specific project
         case "SET_RELEASE_BLOGS":
-            return {
-                ...state,
-                all_projects: state.all_projects.map((p: Project) =>
-                    p.id === action.payload.projectId
-                        ? { ...p, releaseBlogs: action.payload.blogs }
-                        : p
-                ),
-                user_projects: state.user_projects.map((p: Project) =>
-                    p.id === action.payload.projectId
-                        ? { ...p, releaseBlogs: action.payload.blogs }
-                        : p
-                ),
+            {
+                const newState = {
+                    ...state,
+                    all_projects: state.all_projects.map((p: Project) =>
+                        p.id === action.payload.projectId
+                            ? { ...p, releaseBlogs: action.payload.blogs }
+                            : p
+                    ),
+                    user_projects: state.user_projects.map((p: Project) =>
+                        p.id === action.payload.projectId
+                            ? { ...p, releaseBlogs: action.payload.blogs }
+                            : p
+                    ),
+                };
+                // Update curr_project.releaseBlogs if this is the current project
+                if (state.curr_project?.project?.id === action.payload.projectId) {
+                    newState.curr_project = {
+                        ...state.curr_project,
+                        releaseBlogs: action.payload.blogs
+                    };
+                }
+                return newState;
             }
-        
+
         case "ADD_RELEASE_BLOG":
-            return {
-                ...state,
-                all_projects: state.all_projects.map((p: Project) =>
-                    p.id === action.payload.projectId
-                        ? { ...p, releaseBlogs: [...(p.releaseBlogs || []), action.payload.blog] }
-                        : p
-                ),
-                user_projects: state.user_projects.map((p: Project) =>
-                    p.id === action.payload.projectId
-                        ? { ...p, releaseBlogs: [...(p.releaseBlogs || []), action.payload.blog] }
-                        : p
-                ),
+            {
+                const newState = {
+                    ...state,
+                    all_projects: state.all_projects.map((p: Project) =>
+                        p.id === action.payload.projectId
+                            ? { ...p, releaseBlogs: [...(p.releaseBlogs || []), action.payload.blog] }
+                            : p
+                    ),
+                    user_projects: state.user_projects.map((p: Project) =>
+                        p.id === action.payload.projectId
+                            ? { ...p, releaseBlogs: [...(p.releaseBlogs || []), action.payload.blog] }
+                            : p
+                    ),
+                };
+                if (state.curr_project?.project?.id === action.payload.projectId) {
+                    newState.curr_project = {
+                        ...state.curr_project,
+                        releaseBlogs: [...(state.curr_project.releaseBlogs || []), action.payload.blog]
+                    };
+                }
+                return newState;
             }
 
         case "UPDATE_RELEASE_BLOG":
-            return {
-                ...state,
-                all_projects: state.all_projects.map((p: Project) =>
-                    p.id === action.payload.projectId
-                        ? {
-                            ...p,
-                            releaseBlogs: (p.releaseBlogs || []).map((b: ReleaseBlog) =>
-                                b.id === action.payload.blog.id ? action.payload.blog : b
-                            ),
-                        }
-                        : p
-                ),
-                user_projects: state.user_projects.map((p: Project) =>
-                    p.id === action.payload.projectId
-                        ? {
-                            ...p,
-                            releaseBlogs: (p.releaseBlogs || []).map((b: ReleaseBlog) =>
-                                b.id === action.payload.blog.id ? action.payload.blog : b
-                            ),
-                        }
-                        : p
-                ),
+            {
+                const newState = {
+                    ...state,
+                    all_projects: state.all_projects.map((p: Project) =>
+                        p.id === action.payload.projectId
+                            ? {
+                                ...p,
+                                releaseBlogs: (p.releaseBlogs || []).map((b: ReleaseBlog) =>
+                                    b.id === action.payload.blog.id ? action.payload.blog : b
+                                ),
+                            }
+                            : p
+                    ),
+                    user_projects: state.user_projects.map((p: Project) =>
+                        p.id === action.payload.projectId
+                            ? {
+                                ...p,
+                                releaseBlogs: (p.releaseBlogs || []).map((b: ReleaseBlog) =>
+                                    b.id === action.payload.blog.id ? action.payload.blog : b
+                                ),
+                            }
+                            : p
+                    ),
+                };
+                if (state.curr_project?.project?.id === action.payload.projectId) {
+                    newState.curr_project = {
+                        ...state.curr_project,
+                        releaseBlogs: (state.curr_project.releaseBlogs || []).map((b: ReleaseBlog) =>
+                            b.id === action.payload.blog.id ? action.payload.blog : b
+                        )
+                    };
+                }
+                return newState;
             }
 
         case "REMOVE_RELEASE_BLOG":
-            return {
-                ...state,
-                all_projects: state.all_projects.map((p: Project) =>
-                    p.id === action.payload.projectId
-                        ? {
-                            ...p,
-                            releaseBlogs: (p.releaseBlogs || []).filter(
-                                (b: ReleaseBlog) => b.id !== action.payload.blogId
-                            ),
-                        }
-                        : p
-                ),
-                user_projects: state.user_projects.map((p: Project) =>
-                    p.id === action.payload.projectId
-                        ? {
-                            ...p,
-                            releaseBlogs: (p.releaseBlogs || []).filter(
-                                (b: ReleaseBlog) => b.id !== action.payload.blogId
-                            ),
-                        }
-                        : p
-                ),
+            {
+                const newState = {
+                    ...state,
+                    all_projects: state.all_projects.map((p: Project) =>
+                        p.id === action.payload.projectId
+                            ? {
+                                ...p,
+                                releaseBlogs: (p.releaseBlogs || []).filter(
+                                    (b: ReleaseBlog) => b.id !== action.payload.blogId
+                                ),
+                            }
+                            : p
+                    ),
+                    user_projects: state.user_projects.map((p: Project) =>
+                        p.id === action.payload.projectId
+                            ? {
+                                ...p,
+                                releaseBlogs: (p.releaseBlogs || []).filter(
+                                    (b: ReleaseBlog) => b.id !== action.payload.blogId
+                                ),
+                            }
+                            : p
+                    ),
+                };
+                if (state.curr_project?.project?.id === action.payload.projectId) {
+                    newState.curr_project = {
+                        ...state.curr_project,
+                        releaseBlogs: (state.curr_project.releaseBlogs || []).filter(
+                            (b: ReleaseBlog) => b.id !== action.payload.blogId
+                        )
+                    };
+                }
+                return newState;
             }
 
         // New WebSocket and real-time tracking actions
         case "SET_WEBSOCKET_STATUS":
             return { ...state, webSocketConnected: action.payload }
-        
+
         case "SET_RELEASE_SYNC_STATUS":
-            return { 
-                ...state, 
+            return {
+                ...state,
                 releaseSyncStatus: {
                     ...state.releaseSyncStatus,
                     [action.payload.projectId]: {
@@ -169,14 +211,14 @@ export default function InsertProjectReducer(state: any, action: any) {
             }
 
         case "SET_IS_SYNCING_RELEASE":
-            return { 
-                ...state, 
+            return {
+                ...state,
                 isSyncingRelease: {
                     ...state.isSyncingRelease,
                     [action.payload.projectId]: action.payload.isLoading
                 }
             }
-            
+
         default:
             return state
     }

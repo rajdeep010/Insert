@@ -103,7 +103,7 @@ export interface Alltopic extends Document {
 
 export type ReleaseBlog = {
     id: string
-    [key: string]: any // Placeholder for future fields
+    [key: string]: any
 }
 
 export type Project = {
@@ -182,6 +182,7 @@ export interface WebSocketMessage {
     buildStatus: 'BUILDING' | 'READY' | 'ERROR';
     message: string;
     timestamp: string;
+    releaseBlog?: any;
 }
 
 export interface WebSocketState {
