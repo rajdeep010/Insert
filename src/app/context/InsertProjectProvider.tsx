@@ -481,7 +481,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 fetchProjectsByUsername(session.user.username)
                 fetchProjectsByUserGithubId(session.user.githubId)
             }
-            
+
             // If no username param in route, fetch by session username
             if (!param_username && session?.user?.username) {
                 // You need to define getProjectsByUsername or use fetchProjectsByUserGithubId if appropriate
