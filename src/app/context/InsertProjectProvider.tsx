@@ -170,10 +170,8 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 variant: "default",
             })
 
-            // console.log('Project added, response:', res.data);
 
             if (res.data?.projectId && res.data?.needsWebhookSetup) {
-                // console.log('Setting up webhook for projectId:', res.data.projectId);
                 const hookRes = await setupWebhook(res.data.projectId);
                 if(hookRes){
                     toast({
@@ -426,7 +424,6 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     // Handle incoming WebSocket messages
     useEffect(() => {
         if (lastMessage) {
-            console.log('Processing WebSocket message:', lastMessage)
 
             dispatch({
                 type: "SET_RELEASE_SYNC_STATUS",
@@ -445,7 +442,6 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                     payload: { projectId: lastMessage.projectId, isLoading: false }
                 })
 
-                // If sync completed successfully, refresh release blogs
                 if (lastMessage.buildStatus === 'READY') {
                     fetchReleaseBlogForProject(lastMessage.projectId)
 
