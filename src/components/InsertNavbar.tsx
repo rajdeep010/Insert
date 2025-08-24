@@ -20,6 +20,8 @@ import {
 	Loader2,
 	LayoutDashboard,
 	PanelsTopLeft,
+	LayoutPanelLeft,
+	LayoutGrid,
 } from "lucide-react";
 import {
 	NavigationMenu,
@@ -51,6 +53,7 @@ import SuggestionNotificationCard from "./SuggestionNotificationCard";
 import InviteNotificationCard from "./InviteNotificationCard";
 import { useInsertUser } from "@/app/context/InsertUserProvider";
 import { Separator } from "./ui/separator";
+import Dashboard from "./Dashboard";
 
 const InsertNavbar = () => {
 	const { data: session,status } = useSession();
@@ -521,6 +524,18 @@ const InsertNavbar = () => {
 									<span className="text-sm">Blogs</span>
 								</Link>
 							</DropdownMenuItem>
+							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
+								<Link
+									href={`/u/${!param_username
+										? session?.user?.username
+										: param_username
+										}?tab=blogs`}
+									className="flex gap-2 items-center"
+								>
+									<PanelsTopLeft className="h-4 w-4" />
+									<span className="text-sm">Projects</span>
+								</Link>
+							</DropdownMenuItem>
 						</DropdownMenuGroup>}
 
 						<DropdownMenuSeparator />
@@ -532,7 +547,7 @@ const InsertNavbar = () => {
 									href={`/posts/topic`}
 									className=" flex gap-2 items-center"
 								>
-									<LayoutDashboard className="h-4 w-4" />
+									<LayoutGrid className="h-4 w-4" />
 									<span className="text-sm">Topics</span>
 								</Link>
 							</DropdownMenuItem>
@@ -541,8 +556,17 @@ const InsertNavbar = () => {
 									href={`/posts/blog`}
 									className=" flex gap-2 items-center"
 								>
-									<Layout className="h-4 w-4" />
+									<LayoutGrid className="h-4 w-4" />
 									<span className="text-sm">Blogs</span>
+								</Link>
+							</DropdownMenuItem>
+							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
+								<Link
+									href={`/posts/project`}
+									className=" flex gap-2 items-center"
+								>
+									<LayoutGrid className="h-4 w-4" />
+									<span className="text-sm">Projects</span>
 								</Link>
 							</DropdownMenuItem>
 						</DropdownMenuGroup>}
@@ -585,7 +609,6 @@ const InsertNavbar = () => {
 								<Link href="/sign-in" className="flex items-center gap-2">
 									<LogIn className="h-4 w-4" /> <span>Login</span>
 								</Link>
-
 							</DropdownMenuItem>
 						)}
 					</DropdownMenuContent>

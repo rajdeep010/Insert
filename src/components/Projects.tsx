@@ -128,7 +128,7 @@ const Projects = () => {
                     >
                         <Album className="h-4 w-4" /> <span className="text-sm">New</span>
                     </Button>
-                    <Button className='cursor-pointer' variant={'outline'}><ListFilter className="h-4 w-4" /> <span className="text-sm">Filter</span></Button>
+                    {/* <Button className='cursor-pointer' variant={'outline'}><ListFilter className="h-4 w-4" /> <span className="text-sm">Filter</span></Button> */}
                 </div>
 
             </div>}
@@ -151,6 +151,10 @@ const Projects = () => {
                         Authorize With Github
                     </Button>
                 </div>
+            </div>}
+
+            {session?.user?.githubAccessToken && filteredProjects && filteredProjects.length === 0 && <div className='h-[50vh] flex justify-center items-center flex-col gap-4'>
+                <div className='text-gray-400'>You don't have any projects as of now. Click on the <span className='font-bold'>New</span> button to create one.</div>
             </div>}
 
             {session?.user?.githubAccessToken && <div className="my-5 flex flex-col gap-3 w-full h-[70vh] overflow-y-scroll custom-small-scrollbar">

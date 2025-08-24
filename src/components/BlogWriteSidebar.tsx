@@ -13,7 +13,10 @@ import {
   FileText,
   Layout,
   LayoutDashboard,
+  LayoutGrid,
   LayoutPanelTop,
+  PanelLeft,
+  PanelsTopLeft,
   Settings,
   Smile,
   User,
@@ -59,15 +62,16 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Separator } from "./ui/separator";
+import BlogItem from "./BlogItem";
 
 const BlogWriteSidebar = () => {
   const { data: session } = useSession();
   const username = session?.user?.username;
-  const { setIsAddBlogModalOpen, allBlogs, isAllBlogsLoading, isBlogAdding } =
-    useBlog();
+  const { setIsAddBlogModalOpen, allBlogs, isAllBlogsLoading, isBlogAdding, deleteBlog, removeBlogFromState } = useBlog();
 
   const [defaultVisibility, setDefaultVisibility] = React.useState("public");
 
@@ -85,6 +89,10 @@ const BlogWriteSidebar = () => {
     () => allBlogs.filter((blog) => blog?.type === "public"),
     [allBlogs]
   );
+
+  const handleBlogDeleted = (blogId: string) => {
+    removeBlogFromState(blogId);
+  };
 
   return (
     <>
@@ -105,7 +113,7 @@ const BlogWriteSidebar = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 text-sm border-2 border-gray-600 px-2 py-1 rounded-md">
-                <span>Sections</span> 
+                <span>Sections</span>
                 <ChevronDown className="ml-auto h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
@@ -132,19 +140,35 @@ const BlogWriteSidebar = () => {
                 </DropdownMenuItem>
               </Link>
 
+              <Link href={`/u/${username}?tab=projects`}>
+                <DropdownMenuItem className="hover:dark:bg-gray-800 hover:bg-gray-300 cursor-pointer flex gap-2 items-center">
+                  <PanelsTopLeft className="h-4 w-4" />
+                  Projects
+                </DropdownMenuItem>
+              </Link>
+
               <Separator className="my-1 mx-2" />
+
+              <DropdownMenuLabel>Posts</DropdownMenuLabel>
 
               <Link href={`/posts/blog`}>
                 <DropdownMenuItem className="hover:dark:bg-gray-800 hover:bg-gray-300  cursor-pointer flex gap-2 items-center">
-                  <Layout className="h-4 w-4" />
-                  Blog Posts
+                  <LayoutGrid className="h-4 w-4" />
+                  Blog
                 </DropdownMenuItem>
               </Link>
 
               <Link href={`/posts/topic`}>
                 <DropdownMenuItem className="hover:dark:bg-gray-800 hover:bg-gray-300  cursor-pointer flex gap-2 items-center">
-                  <Layout className="h-4 w-4" />
-                  Topic Posts
+                  <LayoutGrid className="h-4 w-4" />
+                  Topic
+                </DropdownMenuItem>
+              </Link>
+
+              <Link href={`/posts/project`}>
+                <DropdownMenuItem className="hover:dark:bg-gray-800 hover:bg-gray-300  cursor-pointer flex gap-2 items-center">
+                  <LayoutGrid className="h-4 w-4" />
+                  Project
                 </DropdownMenuItem>
               </Link>
 
@@ -176,22 +200,12 @@ const BlogWriteSidebar = () => {
                   <CommandEmpty>No private blog found</CommandEmpty>
                   {privateBlogs && privateBlogs.length > 0 && (
                     <CommandGroup heading="Suggestions">
-                      {privateBlogs.map((blog, idx) => (
-                        <CommandItem
-                          key={idx}
-                          className="flex justify-between items-center cursor-pointer"
-                        >
-                          <div className="flex items-center gap-2">
-                            <File className="w-5 h-5 " />
-                            <span>{blog.blogTitle}</span>
-                          </div>
-                          <Link
-                            href={`/blog/${blog.blogUrl}`}
-                            className="opacity-50 hover:opacity-100 transition-opacity cursor-pointer pr-[-10px]"
-                          >
-                            <SquarePen className="w-5 h-5" />
-                          </Link>
-                        </CommandItem>
+                      {privateBlogs.map((blog) => (
+                        <BlogItem
+                          key={blog._id}
+                          blog={blog}
+                          onBlogDeleted={handleBlogDeleted}
+                        />
                       ))}
                     </CommandGroup>
                   )}
@@ -222,22 +236,12 @@ const BlogWriteSidebar = () => {
                   <CommandEmpty>No public blog found</CommandEmpty>
                   {publicBlogs && publicBlogs.length > 0 && (
                     <CommandGroup heading="Suggestions">
-                      {publicBlogs.map((blog, idx) => (
-                        <CommandItem
-                          key={idx}
-                          className="flex justify-between items-center cursor-pointer"
-                        >
-                          <div className="flex items-center gap-2">
-                            <File className="w-5 h-5 " />
-                            <span>{blog.blogTitle}</span>
-                          </div>
-                          <Link
-                            href={`/blog/${blog.blogUrl}`}
-                            className="opacity-50 hover:opacity-100 transition-opacity cursor-pointer pr-[-10px]"
-                          >
-                            <SquarePen className="w-5 h-5" />
-                          </Link>
-                        </CommandItem>
+                      {publicBlogs.map((blog) => (
+                        <BlogItem
+                          key={blog._id}
+                          blog={blog}
+                          onBlogDeleted={handleBlogDeleted}
+                        />
                       ))}
                     </CommandGroup>
                   )}
