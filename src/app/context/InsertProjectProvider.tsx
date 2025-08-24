@@ -161,13 +161,36 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     const addProject = async (project: Partial<Project>) => {
         try {
             dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
+
             const res = await axios.post(`${API_BASE}/projects`, project)
-            dispatch({ type: "ADD_PROJECT", payload: res.data })
+            dispatch({ type: "ADD_PROJECT", payload: res.data?.project })
             toast({
                 title: "Success ✅",
                 description: "Project added successfully",
                 variant: "default",
             })
+
+            console.log('Project added, response:', res.data);
+
+            if (res.data?.projectId && res.data?.needsWebhookSetup) {
+                console.log('Setting up webhook for projectId:', res.data.projectId);
+                const hookRes = await setupWebhook(res.data.projectId);
+                if(hookRes){
+                    toast({
+                        title: "Success ✅",
+                        description: "Project will be monitored for changes.",
+                        variant: "default",
+                    });
+                }else{
+                    toast({
+                        title: "Error ⭕",
+                        description: "Failed to setup the monitoring, ask admin",
+                        variant: "destructive",
+                    });
+                }
+            }
+
+            
         } catch (error: any) {
             toast({
                 title: "Error ⭕",
@@ -178,6 +201,33 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             dispatch({ type: "SET_IS_PROJECT_LOADING", payload: false })
         }
     }
+
+    const setupWebhook = async (projectId: string) => {
+        try {
+            console.log('Setting up webhook for projectId:', projectId, 'with github token: ', session?.user?.githubAccessToken);
+            
+            const result = await axios.post(
+                `${API_BASE}/api/webhook/auto-setup/${projectId}`, 
+                {}, // Empty request body (or add body data if needed)
+                {   // Config object with headers
+                    headers: {
+                        Authorization: `Bearer ${session?.user?.githubAccessToken}`
+                    }
+                }
+            );
+
+            console.log('Webhook setup result:', result?.data);
+
+            if (result?.data?.webhookCreated) {
+                return true
+            } else {
+                throw new Error('Webhook setup failed');
+            }
+        } catch (error) {
+            console.error('Webhook setup failed:', error);
+            return false
+        }
+    };
 
     // Update a project
     const updateProject = async (project: Project) => {
