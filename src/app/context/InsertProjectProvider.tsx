@@ -341,7 +341,18 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             // Clear any existing status
             clearReleaseSyncStatus(projectId)
 
-            await axios.post(`${API_BASE}/release/${projectId}/sync-release`)
+            const res = await axios.post(`${API_BASE}/release/${projectId}/sync-release`)
+            dispatch({
+                type: "SET_IS_SYNCING_RELEASE",
+                payload: { projectId, isLoading: false }
+            })
+
+            if(res.data?.releaseBlog){
+                dispatch({
+                    type: "ADD_RELEASE_BLOG",
+                    payload: { projectId, blog: res.data.releaseBlog }
+                })
+            }
 
             toast({
                 title: "Release Sync Started 🚀",
@@ -477,7 +488,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     useEffect(() => {
         if (status === "authenticated") {
             // Fetch projects for the logged-in user's GitHub ID
-            if (session?.user?.username && session.user.githubId) {
+            if (session?.user?.username && session?.user?.githubId) {
                 fetchProjectsByUsername(session.user.username)
                 fetchProjectsByUserGithubId(session.user.githubId)
             }
