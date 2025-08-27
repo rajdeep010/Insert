@@ -20,13 +20,13 @@ export const useWebSocket = (projectId: string | null) => {
         // Disable console debug messages
         client.debug = () => { };
 
-        client.connect({},
+        client?.connect({},
             (frame: any) => {
                 // console.log('Connected to WebSocket:', frame);
                 setConnected(true);
 
                 // Subscribe to project-specific updates
-                client.subscribe(`/topic/release-updates/${projectId}`, (message) => {
+                client?.subscribe(`/topic/release-updates/${projectId}`, (message) => {
                     const update: WebSocketMessage = JSON.parse(message.body);
                     setLastMessage(update);
                     // console.log('Received update:', update);

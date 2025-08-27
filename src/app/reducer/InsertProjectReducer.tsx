@@ -1,6 +1,6 @@
 import { Project, ReleaseBlog } from "@/types/types"
 
-const sortBlogsByCreatedAt = (blogs: ReleaseBlog[]) => {
+const sortByCreatedAt = (blogs: any[]) => {
     return [...blogs].sort((a, b) => {
         const dateA = new Date(a.createdAt).getTime()
         const dateB = new Date(b.createdAt).getTime()
@@ -9,6 +9,7 @@ const sortBlogsByCreatedAt = (blogs: ReleaseBlog[]) => {
 }
 
 export default function InsertProjectReducer(state: any, action: any) {
+
     switch (action.type) {
         case "SET_IS_USER_PROJECTS_LOADING":
             return { ...state, isUserProjectsLoading: action.payload }
@@ -17,7 +18,16 @@ export default function InsertProjectReducer(state: any, action: any) {
         case "SET_USER_PROJECTS":
             return { ...state, user_projects: action.payload }
         case "SET_ALL_PROJECTS":
-            return { ...state, all_projects: action.payload }
+            {
+                const { projects, user } = action.payload
+                const sortedProjects = sortByCreatedAt(projects)
+
+                return {
+                    ...state,
+                    all_projects: sortedProjects,
+                    user_projects: sortedProjects?.filter((p: any) => p.userId === user?._id),
+                }
+            }
         case "SET_IS_RELEASE_BLOG_LOADING":
             return { ...state, isReleaseBlogLoading: action.payload }
         case "SET_IS_GITHUB_REPOS_LOADING":
@@ -72,7 +82,7 @@ export default function InsertProjectReducer(state: any, action: any) {
         // New action for setting release blogs for a specific project
         case "SET_RELEASE_BLOGS":
             {
-                const sortedBlogs = sortBlogsByCreatedAt(action.payload.blogs || [])
+                const sortedBlogs = sortByCreatedAt(action.payload.blogs || [])
                 const newState = {
                     ...state,
                     all_projects: state.all_projects.map((p: Project) =>
@@ -102,17 +112,17 @@ export default function InsertProjectReducer(state: any, action: any) {
                     ...state,
                     all_projects: state.all_projects.map((p: Project) =>
                         p.id === action.payload.projectId
-                            ? { 
-                                ...p, 
-                                releaseBlogs: sortBlogsByCreatedAt([...(p.releaseBlogs || []), action.payload.blog])
+                            ? {
+                                ...p,
+                                releaseBlogs: sortByCreatedAt([...(p.releaseBlogs || []), action.payload.blog])
                             }
                             : p
                     ),
                     user_projects: state.user_projects.map((p: Project) =>
                         p.id === action.payload.projectId
-                            ? { 
-                                ...p, 
-                                releaseBlogs: sortBlogsByCreatedAt([...(p.releaseBlogs || []), action.payload.blog])
+                            ? {
+                                ...p,
+                                releaseBlogs: sortByCreatedAt([...(p.releaseBlogs || []), action.payload.blog])
                             }
                             : p
                     ),
@@ -120,7 +130,7 @@ export default function InsertProjectReducer(state: any, action: any) {
                 if (state.curr_project?.project?.id === action.payload.projectId) {
                     newState.curr_project = {
                         ...state.curr_project,
-                        releaseBlogs: sortBlogsByCreatedAt([...(state.curr_project.releaseBlogs || []), action.payload.blog])
+                        releaseBlogs: sortByCreatedAt([...(state.curr_project.releaseBlogs || []), action.payload.blog])
                     };
                 }
                 return newState;
@@ -134,7 +144,7 @@ export default function InsertProjectReducer(state: any, action: any) {
                         p.id === action.payload.projectId
                             ? {
                                 ...p,
-                                releaseBlogs: sortBlogsByCreatedAt(
+                                releaseBlogs: sortByCreatedAt(
                                     (p.releaseBlogs || []).map((b: ReleaseBlog) =>
                                         b.id === action.payload.blog.id ? action.payload.blog : b
                                     )
@@ -146,7 +156,7 @@ export default function InsertProjectReducer(state: any, action: any) {
                         p.id === action.payload.projectId
                             ? {
                                 ...p,
-                                releaseBlogs: sortBlogsByCreatedAt(
+                                releaseBlogs: sortByCreatedAt(
                                     (p.releaseBlogs || []).map((b: ReleaseBlog) =>
                                         b.id === action.payload.blog.id ? action.payload.blog : b
                                     )
@@ -158,7 +168,7 @@ export default function InsertProjectReducer(state: any, action: any) {
                 if (state.curr_project?.project?.id === action.payload.projectId) {
                     newState.curr_project = {
                         ...state.curr_project,
-                        releaseBlogs: sortBlogsByCreatedAt(
+                        releaseBlogs: sortByCreatedAt(
                             (state.curr_project.releaseBlogs || []).map((b: ReleaseBlog) =>
                                 b.id === action.payload.blog.id ? action.payload.blog : b
                             )

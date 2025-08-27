@@ -77,20 +77,6 @@ import {
 
 
 
-function extractBlogTitle(blogContent: any): string {
-	if (!blogContent) return "";
-
-	const content = blogContent?.content || {};
-	if (Array.isArray(content) && content.length > 0) {
-		const firstNode = content[0];
-		if (firstNode.type === "heading" && firstNode.attrs?.level === 1) {
-			return firstNode.content?.[0]?.text || "";
-		}
-		return "";
-	}
-	return "";
-}
-
 const MainToolbarContent = ({
 	onHighlighterClick,
 	onLinkClick,
@@ -375,18 +361,6 @@ const SimpleEditor = () => {
 
 		editor.chain().focus().setImageUploadNode().run();
 	}, [isMobile, mobileView])
-
-	// const debouncedSave = useDebounceCallback(async (json, plainText) => {
-	// 	if (autoSave) {
-	// 		setIsSaving(true);
-	// 		await handleAutoSaveBlog({
-	// 			blogContent: JSON.stringify(json),
-	// 			blogContentText: plainText,
-	// 			blogBannerImage: getFirstImageFromBlogContent(json),
-	// 		});
-	// 		setIsSaving(false);
-	// 	}
-	// }, 500);
 
 	React.useEffect(() => {
 		const handleAutoSave = async () => {

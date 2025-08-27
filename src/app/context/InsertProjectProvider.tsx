@@ -35,7 +35,7 @@ interface InsertProjectProviderProps {
 
     fetchAllProjects: () => void
     fetchProjectById: (_: string) => void,
-    fetchProjectsByUserGithubId: (githubId: number) => void
+    importReposByGithubUserId: (githubId: number) => void
     fetchProjectsByUsername: (username: string) => void
     addProject: (project: Partial<Project>) => void
     updateProject: (project: Project) => void
@@ -73,7 +73,7 @@ const initialState = {
 
     fetchAllProjects: () => { },
     fetchProjectById: (_: string) => { },
-    fetchProjectsByUserGithubId: (_: number) => { },
+    importReposByGithubUserId: (_: number) => { },
     fetchProjectsByUsername: (_: string) => { },
     addProject: (_: Partial<Project>) => { },
     updateProject: (_: Project) => { },
@@ -101,10 +101,10 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     const project_id = params.id as string;
     const router = useRouter()
 
-    const fetchProjectsByUserGithubId = async (githubId: number) => {
+    const importReposByGithubUserId = async (githubId: number) => {
         try {
             dispatch({ type: "SET_IS_GITHUB_REPOS_LOADING", payload: true })
-            const res = await axios.get(`${API_BASE}/github/repos/${githubId}`,
+            const res = await axios.get(`${API_BASE}/api/github/repos/${githubId}`,
                 {
                     headers: {
                         Authorization: `Bearer ${session?.user?.githubAccessToken}`
@@ -125,8 +125,20 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 
     const fetchProjectsByUsername = async (username: string) => {
         try {
+            if(status == "unauthenticated"){
+                toast({
+                    title: "Error ⭕",
+                    description: "You must be logged in to view your projects",
+                    variant: "destructive",
+                })
+                return
+            }
             dispatch({ type: "SET_IS_USER_PROJECTS_LOADING", payload: true })
-            const res = await axios.get(`${API_BASE}/projects/user/${username}`)
+            const res = await axios.get(`${API_BASE}/api/projects/user/${username}`, {
+                headers: {
+                    Authorization: `Bearer ${session?.accessToken}`
+                }
+            })
             dispatch({ type: "SET_USER_PROJECTS", payload: res.data })
         } catch (error: any) {
             toast({
@@ -142,10 +154,14 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     const fetchAllProjects = async () => {
         try {
             dispatch({ type: "SET_IS_ALL_PROJECT_LOADING", payload: true })
-            const githubId = user?.githubId
-            if (!githubId) throw new Error("No githubId found in user")
-            const res = await axios.get(`${API_BASE}/projects`)
-            dispatch({ type: "SET_ALL_PROJECTS", payload: res.data })
+
+            const res = await axios.get(`${API_BASE}/api/projects`, {
+                headers: {
+                    Authorization: `Bearer ${session?.accessToken}`
+                }
+            })
+
+            dispatch({ type: "SET_ALL_PROJECTS", payload: {projects: res.data, user: session?.user} })
         } catch (error: any) {
             toast({
                 title: "Error ⭕",
@@ -162,7 +178,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
         try {
             dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
 
-            const res = await axios.post(`${API_BASE}/projects`, project)
+            const res = await axios.post(`${API_BASE}/api/projects`, project)
             dispatch({ type: "ADD_PROJECT", payload: res.data?.project })
             toast({
                 title: "Success ✅",
@@ -227,7 +243,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     const updateProject = async (project: Project) => {
         try {
             dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
-            const res = await axios.put(`${API_BASE}/projects/${project.id}`, project)
+            const res = await axios.put(`${API_BASE}/api/projects/${project.id}`, project)
             dispatch({ type: "UPDATE_PROJECT", payload: res.data })
             toast({
                 title: "Success ✅",
@@ -250,7 +266,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
 
             // Fix the endpoint URL - add '/delete' before the projectId
-            await axios.delete(`${API_BASE}/projects/delete/${projectId}`, {
+            await axios.delete(`${API_BASE}/api/projects/delete/${projectId}`, {
                 headers: {
                     'Authorization': `Bearer ${session?.user?.githubAccessToken}`
                 }
@@ -281,7 +297,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     // Add a release blog to a project (API)
     const addReleaseBlog = async (projectId: string, blog: ReleaseBlog) => {
         try {
-            const res = await axios.post(`${API_BASE}/projects/${projectId}/release-blogs`, blog)
+            const res = await axios.post(`${API_BASE}/api/projects/${projectId}/release-blogs`, blog)
             dispatch({ type: "ADD_RELEASE_BLOG", payload: { projectId, blog: res.data } })
             toast({
                 title: "Success ✅",
@@ -300,7 +316,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     // Update a release blog in a project (API)
     const updateReleaseBlog = async (projectId: string, blog: ReleaseBlog) => {
         try {
-            const res = await axios.put(`${API_BASE}/projects/${projectId}/release-blogs/${blog.id}`, blog)
+            const res = await axios.put(`${API_BASE}/api/projects/${projectId}/release-blogs/${blog.id}`, blog)
             dispatch({ type: "UPDATE_RELEASE_BLOG", payload: { projectId, blog: res.data } })
             toast({
                 title: "Success ✅",
@@ -319,7 +335,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     // Remove a release blog from a project (API)
     const removeReleaseBlog = async (projectId: string, blogId: string) => {
         try {
-            await axios.delete(`${API_BASE}/projects/${projectId}/release-blogs/${blogId}`)
+            await axios.delete(`${API_BASE}/api/projects/${projectId}/release-blogs/${blogId}`)
             dispatch({ type: "REMOVE_RELEASE_BLOG", payload: { projectId, blogId } })
             toast({
                 title: "Success ✅",
@@ -335,6 +351,8 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
         }
     }
 
+
+
     // Update syncRelease to handle real-time tracking
     const syncRelease = async (projectId: string) => {
         try {
@@ -347,7 +365,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             // Clear any existing status
             clearReleaseSyncStatus(projectId)
 
-            const res = await axios.post(`${API_BASE}/release/${projectId}/sync-release`)
+            const res = await axios.post(`${API_BASE}/api/release/${projectId}/sync-release`)
             dispatch({
                 type: "SET_IS_SYNCING_RELEASE",
                 payload: { projectId, isLoading: false }
@@ -384,7 +402,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     const fetchReleaseBlogForProject = async (projectId: string) => {
         try {
             dispatch({ type: "SET_IS_RELEASE_BLOG_LOADING", payload: true })
-            const res = await axios.get(`${API_BASE}/projects/${projectId}/release-blogs`)
+            const res = await axios.get(`${API_BASE}/api/projects/${projectId}/release-blogs`)
             dispatch({
                 type: "SET_RELEASE_BLOGS",
                 payload: {
@@ -405,7 +423,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 
     const fetchRepositoryBranches = async (githubId: string, repoName: string, token: string) => {
         try {
-            const res = await axios.get(`${API_BASE}/github/repos/${githubId}/${repoName}/branches`, {
+            const res = await axios.get(`${API_BASE}/api/github/repos/${githubId}/${repoName}/branches`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -420,11 +438,11 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             return []
         }
     }
-
+``
     const fetchProjectById = async (projectId: string) => {
         try {
             dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
-            const res = await axios.get(`${API_BASE}/projects/${projectId}`)
+            const res = await axios.get(`${API_BASE}/api/projects/${projectId}`)
             dispatch({ type: "SET_PROJECT", payload: res.data })
         } catch (error: any) {
             toast({
@@ -460,23 +478,23 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             })
 
             // Handle sync completion - turn off loading state
-            if (lastMessage.buildStatus === 'READY' || lastMessage.buildStatus === 'ERROR') {
+            if (lastMessage?.buildStatus === 'READY' || lastMessage?.buildStatus === 'ERROR') {
                 dispatch({
                     type: "SET_IS_SYNCING_RELEASE",
                     payload: { projectId: lastMessage.projectId, isLoading: false }
                 })
 
                 if (lastMessage.buildStatus === 'READY') {
-                    if (lastMessage.releaseBlog) {
+                    if (lastMessage?.releaseBlog) {
                         dispatch({
                             type: "ADD_RELEASE_BLOG",
                             payload: {
-                                projectId: lastMessage.projectId,
-                                blog: lastMessage.releaseBlog
+                                projectId: lastMessage?.projectId,
+                                blog: lastMessage?.releaseBlog
                             }
                         })
                     } else {
-                        fetchReleaseBlogForProject(lastMessage.projectId)
+                        fetchReleaseBlogForProject(lastMessage?.projectId)
                     }
 
                     toast({
@@ -510,19 +528,10 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 
     useEffect(() => {
         if (status === "authenticated") {
-            // Fetch projects for the logged-in user's GitHub ID
-            if (session?.user?.username && session?.user?.githubId) {
-                fetchProjectsByUsername(session.user.username)
-                fetchProjectsByUserGithubId(session.user.githubId)
-            }
-
-            // If no username param in route, fetch by session username
-            if (!param_username && session?.user?.username) {
-                // You need to define getProjectsByUsername or use fetchProjectsByUserGithubId if appropriate
-
-            }
+            fetchAllProjects()
+            // fetchProjectsByUsername(param_username)
         }
-    }, [status, session?.user?.githubId, param_username])
+    }, [status])
 
     useEffect(() => {
         if (status === "authenticated" && project_id) {
@@ -551,7 +560,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 fetchProjectsByUsername,
                 fetchProjectById,
                 fetchAllProjects,
-                fetchProjectsByUserGithubId,
+                importReposByGithubUserId,
                 addProject,
                 updateProject,
                 removeProject,

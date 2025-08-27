@@ -562,7 +562,7 @@ const InsertNavbar = () => {
 							</DropdownMenuItem>
 							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
 								<Link
-									href={`/posts/project`}
+									href={`/posts/projects`}
 									className=" flex gap-2 items-center"
 								>
 									<LayoutGrid className="h-4 w-4" />

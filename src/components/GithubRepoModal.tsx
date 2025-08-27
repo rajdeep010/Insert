@@ -32,7 +32,7 @@ const GithubRepoModal: React.FC<GithubRepoModalProps> = ({ isOpen, onClose }) =>
     const {
         githubRepos,
         isGithubReposLoading,
-        fetchProjectsByUserGithubId,
+        importReposByGithubUserId,
         addProject,
         isProjectLoading
     } = useInsertProjects()
@@ -53,7 +53,7 @@ const GithubRepoModal: React.FC<GithubRepoModalProps> = ({ isOpen, onClose }) =>
 
     useEffect(() => {
         if (isOpen && session?.user?.githubId) {
-            fetchProjectsByUserGithubId(session.user.githubId)
+            importReposByGithubUserId(session.user.githubId)
         }
     }, [isOpen, session?.user?.githubId])
 

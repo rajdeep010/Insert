@@ -67,6 +67,7 @@ import {
 } from "./ui/dropdown-menu";
 import { Separator } from "./ui/separator";
 import BlogItem from "./BlogItem";
+import InsertIcon from "./InsertIcon";
 
 const BlogWriteSidebar = () => {
   const { data: session } = useSession();
@@ -104,10 +105,11 @@ const BlogWriteSidebar = () => {
         </SheetTrigger>
 
         <SheetContent side="left" className="flex flex-col gap-6 px-6">
-          <SheetHeader>
-            <div className="flex items-center gap-2 text-2xl">
+          <SheetHeader className="w-fit">
+            <Link href={`/u/${username}`} className="flex items-center gap-2 text-2xl">
+              <InsertIcon className="p-[4px] border-2 bg-white" />
               <span className="font-sans">Insert</span>
-            </div>
+            </Link>
           </SheetHeader>
 
           <DropdownMenu>
@@ -165,7 +167,7 @@ const BlogWriteSidebar = () => {
                 </DropdownMenuItem>
               </Link>
 
-              <Link href={`/posts/project`}>
+              <Link href={`/posts/projects`}>
                 <DropdownMenuItem className="hover:dark:bg-gray-800 hover:bg-gray-300  cursor-pointer flex gap-2 items-center">
                   <LayoutGrid className="h-4 w-4" />
                   Project

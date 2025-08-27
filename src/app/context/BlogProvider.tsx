@@ -20,6 +20,7 @@ interface BlogProviderProps {
     currentBlog: any
     isBlogLoading: boolean
     isAllBlogPostsLoading: boolean
+    isDeleting: boolean
 
     deleteBlog: (blog_id: string) => void
     handleBlogUpdate: (content: any) => void
@@ -41,6 +42,7 @@ const initialState: BlogProviderProps = {
     isBlogAdding: false,
     isAddBlogModalOpen: false,
     isAllBlogPostsLoading: false,
+    isDeleting: false,
 
     deleteBlog: (blog_id: string) => { },
     handleBlogUpdate: (content: any) => { },
@@ -71,6 +73,10 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 
     const deleteBlog = async (blog_id: string) => {
         try {
+            if (!username || !blog_id) return
+
+            dispatch({ type: "SET_IS_DELETING", payload: true })
+
             const response = await axios.delete('/api/delete-blog', {
                 headers: {
                     'Content-Type': 'application/json',
@@ -89,6 +95,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
                     description: `${data.deletedBlog.title} has been deleted successfully`,
                     variant: "default",
                 });
+                dispatch({ type: "REMOVE_BLOG", payload: blog_id })
             } else {
                 throw new Error(data.message);
             }
@@ -99,6 +106,8 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
                 description: error.message || "Failed to delete blog",
                 variant: "destructive",
             });
+        } finally {
+            dispatch({ type: "SET_IS_DELETING", payload: false })
         }
     }
 

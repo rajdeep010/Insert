@@ -37,7 +37,6 @@ interface BlogItemProps {
         blogTitle: string;
         blogUrl: string;
         creator: string;
-        // Add other blog properties as needed
     };
     onBlogDeleted?: (blogId: string) => void;
 }
@@ -72,10 +71,10 @@ const BlogItem: React.FC<BlogItemProps> = ({ blog, onBlogDeleted }) => {
             onBlogDeleted?.(blog._id);
         } catch (error: any) {
             setDeleteConfirm(prev => ({ ...prev, isDeleting: false }));
-            toast({
-                title: "Delete Failed ❌",
-                description: error.message || "Failed to delete blog. Please try again.",
-                variant: "destructive",
+        } finally{
+            setDeleteConfirm({
+                isOpen: false,
+                isDeleting: false
             });
         }
     };
@@ -114,7 +113,7 @@ const BlogItem: React.FC<BlogItemProps> = ({ blog, onBlogDeleted }) => {
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem asChild>
+                            <DropdownMenuItem asChild className="hover:dark:bg-gray-800 hover:bg-gray-200">
                                 <Link
                                     href={`/blog/${blog.blogUrl}`}
                                     className="flex items-center gap-2 cursor-pointer w-full"
@@ -123,9 +122,9 @@ const BlogItem: React.FC<BlogItemProps> = ({ blog, onBlogDeleted }) => {
                                     Edit Blog
                                 </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator />
+                            {/* <DropdownMenuSeparator /> */}
                             <DropdownMenuItem
-                                className="text-red-500 focus:text-red-600 cursor-pointer"
+                                className="text-red-500 focus:text-red-600 cursor-pointer hover:dark:bg-gray-800 hover:bg-gray-200"
                                 onClick={handleDeleteBlog}
                             >
                                 <Trash2 className="h-4 w-4 mr-2" />

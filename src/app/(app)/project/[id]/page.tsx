@@ -33,8 +33,6 @@ import { getLastModifiedText } from '@/helpers/last-modified'
 
 
 
-
-
 export default function page() {
     const { data: session, status } = useSession()
     const {
@@ -100,7 +98,7 @@ export default function page() {
         if (blog?.buildStatus === 'BUILDING' || blog?.status === 'PROCESSING') {
             return "opacity-60 cursor-not-allowed hover:shadow-none"
         }
-        return "hover:shadow-md transition-shadow duration-200 cursor-pointer"
+        return "hover:shadow-md transition-shadow duration-200"
     }
 
     const isBlogClickable = (blog: any) => {
@@ -324,20 +322,20 @@ export default function page() {
                                             </div>
                                         </div>
 
-                                        {blog?.content && (
+                                        {blog?.blogContentText && (
                                             <CardDescription className="mt-3 text-gray-600 dark:text-gray-300 leading-relaxed">
-                                                {blog?.content?.length > 200
-                                                    ? `${blog?.content?.substring(0, 200)}...`
-                                                    : blog?.content
+                                                {blog?.blogContentText?.length > 200
+                                                    ? `${blog?.blogContentText?.substring(0, 200)}...`
+                                                    : blog?.blogContentText
                                                 }
                                             </CardDescription>
                                         )}
 
                                         {/* Click hint for ready blogs */}
                                         {isBlogClickable(blog) && (
-                                            <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
+                                            <Link href={`/project/${projectId}/edit/${blog.id}`} className="mt-4 text-xs text-blue-600 dark:text-blue-400">
                                                 Click to view details →
-                                            </div>
+                                            </Link>
                                         )}
                                     </CardHeader>
                                 </Card>

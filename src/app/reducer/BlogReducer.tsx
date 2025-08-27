@@ -62,6 +62,12 @@ export default function BlogReducer(state: any,action: any) {
                 allBlogPosts: action.payload,
             }
 
+        case "SET_IS_DELETING":
+            return {
+                ...state,
+                isDeleting: action.payload,
+            }
+
         default:
             return state;
     }
