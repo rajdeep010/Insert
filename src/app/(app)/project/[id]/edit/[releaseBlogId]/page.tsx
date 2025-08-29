@@ -75,6 +75,7 @@ import {
     TabsTrigger,
 } from "@/components/ui/tabs"
 import ReleaseBlogWriteSidebar from "@/components/ReleaseBlogWriteSidebar";
+import { useInsertProjects } from "@/app/context/InsertProjectProvider";
 
 
 
@@ -204,7 +205,7 @@ const MobileToolbarContent = ({
     </>
 );
 
-const SimpleEditor = () => {
+const ReleaseBlogEditor = () => {
     const { data: session, status } = useSession()
 
 
@@ -213,14 +214,29 @@ const SimpleEditor = () => {
     const [mobileView, setMobileView] = React.useState<"main" | "highlighter" | "link">("main")
     const toolbarRef = React.useRef<HTMLDivElement>(null);
 
-    const { currentBlog, handleBlogUpdate, isBlogLoading, handleAutoSaveBlog } = useBlog();
-    const [editorContent, setEditorContent] = React.useState<any>(currentBlog?.blogContent)
-    const [editorTextContent, setEditorTextContent] = React.useState<string>(currentBlog?.blogContentText || "");
+    const [currReleaseBlog, setCurrReleaseBlog] = React.useState<any>(null);
 
-    const [debouncedEditorContent, setDebouncedEditorContent] = useDebounceValue<any>(currentBlog?.blogContent, 300)
-    const [debouncedEditorTextContent, setDebouncedEditorTextContent] = useDebounceValue<any>(currentBlog?.blogContentText || "", 300)
+    const { curr_project, updateReleaseBlog, isCurrReleaseBlogLoading } = useInsertProjects();
+    const params = useParams();
+    const projectId = params?.id as string;
+    const releaseBlogId = params?.releaseBlogId as string;
 
-    const [autoSave, setAutoSave] = React.useState(currentBlog?.autosave || false)
+    React.useEffect(() => {
+        if (curr_project && curr_project.releaseBlogs && releaseBlogId) {
+            const foundBlog = curr_project.releaseBlogs.find(
+                (blog: any) => blog.id?.toString() === releaseBlogId?.toString()
+            );
+            setCurrReleaseBlog(foundBlog || null);
+        }
+    }, [curr_project, releaseBlogId]);
+
+    const [editorContent, setEditorContent] = React.useState<any>(currReleaseBlog?.blogContent)
+    const [editorTextContent, setEditorTextContent] = React.useState<string>(currReleaseBlog?.blogContentText || "");
+
+    const [debouncedEditorContent, setDebouncedEditorContent] = useDebounceValue<any>(currReleaseBlog?.blogContent, 300)
+    const [debouncedEditorTextContent, setDebouncedEditorTextContent] = useDebounceValue<any>(currReleaseBlog?.blogContentText || "", 300)
+
+    const [autoSave, setAutoSave] = React.useState(currReleaseBlog?.autosave || false)
     const [isSaving, setIsSaving] = React.useState(false)
 
 
@@ -341,11 +357,11 @@ const SimpleEditor = () => {
     });
 
     const handleSaveContent = async () => {
-        console.log('handle normal save content: ', editorContent, currentBlog)
-        if (!editorContent && !currentBlog) return;
+        console.log('handle normal save content: ', editorContent, currReleaseBlog)
+        if (!editorContent && !currReleaseBlog) return;
         console.log('this is autosave: ', autoSave)
 
-        await handleBlogUpdate({
+        await updateReleaseBlog(projectId, {
             blogContent: JSON.stringify(editorContent),
             blogContentText: editorTextContent,
             blogBannerImage: getFirstImageFromBlogContent(editorContent),
@@ -368,11 +384,11 @@ const SimpleEditor = () => {
             if (debouncedEditorContent) {
                 try {
                     setIsSaving(true);
-                    await handleAutoSaveBlog({
-                        blogContent: JSON.stringify(debouncedEditorContent),
-                        blogContentText: debouncedEditorTextContent,
-                        blogBannerImage: getFirstImageFromBlogContent(debouncedEditorContent),
-                    });
+                    // await handleAutoSaveBlog({
+                    //     blogContent: JSON.stringify(debouncedEditorContent),
+                    //     blogContentText: debouncedEditorTextContent,
+                    //     blogBannerImage: getFirstImageFromBlogContent(debouncedEditorContent),
+                    // });
                     setIsSaving(false);
                 } catch (error) {
                     console.log('this is error: ', error)
@@ -395,14 +411,14 @@ const SimpleEditor = () => {
 
             <div className="flex w-full flex-col gap-6">
                 {
-                    status === 'authenticated' && session?.user?.username === currentBlog?.creator && (
+                    status === 'authenticated' && session?.user?.username === currReleaseBlog?.creator && (
                         <>
                             <Toolbar
                                 ref={toolbarRef}
                                 style={isMobile ? { bottom: `calc(100% - ${windowSize.height - bodyRect.y}px)`, } : {}}
                             >
                                 {mobileView === "main" ?
-                                    isBlogLoading ? <Skeleton className="w-32 h-6" /> : (
+                                    isCurrReleaseBlogLoading ? <Skeleton className="w-32 h-6" /> : (
                                         <MainToolbarContent
                                             onHighlighterClick={() => setMobileView("highlighter")}
                                             onLinkClick={() => setMobileView("link")}
@@ -453,7 +469,7 @@ const WriteReleaseBlog = () => {
                         ? <div className="flex justify-center items-center h-screen">
                             <Loader2 className="h-12 w-12 animate-spin text-gray-500" />
                         </div>
-                        : <SimpleEditor />}
+                        : <ReleaseBlogEditor />}
                 </div>
             </div>
         </>

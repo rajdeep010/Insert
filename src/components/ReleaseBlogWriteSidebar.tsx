@@ -46,6 +46,7 @@ import {
 import { getLastModifiedText } from '@/helpers/last-modified'
 import { useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
+import { languageColors } from '@/types/master-data'
 
 const ReleaseBlogWriteSidebar = () => {
     const { curr_project, isProjectLoading } = useInsertProjects()
@@ -112,7 +113,7 @@ const ReleaseBlogWriteSidebar = () => {
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button
-                                    variant="ghost"
+                                    variant="outline"
                                     size="sm"
                                     onClick={() => setIsMinimized(false)}
                                     className="w-full h-10"
@@ -236,7 +237,7 @@ const ReleaseBlogWriteSidebar = () => {
                                 <TooltipTrigger asChild>
                                     <Button
                                         variant="outline"
-                                        size="sm"
+                                        size="default"
                                         onClick={() => setIsMinimized(true)}
                                         className="h-8 w-8"
                                     >
@@ -299,7 +300,7 @@ const ReleaseBlogWriteSidebar = () => {
                                     <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
                                         {curr_project.project?.language && (
                                             <div className="flex items-center gap-1">
-                                                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: languageColors[curr_project.project.language] }} />
                                                 <span>{curr_project.project.language}</span>
                                             </div>
                                         )}

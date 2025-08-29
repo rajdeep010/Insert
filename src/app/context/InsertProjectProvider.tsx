@@ -19,6 +19,9 @@ interface InsertProjectProviderProps {
     githubRepos: any[],
     releaseBlogs: any[],
 
+    currReleaseBlog: any | null,
+    isCurrReleaseBlogLoading: boolean,
+
     isGithubReposLoading: boolean
     isAllProjectsLoading: boolean
     isUserProjectsLoading: boolean
@@ -43,14 +46,15 @@ interface InsertProjectProviderProps {
 
     setGithubRepos: (repos: any[]) => void
 
-    addReleaseBlog: (projectId: string, blog: ReleaseBlog) => void
-    updateReleaseBlog: (projectId: string, blog: ReleaseBlog) => void
+    addReleaseBlog: (projectId: string, blog: any) => void
+    updateReleaseBlog: (projectId: string, blog: any) => void
     removeReleaseBlog: (projectId: string, blogId: string) => void
     syncRelease: (projectId: string) => Promise<void>
     fetchReleaseBlogForProject: (projectId: string) => Promise<void>
     fetchRepositoryBranches: (githubId: string, repoName: string, token: string) => Promise<string[]>
 
     clearReleaseSyncStatus: (projectId: string) => void
+    fetchReleaseBlogById: (releaseBlogId: string, projectId: string) => void
 }
 
 const initialState = {
@@ -59,10 +63,12 @@ const initialState = {
     user_projects: [],
     releaseBlogs: [],
     githubRepos: [],
+    currReleaseBlog: null,
 
     isGithubReposLoading: false,
     isAllProjectsLoading: false,
     isUserProjectsLoading: false,
+    isCurrReleaseBlogLoading: false,
 
     isProjectLoading: false,
     isReleaseBlogLoading: false,
@@ -79,13 +85,14 @@ const initialState = {
     updateProject: (_: Project) => { },
     removeProject: (_: string) => { },
     setGithubRepos: (_: any[]) => { },
-    addReleaseBlog: (_: string, __: ReleaseBlog) => { },
-    updateReleaseBlog: (_: string, __: ReleaseBlog) => { },
+    addReleaseBlog: (_: string, __: any) => { },
+    updateReleaseBlog: (_: string, __: any) => { },
     removeReleaseBlog: (_: string, __: string) => { },
     syncRelease: (_: string) => Promise<void>,
     fetchReleaseBlogForProject: (projectId: string) => Promise<void>,
     fetchRepositoryBranches: (githubId: string, repoName: string, token: string) => Promise<string[]>,
-    clearReleaseSyncStatus: (projectId: string) => { }
+    clearReleaseSyncStatus: (projectId: string) => { },
+    fetchReleaseBlogById: (releaseBlogId: string, projectId: string) => { }
 }
 
 const InsertProjectContext = createContext<InsertProjectProviderProps | null>(null)
@@ -99,6 +106,8 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     const params = useParams()
     const param_username = params.username as string
     const project_id = params.id as string;
+    const releaseBlogId = params.releaseBlogId as string;
+
     const router = useRouter()
 
     const importReposByGithubUserId = async (githubId: number) => {
@@ -314,7 +323,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     }
 
     // Update a release blog in a project (API)
-    const updateReleaseBlog = async (projectId: string, blog: ReleaseBlog) => {
+    const updateReleaseBlog = async (projectId: string, blog: any) => {
         try {
             const res = await axios.put(`${API_BASE}/api/projects/${projectId}/release-blogs/${blog.id}`, blog)
             dispatch({ type: "UPDATE_RELEASE_BLOG", payload: { projectId, blog: res.data } })
@@ -455,6 +464,26 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
         }
     }
 
+    const fetchReleaseBlogById = async (releaseBlogId: string, projectId: string) => {
+        try {
+            dispatch({ type: "SET_IS_CURR_RELEASE_BLOG_LOADING", payload: true })
+            const res = await axios.get(`${API_BASE}/api/projects/${projectId}/get-release-blog-by-id/${releaseBlogId}`, {
+                headers: {
+                    Authorization: `Bearer ${session?.accessToken}`
+                }
+            })
+            dispatch({ type: "SET_CURR_RELEASE_BLOG", payload: res.data })
+        } catch (error: any) {
+            toast({
+                title: "Error ⭕",
+                description: error?.response?.data?.message || "Failed to fetch release blog",
+                variant: "destructive",
+            })
+        } finally {
+            dispatch({ type: "SET_IS_CURR_RELEASE_BLOG_LOADING", payload: false })
+        }
+    }
+
     const { connected, lastMessage } = useWebSocket(project_id)
 
     // Handle WebSocket connection status
@@ -536,8 +565,12 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     useEffect(() => {
         if (status === "authenticated" && project_id) {
             fetchProjectById(project_id)
+
+            if(releaseBlogId){
+                fetchReleaseBlogById(releaseBlogId, project_id)
+            }
         }
-    }, [status, project_id])
+    }, [status, project_id, releaseBlogId])
 
     return (
         <InsertProjectContext.Provider
@@ -552,6 +585,8 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 isUserProjectsLoading: state.isUserProjectsLoading,
                 isProjectLoading: state.isProjectLoading,
                 isReleaseBlogLoading: state.isReleaseBlogLoading,
+                isCurrReleaseBlogLoading: state.isCurrReleaseBlogLoading,
+                currReleaseBlog: state.currReleaseBlog,
 
                 webSocketConnected: state.webSocketConnected,
                 releaseSyncStatus: state.releaseSyncStatus,
@@ -571,7 +606,8 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 syncRelease,
                 fetchReleaseBlogForProject,
                 fetchRepositoryBranches,
-                clearReleaseSyncStatus
+                clearReleaseSyncStatus,
+                fetchReleaseBlogById
             }}
         >
             {children}

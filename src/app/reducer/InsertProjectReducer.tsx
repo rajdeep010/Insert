@@ -13,6 +13,10 @@ export default function InsertProjectReducer(state: any, action: any) {
     switch (action.type) {
         case "SET_IS_USER_PROJECTS_LOADING":
             return { ...state, isUserProjectsLoading: action.payload }
+        case "SET_IS_CURR_RELEASE_BLOG_LOADING":
+            return { ...state, isCurrReleaseBlogLoading: action.payload }
+        case "SET_CURR_RELEASE_BLOG":
+            return { ...state, currReleaseBlog: action.payload }
         case "SET_IS_ALL_PROJECTS_LOADING":
             return { ...state, isAllProjectsLoading: action.payload }
         case "SET_USER_PROJECTS":
