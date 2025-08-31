@@ -84,7 +84,6 @@ export default function ProjectDetailsPage() {
     const [selectedBlog, setSelectedBlog] = useState<any>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    // TipTap editor for blog content
     const blogEditor = useEditor({
         immediatelyRender: false,
         extensions: [
@@ -113,24 +112,15 @@ export default function ProjectDetailsPage() {
         editable: false,
     });
 
-    // Fetch project data on mount
-    useEffect(() => {
-        if (id) {
-            fetchProjectById(id as string);
-            fetchReleaseBlogForProject(id as string);
-        }
-    }, [id]);
-
-    // Update editor content when blog is selected
     useEffect(() => {
         if (blogEditor) {
             try {
-                const content = typeof selectedBlog.blogContent === 'string'
-                    ? JSON.parse(selectedBlog.blogContent)
-                    : selectedBlog.blogContent;
+                const content = typeof selectedBlog?.blogContent === 'string'
+                    ? JSON.parse(selectedBlog?.blogContent)
+                    : selectedBlog?.blogContent;
                 blogEditor.commands.setContent(content);
             } catch (error) {
-                console.error("Failed to parse blog content:", error);
+                // console.error("Failed to parse blog content:", error);
                 blogEditor.commands.setContent("");
             }
         }
@@ -148,13 +138,13 @@ export default function ProjectDetailsPage() {
 
     const handleSyncRelease = async () => {
         if (curr_project?.project?.id) {
-            await syncRelease(curr_project.project.id);
+            await syncRelease(curr_project?.project?.id);
         }
     };
 
     const handleDeleteProject = async () => {
         if (curr_project?.project?.id) {
-            await removeProject(curr_project.project.id);
+            await removeProject(curr_project?.project?.id);
             router.push('/posts/projects');
         }
     };
@@ -368,7 +358,7 @@ export default function ProjectDetailsPage() {
                                         <Calendar className="w-4 h-4 text-gray-500 flex-shrink-0" />
                                         <span className="font-medium">Created:</span>
                                         <span className="text-gray-600 dark:text-gray-400 truncate">
-                                            {getLastModifiedText(project.createdAt)}
+                                            {getLastModifiedText(project?.createdAt)}
                                         </span>
                                     </div>
 
@@ -376,7 +366,7 @@ export default function ProjectDetailsPage() {
                                         <User className="w-4 h-4 text-gray-500 flex-shrink-0" />
                                         <span className="font-medium">Repository:</span>
                                         <span className="text-gray-600 dark:text-gray-400 truncate">
-                                            {getRepoName(project.repoUrl)}
+                                            {getRepoName(project?.repoUrl)}
                                         </span>
                                     </div>
                                 </div>
@@ -474,14 +464,14 @@ export default function ProjectDetailsPage() {
                                         Sync your project to generate release blogs automatically.
                                     </p>
                                 </div>
-                                <Button onClick={handleSyncRelease} disabled={isSyncingRelease[project.id]}>
+                                {project?.username === session?.user?.username && <Button onClick={handleSyncRelease} disabled={isSyncingRelease[project.id]}>
                                     {isSyncingRelease[project.id] ? (
                                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
                                     ) : (
                                         <RefreshCw className="h-4 w-4 mr-2" />
                                     )}
                                     Sync Release
-                                </Button>
+                                </Button>}
                             </Card>
                         )}
                     </div>

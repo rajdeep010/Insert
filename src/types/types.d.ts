@@ -130,6 +130,7 @@ export interface GitHubRepo {
     createdAt: string
     updatedAt: string
     pushedAt: string
+    repoUrl: string
 }
 
 

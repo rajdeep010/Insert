@@ -63,13 +63,12 @@ const ImportConfigModal: React.FC<ImportConfigModalProps> = ({
 
             try {
                 // Extract owner from full name (e.g., "rajdeep010/insert-project-service" -> "rajdeep010")
-                const owner = repo.fullName.split('/')[0]
-                const repoName = repo.name
+                const owner = repo?.fullName.split('/')[0]
+                const repoName = repo?.name
 
                 const fetchedBranches = await fetchRepositoryBranches(
                     owner,
-                    repoName,
-                    session.user.githubAccessToken
+                    repoName
                 )
 
                 setBranches(fetchedBranches)

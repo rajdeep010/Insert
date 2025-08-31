@@ -51,7 +51,7 @@ interface InsertProjectProviderProps {
     removeReleaseBlog: (projectId: string, blogId: string) => void
     syncRelease: (projectId: string) => Promise<void>
     fetchReleaseBlogForProject: (projectId: string) => Promise<void>
-    fetchRepositoryBranches: (githubId: string, repoName: string, token: string) => Promise<string[]>
+    fetchRepositoryBranches: (githubId: string, repoName: string) => Promise<string[]>
 
     clearReleaseSyncStatus: (projectId: string) => void
     fetchReleaseBlogById: (releaseBlogId: string, projectId: string) => void
@@ -91,7 +91,7 @@ const initialState = {
     removeReleaseBlog: (_: string, __: string) => { },
     syncRelease: (_: string) => Promise<void>,
     fetchReleaseBlogForProject: (projectId: string) => Promise<void>,
-    fetchRepositoryBranches: (githubId: string, repoName: string, token: string) => Promise<string[]>,
+    fetchRepositoryBranches: (githubId: string, repoName: string) => Promise<string[]>,
     clearReleaseSyncStatus: (projectId: string) => { },
     fetchReleaseBlogById: (releaseBlogId: string, projectId: string) => { },
     changeReleaseBlog: (blog: any) => { }
@@ -479,7 +479,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
         }
     }
 
-    const fetchRepositoryBranches = async (githubId: string, repoName: string, token: string) => {
+    const fetchRepositoryBranches = async (githubId: string, repoName: string) => {
         try {
             const res = await axios.get(`${API_BASE}/api/github/repos/${githubId}/${repoName}/branches`, {
                 headers: {
@@ -617,19 +617,18 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     const clearReleaseSyncStatus = (projectId: string) => {
         dispatch({ type: "CLEAR_RELEASE_SYNC_STATUS", payload: projectId })
     }
+    
 
     useEffect(() => {
         if (status === "authenticated") {
-            fetchAllProjects()
-        }
-    }, [status])
+            fetchAllProjects();
 
-    useEffect(() => {
-        if (status === "authenticated" && project_id) {
-            fetchProjectById(project_id)
+            if (project_id && session?.user?.githubAccessToken) {
+                fetchProjectById(project_id);
 
-            if (releaseBlogId) {
-                fetchReleaseBlogById(releaseBlogId, project_id)
+                if (releaseBlogId && session?.user?.githubAccessToken) {
+                    fetchReleaseBlogById(releaseBlogId, project_id)
+                }
             }
         }
     }, [status, project_id, releaseBlogId])

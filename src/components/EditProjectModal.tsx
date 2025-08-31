@@ -79,20 +79,21 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
 
             try {
                 // Extract owner and repo name from repoUrl
-                const repoUrl = project.project.repoUrl
+                const repoUrl = project?.project?.repoUrl
                 const urlParts = repoUrl.replace('https://github.com/', '').split('/')
                 const owner = urlParts[0]
-                const repoName = urlParts[1]
+                const repoName = project?.project?.name
+
+                console.log(owner, repoName)
 
                 const fetchedBranches = await fetchRepositoryBranches(
                     owner,
-                    repoName,
-                    session.user.githubAccessToken
+                    repoName
                 )
 
                 setBranches(fetchedBranches)
             } catch (error) {
-                console.error('Failed to fetch branches:', error)
+                // console.error('Failed to fetch branches:', error)
                 setBranchesError('Failed to fetch repository branches')
 
                 // Fallback to current branch and common defaults
