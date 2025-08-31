@@ -16,6 +16,9 @@ import {
     XCircle,
     AlertCircle,
     Settings,
+    FilePlus2,
+    Trash2,
+    Edit,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useInsertProjects } from '@/app/context/InsertProjectProvider'
@@ -27,11 +30,11 @@ import { Button } from '@/components/ui/button'
 import { useSession } from 'next-auth/react'
 import { useParams } from 'next/navigation'
 import EditProjectModal from '@/components/EditProjectModal'
+import EditReleaseBlogModal from '@/components/EditReleaseBlog'
+import DeleteReleaseBlogModal from '@/components/DeleteReleaseBlogModal' // Add this import
 import { languageColors } from '@/types/master-data'
 import { getLastModifiedText } from '@/helpers/last-modified'
-
-
-
+import AddReleaseBlogModal from '@/components/AddReleaseBlogModal'
 
 export default function page() {
     const { data: session, status } = useSession()
@@ -50,6 +53,16 @@ export default function page() {
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isUpdatingProject, setIsUpdatingProject] = useState(false)
+    const [isAddReleaseBlogModalOpen, setIsAddReleaseBlogModalOpen] = useState(false);
+
+    // State for edit release blog modal
+    const [isEditReleaseBlogModalOpen, setIsEditReleaseBlogModalOpen] = useState(false)
+    const [selectedReleaseBlog, setSelectedReleaseBlog] = useState<any>(null)
+    const [isUpdatingReleaseBlog, setIsUpdatingReleaseBlog] = useState(false)
+
+    // State for delete release blog modal
+    const [isDeleteReleaseBlogModalOpen, setIsDeleteReleaseBlogModalOpen] = useState(false)
+    const [isDeletingReleaseBlog, setIsDeletingReleaseBlog] = useState(false)
 
     const handleEditProject = () => {
         setIsEditModalOpen(true)
@@ -58,6 +71,30 @@ export default function page() {
     const handleCloseEditModal = () => {
         setIsEditModalOpen(false)
         setIsUpdatingProject(false)
+    }
+
+    // Handlers for edit release blog modal
+    const handleEditReleaseBlog = (blog: any) => {
+        setSelectedReleaseBlog(blog)
+        setIsEditReleaseBlogModalOpen(true)
+    }
+
+    const handleCloseEditReleaseBlogModal = () => {
+        setIsEditReleaseBlogModalOpen(false)
+        setSelectedReleaseBlog(null)
+        setIsUpdatingReleaseBlog(false)
+    }
+
+    // Handlers for delete release blog modal
+    const handleDeleteReleaseBlog = (blog: any) => {
+        setSelectedReleaseBlog(blog)
+        setIsDeleteReleaseBlogModalOpen(true)
+    }
+
+    const handleCloseDeleteReleaseBlogModal = () => {
+        setIsDeleteReleaseBlogModalOpen(false)
+        setSelectedReleaseBlog(null)
+        setIsDeletingReleaseBlog(false)
     }
 
     const isLoading = isSyncingRelease[projectId] || false
@@ -94,15 +131,14 @@ export default function page() {
     }
 
     const getBlogCardStyle = (blog: any) => {
-        // If blog is in building state, make it look disabled
-        if (blog?.buildStatus === 'BUILDING' || blog?.status === 'PROCESSING') {
+        if (blog?.status === 'BUILDING' || blog?.status === 'PROCESSING') {
             return "opacity-60 cursor-not-allowed hover:shadow-none"
         }
         return "hover:shadow-md transition-shadow duration-200"
     }
 
     const isBlogClickable = (blog: any) => {
-        return blog?.buildStatus === 'READY' && blog?.status === 'COMPLETED'
+        return blog?.status === 'READY' && blog?.status === 'COMPLETED'
     }
 
     if (!curr_project) return null
@@ -160,16 +196,6 @@ export default function page() {
 
                     {/* Project Stats */}
                     <div className="flex items-center gap-6 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        {/* <div className="flex items-center gap-2">
-                            <GitBranch className="h-4 w-4 text-gray-500" />
-                            <span className="text-sm text-gray-600 dark:text-gray-400">{curr_project?.project?.defaultBranch}</span>
-                        </div>
-                        {curr_project?.project?.language && (
-                            <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                <span className="text-sm text-gray-600 dark:text-gray-400">{curr_project?.project?.language}</span>
-                            </div>
-                        )} */}
                         <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-gray-500" />
                             <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -194,9 +220,9 @@ export default function page() {
                     <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                {syncStatus.buildStatus === 'BUILDING' && <Loader2 className="h-4 w-4 animate-spin text-blue-500" />}
-                                {syncStatus.buildStatus === 'READY' && <CheckCircle className="h-4 w-4 text-green-500" />}
-                                {syncStatus.buildStatus === 'ERROR' && <XCircle className="h-4 w-4 text-red-500" />}
+                                {syncStatus.status === 'BUILDING' && <Loader2 className="h-4 w-4 animate-spin text-blue-500" />}
+                                {syncStatus.status === 'READY' && <CheckCircle className="h-4 w-4 text-green-500" />}
+                                {syncStatus.status === 'ERROR' && <XCircle className="h-4 w-4 text-red-500" />}
                                 <CardTitle className="text-lg">Release Sync Status</CardTitle>
                             </div>
                             <Button variant="ghost" size="sm" onClick={handleClearStatus}>
@@ -209,12 +235,12 @@ export default function page() {
                             <div className="flex items-center gap-2">
                                 <Badge
                                     variant={
-                                        syncStatus.buildStatus === 'READY' ? 'default' :
-                                            syncStatus.buildStatus === 'ERROR' ? 'destructive' :
+                                        syncStatus.status === 'READY' ? 'default' :
+                                            syncStatus.status === 'ERROR' ? 'destructive' :
                                                 'secondary'
                                     }
                                 >
-                                    {syncStatus.buildStatus}
+                                    {syncStatus.status}
                                 </Badge>
                                 <span className="text-sm text-muted-foreground">
                                     {new Date(syncStatus.timestamp).toLocaleTimeString()}
@@ -230,14 +256,16 @@ export default function page() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-6">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <div className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                             <BookOpen className="h-6 w-6" />
                             Release Blogs
-                        </h2>
-                        <div className="flex items-center gap-3">
+
                             <Badge variant="outline" className="text-sm">
-                                {curr_project?.releaseBlogs?.length || 0} releases
+                                {curr_project?.releaseBlogs?.length || 0} blogs
                             </Badge>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            
                             <Button
                                 onClick={handleSyncRelease}
                                 disabled={isLoading}
@@ -252,9 +280,18 @@ export default function page() {
                                 ) : (
                                     <>
                                         <Rocket className="h-4 w-4" />
-                                        Sync Release
+                                        Sync
                                     </>
                                 )}
+                            </Button>
+                            <Button
+                                className="w-full flex items-center"
+                                variant="destructive"
+                                onClick={() => setIsAddReleaseBlogModalOpen(true)}
+                                disabled={isProjectLoading}
+                            >
+                                <FilePlus2 className="h-4 w-4" />
+                                Add
                             </Button>
                         </div>
                     </div>
@@ -267,7 +304,6 @@ export default function page() {
                                     className={getBlogCardStyle(blog)}
                                     onClick={() => {
                                         if (isBlogClickable(blog)) {
-                                            // Navigate to blog detail page
                                             console.log('Navigate to blog:', blog.id)
                                         }
                                     }}
@@ -275,37 +311,60 @@ export default function page() {
                                     <CardHeader className="pb-4">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
-                                                <div className="flex items-center gap-3 mb-2">
-                                                    <CardTitle className="text-xl font-semibold">
-                                                        {blog?.releaseTitle || blog?.title}
-                                                    </CardTitle>
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <div className='flex items-center gap-4'>
+                                                        <CardTitle className="text-xl font-semibold">
+                                                            {/* Updated to use releaseTitle */}
+                                                            {blog?.releaseTitle || blog?.blogTitle || 'Untitled Release'}
+                                                        </CardTitle>
 
-                                                    {/* Build Status Badge */}
-                                                    {blog?.buildStatus && (
-                                                        <Badge
-                                                            variant={
-                                                                blog.buildStatus === 'READY' ? 'default' :
-                                                                    blog.buildStatus === 'ERROR' ? 'destructive' :
-                                                                        'secondary'
-                                                            }
-                                                            className="text-xs"
+                                                        {blog?.status && (
+                                                            <Badge
+                                                                variant={
+                                                                    blog.status === 'READY' ? 'default' :
+                                                                        blog.status === 'ERROR' ? 'destructive' :
+                                                                            'secondary'
+                                                                }
+                                                                className="text-xs"
+                                                            >
+                                                                {blog.status === 'BUILDING' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+                                                                {blog.status === 'READY' && <CheckCircle className="h-3 w-3 mr-1" />}
+                                                                {blog.status === 'ERROR' && <AlertCircle className="h-3 w-3 mr-1" />}
+                                                                {blog.status}
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+
+                                                    <div className='flex items-center gap-2'>
+                                                        {/* Edit Button */}
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                handleEditReleaseBlog(blog)
+                                                            }}
+                                                            className="rounded-md"
                                                         >
-                                                            {blog.buildStatus === 'BUILDING' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
-                                                            {blog.buildStatus === 'READY' && <CheckCircle className="h-3 w-3 mr-1" />}
-                                                            {blog.buildStatus === 'ERROR' && <AlertCircle className="h-3 w-3 mr-1" />}
-                                                            {blog.buildStatus}
-                                                        </Badge>
-                                                    )}
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
 
-                                                    {blog?.version && (
-                                                        <Badge variant="secondary" className="text-xs">
-                                                            <Tag className="h-3 w-3 mr-1" />
-                                                            {blog?.version}
-                                                        </Badge>
-                                                    )}
+                                                        {/* Delete Button */}
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                handleDeleteReleaseBlog(blog) // Updated handler
+                                                            }}
+                                                            className="rounded-md"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
                                                 </div>
 
-                                                <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                                                <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-4">
                                                     <div className="flex items-center gap-1">
                                                         <Clock className="h-4 w-4" />
                                                         {getLastModifiedText(blog?.createdAt || blog?.publishedAt)}
@@ -331,12 +390,10 @@ export default function page() {
                                             </CardDescription>
                                         )}
 
-                                        {/* Click hint for ready blogs */}
-                                        {isBlogClickable(blog) && (
-                                            <Link href={`/project/${projectId}/edit/${blog.id}`} className="mt-4 text-xs text-blue-600 dark:text-blue-400">
-                                                Click to view details →
-                                            </Link>
-                                        )}
+                                        <Link href={`/project/${projectId}/edit/${blog.id}`} className="mt-4 text-xs text-blue-600 dark:text-blue-400">
+                                            Click to view details →
+                                        </Link>
+
                                     </CardHeader>
                                 </Card>
                             ))}
@@ -358,7 +415,7 @@ export default function page() {
                     )}
                 </div>
 
-                {/* Sidebar - Rest of your existing sidebar code remains the same */}
+                {/* Sidebar - existing code remains the same */}
                 <div className="space-y-6">
                     {/* Project Info */}
                     <Card>
@@ -418,16 +475,40 @@ export default function page() {
                                 <Settings className="h-4 w-4" />
                                 Edit Project
                             </Button>
+                            
                         </CardContent>
                     </Card>
                 </div>
             </div>
 
+            {/* Modals */}
             <EditProjectModal
                 isOpen={isEditModalOpen}
                 onClose={handleCloseEditModal}
                 project={curr_project}
                 isUpdating={isUpdatingProject}
+            />
+
+            <EditReleaseBlogModal
+                isOpen={isEditReleaseBlogModalOpen}
+                onClose={handleCloseEditReleaseBlogModal}
+                releaseBlog={selectedReleaseBlog}
+                projectId={projectId}
+                isUpdating={isUpdatingReleaseBlog}
+            />
+
+            {/* Add DeleteReleaseBlogModal */}
+            <DeleteReleaseBlogModal
+                isOpen={isDeleteReleaseBlogModalOpen}
+                onClose={handleCloseDeleteReleaseBlogModal}
+                releaseBlog={selectedReleaseBlog}
+                projectId={projectId}
+                isDeleting={isDeletingReleaseBlog}
+            />
+
+            <AddReleaseBlogModal
+                defaultVisibility={isAddReleaseBlogModalOpen}
+                onClose={() => setIsAddReleaseBlogModalOpen(false)}
             />
         </div>
     )

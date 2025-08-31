@@ -99,7 +99,7 @@ export default function ProjectsPage() {
                                                         Private
                                                     </Badge>
                                                 ) : (
-                                                    <Badge variant="default" className="bg-green-500 text-white flex items-center gap-1">
+                                                    <Badge variant="default" className=" flex items-center gap-1">
                                                         <Eye className="w-4 h-4" />
                                                         Public
                                                     </Badge>
@@ -172,7 +172,7 @@ export default function ProjectsPage() {
                                                             <DropdownMenuGroup>
                                                                 <DropdownMenuItem>
                                                                     <Link 
-                                                                        href={`/projects/${project?.id}`}
+                                                                        href={`/posts/projects/${project?.id}`}
                                                                         className="flex w-full"
                                                                     >
                                                                         View Project

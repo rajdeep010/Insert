@@ -11,14 +11,17 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useBlog } from "@/app/context/BlogProvider";
+import { useInsertProjects } from "@/app/context/InsertProjectProvider";
 
 
 
-const AddBlogModal = ({defaultVisibility}: any) => {
-	const {isBlogAdding, addBlog, isAddBlogModalOpen, setIsAddBlogModalOpen} = useBlog()
+const AddReleaseBlogModal = ({defaultVisibility, onClose}: any) => {
+
+    const {isReleaseBlogLoading, addReleaseBlog, curr_project } = useInsertProjects();
+
 
 	const handleAddBlogModalOpen = () => {
-		setIsAddBlogModalOpen(!isAddBlogModalOpen)
+		onClose(!defaultVisibility)
 	}
 
 	const blogform = useForm<z.infer<typeof blogSchema>>(
@@ -32,8 +35,12 @@ const AddBlogModal = ({defaultVisibility}: any) => {
 	)
 
 	const blogSubmit = async (data: z.infer<typeof blogSchema>) => {
-		// console.log('Blog Data:', data)
-		addBlog(data.title, data.visibility)
+        // console.log('this is id: ', curr_project, curr_project?.project?.id)
+		await addReleaseBlog(curr_project?.project?.id, {
+            title: data.title, 
+            visibility: data.visibility
+        })
+        onClose(true)
 	}
 
 	useEffect(() => {
@@ -44,10 +51,10 @@ const AddBlogModal = ({defaultVisibility}: any) => {
     }, [defaultVisibility, blogform])
 
 	return (<>
-		<Dialog open={isAddBlogModalOpen} onOpenChange={handleAddBlogModalOpen}>
+		<Dialog open={defaultVisibility} onOpenChange={handleAddBlogModalOpen}>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Blog Details</DialogTitle>
+					<DialogTitle>Add Release Blog</DialogTitle>
 				</DialogHeader>
 				<Form {...blogform}>
 					<form onSubmit={blogform.handleSubmit(blogSubmit)} className='space-y-6'>
@@ -57,7 +64,7 @@ const AddBlogModal = ({defaultVisibility}: any) => {
 							render={({ field }) => (
 								<FormItem>
 									<FormControl>
-										<Input autoFocus placeholder="Blog Title" {...field} onChange={(e) => field.onChange(e)} />
+										<Input autoFocus placeholder="Release Blog Title" {...field} onChange={(e) => field.onChange(e)} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -88,12 +95,12 @@ const AddBlogModal = ({defaultVisibility}: any) => {
 						<DialogFooter>
 							<Button type="submit" variant="default">
 								{
-									isBlogAdding ? (<>
+									isReleaseBlogLoading ? (<>
 										<Loader2 className='mr-2 h-4 w-4 animate-spin' />
 									</>) : ('Save')
 								}
 							</Button>
-							<Button variant="destructive" disabled={isBlogAdding} onClick={() => setIsAddBlogModalOpen(false)}>Cancel</Button>
+							<Button variant="destructive" disabled={isReleaseBlogLoading} onClick={() => onClose(true)}>Cancel</Button>
 						</DialogFooter>
 					</form>
 				</Form>
@@ -103,4 +110,4 @@ const AddBlogModal = ({defaultVisibility}: any) => {
 	)
 };
 
-export default AddBlogModal;
+export default AddReleaseBlogModal;

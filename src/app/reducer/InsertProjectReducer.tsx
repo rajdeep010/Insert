@@ -16,7 +16,7 @@ export default function InsertProjectReducer(state: any, action: any) {
         case "SET_IS_CURR_RELEASE_BLOG_LOADING":
             return { ...state, isCurrReleaseBlogLoading: action.payload }
         case "SET_CURR_RELEASE_BLOG":
-            return { ...state, currReleaseBlog: action.payload }
+            return { ...state, currReleaseBlog: {...action.payload, blogContent: JSON.parse(action.payload.blogContent || "{}")}, }
         case "SET_IS_ALL_PROJECTS_LOADING":
             return { ...state, isAllProjectsLoading: action.payload }
         case "SET_USER_PROJECTS":
@@ -228,9 +228,9 @@ export default function InsertProjectReducer(state: any, action: any) {
                 releaseSyncStatus: {
                     ...state.releaseSyncStatus,
                     [action.payload.projectId]: {
-                        buildStatus: action.payload.buildStatus,
                         message: action.payload.message,
-                        timestamp: action.payload.timestamp
+                        timestamp: action.payload.timestamp,
+                        status: action.payload.status
                     }
                 }
             }

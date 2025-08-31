@@ -538,7 +538,7 @@ const InsertNavbar = () => {
 							</DropdownMenuItem>
 						</DropdownMenuGroup>}
 
-						<DropdownMenuSeparator />
+						{status === "authenticated" && <DropdownMenuSeparator />}
 
 						{status === "authenticated" && username && <DropdownMenuGroup>
 							<DropdownMenuLabel>Posts</DropdownMenuLabel>
@@ -571,7 +571,7 @@ const InsertNavbar = () => {
 							</DropdownMenuItem>
 						</DropdownMenuGroup>}
 
-						<DropdownMenuSeparator />
+						{status === "authenticated" && <DropdownMenuSeparator />}
 
 						{session && status === "authenticated" && <DropdownMenuGroup>
 							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
@@ -596,7 +596,7 @@ const InsertNavbar = () => {
 							</DropdownMenuItem>
 						</DropdownMenuGroup>}
 
-						<DropdownMenuSeparator />
+						{status === "authenticated" && <DropdownMenuSeparator />}
 
 
 						{status === "authenticated" ? (<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">

@@ -61,12 +61,12 @@ export const ReleaseSyncButton = ({ projectId }: { projectId: string }) => {
                         <div className="flex items-center gap-2">
                             <Badge
                                 variant={
-                                    syncStatus.buildStatus === 'READY' ? 'default' :
-                                        syncStatus.buildStatus === 'ERROR' ? 'destructive' :
+                                    syncStatus.status === 'READY' ? 'default' :
+                                        syncStatus.status === 'ERROR' ? 'destructive' :
                                             'secondary'
                                 }
                             >
-                                {syncStatus.buildStatus}
+                                {syncStatus.status}
                             </Badge>
                             <span className="text-sm text-muted-foreground">
                                 {new Date(syncStatus.timestamp).toLocaleTimeString()}

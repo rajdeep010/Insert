@@ -1,31 +1,14 @@
 'use client'
-import { uniqueId } from '@/helpers/unique-id'
 import { useSession } from 'next-auth/react'
 import { useParams } from 'next/navigation'
-import React, { useEffect, useMemo, useState } from 'react'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@radix-ui/react-tooltip';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, } from "@/components/ui/select"
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
-import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import React, { useMemo, useState } from 'react'
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import Link from 'next/link';
-import { FaTrash } from 'react-icons/fa';
 import { FiExternalLink } from 'react-icons/fi';
-// import { useTopics } from '@/app/context/TopicProvider';
-import { useForm } from 'react-hook-form';
-import { questionSchema, topicSchema } from '@/schemas/topicSchema';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
 import { toast } from './ui/use-toast';
-import axios, { AxiosError } from 'axios';
-import { ApiResponse } from '@/types/ApiResponse';
-import { Album, Bookmark, Delete, Edit, Edit2, GitBranch, ListFilter, Loader2, MoreHorizontal, Trash2 } from 'lucide-react'
-import { useTopics } from '@/app/context/TopicProvider'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Album, GitBranch, MoreHorizontal, Trash2 } from 'lucide-react'
 import { Badge } from './ui/badge'
-import { useInsertTopics } from '@/app/context/InsertTopicProvider'
 import {
     Card,
     CardDescription,
@@ -45,6 +28,10 @@ import { useInsertProjects } from '@/app/context/InsertProjectProvider'
 import GithubRepoModal from './GithubRepoModal'
 import { languageColors } from '@/types/master-data'
 import ConfirmDeleteProject from './ConfirmDeleteProject'
+
+
+
+const API_BASE_URL = 'http://localhost:8081'
 
 
 const Projects = () => {
@@ -115,7 +102,6 @@ const Projects = () => {
         })
     }
 
-
     return (
         <div>
             {session?.user?.githubAccessToken && <div className='flex gap-4 justify-between mb-4'>
@@ -145,7 +131,7 @@ const Projects = () => {
                 <div className=''>
                     <Button
                         className='flex gap-2 items-center bg-green-700 text-white hover:bg-green-800'
-                        onClick={() => window.location.href = `http://localhost:8080/oauth2/authorize/github?userId=${session?.user?._id}&username=${session?.user?.username}`}
+                        onClick={() => window.location.href = `http://localhost:8081/oauth2/authorize/github?userId=${session?.user?._id}&username=${session?.user?.username}`}
                     >
                         <GitHubLogoIcon />
                         Authorize With Github
@@ -206,11 +192,6 @@ const Projects = () => {
                                                         <span className='text-sm'>{language}</span>
                                                     </div>
                                                 )}
-
-                                                {/* Release Blogs Count */}
-                                                {/* <Badge variant="outline" className="text-xs">
-                                                    10 release blogs
-                                                </Badge> */}
 
                                                 {/* Repository URL */}
                                                 {repoUrl && (

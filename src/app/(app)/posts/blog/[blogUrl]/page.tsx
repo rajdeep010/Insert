@@ -81,7 +81,7 @@ export default function BlogPost({ params }: any) {
             try {
                 setBlogLoader(true)
                 const response = await axios.get(`/api/get-blog-by-url?blogUrl=${blogUrl}`)
-                console.log('my response: ',response)
+                // console.log('my response: ',response)
                 if (response.data.success) {
                     setBlog(response.data.blog)
                     setEditorContent(JSON.parse(response?.data?.blog?.blogContent) || {})

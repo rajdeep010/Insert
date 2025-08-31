@@ -13,7 +13,9 @@ import { Separator } from '@/components/ui/separator'
 import { GitBranch, Eye, EyeOff, Loader2, AlertCircle, Settings } from 'lucide-react'
 import { toast } from '@/components/ui/use-toast'
 import { useInsertProjects } from '@/app/context/InsertProjectProvider'
-import InsertIcon from './InsertIcon'
+
+
+
 
 interface EditProjectModalProps {
     isOpen: boolean
@@ -23,6 +25,7 @@ interface EditProjectModalProps {
 }
 
 interface ProjectUpdateConfig {
+    name: string
     defaultBranch: string
     monitorCommits: boolean
     releaseTriggerKeyword: string
@@ -37,6 +40,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
 }) => {
     const { data: session } = useSession()
     const [config, setConfig] = useState<ProjectUpdateConfig>({
+        name: '',
         defaultBranch: '',
         monitorCommits: true,
         releaseTriggerKeyword: '',
@@ -54,6 +58,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
     useEffect(() => {
         if (project?.project) {
             const initialConfig = {
+                name: project.project.name || '',
                 defaultBranch: project.project.defaultBranch || '',
                 monitorCommits: project.project.monitorCommits || false,
                 releaseTriggerKeyword: project.project.releaseTriggerKeyword || '',
@@ -118,6 +123,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
         if (!project?.project) return
 
         const hasConfigChanges =
+            config.name !== project.project.name ||
             config.defaultBranch !== project.project.defaultBranch ||
             config.monitorCommits !== project.project.monitorCommits ||
             config.releaseTriggerKeyword !== project.project.releaseTriggerKeyword ||
@@ -132,6 +138,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
         try {
             const updatedProject = {
                 ...project.project,
+                name: config.name,
                 defaultBranch: config.defaultBranch,
                 monitorCommits: config.monitorCommits,
                 releaseTriggerKeyword: config.releaseTriggerKeyword,
@@ -169,6 +176,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
 
     if (!project?.project) return null
 
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto custom-small-scrollbar">
@@ -183,55 +191,24 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                 </DialogHeader>
 
                 <div className="space-y-6">
-                    {/* Project Overview - Read Only */}
-                    {/* <Card className="border-2 border-gray-200 dark:border-gray-700">
-                        <CardHeader className="pb-3">
-                            <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <CardTitle className="text-lg font-semibold">
-                                            {project.project.name}
-                                        </CardTitle>
-                                        <Badge variant={project.project.visibility === 'private' ? "destructive" : "secondary"} className="text-xs">
-                                            {project.project.visibility === 'private' ? (
-                                                <>
-                                                    <EyeOff className="h-3 w-3 mr-1" />
-                                                    Private
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Eye className="h-3 w-3 mr-1" />
-                                                    Public
-                                                </>
-                                            )}
-                                        </Badge>
-                                    </div>
-                                    <CardDescription className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                                        {project.project.username} • {project.project.language || 'Unknown'}
-                                    </CardDescription>
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="pt-0">
-                            <div className="flex items-center justify-between text-sm text-gray-500">
-                                <div>
-                                    <span className="font-medium">Repository:</span> {project.project.repoUrl.replace('https://github.com/', '')}
-                                </div>
-                                <div>
-                                    <span className="font-medium">Updated:</span> {formatDate(project.project.updatedAt)}
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Separator /> */}
-
                     {/* Editable Configuration */}
                     <div className="space-y-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="project-name" className="text-sm font-medium">
+                                Project Name
+                            </Label>
+                            <Input
+                                id="project-name"
+                                placeholder="Project Name"
+                                value={config.name}
+                                onChange={(e) => setConfig(prev => ({ ...prev, name: e.target.value }))}
+                            />
+                        </div>
+
                         {/* Branch Selection */}
                         <div className="space-y-2">
                             <Label htmlFor="branch" className="text-sm font-medium">
-                                Default Branch to Monitor
+                                Select Branch to Monitor
                             </Label>
                             <Select
                                 value={config.defaultBranch}

@@ -172,14 +172,14 @@ interface ProjectResponse {
 
 interface WebSocketMessage {
     projectId: string;
-    buildStatus: 'BUILDING' | 'READY' | 'ERROR';
+    status: 'BUILDING' | 'READY' | 'ERROR';
     message: string;
     timestamp: string;
 }
 
 export interface WebSocketMessage {
     projectId: string;
-    buildStatus: 'BUILDING' | 'READY' | 'ERROR';
+    status: 'BUILDING' | 'READY' | 'ERROR';
     message: string;
     timestamp: string;
     releaseBlog?: any;

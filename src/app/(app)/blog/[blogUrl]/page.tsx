@@ -222,7 +222,6 @@ const SimpleEditor = () => {
 	const [autoSave, setAutoSave] = React.useState(currentBlog?.autosave || false)
 	const [isSaving, setIsSaving] = React.useState(false)
 
-
 	const getFirstImageFromBlogContent = (blogContent: string) => {
 		try {
 			const contentObj = typeof blogContent === "string" ? JSON.parse(blogContent) : blogContent;
@@ -293,7 +292,7 @@ const SimpleEditor = () => {
 		onUpdate: ({ editor }) => {
 			const json = editor.getJSON() || "";
 			const plainText = editor?.getText().trim() || ""
-			console.log("Plain Text:", typeof plainText);
+			// console.log("Plain Text:", typeof plainText);
 
 			setEditorContent(json)
 			setEditorTextContent(plainText)
@@ -340,9 +339,7 @@ const SimpleEditor = () => {
 	});
 
 	const handleSaveContent = async () => {
-		console.log('handle normal save content: ', editorContent, currentBlog)
 		if (!editorContent && !currentBlog) return;
-		console.log('this is autosave: ', autoSave)
 
 		await handleBlogUpdate({
 			blogContent: JSON.stringify(editorContent),
@@ -406,7 +403,6 @@ const SimpleEditor = () => {
 							>
 								{mobileView === "main" ?
 									isBlogLoading ? <Skeleton className="w-32 h-6" /> : (
-
 										<MainToolbarContent
 											onHighlighterClick={() => setMobileView("highlighter")}
 											onLinkClick={() => setMobileView("link")}
@@ -468,10 +464,15 @@ const Write = () => {
 	const { isBlogLoading } = useBlog()
 	const { data: session, status } = useSession();
 
+	if(isBlogLoading){
+		console.log('Blog is loading...', isBlogLoading)
+	}else{
+		console.log('Blog is loaded', isBlogLoading)
+	}
+
 	return (
 		<>
 			<div className="absolute top-5 left-5">
-				{" "}
 				{status === 'authenticated' && <BlogWriteSidebar />}
 			</div>
 

@@ -81,18 +81,18 @@ export default function SignInForm() {
     return (
     <div className='flex min-h-screen'>
         {/* Left Section - Hidden on smaller screens */}
-            <div className='hidden md:flex md:w-1/2 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-600 dark:to-emerald-800 flex-col justify-center items-center p-12'>
+            <div className='hidden md:flex md:w-1/2 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-600 dark:to-emerald-800 flex-col justify-center items-center p-12'>
             <div className='flex flex-col items-center text-center space-y-6'>
                 <InsertIcon height={120} width={120} className='border-4 p-2 bg-white border-gray-900 dark:border-gray-800 shadow-xl' />
                 <div className='space-y-4'>
-                    <h2 className='text-4xl font-bold text-gray-800 dark:text-white font-sans'>
+                    <h2 className='text-4xl font-semibold font-sans'>
                         Welcome Back
                     </h2>
-                    <p className='text-lg text-gray-600 dark:text-gray-300 max-w-md leading-relaxed font-sans'>
+                    <p className='text-lg max-w-md leading-relaxed font-sans'>
                         Sign in to continue your development journey. Access your projects, collaborate with your team, and build amazing things.
                     </p>
                 </div>
-                <div className='flex flex-col space-y-2 text-sm text-gray-500 dark:text-gray-400'>
+                <div className='flex flex-col space-y-2 text-sm'>
                     <div className='flex items-center space-x-2 font-sans'>
                         <div className='w-2 h-2 bg-green-500 rounded-full'></div>
                         <span>Quick Access</span>

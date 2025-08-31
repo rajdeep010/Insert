@@ -76,6 +76,7 @@ import {
 } from "@/components/ui/tabs"
 import ReleaseBlogWriteSidebar from "@/components/ReleaseBlogWriteSidebar";
 import { useInsertProjects } from "@/app/context/InsertProjectProvider";
+import { EyeClosedIcon, EyeOpenIcon } from "@radix-ui/react-icons";
 
 
 
@@ -84,6 +85,8 @@ const MainToolbarContent = ({
     onLinkClick,
     isMobile,
     isSaving,
+    onTogglePublic,
+    isPublic,
     onToggleAutoSave,
     autoSave,
     onSaveClick,
@@ -92,12 +95,12 @@ const MainToolbarContent = ({
     onLinkClick: () => void;
     isMobile: boolean;
     isSaving: boolean,
+    onTogglePublic: () => void,
+    isPublic: boolean,
     onToggleAutoSave: () => void,
     autoSave: boolean,
     onSaveClick: () => void;
 }) => {
-
-    const { isBlogLoading } = useBlog();
 
     return (
         <>
@@ -134,13 +137,6 @@ const MainToolbarContent = ({
             <ToolbarSeparator />
 
             <ToolbarGroup>
-                <MarkButton type="superscript" />
-                <MarkButton type="subscript" />
-            </ToolbarGroup>
-
-            <ToolbarSeparator />
-
-            <ToolbarGroup>
                 <TextAlignButton align="left" />
                 <TextAlignButton align="center" />
                 <TextAlignButton align="right" />
@@ -157,21 +153,27 @@ const MainToolbarContent = ({
 
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <span>
-                        {/* {
-							isSaving 
-							? <Loader2 className="animate-spin h-4 w-4" /> */}
-                        <Switch checked={autoSave} onCheckedChange={onToggleAutoSave} />
-                        {/* } */}
-                    </span>
+                    <Btn
+                        variant={'ghost'}
+                        size={'sm'}
+                        onClick={onTogglePublic}
+                        className="flex items-center gap-2 px-3 py-2 border-2 rounded-md bg-gray-100 dark:bg-gray-800 "
+                    >
+                        {
+                            isPublic 
+                            ? <EyeOpenIcon className="h-4 w-4" /> 
+                            : <EyeClosedIcon className="h-4 w-4" />
+                        }
+                    </Btn>
                 </TooltipTrigger>
                 <TooltipContent>
-                    <p>Auto Save</p>
+                    <p>{isPublic ? "Switch to Private" : "Switch to Public"}</p>
                 </TooltipContent>
             </Tooltip>
 
+            <Btn onClick={onSaveClick}>Save</Btn>
 
-            {!isBlogLoading && <Btn onClick={onSaveClick} disabled={autoSave} >Save</Btn>}
+            {/* {!isBlogLoading && } */}
         </>
     );
 };
@@ -214,21 +216,7 @@ const ReleaseBlogEditor = () => {
     const [mobileView, setMobileView] = React.useState<"main" | "highlighter" | "link">("main")
     const toolbarRef = React.useRef<HTMLDivElement>(null);
 
-    const [currReleaseBlog, setCurrReleaseBlog] = React.useState<any>(null);
-
-    const { curr_project, updateReleaseBlog, isCurrReleaseBlogLoading } = useInsertProjects();
-    const params = useParams();
-    const projectId = params?.id as string;
-    const releaseBlogId = params?.releaseBlogId as string;
-
-    React.useEffect(() => {
-        if (curr_project && curr_project.releaseBlogs && releaseBlogId) {
-            const foundBlog = curr_project.releaseBlogs.find(
-                (blog: any) => blog.id?.toString() === releaseBlogId?.toString()
-            );
-            setCurrReleaseBlog(foundBlog || null);
-        }
-    }, [curr_project, releaseBlogId]);
+    const { curr_project, updateReleaseBlog, currReleaseBlog, isCurrReleaseBlogLoading } = useInsertProjects();
 
     const [editorContent, setEditorContent] = React.useState<any>(currReleaseBlog?.blogContent)
     const [editorTextContent, setEditorTextContent] = React.useState<string>(currReleaseBlog?.blogContentText || "");
@@ -238,7 +226,11 @@ const ReleaseBlogEditor = () => {
 
     const [autoSave, setAutoSave] = React.useState(currReleaseBlog?.autosave || false)
     const [isSaving, setIsSaving] = React.useState(false)
+    const [isPublic, setIsPublic] = React.useState((currReleaseBlog?.visibility === "public") || false)
 
+    const params = useParams();
+    const projectId = params?.id as string;
+    const releaseBlogId = params?.releaseBlogId as string;
 
     const getFirstImageFromBlogContent = (blogContent: string) => {
         try {
@@ -310,7 +302,7 @@ const ReleaseBlogEditor = () => {
         onUpdate: ({ editor }) => {
             const json = editor.getJSON() || "";
             const plainText = editor?.getText().trim() || ""
-            console.log("Plain Text:", typeof plainText);
+            // console.log("Plain Text:", typeof plainText);
 
             setEditorContent(json)
             setEditorTextContent(plainText)
@@ -323,48 +315,19 @@ const ReleaseBlogEditor = () => {
         },
     })
 
-    const previewEditor = useEditor({
-        immediatelyRender: false,
-        extensions: [
-            StarterKit,
-            TextAlign.configure({ types: ["heading", "paragraph"] }),
-            Underline,
-            TaskList,
-            TaskItem.configure({ nested: true }),
-            Highlight.configure({ multicolor: true }),
-            Image,
-            Typography,
-            Superscript,
-            Subscript,
-            Selection,
-            ImageUploadNode.configure({
-                accept: "image/*",
-                maxSize: MAX_FILE_SIZE,
-                limit: 3,
-                upload: handleImageUpload,
-                onError: (error) => console.error("Upload failed:", error),
-            }),
-            TrailingNode,
-            Link.configure({ openOnClick: false }),
-        ],
-        content: editorContent,
-        editable: false,
-    })
-
     const bodyRect = useCursorVisibility({
         editor,
         overlayHeight: toolbarRef.current?.getBoundingClientRect().height ?? 0,
     });
 
     const handleSaveContent = async () => {
-        console.log('handle normal save content: ', editorContent, currReleaseBlog)
         if (!editorContent && !currReleaseBlog) return;
-        console.log('this is autosave: ', autoSave)
 
-        await updateReleaseBlog(projectId, {
+        await updateReleaseBlog(projectId, releaseBlogId, {
             blogContent: JSON.stringify(editorContent),
             blogContentText: editorTextContent,
             blogBannerImage: getFirstImageFromBlogContent(editorContent),
+            visibility: isPublic ? "public" : "private",
         })
     }
 
@@ -379,39 +342,32 @@ const ReleaseBlogEditor = () => {
         editor.chain().focus().setImageUploadNode().run();
     }, [isMobile, mobileView])
 
-    React.useEffect(() => {
-        const handleAutoSave = async () => {
-            if (debouncedEditorContent) {
-                try {
-                    setIsSaving(true);
-                    // await handleAutoSaveBlog({
-                    //     blogContent: JSON.stringify(debouncedEditorContent),
-                    //     blogContentText: debouncedEditorTextContent,
-                    //     blogBannerImage: getFirstImageFromBlogContent(debouncedEditorContent),
-                    // });
-                    setIsSaving(false);
-                } catch (error) {
-                    console.log('this is error: ', error)
-                }
-            }
-        }
+    // React.useEffect(() => {
+    //     const handleAutoSave = async () => {
+    //         if (debouncedEditorContent) {
+    //             try {
+    //                 setIsSaving(true);
+    //                 // await handleAutoSaveBlog({
+    //                 //     blogContent: JSON.stringify(debouncedEditorContent),
+    //                 //     blogContentText: debouncedEditorTextContent,
+    //                 //     blogBannerImage: getFirstImageFromBlogContent(debouncedEditorContent),
+    //                 // });
+    //                 setIsSaving(false);
+    //             } catch (error) {
+    //                 console.log('this is error: ', error)
+    //             }
+    //         }
+    //     }
 
-        handleAutoSave()
-    }, [debouncedEditorContent])
-
-
-    React.useEffect(() => {
-        if (previewEditor && editorContent) {
-            previewEditor.commands.setContent(editorContent)
-        }
-    }, [editorContent, previewEditor])
+    //     handleAutoSave()
+    // }, [debouncedEditorContent])
 
     return (
         <EditorContext.Provider value={{ editor }}>
 
             <div className="flex w-full flex-col gap-6">
                 {
-                    status === 'authenticated' && session?.user?.username === currReleaseBlog?.creator && (
+                    status === 'authenticated' && (
                         <>
                             <Toolbar
                                 ref={toolbarRef}
@@ -425,6 +381,8 @@ const ReleaseBlogEditor = () => {
                                             isMobile={isMobile}
                                             isSaving={isSaving}
                                             autoSave={autoSave}
+                                            isPublic={isPublic}
+                                            onTogglePublic={() => setIsPublic(!isPublic)}
                                             onToggleAutoSave={() => setAutoSave(!autoSave)}
                                             onSaveClick={handleSaveContent}
                                         />
@@ -453,19 +411,19 @@ const ReleaseBlogEditor = () => {
 };
 
 const WriteReleaseBlog = () => {
-    const { isBlogLoading } = useBlog()
+    const { isCurrReleaseBlogLoading, currReleaseBlog } = useInsertProjects()
     const { data: session, status } = useSession();
+
 
     return (
         <>
             <div className="absolute top-5 left-5">
-                {" "}
                 {status === 'authenticated' && <ReleaseBlogWriteSidebar />}
             </div>
 
             <div className="px-6 lg:px-64 pt-8 min-h-screen">
                 <div className="flex item-center justify-center flex-col gap-4">
-                    {isBlogLoading
+                    {isCurrReleaseBlogLoading
                         ? <div className="flex justify-center items-center h-screen">
                             <Loader2 className="h-12 w-12 animate-spin text-gray-500" />
                         </div>

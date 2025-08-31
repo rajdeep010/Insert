@@ -123,11 +123,11 @@ export default function ProjectDetailsPage() {
 
     // Update editor content when blog is selected
     useEffect(() => {
-        if (blogEditor && selectedBlog?.content) {
+        if (blogEditor) {
             try {
-                const content = typeof selectedBlog.content === 'string'
-                    ? JSON.parse(selectedBlog.content)
-                    : selectedBlog.content;
+                const content = typeof selectedBlog.blogContent === 'string'
+                    ? JSON.parse(selectedBlog.blogContent)
+                    : selectedBlog.blogContent;
                 blogEditor.commands.setContent(content);
             } catch (error) {
                 console.error("Failed to parse blog content:", error);
@@ -254,7 +254,7 @@ export default function ProjectDetailsPage() {
                                                             Private
                                                         </Badge>
                                                     ) : (
-                                                        <Badge variant="default" className="bg-green-500 text-white flex items-center gap-1">
+                                                        <Badge variant="default" className="flex items-center gap-1">
                                                             <Eye className="w-3 h-3" />
                                                             Public
                                                         </Badge>
@@ -296,7 +296,7 @@ export default function ProjectDetailsPage() {
                                     </div>
 
                                     {/* Action Buttons */}
-                                    <div className="flex items-center gap-2 w-full lg:w-auto justify-end">
+                                    {project?.username === session?.user?.username &&  <div className="flex items-center gap-2 w-full lg:w-auto justify-end">
                                         <Button
                                             variant="outline"
                                             size="sm"
@@ -342,7 +342,7 @@ export default function ProjectDetailsPage() {
                                                 </DropdownMenuGroup>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
-                                    </div>
+                                    </div>}
                                 </div>
                             </CardHeader>
 
@@ -423,12 +423,23 @@ export default function ProjectDetailsPage() {
                                     >
                                         <CardContent className="p-4 lg:p-6">
                                             <div className="flex flex-col sm:flex-row justify-between items-start mb-3 gap-2">
-                                                <h3 className="text-lg lg:text-xl font-semibold group-hover:text-blue-600 transition-colors flex-1">
-                                                    {blog?.blogTitle || `Release Blog #${index + 1}`}
-                                                </h3>
-                                                <Badge variant="outline" className="text-xs flex-shrink-0">
-                                                    v{blog?.version || '1.0.0'}
-                                                </Badge>
+                                                <div className="text-lg lg:text-xl font-semibold group-hover:text-blue-600 transition-colors flex-1">
+                                                    {blog?.releaseTitle || `Release Blog #${index + 1}`}
+                                                </div>
+                                                <div>
+                                                    {blog?.visibility === "private" ? (
+                                                        <Badge variant="destructive" className="flex items-center gap-1">
+                                                            <EyeOff className="w-3 h-3" />
+                                                            Private
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge variant="default" className="flex items-center gap-1">
+                                                            <Eye className="w-3 h-3" />
+                                                            Public
+                                                        </Badge>
+                                                    )}
+                                                </div>
+
                                             </div>
 
                                             <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2 text-sm lg:text-base">
@@ -484,22 +495,9 @@ export default function ProjectDetailsPage() {
                 {selectedBlog && (
                     <div className="h-full flex flex-col">
                         {/* Sidebar Header */}
-                        <div className="p-4 lg:p-6 border-b bg-gray-50 dark:bg-gray-900/50 flex-shrink-0">
+                        <div className="py-2 px-4 lg:p-6 border-b bg-gray-50 dark:bg-gray-900/50 flex-shrink-0">
                             <div className="flex justify-between items-start">
-                                <div className="flex-1 mr-4">
-                                    <h3 className="text-lg lg:text-xl font-bold mb-2 line-clamp-2">
-                                        {selectedBlog.blogTitle || "Release Blog"}
-                                    </h3>
-                                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 flex-wrap">
-                                        <Badge variant="outline" className="text-xs">
-                                            v{selectedBlog.version || '1.0.0'}
-                                        </Badge>
-                                        <span>•</span>
-                                        <span className="text-xs lg:text-sm">
-                                            {getLastModifiedText(selectedBlog.createdAt)}
-                                        </span>
-                                    </div>
-                                </div>
+                                <div className="flex-1 mr-4"></div>
                                 <Button
                                     variant="outline"
                                     size="sm"
