@@ -10,7 +10,7 @@ import { sync } from "motion/react"
 import { useParams, useRouter } from "next/navigation"
 import { useWebSocket } from "@/hooks/use-web-socket"
 
-const API_BASE = "http://localhost:8081"
+const API_BASE = "http://localhost:8080"
 
 interface InsertProjectProviderProps {
     curr_project: any,
@@ -225,7 +225,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
         } catch (error: any) {
             toast({
                 title: "Error ⭕",
-                description: error?.response?.data?.message || "Failed to add project",
+                description: error?.response?.data || "Failed to add project",
                 variant: "destructive",
             })
         } finally {

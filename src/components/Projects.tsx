@@ -31,7 +31,7 @@ import ConfirmDeleteProject from './ConfirmDeleteProject'
 
 
 
-const API_BASE_URL = 'http://localhost:8081'
+const API_BASE_URL = 'http://localhost:8080'
 
 
 const Projects = () => {
@@ -131,7 +131,7 @@ const Projects = () => {
                 <div className=''>
                     <Button
                         className='flex gap-2 items-center bg-green-700 text-white hover:bg-green-800'
-                        onClick={() => window.location.href = `http://localhost:8081/oauth2/authorize/github?userId=${session?.user?._id}&username=${session?.user?.username}`}
+                        onClick={() => window.location.href = `http://localhost:8080/oauth2/authorize/github?userId=${session?.user?._id}&username=${session?.user?.username}`}
                     >
                         <GitHubLogoIcon />
                         Authorize With Github

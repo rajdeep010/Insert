@@ -287,7 +287,7 @@ export default function ProjectDetailsPage() {
 
                                     {/* Action Buttons */}
                                     {project?.username === session?.user?.username &&  <div className="flex items-center gap-2 w-full lg:w-auto justify-end">
-                                        <Button
+                                        {/* <Button
                                             variant="outline"
                                             size="sm"
                                             onClick={handleSyncRelease}
@@ -300,7 +300,7 @@ export default function ProjectDetailsPage() {
                                                 <RefreshCw className="h-4 w-4" />
                                             )}
                                             <span className="hidden sm:inline ml-2">Sync Release</span>
-                                        </Button>
+                                        </Button> */}
 
                                         <Button variant="outline" size="sm" asChild>
                                             <a href={project.repoUrl} target="_blank" rel="noopener noreferrer">
@@ -315,12 +315,12 @@ export default function ProjectDetailsPage() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuGroup>
+                                                {/* <DropdownMenuGroup>
                                                     <DropdownMenuItem>
                                                         <Settings className="h-4 w-4 mr-2" />
                                                         Settings
                                                     </DropdownMenuItem>
-                                                </DropdownMenuGroup>
+                                                </DropdownMenuGroup> */}
                                                 <DropdownMenuGroup>
                                                     <DropdownMenuItem
                                                         className="text-red-500"
@@ -347,7 +347,7 @@ export default function ProjectDetailsPage() {
                                 {/* Project Metadata */}
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 text-sm">
                                     <div className="flex items-center gap-2">
-                                        <GitBranch className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                                        <GitBranch className="w-6 h-6 text-gray-500 flex-shrink-0 bg-gray-200 rounded-md p-1 dark:bg-slate-800" />
                                         <span className="font-medium">Branch:</span>
                                         <span className="font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs truncate">
                                             {project.defaultBranch}
@@ -355,7 +355,7 @@ export default function ProjectDetailsPage() {
                                     </div>
 
                                     <div className="flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                                        <Calendar className="w-6 h-6 text-gray-500 flex-shrink-0 bg-gray-200 rounded-md p-1 dark:bg-slate-800" />
                                         <span className="font-medium">Created:</span>
                                         <span className="text-gray-600 dark:text-gray-400 truncate">
                                             {getLastModifiedText(project?.createdAt)}
@@ -363,7 +363,7 @@ export default function ProjectDetailsPage() {
                                     </div>
 
                                     <div className="flex items-center gap-2">
-                                        <User className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                                        <User className="w-6 h-6 text-gray-500 flex-shrink-0 bg-gray-200 rounded-md p-1 dark:bg-slate-800" />
                                         <span className="font-medium">Repository:</span>
                                         <span className="text-gray-600 dark:text-gray-400 truncate">
                                             {getRepoName(project?.repoUrl)}
@@ -464,14 +464,14 @@ export default function ProjectDetailsPage() {
                                         Sync your project to generate release blogs automatically.
                                     </p>
                                 </div>
-                                {project?.username === session?.user?.username && <Button onClick={handleSyncRelease} disabled={isSyncingRelease[project.id]}>
+                                {/* {project?.username === session?.user?.username && <Button onClick={handleSyncRelease} disabled={isSyncingRelease[project.id]}>
                                     {isSyncingRelease[project.id] ? (
                                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
                                     ) : (
                                         <RefreshCw className="h-4 w-4 mr-2" />
                                     )}
                                     Sync Release
-                                </Button>}
+                                </Button>} */}
                             </Card>
                         )}
                     </div>
@@ -487,7 +487,11 @@ export default function ProjectDetailsPage() {
                         {/* Sidebar Header */}
                         <div className="py-2 px-4 lg:p-6 border-b bg-gray-50 dark:bg-gray-900/50 flex-shrink-0">
                             <div className="flex justify-between items-start">
-                                <div className="flex-1 mr-4"></div>
+                                <div className="flex-1 mr-4">
+                                    <div className="flex items-center gap-2 text-2xl font-bold">
+                                        {selectedBlog?.releaseTitle}
+                                    </div> 
+                                </div>
                                 <Button
                                     variant="outline"
                                     size="sm"

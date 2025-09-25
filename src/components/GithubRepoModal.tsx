@@ -83,12 +83,6 @@ const GithubRepoModal: React.FC<GithubRepoModalProps> = ({ isOpen, onClose }) =>
 
             await addProject(projectData)
 
-            toast({
-                title: "Success",
-                description: `Project "${selectedRepo.name}" created successfully!`,
-                variant: "default",
-            })
-
             // Close both modals
             setIsConfigModalOpen(false)
             onClose()

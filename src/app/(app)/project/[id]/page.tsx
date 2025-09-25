@@ -144,7 +144,7 @@ export default function page() {
     if (!curr_project) return null
 
     return (
-        <div className="flex flex-col gap-6 py-8 lg:py-12 justify-center px-8 lg:px-64">
+        <div className="flex flex-col gap-6 py-8 lg:py-12 justify-center px-8 lg:px-56">
             <InsertNavbar />
 
             {isProjectLoading && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -184,7 +184,7 @@ export default function page() {
                             <Link href={curr_project?.project?.repoUrl || '/'} target="_blank" rel="noopener noreferrer">
                                 <span className="inline-flex items-center px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
                                     <ExternalLink className="h-4 w-4 mr-2" />
-                                    View Repository
+                                    View
                                 </span>
                             </Link>
                         </div>

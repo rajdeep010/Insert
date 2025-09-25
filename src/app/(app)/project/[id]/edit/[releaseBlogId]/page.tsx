@@ -421,7 +421,7 @@ const WriteReleaseBlog = () => {
                 {status === 'authenticated' && <ReleaseBlogWriteSidebar />}
             </div>
 
-            <div className="px-6 lg:px-64 pt-8 min-h-screen">
+            <div className="px-6 lg:px-56 pt-8 min-h-screen">
                 <div className="flex item-center justify-center flex-col gap-4">
                     {isCurrReleaseBlogLoading
                         ? <div className="flex justify-center items-center h-screen">

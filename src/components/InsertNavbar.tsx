@@ -65,6 +65,11 @@ const InsertNavbar = () => {
 
 	const { user,markAllRead,unreadNotifyCount,notifications,getNotifications } = useInsertUser();
 
+	const handleLogOut = () => {
+		signOut();
+		router.push("/");
+	}
+
 	const handleGetNotifier = async () => {
 		try {
 			console.log('get notifications called',notifications)
@@ -351,7 +356,7 @@ const InsertNavbar = () => {
 									className={navigationMenuTriggerStyle()}
 								>
 									<button
-										onClick={() => signOut()}
+										onClick={handleLogOut}
 										className="flex items-center gap-2 w-full px-2 py-1"
 									>
 										<LogOut className="h-4 w-4" />
@@ -600,7 +605,7 @@ const InsertNavbar = () => {
 
 
 						{status === "authenticated" ? (<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
-							<div className="flex items-center gap-2" onClick={() => signOut()}>
+							<div className="flex items-center gap-2" onClick={handleLogOut}>
 								<LogOut className="h-4 w-4" /> <span>Logout</span>
 							</div>
 

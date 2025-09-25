@@ -476,7 +476,7 @@ const Write = () => {
 				{status === 'authenticated' && <BlogWriteSidebar />}
 			</div>
 
-			<div className="px-6 lg:px-64 pt-8 min-h-screen">
+			<div className="px-6 lg:px-56 pt-8 min-h-screen">
 				<div className="flex item-center justify-center flex-col gap-4">
 					{isBlogLoading
 						? <div className="flex justify-center items-center h-screen">

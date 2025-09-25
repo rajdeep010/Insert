@@ -14,7 +14,7 @@ export const useWebSocket = (projectId: string | null) => {
         if (!projectId) return;
 
         // Connect to WebSocket
-        const socket = new SockJS('http://localhost:8081/ws');
+        const socket = new SockJS('http://localhost:8080/ws');
         const client = Stomp.over(socket);
 
         // Disable console debug messages
