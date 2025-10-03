@@ -67,7 +67,6 @@ export const authOptions: NextAuthOptions = {
                 token.githubEmail = user.githubEmail
             }
             if (account) {
-                // console.log('account.access_token',account,account.access_token)
                 token.accessToken = account.access_token
             }
             return token

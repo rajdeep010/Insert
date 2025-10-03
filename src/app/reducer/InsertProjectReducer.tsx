@@ -1,6 +1,9 @@
 import { Project, ReleaseBlog } from "@/types/types"
 
-const sortByCreatedAt = (blogs: any[]) => {
+const sortByCreatedAt = (blogs: any[] = []) => {
+    if (!Array.isArray(blogs)) {
+        blogs = [];
+    }
     return [...blogs].sort((a, b) => {
         const dateA = new Date(a.createdAt).getTime()
         const dateB = new Date(b.createdAt).getTime()

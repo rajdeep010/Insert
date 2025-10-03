@@ -15,7 +15,7 @@ import { verifySchema } from '@/schemas/verifySchema'
 
 
 // const INSERT_NOTIFY_SERVICE = 'https://insert-notification-service.onrender.com'
-const INSERT_NOTIFY_SERVICE = 'http://localhost:4000'
+const INSERT_NOTIFY_SERVICE = 'http://localhost:4000/v1/api'
 
 
 export default function VerifyAccount() {

@@ -10,7 +10,7 @@ import { sync } from "motion/react"
 import { useParams, useRouter } from "next/navigation"
 import { useWebSocket } from "@/hooks/use-web-socket"
 
-const API_BASE = "http://localhost:8080"
+const API_BASE = "http://localhost:4000/v1"
 
 interface InsertProjectProviderProps {
     curr_project: any,
@@ -167,7 +167,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
         try {
             dispatch({ type: "SET_IS_ALL_PROJECT_LOADING", payload: true })
 
-            const res = await axios.get(`${API_BASE}/api/projects`, {
+            const res = await axios.get(`${API_BASE}/api/projects/list-projects`, {
                 headers: {
                     Authorization: `Bearer ${session?.accessToken}`
                 }

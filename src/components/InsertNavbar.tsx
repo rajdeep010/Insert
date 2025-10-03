@@ -534,7 +534,7 @@ const InsertNavbar = () => {
 									href={`/u/${!param_username
 										? session?.user?.username
 										: param_username
-										}?tab=blogs`}
+										}?tab=projects`}
 									className="flex gap-2 items-center"
 								>
 									<PanelsTopLeft className="h-4 w-4" />

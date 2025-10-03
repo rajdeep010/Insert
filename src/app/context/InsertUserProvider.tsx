@@ -11,7 +11,7 @@ import { notifyFormatter } from "@/helpers/notify-format";
 
 
 // const INSERT_NOTIFY_SERVICE = 'https://insert-notification-service.onrender.com'
-const INSERT_NOTIFY_SERVICE = 'http://localhost:4000'
+const INSERT_NOTIFY_SERVICE = 'http://localhost:4000/v1/api'
 
 
 interface InsertUserProviderProps {
