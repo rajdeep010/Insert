@@ -40,7 +40,7 @@ const Projects = () => {
     const params = useParams();
     const username = params.username as string;
 
-    const { user_projects, removeProject, updateProject } = useInsertProjects();
+    const { user_projects, removeProject, updateProject, pagination, isAllProjectsLoading, loadMore } = useInsertProjects();
     const [isRepoModalOpen, setIsRepoModalOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
 
@@ -60,7 +60,7 @@ const Projects = () => {
 
     const autorizeGithub = async () => {
         try {
-            const res = await axios.get(`${API_BASE_URL}/oauth2/authorize/github?userId=${session?.user?._id}&username=${session?.user?.username}`) 
+            const res = await axios.get(`${API_BASE_URL}/oauth2/authorize/github?userId=${session?.user?._id}&username=${session?.user?.username}`)
             console.log(res.data);
         } catch (error) {
             console.error(error);
@@ -279,6 +279,12 @@ const Projects = () => {
                         )
                     })
                 }
+
+                {pagination?.hasMore && (
+                    <Button disabled={isAllProjectsLoading} onClick={loadMore}>
+                        {isAllProjectsLoading ? "Loading..." : "Load more"}
+                    </Button>
+                )}
             </div>}
 
             <ConfirmDeleteProject

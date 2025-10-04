@@ -157,31 +157,31 @@ export default function page() {
                             <Avatar className="h-16 w-16">
                                 <AvatarImage src={session?.user?.githubAvatarUrl} />
                                 <AvatarFallback>
-                                    {curr_project?.project?.username?.slice(0, 2).toUpperCase()}
+                                    {curr_project?.username?.slice(0, 2).toUpperCase()}
                                 </AvatarFallback>
                             </Avatar>
                             <div>
                                 <div className="flex items-center gap-3">
                                     <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-                                        {curr_project?.project?.name}
+                                        {curr_project?.name}
                                     </CardTitle>
-                                    <Badge variant={curr_project?.project?.visibility === 'private' ? 'destructive' : 'secondary'}>
-                                        {curr_project?.project?.visibility}
+                                    <Badge variant={curr_project?.visibility === 'private' ? 'destructive' : 'secondary'}>
+                                        {curr_project?.visibility}
                                     </Badge>
                                     <Badge variant={webSocketConnected ? "default" : "destructive"} className="text-xs">
                                         {webSocketConnected ? "🟢 Connected" : "🔴 Offline"}
                                     </Badge>
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                                    <span className='text-sm'>{curr_project?.project?.username}</span>
+                                    <span className='text-sm'>{curr_project?.username}</span>
                                     <span>•</span>
-                                    <span className='text-sm'>Updated {formatRelativeTime(curr_project?.project?.updatedAt)}</span>
+                                    <span className='text-sm'>Updated {formatRelativeTime(curr_project?.updatedAt)}</span>
                                 </div>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <Link href={curr_project?.project?.repoUrl || '/'} target="_blank" rel="noopener noreferrer">
+                            <Link href={curr_project?.repoUrl || '/'} target="_blank" rel="noopener noreferrer">
                                 <span className="inline-flex items-center px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
                                     <ExternalLink className="h-4 w-4 mr-2" />
                                     View
@@ -191,7 +191,7 @@ export default function page() {
                     </div>
 
                     <CardDescription className="text-sm text-gray-600 dark:text-gray-300 mt-4">
-                        {curr_project?.project?.description || 'No description available for this project.'}
+                        {curr_project?.description || 'No description available for this project.'}
                     </CardDescription>
 
                     {/* Project Stats */}
@@ -199,14 +199,14 @@ export default function page() {
                         <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-gray-500" />
                             <span className="text-sm text-gray-600 dark:text-gray-400">
-                                Created {formatDate(curr_project?.project?.createdAt)}
+                                Created {formatDate(curr_project?.createdAt)}
                             </span>
                         </div>
-                        {curr_project?.project?.lastMonitoredCommitSha && (
+                        {curr_project?.lastMonitoredCommitSha && (
                             <div className="flex items-center gap-2">
                                 <GitCommit className="h-4 w-4 text-gray-500" />
                                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                                    {curr_project?.project?.lastMonitoredCommitSha.substring(0, 7)}
+                                    {curr_project?.lastMonitoredCommitSha.substring(0, 7)}
                                 </span>
                             </div>
                         )}
@@ -428,27 +428,27 @@ export default function page() {
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
                                     <span className="text-gray-500 dark:text-gray-400">Owner</span>
-                                    <p className="font-medium">{curr_project?.project?.username}</p>
+                                    <p className="font-medium">{curr_project?.username}</p>
                                 </div>
                                 <div>
                                     <span className="text-gray-500 dark:text-gray-400">Keyword</span>
-                                    <p className="font-medium capitalize">{curr_project?.project?.releaseTriggerKeyword}</p>
+                                    <p className="font-medium capitalize">{curr_project?.releaseTriggerKeyword}</p>
                                 </div>
                                 <div>
                                     <span className="text-gray-500 dark:text-gray-400">Language</span>
-                                    {curr_project?.project?.language && (
+                                    {curr_project?.language && (
                                         <div className="flex gap-1 items-center rounded-md text-sm">
                                             <div
                                                 className="w-3 h-3 rounded-full"
-                                                style={{ backgroundColor: languageColors[curr_project?.project?.language] || '#586069' }}
+                                                style={{ backgroundColor: languageColors[curr_project?.language] || '#586069' }}
                                             />
-                                            <span className='text-sm'>{curr_project?.project?.language}</span>
+                                            <span className='text-sm'>{curr_project?.language}</span>
                                         </div>
                                     )}
                                 </div>
                                 <div>
                                     <span className="text-gray-500 dark:text-gray-400">Branch</span>
-                                    <p className="font-medium">{curr_project?.project?.defaultBranch}</p>
+                                    <p className="font-medium">{curr_project?.defaultBranch}</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -460,7 +460,7 @@ export default function page() {
                             <CardTitle className="text-lg">Quick Actions</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            <Link href={curr_project?.project?.repoUrl || '/'} target="_blank">
+                            <Link href={curr_project?.repoUrl || '/'} target="_blank">
                                 <Button className="w-full flex items-center" variant="outline">
                                     <ExternalLink className="h-4 w-4" />
                                     View Repo

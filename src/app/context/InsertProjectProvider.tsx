@@ -28,6 +28,8 @@ interface InsertProjectProviderProps {
     isProjectLoading: boolean
     isReleaseBlogLoading?: boolean
 
+    pagination: any
+
     webSocketConnected: boolean
     releaseSyncStatus: Record<string, {
         message: string
@@ -56,6 +58,7 @@ interface InsertProjectProviderProps {
     clearReleaseSyncStatus: (projectId: string) => void
     fetchReleaseBlogById: (releaseBlogId: string, projectId: string) => void
     changeReleaseBlog: (blog: any) => void
+    loadMore: () => void
 }
 
 const initialState = {
@@ -65,6 +68,14 @@ const initialState = {
     releaseBlogs: [],
     githubRepos: [],
     currReleaseBlog: {},
+
+    pagination: {
+        currentPage: 1,
+        pageSize: 12,
+        totalItems: 0,
+        hasMore: false,
+        nextCursor: null
+    },
 
     isGithubReposLoading: false,
     isAllProjectsLoading: false,
@@ -94,7 +105,8 @@ const initialState = {
     fetchRepositoryBranches: (githubId: string, repoName: string) => Promise<string[]>,
     clearReleaseSyncStatus: (projectId: string) => { },
     fetchReleaseBlogById: (releaseBlogId: string, projectId: string) => { },
-    changeReleaseBlog: (blog: any) => { }
+    changeReleaseBlog: (blog: any) => { },
+    loadMore: () => {}
 }
 
 const InsertProjectContext = createContext<InsertProjectProviderProps | null>(null)
@@ -163,17 +175,26 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
         }
     }
 
-    const fetchAllProjects = async () => {
+    const fetchAllProjects = async ({cursor, limit = 1, search}: any) => {
         try {
             dispatch({ type: "SET_IS_ALL_PROJECT_LOADING", payload: true })
 
             const res = await axios.get(`${API_BASE}/api/projects/list-projects`, {
                 headers: {
-                    Authorization: `Bearer ${session?.accessToken}`
-                }
+                    Authorization: `Bearer ${session?.accessToken}`,
+                },
+                params: { cursor, limit, search }
             })
 
-            dispatch({ type: "SET_ALL_PROJECTS", payload: { projects: res.data, user: session?.user } })
+            const {items, nextCursor, hasMore, count} = res.data.data;
+            dispatch({
+                type: cursor ? "APPEND_ALL_PROJECTS" : "SET_ALL_PROJECTS",
+                payload: {
+                    projects: items,
+                    meta: { nextCursor, hasMore, count },
+                    user: session?.user
+                }
+            });
         } catch (error: any) {
             toast({
                 title: "Error ⭕",
@@ -190,22 +211,23 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
         try {
             dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
 
-            const res = await axios.post(`${API_BASE}/api/projects`, project, {
+            const res = await axios.post(`${API_BASE}/api/projects/create-project`, project, {
                 headers: {
                     'Authorization': `Bearer ${session?.accessToken}`,
                     'X-GitHub-Token': `Bearer ${session?.user?.githubAccessToken}`,
                 }
             })
-            dispatch({ type: "ADD_PROJECT", payload: res.data?.project })
+            dispatch({ type: "ADD_PROJECT", payload: res.data?.data })
             toast({
                 title: "Success ✅",
                 description: "Project added successfully",
                 variant: "default",
             })
 
+            console.log('new project: ', res.data?.data)
 
-            if (res.data?.projectId && res.data?.needsWebhookSetup) {
-                const hookRes = await setupWebhook(res.data.projectId);
+            if (res.data?.data?.id && res.data?.data?.monitorCommits) {
+                const hookRes = await setupWebhook(res.data.data.id);
                 if (hookRes) {
                     toast({
                         title: "Success ✅",
@@ -245,6 +267,8 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                     }
                 }
             );
+
+            console.log('result data: ', result.data);
 
             if (result?.data?.webhookCreated) {
                 return true
@@ -501,13 +525,14 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     const fetchProjectById = async (projectId: string) => {
         try {
             dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
-            const res = await axios.get(`${API_BASE}/api/projects/${projectId}`, {
+            const res = await axios.get(`${API_BASE}/api/projects/get-project/${projectId}`, {
                 headers: {
                     'Authorization': `Bearer ${session?.accessToken}`,
                     'X-GitHub-Token': `Bearer ${session?.user?.githubAccessToken}`,
                 }
             })
-            dispatch({ type: "SET_PROJECT", payload: res.data })
+            dispatch({ type: "SET_PROJECT", payload: res.data.data })
+            console.log('current project: ', state.curr_project, res.data.data)
         } catch (error: any) {
             toast({
                 title: "Error ⭕",
@@ -551,6 +576,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 
     // Handle WebSocket connection status
     useEffect(() => {
+        console.log('WebSocket connected: ', connected)
         dispatch({ type: "SET_WEBSOCKET_STATUS", payload: connected })
     }, [connected])
 
@@ -617,11 +643,16 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     const clearReleaseSyncStatus = (projectId: string) => {
         dispatch({ type: "CLEAR_RELEASE_SYNC_STATUS", payload: projectId })
     }
+
+    const loadMore = () => {
+        if (!state.pagination?.hasMore) return;
+        fetchAllProjects({ cursor: state.pagination.nextCursor, limit: 1 });
+    };
     
 
     useEffect(() => {
         if (status === "authenticated") {
-            fetchAllProjects();
+            fetchAllProjects({limit: 1});
 
             if (project_id && session?.user?.githubAccessToken) {
                 fetchProjectById(project_id);
@@ -642,6 +673,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 fetchProjectById,
                 fetchAllProjects,
                 importReposByGithubUserId,
+                loadMore,
                 addProject,
                 updateProject,
                 removeProject,
@@ -653,7 +685,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 fetchReleaseBlogForProject,
                 fetchRepositoryBranches,
                 clearReleaseSyncStatus,
-                fetchReleaseBlogById
+                fetchReleaseBlogById,
             }}
         >
             {children}

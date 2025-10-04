@@ -24,17 +24,30 @@ export default function InsertProjectReducer(state: any, action: any) {
             return { ...state, isAllProjectsLoading: action.payload }
         case "SET_USER_PROJECTS":
             return { ...state, user_projects: action.payload }
-        case "SET_ALL_PROJECTS":
-            {
-                const { projects, user } = action.payload
-                const sortedProjects = sortByCreatedAt(projects)
-
-                return {
-                    ...state,
-                    all_projects: sortedProjects,
-                    user_projects: sortedProjects?.filter((p: any) => p.userId === user?._id),
-                }
-            }
+        case "SET_ALL_PROJECTS": {
+            const { projects, meta, user } = action.payload;
+            const sorted = sortByCreatedAt(projects);
+            return {
+                ...state,
+                all_projects: sorted,
+                user_projects: sorted.filter(p => p.userId === user?._id),
+                pagination: meta
+            };
+        }
+        case "APPEND_ALL_PROJECTS": {
+            const { projects, meta, user } = action.payload;
+            const mergedMap = new Map(
+                [...state.all_projects, ...projects].map(p => [p.id, p])
+            );
+            const merged = Array.from(mergedMap.values());
+            const sorted = sortByCreatedAt(merged);
+            return {
+                ...state,
+                all_projects: sorted,
+                user_projects: sorted.filter(p => p.userId === user?._id),
+                pagination: meta
+            };
+        }
         case "SET_IS_RELEASE_BLOG_LOADING":
             return { ...state, isReleaseBlogLoading: action.payload }
         case "SET_IS_GITHUB_REPOS_LOADING":
