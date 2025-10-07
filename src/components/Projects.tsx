@@ -87,18 +87,8 @@ const Projects = () => {
                 projectName: '',
                 isDeleting: false
             })
-            toast({
-                title: "Project Deleted ✅",
-                description: `${deleteConfirm.projectName} has been successfully deleted.`,
-                variant: "default",
-            })
         } catch (error) {
             setDeleteConfirm(prev => ({ ...prev, isDeleting: false }))
-            toast({
-                title: "Delete Failed ❌",
-                description: "Failed to delete the project. Please try again.",
-                variant: "destructive",
-            })
         }
     }
 

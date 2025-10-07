@@ -313,7 +313,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
 
             // Fix the endpoint URL - add '/delete' before the projectId
-            await axios.delete(`${API_BASE}/api/projects/delete/${projectId}`, {
+            await axios.delete(`${API_BASE}/api/projects/delete-project/${projectId}`, {
                 headers: {
                     'Authorization': `Bearer ${session?.accessToken}`,
                     'X-GitHub-Token': `Bearer ${session?.user?.githubAccessToken}`,

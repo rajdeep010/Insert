@@ -1,52 +1,66 @@
 import { useEffect, useRef, useState } from 'react';
-import SockJS from 'sockjs-client';
-import { Stomp, CompatClient } from '@stomp/stompjs';
-import { WebSocketMessage } from '@/types/types';
-
-
+import type { Socket } from 'socket.io-client';
+import type { WebSocketMessage } from '@/types/types';
+import { getSocket } from '@/utils/socket';
 
 export const useWebSocket = (projectId: string | null) => {
     const [connected, setConnected] = useState(false);
     const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
-    const stompClient = useRef<CompatClient | null>(null);
+    const socketRef = useRef<Socket | null>(null);
+    const currentDestinationRef = useRef<string | null>(null);
 
     useEffect(() => {
-        if (!projectId) return;
+        if (typeof window === 'undefined') return;
+        socketRef.current = getSocket();
+        const socket = socketRef.current;
 
-        // Connect to WebSocket
-        const socket = new SockJS('http://localhost:4000/v1/api/ws');
-        const client = Stomp.over(socket);
 
-        // Disable console debug messages
-        client.debug = () => { };
-
-        client?.connect({},
-            (frame: any) => {
-                // console.log('Connected to WebSocket:', frame);
-                setConnected(true);
-
-                // Subscribe to project-specific updates
-                client?.subscribe(`/topic/release-updates/${projectId}`, (message) => {
-                    const update: WebSocketMessage = JSON.parse(message.body);
-                    setLastMessage(update);
-                    // console.log('Received update:', update);
-                });
-            },
-            (error: Error) => {
-                console.error('WebSocket connection failed:', error);
-                setConnected(false);
-            }
-        );
-
-        stompClient.current = client;
-
-        // Cleanup on unmount
-        return () => {
-            if (stompClient.current?.connected) {
-                stompClient.current.disconnect();
-            }
-            setConnected(false);
+        const onConnect = () => setConnected(true);
+        const onDisconnect = () => setConnected(false);
+        const onMessage = (payload: any) => {
+            const parsed = typeof payload === 'string' ? JSON.parse(payload) : payload;
+            setLastMessage(parsed);
         };
+
+        socket.on('connect', onConnect);
+        socket.on('disconnect', onDisconnect);
+        socket.on('message', onMessage);
+
+        return () => {
+            socket.off('connect', onConnect);
+            socket.off('disconnect', onDisconnect);
+            socket.off('message', onMessage);
+        };
+
+
+    }, []);
+
+    useEffect(() => {
+        const socket = socketRef.current;
+        if (!socket) return;
+        const PREFIX = '/topic/release-updates/';
+        const newDest = projectId ? `${PREFIX}${projectId}` : null;
+        const prevDest = currentDestinationRef.current;
+
+
+        if (prevDest && prevDest !== newDest) {
+            socket.emit('unsubscribe', prevDest);
+            currentDestinationRef.current = null;
+        }
+
+        if (newDest && newDest !== prevDest) {
+            socket.emit('subscribe', newDest);
+            currentDestinationRef.current = newDest;
+        }
+
+        return () => {
+            if (socket && currentDestinationRef.current) {
+                socket.emit('unsubscribe', currentDestinationRef.current);
+                currentDestinationRef.current = null;
+            }
+        };
+
+
     }, [projectId]);
 
     return { connected, lastMessage };
