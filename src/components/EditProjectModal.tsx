@@ -8,19 +8,14 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
 import { GitBranch, Eye, EyeOff, Loader2, AlertCircle, Settings } from 'lucide-react'
 import { toast } from '@/components/ui/use-toast'
 import { useInsertProjects } from '@/app/context/InsertProjectProvider'
 
-
-
-
 interface EditProjectModalProps {
     isOpen: boolean
     onClose: () => void
-    project: any | null
+    project: any | null          // Pass the project object directly (NOT wrapped in { project: ... })
     isUpdating: boolean
 }
 
@@ -54,15 +49,15 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
 
     const { fetchRepositoryBranches, updateProject } = useInsertProjects()
 
-    // Initialize config when project data is available
+    // Initialize config from project (direct object now)
     useEffect(() => {
-        if (project?.project) {
-            const initialConfig = {
-                name: project.project.name || '',
-                defaultBranch: project.project.defaultBranch || '',
-                monitorCommits: project.project.monitorCommits || false,
-                releaseTriggerKeyword: project.project.releaseTriggerKeyword || '',
-                visibility: project.project.visibility || 'private'
+        if (project) {
+            const initialConfig: ProjectUpdateConfig = {
+                name: project.name || '',
+                defaultBranch: project.defaultBranch || '',
+                monitorCommits: project.monitorCommits ?? false,
+                releaseTriggerKeyword: project.releaseTriggerKeyword || '',
+                visibility: project.visibility || 'private'
             }
             setConfig(initialConfig)
             setHasChanges(false)
@@ -72,44 +67,33 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
     // Fetch branches when modal opens
     useEffect(() => {
         const fetchBranches = async () => {
-            if (!project?.project || !session?.user?.githubAccessToken || !isOpen) return
+            if (!project || !session?.user?.githubAccessToken || !isOpen) return
 
             setIsFetchingBranches(true)
             setBranchesError(null)
 
             try {
-                // Extract owner and repo name from repoUrl
-                const repoUrl = project?.project?.repoUrl
+                const repoUrl: string | undefined = project.repoUrl
+                if (!repoUrl) throw new Error('Missing repoUrl')
                 const urlParts = repoUrl.replace('https://github.com/', '').split('/')
                 const owner = urlParts[0]
-                const repoName = project?.project?.name
+                const repoName = project.name
 
-                console.log(owner, repoName)
-
-                const fetchedBranches = await fetchRepositoryBranches(
-                    owner,
-                    repoName
-                )
-
+                const fetchedBranches = await fetchRepositoryBranches(owner, repoName)
                 setBranches(fetchedBranches)
             } catch (error) {
-                // console.error('Failed to fetch branches:', error)
                 setBranchesError('Failed to fetch repository branches')
-
-                // Fallback to current branch and common defaults
                 const fallbackBranches = [
-                    project.project.defaultBranch,
+                    project?.defaultBranch,
                     'main',
                     'master',
                     'develop'
-                ].filter((branch, index, arr) => branch && arr.indexOf(branch) === index)
-
+                ].filter((b, i, arr) => b && arr.indexOf(b) === i) as string[]
                 setBranches(fallbackBranches)
-
                 toast({
-                    title: "Warning",
-                    description: "Could not fetch repository branches. Using fallback options.",
-                    variant: "destructive",
+                    title: 'Warning',
+                    description: 'Could not fetch repository branches. Using fallback options.',
+                    variant: 'destructive'
                 })
             } finally {
                 setIsFetchingBranches(false)
@@ -117,28 +101,25 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
         }
 
         fetchBranches()
-    }, [project, session?.user?.githubAccessToken, isOpen])
+    }, [project, session?.user?.githubAccessToken, isOpen, fetchRepositoryBranches])
 
-    // Check for changes
+    // Detect changes
     useEffect(() => {
-        if (!project?.project) return
-
-        const hasConfigChanges =
-            config.name !== project.project.name ||
-            config.defaultBranch !== project.project.defaultBranch ||
-            config.monitorCommits !== project.project.monitorCommits ||
-            config.releaseTriggerKeyword !== project.project.releaseTriggerKeyword ||
-            config.visibility !== project.project.visibility
-
-        setHasChanges(hasConfigChanges)
+        if (!project) return
+        const changed =
+            config.name !== project.name ||
+            config.defaultBranch !== project.defaultBranch ||
+            config.monitorCommits !== project.monitorCommits ||
+            config.releaseTriggerKeyword !== project.releaseTriggerKeyword ||
+            config.visibility !== project.visibility
+        setHasChanges(changed)
     }, [config, project])
 
     const handleSubmit = async () => {
-        if (!project?.project || !hasChanges) return
-
+        if (!project || !hasChanges) return
         try {
             const updatedProject = {
-                ...project.project,
+                ...project,
                 name: config.name,
                 defaultBranch: config.defaultBranch,
                 monitorCommits: config.monitorCommits,
@@ -146,54 +127,43 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                 visibility: config.visibility,
                 updatedAt: new Date().toISOString()
             }
-
             await updateProject(updatedProject)
-
             toast({
-                title: "Success ✅",
-                description: "Project settings updated successfully",
-                variant: "default",
+                title: 'Success ✅',
+                description: 'Project settings updated successfully',
+                variant: 'default'
             })
-
             onClose()
-        } catch (error) {
+        } catch {
             toast({
-                title: "Error ❌",
-                description: "Failed to update project settings",
-                variant: "destructive",
+                title: 'Error ❌',
+                description: 'Failed to update project settings',
+                variant: 'destructive'
             })
         }
     }
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        })
-    }
-
-    if (!project?.project) return null
-
+    if (!project) return null
 
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
+        <Dialog
+            open={isOpen}
+            onOpenChange={(open) => {
+                if (!open) onClose()
+            }}
+        >
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto custom-small-scrollbar">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Settings className="h-5 w-5" />
                         <span>Edit Project Settings</span>
                     </DialogTitle>
-                    <DialogDescription>
-                        {/* Update your project configuration and monitoring settings */}
-                    </DialogDescription>
+                    <DialogDescription />
                 </DialogHeader>
 
                 <div className="space-y-6">
-                    {/* Editable Configuration */}
                     <div className="space-y-6">
+                        {/* Project Name */}
                         <div className="space-y-2">
                             <Label htmlFor="project-name" className="text-sm font-medium">
                                 Project Name
@@ -202,22 +172,30 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                                 id="project-name"
                                 placeholder="Project Name"
                                 value={config.name}
-                                onChange={(e) => setConfig(prev => ({ ...prev, name: e.target.value }))}
+                                onChange={(e) =>
+                                    setConfig((p) => ({ ...p, name: e.target.value }))
+                                }
                             />
                         </div>
 
-                        {/* Branch Selection */}
+                        {/* Branch */}
                         <div className="space-y-2">
                             <Label htmlFor="branch" className="text-sm font-medium">
                                 Select Branch to Monitor
                             </Label>
                             <Select
                                 value={config.defaultBranch}
-                                onValueChange={(value) => setConfig(prev => ({ ...prev, defaultBranch: value }))}
+                                onValueChange={(value) =>
+                                    setConfig((p) => ({ ...p, defaultBranch: value }))
+                                }
                                 disabled={isFetchingBranches}
                             >
                                 <SelectTrigger className="w-full">
-                                    <SelectValue placeholder={isFetchingBranches ? "Loading branches..." : "Select a branch"} />
+                                    <SelectValue
+                                        placeholder={
+                                            isFetchingBranches ? 'Loading branches...' : 'Select a branch'
+                                        }
+                                    />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {isFetchingBranches ? (
@@ -233,7 +211,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                                                 <div className="flex items-center gap-2">
                                                     <GitBranch className="h-4 w-4" />
                                                     {branch}
-                                                    {branch === project.project.defaultBranch && (
+                                                    {branch === project.defaultBranch && (
                                                         <Badge variant="outline" className="text-xs ml-1">
                                                             current
                                                         </Badge>
@@ -255,7 +233,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                             </p>
                         </div>
 
-                        {/* Monitor Commits Toggle */}
+                        {/* Monitor Commits */}
                         <div className="flex items-center justify-between p-3 border rounded-lg">
                             <div className="space-y-1">
                                 <Label htmlFor="monitor-commits" className="text-sm font-medium">
@@ -268,7 +246,9 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                             <Switch
                                 id="monitor-commits"
                                 checked={config.monitorCommits}
-                                onCheckedChange={(checked) => setConfig(prev => ({ ...prev, monitorCommits: checked }))}
+                                onCheckedChange={(checked) =>
+                                    setConfig((p) => ({ ...p, monitorCommits: checked }))
+                                }
                             />
                         </div>
 
@@ -280,7 +260,12 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                             <Input
                                 id="trigger-keyword"
                                 value={config.releaseTriggerKeyword}
-                                onChange={(e) => setConfig(prev => ({ ...prev, releaseTriggerKeyword: e.target.value }))}
+                                onChange={(e) =>
+                                    setConfig((p) => ({
+                                        ...p,
+                                        releaseTriggerKeyword: e.target.value
+                                    }))
+                                }
                                 placeholder="e.g. RELEASE, VERSION, DEPLOY"
                                 className="w-full"
                             />
@@ -289,14 +274,16 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                             </p>
                         </div>
 
-                        {/* Visibility Setting */}
+                        {/* Visibility */}
                         <div className="space-y-2">
                             <Label htmlFor="visibility" className="text-sm font-medium">
                                 Project Visibility
                             </Label>
                             <Select
                                 value={config.visibility}
-                                onValueChange={(value: 'public' | 'private') => setConfig(prev => ({ ...prev, visibility: value }))}
+                                onValueChange={(value: 'public' | 'private') =>
+                                    setConfig((p) => ({ ...p, visibility: value }))
+                                }
                             >
                                 <SelectTrigger className="w-full">
                                     <SelectValue />
@@ -321,7 +308,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                             </p>
                         </div>
 
-                        {/* Changes Indicator */}
+                        {/* Unsaved Changes */}
                         {hasChanges && (
                             <div className="p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
                                 <p className="text-sm text-blue-700 dark:text-blue-300">
@@ -331,7 +318,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                         )}
                     </div>
 
-                    {/* Action Buttons */}
+                    {/* Actions */}
                     <div className="flex gap-3 pt-4">
                         <Button
                             variant="outline"
@@ -344,7 +331,13 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                         <Button
                             onClick={handleSubmit}
                             className="flex-1"
-                            disabled={isUpdating || !hasChanges || !config.defaultBranch || !config.releaseTriggerKeyword || isFetchingBranches}
+                            disabled={
+                                isUpdating ||
+                                !hasChanges ||
+                                !config.defaultBranch ||
+                                !config.releaseTriggerKeyword ||
+                                isFetchingBranches
+                            }
                         >
                             {isUpdating ? (
                                 <>

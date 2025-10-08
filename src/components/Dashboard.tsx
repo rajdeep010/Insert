@@ -1,130 +1,285 @@
 'use client'
-import { uniqueId } from '@/helpers/unique-id'
+import React, { useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useParams } from 'next/navigation'
-import React,{ useEffect,useMemo,useState } from 'react'
-import { Tooltip,TooltipContent,TooltipTrigger } from '@radix-ui/react-tooltip';
-import { Select,SelectContent,SelectGroup,SelectItem,SelectLabel,SelectTrigger,SelectValue,} from "@/components/ui/select"
-import { Accordion,AccordionItem,AccordionTrigger,AccordionContent } from '@/components/ui/accordion';
-import { Dialog,DialogContent,DialogHeader,DialogFooter,DialogTitle,DialogDescription } from "@/components/ui/dialog";
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import Link from 'next/link';
-import { FaTrash } from 'react-icons/fa';
-import { FiExternalLink } from 'react-icons/fi';
-// import { useTopics } from '@/app/context/TopicProvider';
-import { useForm } from 'react-hook-form';
-import { questionSchema,topicSchema } from '@/schemas/topicSchema';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Form,FormControl,FormField,FormItem,FormLabel,FormMessage } from './ui/form';
-import { toast } from './ui/use-toast';
-import axios,{ AxiosError } from 'axios';
-import { ApiResponse } from '@/types/ApiResponse';
-// import { Item } from '@/model/Alltopic'
-import { ProblemDifficulty,Topic,TopicVisibility } from '@/types/types'
-import { Delete,Loader2,Trash2 } from 'lucide-react'
-import { useTopics } from '@/app/context/TopicProvider'
-import { Table,TableBody,TableCell,TableHead,TableHeader,TableRow } from "@/components/ui/table";
-import { Badge } from './ui/badge'
+import Link from 'next/link'
+import { z } from 'zod'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+
+import { topicSchema } from '@/schemas/topicSchema'
 import { useInsertTopics } from '@/app/context/InsertTopicProvider'
+import { toast } from './ui/use-toast'
+
 import {
     Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
-} from "@/components/ui/card"
+    CardDescription,
+    CardContent
+} from '@/components/ui/card'
+import { Input } from './ui/input'
+import { Button } from './ui/button'
+import { Badge } from './ui/badge'
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter
+} from '@/components/ui/dialog'
+import {
+    Form,
+    FormField,
+    FormItem,
+    FormControl,
+    FormMessage
+} from './ui/form'
+import {
+    Select,
+    SelectTrigger,
+    SelectValue,
+    SelectContent,
+    SelectGroup,
+    SelectItem
+} from '@/components/ui/select'
 
+import {
+    Loader2,
+    Trash2,
+    Plus,
+    Search,
+    Lock,
+    Globe2
+} from 'lucide-react'
 
+/* Shared style helpers (kept consistent with project page) */
+const surface =
+    'relative rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 backdrop-blur-xl supports-[backdrop-filter]:bg-white/40 transition-colors'
+const surfaceMuted =
+    'relative rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white/50 dark:bg-gray-900/30 backdrop-blur-xl'
+const hoverable =
+    'transition-colors hover:border-black/20 dark:hover:border-white/30'
 
 const Dashboard = () => {
-    const { data: session,status } = useSession();
-    const params = useParams();
-    const username = params.username as string;
+    const { data: session, status } = useSession()
+    const params = useParams()
+    const username = params.username as string
 
     const {
         addTopic,
         deleteTopic,
-        addProblem,
-        deleteProblem,
-        user_Topics,
-    } = useInsertTopics();
+        user_Topics
+    } = useInsertTopics()
 
+    const [isTopicSubmitting, setIsTopicSubmitting] = useState(false)
+    const [isTopicDeleting, setIsTopicDeleting] = useState(false)
 
-    const [isProblemSubmitting,setIsProblemSubmitting] = useState<boolean>(false)
-    const [isTopicSubmitting,setIsTopicSubmitting] = useState<boolean>(false)
-    const [isTopicDeleting,setIsTopicDeleting] = useState(false)
+    const [isTopicModalOpen, setIsTopicModalOpen] = useState(false)
+    const [isTopicDeleteModalOpen, setIsTopicDeleteModalOpen] = useState(false)
 
-    const [isTopicModalOpen,setIsTopicModalOpen] = useState(false);
-    const [isItemModalOpen,setIsItemModalOpen] = useState(false);
-    const [isTopicDeleteModalOpen,setIsTopicDeleteModalOpen] = useState(false);
-    const [isItemDeleteModalOpen,setIsItemDeleteModalOpen] = useState(false);
+    const [currentTopicId, setCurrentTopicId] = useState<string | null>(null)
+    const [searchQuery, setSearchQuery] = useState('')
 
-    const [currentTopicId,setCurrentTopicId] = useState<string | null>(null);
-
-    const [searchQuery,setSearchQuery] = useState('')
-
-    const filteredTopics = useMemo(() => {
-        return user_Topics?.filter(topic =>
-            topic.title.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-    },[searchQuery,user_Topics])
-
-    //! Implementing all functions
-    const handleDeleteTopic = async () => {
-        if (currentTopicId !== null) {
-            setIsTopicDeleting(true)
-            await deleteTopic(currentTopicId)
-            setIsTopicDeleting(false)
-            setIsTopicDeleteModalOpen(false)
-        }
-    }
+    const filteredTopics = useMemo(
+        () =>
+            user_Topics?.filter(t =>
+                t.title.toLowerCase().includes(searchQuery.toLowerCase())
+            ) || [],
+        [searchQuery, user_Topics]
+    )
 
     const handleOpenDeleteTopicModal = (id: string) => {
-        setCurrentTopicId(id);
-        setIsTopicDeleteModalOpen(true);
-    };
+        setCurrentTopicId(id)
+        setIsTopicDeleteModalOpen(true)
+    }
 
-    const topicform = useForm<z.infer<typeof topicSchema>>(
-        {
-            resolver: zodResolver(topicSchema),
-            defaultValues: {
-                title: '',
-                about: '',
-                visibility: 'public',
-            }
+    const handleDeleteTopic = async () => {
+        if (!currentTopicId) return
+        setIsTopicDeleting(true)
+        await deleteTopic(currentTopicId)
+        setIsTopicDeleting(false)
+        setIsTopicDeleteModalOpen(false)
+    }
+
+    const topicForm = useForm<z.infer<typeof topicSchema>>({
+        resolver: zodResolver(topicSchema),
+        defaultValues: {
+            title: '',
+            about: '',
+            visibility: 'public'
         }
-    )
+    })
 
     const topicSubmit = async (data: z.infer<typeof topicSchema>) => {
         try {
             setIsTopicSubmitting(true)
             await addTopic(data)
             setIsTopicModalOpen(false)
-        } catch (error) {
-            const axiosError = error as AxiosError<ApiResponse>
-            let errorMessage = axiosError.response?.data.message
+        } catch (e: any) {
             toast({
-                title: 'Topic add Failed',
-                description: errorMessage,
+                title: 'Topic add failed',
+                description: e?.response?.data?.message || 'Unexpected error',
                 variant: 'destructive'
             })
         } finally {
             setIsTopicSubmitting(false)
-            topicform.reset()
+            topicForm.reset()
         }
     }
 
+    const canEdit = status === 'authenticated' && session?.user?.username === username
+
     return (
-        <div>
-            <div className='flex justify-between'>
-                <div>
-                    <Input type="text" placeholder='Search Topic...' className='w-[60vw] lg:w-[30vw]' value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+        <div className="flex flex-col gap-8">
+            {/* Header / Controls */}
+            <div className="flex flex-col gap-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-2xl font-semibold tracking-tight">Topics</h1>
+                        <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                            {filteredTopics.length}
+                        </Badge>
+                    </div>
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                        <div className={surfaceMuted + ' flex items-center gap-2 px-3 py-2 w-full md:w-72'}>
+                            <Search className="h-4 w-4 text-gray-500" />
+                            <Input
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value)}
+                                placeholder="Search topics..."
+                                className="h-7 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
+                            />
+                        </div>
+                        {canEdit && (
+                            <Button
+                                onClick={() => setIsTopicModalOpen(true)}
+                                size="sm"
+                                className="gap-2"
+                            >
+                                <Plus className="h-4 w-4" />
+                                Add
+                            </Button>
+                        )}
+                    </div>
                 </div>
-                {status === 'authenticated' && session?.user?.username === username && (
-                    <Button onClick={() => setIsTopicModalOpen(true)} className='rounded' variant="default">Add Topic</Button>
+                {/* <div className="h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" /> */}
+            </div>
+
+            {/* Topics List */}
+            <div className="flex flex-col gap-4 max-h-[65vh] overflow-y-auto pr-1 custom-small-scrollbar">
+                {filteredTopics.length > 0 ? (
+                    filteredTopics.map(
+                        (
+                            {
+                                id,
+                                title,
+                                about,
+                                visibility
+                            },
+                            idx
+                        ) => (
+                            <Card
+                                key={id}
+                                className={
+                                    surface +
+                                    ' shadow-none p-0 ' +
+                                    hoverable +
+                                    ' group overflow-hidden'
+                                }
+                            >
+                                <CardHeader className="p-5 pb-4">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex flex-col gap-2 min-w-0">
+                                            <div className="flex flex-wrap items-center gap-3">
+                                                <CardTitle className="text-lg font-semibold truncate">
+                                                    <Link
+                                                        href={`/topic/${id}`}
+                                                        className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                                    >
+                                                        {title}
+                                                    </Link>
+                                                </CardTitle>
+                                                {visibility === 'private' ? (
+                                                    <Badge
+                                                        variant="destructive"
+                                                        className="flex items-center gap-1 text-[10px] px-2 py-0.5"
+                                                    >
+                                                        <Lock className="h-3 w-3" />
+                                                        private
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="flex items-center gap-1 text-[10px] px-2 py-0.5"
+                                                    >
+                                                        <Globe2 className="h-3 w-3" />
+                                                        public
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            {about && (
+                                                <CardDescription className="text-sm leading-relaxed line-clamp-2">
+                                                    {about}
+                                                    {about.length > 40 && (
+                                                        <>
+                                                            ...{' '}
+                                                            <Link
+                                                                href={`/topic/${id}`}
+                                                                className="text-indigo-600 dark:text-indigo-400 hover:underline"
+                                                            >
+                                                                read more
+                                                            </Link>
+                                                        </>
+                                                    )}
+                                                </CardDescription>
+                                            )}
+                                        </div>
+
+                                        {canEdit && (
+                                            <Button
+                                                variant="destructive"
+                                                size="icon"
+                                                onClick={() => handleOpenDeleteTopicModal(id)}
+                                                className="h-8 w-8"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                </CardHeader>
+                            </Card>
+                        )
+                    )
+                ) : (
+                    <Card className={surface + ' shadow-none'}>
+                        <CardContent className="py-16 flex flex-col items-center gap-4 text-center">
+                            <div className="h-10 w-10 rounded-full bg-indigo-500/10 flex items-center justify-center">
+                                <Search className="h-5 w-5 text-indigo-500" />
+                            </div>
+                            <div>
+                                <h3 className="font-medium">No topics found</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                    {searchQuery
+                                        ? 'Try refining your search query.'
+                                        : canEdit
+                                            ? 'Create your first topic to get started.'
+                                            : 'Nothing here yet.'}
+                                </p>
+                            </div>
+                            {canEdit && (
+                                <Button
+                                    size="sm"
+                                    className="mt-2 gap-2"
+                                    onClick={() => setIsTopicModalOpen(true)}
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    New Topic
+                                </Button>
+                            )}
+                        </CardContent>
+                    </Card>
                 )}
             </div>
 
@@ -132,46 +287,58 @@ const Dashboard = () => {
             <Dialog open={isTopicModalOpen} onOpenChange={setIsTopicModalOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Topic Details</DialogTitle>
+                        <DialogTitle>New Topic</DialogTitle>
                     </DialogHeader>
-                    <Form {...topicform}>
-                        <form onSubmit={topicform.handleSubmit(topicSubmit)} className='space-y-6'>
+                    <Form {...topicForm}>
+                        <form
+                            onSubmit={topicForm.handleSubmit(topicSubmit)}
+                            className="space-y-5"
+                        >
                             <FormField
-                                control={topicform.control}
+                                control={topicForm.control}
                                 name="title"
                                 render={({ field }) => (
                                     <FormItem>
-                                        {/* <FormLabel>Title</FormLabel> */}
                                         <FormControl>
-                                            <Input autoFocus placeholder="Topic Title" {...field} onChange={(e) => field.onChange(e)} />
+                                            <Input
+                                                autoFocus
+                                                placeholder="Title"
+                                                {...field}
+                                                onChange={e => field.onChange(e)}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
                             <FormField
-                                control={topicform.control}
+                                control={topicForm.control}
                                 name="about"
                                 render={({ field }) => (
                                     <FormItem>
-                                        {/* <FormLabel>About</FormLabel> */}
                                         <FormControl>
-                                            <Input placeholder="Topic About" {...field} onChange={(e) => field.onChange(e)} />
+                                            <Input
+                                                placeholder="Short description"
+                                                {...field}
+                                                onChange={e => field.onChange(e)}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
                             <FormField
-                                control={topicform.control}
+                                control={topicForm.control}
                                 name="visibility"
                                 render={({ field }) => (
                                     <FormItem>
-                                        {/* <FormLabel>Visibility</FormLabel> */}
                                         <FormControl>
-                                            <Select onValueChange={field.onChange} value={field.value}>
+                                            <Select
+                                                value={field.value}
+                                                onValueChange={field.onChange}
+                                            >
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Visibility" onChange={(e) => field.onChange(e)} />
+                                                    <SelectValue placeholder="Visibility" />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectGroup>
@@ -186,73 +353,73 @@ const Dashboard = () => {
                                 )}
                             />
                             <DialogFooter>
-                                <Button type="submit" variant="default" disabled={isTopicSubmitting}>
-                                    {
-                                        isTopicSubmitting ? (<>
-                                            <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait
-                                        </>) : ('Save')
-                                    }
+                                <Button
+                                    type="submit"
+                                    variant="default"
+                                    disabled={isTopicSubmitting}
+                                    className="gap-2"
+                                >
+                                    {isTopicSubmitting ? (
+                                        <>
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                            Saving
+                                        </>
+                                    ) : (
+                                        'Save'
+                                    )}
                                 </Button>
-                                <Button variant="destructive" disabled={isTopicSubmitting} onClick={() => setIsTopicModalOpen(false)}>Cancel</Button>
+                                <Button
+                                    type="button"
+                                    variant="destructive"
+                                    disabled={isTopicSubmitting}
+                                    onClick={() => setIsTopicModalOpen(false)}
+                                >
+                                    Cancel
+                                </Button>
                             </DialogFooter>
                         </form>
                     </Form>
                 </DialogContent>
             </Dialog>
 
-            {/* CONFIRM DELETE TOPIC MODAL */}
-            <Dialog open={isTopicDeleteModalOpen} onOpenChange={setIsTopicDeleteModalOpen}>
+            {/* DELETE TOPIC MODAL */}
+            <Dialog
+                open={isTopicDeleteModalOpen}
+                onOpenChange={setIsTopicDeleteModalOpen}
+            >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Confirm Delete Topic</DialogTitle>
+                        <DialogTitle>Delete Topic</DialogTitle>
+                        <DialogDescription>
+                            This action cannot be undone.
+                        </DialogDescription>
                     </DialogHeader>
-                    <DialogDescription>Are you sure you want to delete this topic?</DialogDescription>
                     <DialogFooter>
-                        <Button variant="destructive" disabled={isTopicDeleting} onClick={() => setIsTopicDeleteModalOpen(false)}>Cancel</Button>
-                        <Button variant="default" onClick={handleDeleteTopic} disabled={isTopicDeleting}>
-                            {
-                                isTopicDeleting ? (<>
-                                    <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait
-                                </>) : ('Confirm')
-                            }
+                        <Button
+                            variant="destructive"
+                            disabled={isTopicDeleting}
+                            onClick={() => setIsTopicDeleteModalOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="default"
+                            onClick={handleDeleteTopic}
+                            disabled={isTopicDeleting}
+                            className="gap-2"
+                        >
+                            {isTopicDeleting ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Deleting
+                                </>
+                            ) : (
+                                'Confirm'
+                            )}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-
-            <div className="my-5 flex flex-col gap-3 w-full h-[70vh] overflow-y-scroll custom-small-scrollbar">
-                {
-                    filteredTopics && filteredTopics?.map(({ id,title,about,visibility,creator_username,collaborators,createdAt },idx) => {
-                        return <>
-                            <Card className='rounded-sm' key={idx}>
-                                <CardHeader>
-
-                                    <div className="flex justify-between">
-                                        <div className="flex gap-4 items-center mb-2">
-                                            <CardTitle>
-                                                <Link href={`/topic/${id}`} className='hover:text-blue-500 transition'>{title}</Link>
-                                            </CardTitle>
-                                            {visibility === "private" && (
-                                                <Badge variant="destructive" className="flex items-center gap-2">private</Badge>
-                                            )}
-                                            {visibility === "public" && (
-                                                <Badge variant="default" className="bg-blue-500 text-white dark:bg-blue-600">public</Badge>
-                                            )}
-                                        </div>
-
-                                        {status === 'authenticated' && session?.user?.username === username && (
-                                            <Button variant={'destructive'} onClick={() => handleOpenDeleteTopicModal(id)}> <Trash2 className='h-4 w-4' /></Button>
-                                        )}
-                                        
-                                    </div>
-
-                                    <CardDescription>{about}...<Link href={`/topic/${id}`} className='text-blue-500'>read more</Link> </CardDescription>
-                                </CardHeader>
-                            </Card>
-                        </>
-                    })
-                }
-            </div>
         </div>
     )
 }

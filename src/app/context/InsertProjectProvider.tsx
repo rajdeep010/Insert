@@ -345,7 +345,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     // Add a release blog to a project (API)
     const addReleaseBlog = async (projectId: string, blog: any) => {
         try {
-            const res = await axios.post(`${API_BASE}/api/projects/${projectId}/release-blogs`, {
+            const res = await axios.post(`${API_BASE}/api/release-blogs/get-release-blogs/${projectId}`, {
                 releaseTitle: blog.title,
                 visibility: blog.visibility,
                 status: "DRAFT",
@@ -479,7 +479,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     const fetchReleaseBlogForProject = async (projectId: string) => {
         try {
             dispatch({ type: "SET_IS_RELEASE_BLOG_LOADING", payload: true })
-            const res = await axios.get(`${API_BASE}/api/projects/${projectId}/release-blogs`, {
+            const res = await axios.get(`${API_BASE}/api/release-blogs/get-release-blogs/${projectId}`, {
                 headers: {
                     'Authorization': `Bearer ${session?.accessToken}`,
                     'X-GitHub-Token': `Bearer ${session?.user?.githubAccessToken}`,
