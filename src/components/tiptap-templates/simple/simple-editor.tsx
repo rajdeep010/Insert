@@ -86,7 +86,7 @@ editorContent: any
 }) => {
 
   const handleSaveContent = () => {
-    console.log('editorContent: ', editorContent)
+    // console.log('editorContent: ', editorContent)
   }
   
   return (

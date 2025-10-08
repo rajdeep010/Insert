@@ -126,12 +126,12 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
 
     const retriveAvatarURL = async (username: string) => {
         try {
-            console.log('retriveAvatarURL called with username:', username)
+            // console.log('retriveAvatarURL called with username:', username)
             if (!username) return
 
             setIsAvatarLoading(true)
             const response = await axios.get(`/api/get-avatar-by-username?username=${username}`)
-            console.log('this is the retrive response: ', response)
+            // console.log('this is the retrive response: ', response)
             
             let avatar = null
             if (response?.data?.success) {

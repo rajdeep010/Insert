@@ -224,7 +224,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 variant: "default",
             })
 
-            console.log('new project: ', res.data?.data)
+            // console.log('new project: ', res.data?.data)
 
             if (res.data?.data?.id && res.data?.data?.monitorCommits) {
                 const hookRes = await setupWebhook(res.data.data.id);
@@ -268,7 +268,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 }
             );
 
-            console.log('result data: ', result.data);
+            // console.log('result data: ', result.data);
 
             if (result?.data?.webhookCreated) {
                 return true
@@ -532,7 +532,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 }
             })
             dispatch({ type: "SET_PROJECT", payload: res.data.data })
-            console.log('current project: ', state.curr_project, res.data.data)
+            // console.log('current project: ', state.curr_project, res.data.data)
         } catch (error: any) {
             toast({
                 title: "Error ⭕",
@@ -576,7 +576,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 
     // Handle WebSocket connection status
     useEffect(() => {
-        console.log('WebSocket connected: ', connected)
+        // console.log('WebSocket connected: ', connected)
         dispatch({ type: "SET_WEBSOCKET_STATUS", payload: connected })
     }, [connected])
 

@@ -72,14 +72,14 @@ const InsertNavbar = () => {
 
 	const handleGetNotifier = async () => {
 		try {
-			console.log('get notifications called',notifications)
+			// console.log('get notifications called',notifications)
 			setNotifyLoader(true)
 			await getNotifications()
 		} catch (error) {
 
 		} finally {
 			setNotifyLoader(false)
-			console.log('get notifications finished',notifications)
+			// console.log('get notifications finished',notifications)
 		}
 	}
 

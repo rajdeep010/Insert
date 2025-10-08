@@ -371,7 +371,7 @@ const SimpleEditor = () => {
 					});
 					setIsSaving(false);
 				} catch (error) {
-					console.log('this is error: ', error)
+					// console.log('this is error: ', error)
 				}
 			}
 		}
@@ -464,11 +464,11 @@ const Write = () => {
 	const { isBlogLoading } = useBlog()
 	const { data: session, status } = useSession();
 
-	if(isBlogLoading){
-		console.log('Blog is loading...', isBlogLoading)
-	}else{
-		console.log('Blog is loaded', isBlogLoading)
-	}
+	// if(isBlogLoading){
+	// 	console.log('Blog is loading...', isBlogLoading)
+	// }else{
+	// 	console.log('Blog is loaded', isBlogLoading)
+	// }
 
 	return (
 		<>

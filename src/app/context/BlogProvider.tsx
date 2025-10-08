@@ -121,7 +121,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 
         try {
             const response = await axios.get(`/api/get-blog-by-url?blogUrl=${blogUrl}`)
-            console.log("Response from getBlogByUrl:", response.data)
+            // console.log("Response from getBlogByUrl:", response.data)
 
             if (response.data.success) {
                 dispatch({ type: "SET_CURRENT_BLOG", payload: response.data.blog })

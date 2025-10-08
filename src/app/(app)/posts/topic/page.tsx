@@ -41,7 +41,7 @@ export default function AllTopicPosts() {
     useEffect(() => {
         fetchAllTopicPosts()
     }, [])
-    console.log(all_topics)
+    // console.log(all_topics)
 
     return (
         <>

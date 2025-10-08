@@ -50,7 +50,7 @@ export async function POST(request: Request) {
                     toUserId: user?._id
                 }
 
-                console.log('this is data: ', data)
+                // console.log('this is data: ', data)
 
                 const payload = notifyFormatter("USER_SIGNUP_SUCCESSFUL", data)
 

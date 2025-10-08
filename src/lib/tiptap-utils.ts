@@ -152,7 +152,7 @@ export const handleImageUpload = async (
 
   const NEXT_CLOUD_PRESET = process.env.NEXT_PUBLIC_CLOUD_PRESET ?? ""
   const NEXT_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUD_NAME
-  console.log('Uploading file to Cloudinary:', NEXT_CLOUD_NAME, NEXT_CLOUD_PRESET)
+  // console.log('Uploading file to Cloudinary:', NEXT_CLOUD_NAME, NEXT_CLOUD_PRESET)
 
 
   const formData = new FormData()
@@ -174,7 +174,7 @@ export const handleImageUpload = async (
     })
 
     const data = await response.json()
-    console.log("Upload response:", data)
+    // console.log("Upload response:", data)
     if (!data.secure_url) {
       throw new Error("Upload failed")
     }

@@ -102,7 +102,7 @@ const ReleaseBlogItem = ({ blog, isCurrentBlog, onBlogSelect }: {
 
     const title = blog.blogTitle || blog.releaseTitle || 'Untitled Release'
 
-    console.log(blog)
+    // console.log(blog)
 
     return (
         <CommandItem

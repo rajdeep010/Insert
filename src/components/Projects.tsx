@@ -58,15 +58,6 @@ const Projects = () => {
         isDeleting: false
     })
 
-    const autorizeGithub = async () => {
-        try {
-            const res = await axios.get(`${API_BASE_URL}/oauth2/authorize/github?userId=${session?.user?._id}&username=${session?.user?.username}`)
-            console.log(res.data);
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
     const handleDeleteProject = (id: string, name: string) => {
         setDeleteConfirm({
             isOpen: true,
