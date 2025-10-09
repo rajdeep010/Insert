@@ -1,404 +1,403 @@
 "use client";
 
 import React, { useMemo } from "react";
-import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-    CommandSeparator,
-    CommandShortcut,
+  Command,
+  CommandInput,
+  CommandList,
+  CommandGroup,
+  CommandEmpty,
+  CommandItem,
 } from "@/components/ui/command";
 import {
-    Sheet,
-    SheetTrigger,
-    SheetContent,
-    SheetHeader,
-    SheetFooter,
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetHeader,
 } from "@/components/ui/sheet";
 import {
-    Home,
-    FolderPlus,
-    FilePlus,
-    Menu,
-    Folder,
-    Search,
-    SquarePen,
-    File,
-    Share2,
-    ArrowLeft,
-    GitBranch,
-    ExternalLink,
-    GitCommit,
-    Tag,
-    Eye,
-    EyeOff,
-    Clock,
-    FileEdit,
-    BookOpen,
-    Loader2,
-    CheckCircle,
-    AlertCircle,
-    XCircle,
-    Edit3,
-    Plus,
-    ArrowLeftFromLine,
-    FilePlus2,
+  Menu,
+  Loader2,
+  FileEdit,
+  CheckCircle,
+  GitCommit,
+  Clock,
+  ArrowLeftFromLine,
+  XCircle,
+  AlertCircle,
+  Plus,
 } from "lucide-react";
-import { useInsertProjects } from "@/app/context/InsertProjectProvider";
-import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Badge } from "./ui/badge";
-import { cn } from "@/lib/utils";
-import { getLastModifiedText } from "@/helpers/last-modified";
+import { Button } from "./ui/button";
 import InsertIcon from "./InsertIcon";
 import AddReleaseBlogModal from "./AddReleaseBlogModal";
-import { Button } from "./ui/button";
+import { useInsertProjects } from "@/app/context/InsertProjectProvider";
+import { getLastModifiedText } from "@/helpers/last-modified";
+import { cn } from "@/lib/utils";
 
+type ReleaseBlogStatus = "UPLOADED" | "DRAFT" | "PROCESSING" | "ERROR" | "COMPLETED";
 
-
-
-const ReleaseBlogItem = ({ blog, isCurrentBlog, onBlogSelect }: {
-    blog: any;
-    isCurrentBlog: boolean;
-    onBlogSelect: (blogId: string) => void;
-}) => {
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'UPLOADED':
-                return 'bg-green-500 hover:bg-green-600'
-            case 'DRAFT':
-                return 'bg-yellow-500 hover:bg-yellow-600'
-            case 'PROCESSING':
-                return 'bg-blue-500 hover:bg-blue-600'
-            case 'ERROR':
-                return 'bg-red-500 hover:bg-red-600'
-            default:
-                return 'bg-gray-500 hover:bg-gray-600'
-        }
-    }
-
-    const getBuildStatusIcon = (status: string) => {
-        switch (status) {
-            case 'BUILT':
-                return <CheckCircle className="h-3 w-3 text-green-500 flex-shrink-0" />
-            case 'BUILDING':
-                return <Loader2 className="h-3 w-3 animate-spin text-blue-500 flex-shrink-0" />
-            case 'ERROR':
-                return <XCircle className="h-3 w-3 text-red-500 flex-shrink-0" />
-            default:
-                return <AlertCircle className="h-3 w-3 text-gray-500 flex-shrink-0" />
-        }
-    }
-
-    const title = blog.blogTitle || blog.releaseTitle || 'Untitled Release'
-
-    // console.log(blog)
-
-    return (
-        <CommandItem
-            value={title}
-            onSelect={() => onBlogSelect(blog.id)}
-            className={cn(
-                "cursor-pointer p-2",
-                isCurrentBlog && "bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800"
-            )}
-        >
-            <div className="flex items-start gap-2 w-full min-w-0">
-                <div className="flex-1 min-w-0 overflow-hidden">
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="truncate text-sm font-medium flex-1 min-w-0">
-                            {blog?.releaseTitle}
-                        </span>
-                        <Badge className={`${getStatusColor(blog.status)} text-white text-xs flex-shrink-0 whitespace-nowrap`}>
-                            {blog.status}
-                        </Badge>
-                    </div>
-
-                    {/* {blog.blogContentText && (
-                        <p className="text-xs text-gray-600 dark:text-gray-400 truncate mb-1" title={blog.blogContentText}>
-                            {blog.blogContentText.length > 60
-                                ? `${blog.blogContentText.substring(0, 60)}...`
-                                : blog.blogContentText
-                            }
-                        </p>
-                    )} */}
-
-                    <div className="flex items-center gap-3 text-xs text-gray-500 overflow-hidden">
-                        {blog.commitId && (
-                            <div className="flex items-center gap-1 flex-shrink-0">
-                                <GitCommit className="h-3 w-3 flex-shrink-0" />
-                                <code className="text-xs bg-gray-100 dark:bg-gray-800 px-1 rounded whitespace-nowrap">
-                                    {blog.commitId.substring(0, 7)}
-                                </code>
-                            </div>
-                        )}
-
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                            <Clock className="h-3 w-3 flex-shrink-0" />
-                            <span className="whitespace-nowrap">
-                                {getLastModifiedText(blog.createdAt)}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </CommandItem>
-    )
+interface ReleaseBlog {
+  _id: string;
+  blogTitle?: string;
+  releaseTitle?: string;
+  status: ReleaseBlogStatus;
+  commitId?: string;
+  createdAt?: string;
+  blogContentText?: string;
 }
 
+interface ReleaseBlogItemProps {
+  blog: ReleaseBlog;
+  isCurrent: boolean;
+  onSelect: (id: string) => void;
+}
+
+const statusStyles: Record<ReleaseBlogStatus | "DEFAULT", string> = {
+  UPLOADED: "bg-green-500/90 hover:bg-green-500",
+  DRAFT: "bg-yellow-500/90 hover:bg-yellow-500",
+  PROCESSING: "bg-blue-500/90 hover:bg-blue-500",
+  ERROR: "bg-red-500/90 hover:bg-red-500",
+  COMPLETED: "bg-emerald-500/90 hover:bg-emerald-500",
+  DEFAULT: "bg-gray-500/90 hover:bg-gray-500",
+};
+
+const buildStatusIcon = (status: ReleaseBlogStatus) => {
+  switch (status) {
+    case "UPLOADED":
+    case "COMPLETED":
+      return <CheckCircle className="h-3 w-3 text-green-500" />;
+    case "PROCESSING":
+      return <Clock className="h-3 w-3 text-blue-500" />;
+    case "ERROR":
+      return <XCircle className="h-3 w-3 text-red-500" />;
+    default:
+      return <AlertCircle className="h-3 w-3 text-gray-400" />;
+  }
+};
+
+const ReleaseBlogItem = ({ blog, isCurrent, onSelect }: ReleaseBlogItemProps) => {
+  const title = blog.blogTitle || blog.releaseTitle || "Untitled Release";
+  return (
+    <CommandItem
+      value={`${title} ${blog.commitId || ""} ${blog.status}`}
+      onSelect={() => onSelect(blog._id)}
+      className={cn(
+        "group px-3 py-2 rounded-md cursor-pointer transition-colors flex flex-col gap-1",
+        "data-[selected=true]:bg-indigo-50 dark:data-[selected=true]:bg-indigo-950/30",
+        isCurrent && "ring-1 ring-indigo-400/60 bg-indigo-50 dark:bg-indigo-950/30"
+      )}
+    >
+      <div className="flex items-start gap-2 w-full">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-sm font-medium">{title}</span>
+            <Badge
+              className={cn(
+                "text-[10px] font-medium tracking-wide text-white",
+                statusStyles[blog.status] || statusStyles.DEFAULT,
+                "shadow-sm"
+              )}
+            >
+              {blog.status}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-1">
+            {blog.commitId && (
+              <span className="inline-flex items-center gap-1">
+                <GitCommit className="h-3 w-3" />
+                <code className="bg-muted/60 px-1 rounded">
+                  {blog.commitId.slice(0, 7)}
+                </code>
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              <span>
+                {blog.createdAt ? getLastModifiedText(blog.createdAt) : "—"}
+              </span>
+            </span>
+            <span className="ml-auto">{buildStatusIcon(blog.status)}</span>
+          </div>
+        </div>
+      </div>
+    </CommandItem>
+  );
+};
+
+// Category keys
+type CategoryKey = "processing" | "drafts" | "published";
+
+const categoryMeta: Record<
+  CategoryKey,
+  { label: string; icon: React.ReactNode; match: (b: ReleaseBlog) => boolean }
+> = {
+  processing: {
+    label: "Processing",
+    icon: <Clock className="h-3 w-3 text-blue-500" />,
+    match: (b) => b.status === "PROCESSING",
+  },
+  drafts: {
+    label: "Drafts",
+    icon: <FileEdit className="h-3 w-3" />,
+    match: (b) => b.status === "DRAFT" || b.status === "COMPLETED",
+  },
+  published: {
+    label: "Published",
+    icon: <CheckCircle className="h-3 w-3 text-green-500" />,
+    match: (b) => b.status === "UPLOADED",
+  },
+};
+
+const mapStatusToCategory = (status: ReleaseBlogStatus): CategoryKey => {
+  if (status === "PROCESSING") return "processing";
+  if (status === "UPLOADED") return "published";
+  return "drafts"; // DRAFT / COMPLETED / ERROR -> drafts bucket (adjust if you want ERROR separate)
+};
+
 const ReleaseBlogWriteSidebar = () => {
-    const { data: session } = useSession();
-    const { curr_project, isProjectLoading } = useInsertProjects();
-    const router = useRouter();
-    const params = useParams();
+  useSession(); // currently unused but retained
+  const { curr_project, isProjectLoading } = useInsertProjects();
+  const router = useRouter();
+  const params = useParams();
 
-    const projectId = params.id as string;
-    const currentReleaseBlogId = params.releaseBlogId as string;
-    const username = session?.user?.username;
+  const projectId = params.id as string;
+  const currentReleaseBlogId = params.releaseBlogId as string;
+  const [isAddReleaseBlogModalOpen, setIsAddReleaseBlogModalOpen] = React.useState(false);
+  const [search, setSearch] = React.useState("");
+  const [selectedCategories, setSelectedCategories] = React.useState<Set<string>>(
+    () => new Set(["processing", "drafts", "published"])
+  );
 
-    const [isAddReleaseBlogModalOpen, setIsAddReleaseBlogModalOpen] = React.useState(false);
+  const toggleCategory = (key: CategoryKey) => {
+    setSelectedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      if (next.size === 0) {
+        // Prevent all empty: optional; comment out if you want to allow zero
+        return new Set<CategoryKey>(); // allow empty to show prompt
+      }
+      return next;
+    });
+  };
 
-    const handleBlogSelect = (blogId: string) => {
-        if (blogId !== currentReleaseBlogId) {
-            router.push(`/project/${projectId}/edit/${blogId}`);
-        }
+  const handleBlogSelect = (blogId: string) => {
+    if (blogId !== currentReleaseBlogId) {
+      router.push(`/project/${projectId}/edit/${blogId}`);
+    }
+  };
+
+  const handleBackToProject = () => router.push(`/project/${projectId}`);
+
+  const releaseBlogs: ReleaseBlog[] = useMemo(
+    () =>
+      (curr_project?.releaseBlogs as ReleaseBlog[] | undefined)
+        ?.slice()
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt || "").getTime() -
+            new Date(a.createdAt || "").getTime()
+        ) || [],
+    [curr_project?.releaseBlogs]
+  );
+
+  // Filter by selected categories first
+  const categoryFiltered = useMemo(
+    () =>
+      releaseBlogs.filter((b) =>
+        selectedCategories.has(mapStatusToCategory(b.status))
+      ),
+    [releaseBlogs, selectedCategories]
+  );
+
+  // Apply search inside category-filtered
+  const visibleBlogs = useMemo(() => {
+    if (!search.trim()) return categoryFiltered;
+    const q = search.toLowerCase();
+    return categoryFiltered.filter(
+      (b) =>
+        (b.blogTitle || "").toLowerCase().includes(q) ||
+        (b.releaseTitle || "").toLowerCase().includes(q) ||
+        (b.commitId || "").toLowerCase().includes(q)
+    );
+  }, [categoryFiltered, search]);
+
+  // Group AFTER search for display
+  const grouped = useMemo(() => {
+    const base: Record<CategoryKey, ReleaseBlog[]> = {
+      processing: [],
+      drafts: [],
+      published: [],
     };
+    for (const b of visibleBlogs) {
+      base[mapStatusToCategory(b.status)].push(b);
+    }
+    return base;
+  }, [visibleBlogs]);
 
-    const handleBackToProject = () => {
-        router.push(`/project/${projectId}`);
-    };
+  const anyErrorItems = releaseBlogs.some((b) => b.status === "ERROR");
 
-    const draftBlogs = useMemo(
-        () => curr_project?.releaseBlogs?.filter((blog: any) =>
-            blog.status === "DRAFT" || blog.status === "COMPLETED"
-        ) || [],
-        [curr_project?.releaseBlogs]
-    );
+  return (
+    <>
+      <AddReleaseBlogModal
+        defaultVisibility={isAddReleaseBlogModalOpen}
+        onClose={() => setIsAddReleaseBlogModalOpen(false)}
+      />
 
-    const publishedBlogs = useMemo(
-        () => curr_project?.releaseBlogs?.filter((blog: any) =>
-            blog.status === "UPLOADED"
-        ) || [],
-        [curr_project?.releaseBlogs]
-    );
+      <Sheet>
+        <SheetTrigger className="p-2 z-[2000]">
+          <Menu className="w-10 h-10 p-2 border rounded-md bg-background" />
+        </SheetTrigger>
 
-    const processingBlogs = useMemo(
-        () => curr_project?.releaseBlogs?.filter((blog: any) =>
-            blog.status === "PROCESSING"
-        ) || [],
-        [curr_project?.releaseBlogs]
-    );
+        <SheetContent
+          side="left"
+          className="flex flex-col gap-4 px-4 max-w-[400px] w-full pb-3"
+        >
+          <SheetHeader className="flex justify-between gap-4 pt-2">
+            <div className="flex items-center gap-2">
+              <InsertIcon className="p-[4px] border bg-white rounded-full" />
+              <span className="font-semibold text-xl tracking-tight">Insert</span>
+            </div>
+          </SheetHeader>
 
-    return (
-        <>
-            <AddReleaseBlogModal
-                defaultVisibility={isAddReleaseBlogModalOpen}
-                onClose={() => setIsAddReleaseBlogModalOpen(false)}
-            />
+            {curr_project && (
+              <div className="space-y-3">
+                <div className="rounded-lg border bg-muted/30 px-3 py-2">
+                  <h4
+                    className="font-medium text-sm truncate"
+                    title={curr_project?.name}
+                  >
+                    {curr_project?.name}
+                  </h4>
+                  {curr_project?.description && (
+                    <p
+                      className="text-xs text-muted-foreground line-clamp-2 mt-1"
+                      title={curr_project.description}
+                    >
+                      {curr_project.description}
+                    </p>
+                  )}
+                </div>
 
-            <Sheet>
-                <SheetTrigger className="p-2 z-[2000]">
-                    <Menu className="w-10 h-10 p-2 border-2 rounded-md" />
-                </SheetTrigger>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1"
+                    onClick={handleBackToProject}
+                  >
+                    <ArrowLeftFromLine className="h-4 w-4" />
+                    Back
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex items-center gap-1"
+                    onClick={() => setIsAddReleaseBlogModalOpen(true)}
+                    disabled={isProjectLoading}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add
+                  </Button>
+                </div>
+              </div>
+            )}
 
-                <SheetContent side="left" className="flex flex-col gap-4 px-4 max-w-[400px] w-full">
-                    <SheetHeader className="flex justify-between gap-4">
-
-                        <div className="flex items-center gap-2 w-fit">
-                            <InsertIcon className="p-[4px] border-2 bg-white" />
-                            <span className="font-sans truncate text-2xl">Insert</span>
-                        </div>
-
-                    </SheetHeader>
-
-
-
-                    {/* Project Info */}
-                    {curr_project && (
-                        <>
-                            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 flex-shrink-0 mb-2">
-                                <h4 className="font-medium text-md flex items-center gap-4 mb-1">
-                                    {/* <Briefcase className="h-4 w-4 flex-shrink-0" /> */}
-                                    <span className="truncate" title={curr_project.project?.name}>
-                                        {curr_project.project?.name}
-                                    </span>
-                                </h4>
-
-                                {curr_project.project?.description && (
-                                    <p
-                                        className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 break-words"
-                                        title={curr_project.project.description}
-                                    >
-                                        {curr_project.project.description}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="flex justify-between items-center gap-2">
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            className="flex items-center"
-                                            variant="outline"
-                                            onClick={handleBackToProject}
-                                        >
-                                            <ArrowLeftFromLine className="h-4 w-4" />
-                                            <span>Back</span>
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Return to project overview</p>
-                                    </TooltipContent>
-                                </Tooltip>
-
-                                <Button
-                                    className="flex items-center"
-                                    variant="default"
-                                    onClick={() => setIsAddReleaseBlogModalOpen(true)}
-                                    disabled={isProjectLoading}
-                                >
-                                    <FilePlus className="h-4 w-4" />
-                                    <p>Add Blog</p>
-                                </Button>
-                            </div>
-                        </>
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-wrap gap-1.5">
+              {(Object.keys(categoryMeta) as CategoryKey[]).map((k) => {
+                const active = selectedCategories.has(k);
+                return (
+                  <button
+                    key={k}
+                    onClick={() => toggleCategory(k)}
+                    className={cn(
+                      "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                      active
+                        ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                        : "bg-muted/40 hover:bg-muted text-foreground/70"
                     )}
+                    aria-pressed={active}
+                  >
+                    {categoryMeta[k].icon}
+                    {categoryMeta[k].label}
+                    <span className="ml-0.5 rounded bg-black/10 dark:bg-white/10 px-1">
+                      {releaseBlogs.filter(categoryMeta[k].match).length}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
 
+            <Command className="rounded-md border shadow-sm">
+              <CommandInput
+                placeholder="Search selected releases..."
+                value={search}
+                onValueChange={setSearch}
+                className="text-sm"
+              />
+              <CommandList className="max-h-[55vh] overflow-y-auto">
+                {selectedCategories.size === 0 && (
+                  <CommandEmpty className="py-8 text-xs text-muted-foreground">
+                    Select at least one category above.
+                  </CommandEmpty>
+                )}
 
-                    <div className="flex-1 overflow-hidden">
-                        <div className="flex flex-col gap-6 h-full overflow-y-auto custom-small-scrollbar">
-                            {/* Processing Blogs */}
-                            {processingBlogs.length > 0 && (
-                                <div className="flex flex-col">
-                                    <div className="flex items-center justify-between mb-2 px-2 flex-shrink-0">
-                                        <span className="font-semibold flex items-center gap-2 truncate">
-                                            <Loader2 className="h-4 w-4 animate-spin text-blue-500 flex-shrink-0" />
-                                            <span className="truncate">Processing</span>
-                                        </span>
-                                        <Badge variant="outline" className="text-xs flex-shrink-0">
-                                            {processingBlogs.length}
-                                        </Badge>
-                                    </div>
+                {selectedCategories.size > 0 && visibleBlogs.length === 0 && (
+                  <CommandEmpty className="py-8 text-xs text-muted-foreground">
+                    {search
+                      ? "No matches found in selected categories."
+                      : "No items in selected categories."}
+                  </CommandEmpty>
+                )}
 
-                                    <Command className="rounded-lg border shadow-md flex-1 h-80 min-h-80">
-                                        <CommandInput placeholder="Search processing..." className="text-sm" />
-                                        <CommandList className="max-h-none overflow-y-auto">
-                                            <CommandEmpty>No processing blogs found</CommandEmpty>
-                                            <CommandGroup>
-                                                {processingBlogs.map((blog: any) => (
-                                                    <ReleaseBlogItem
-                                                        key={blog.id}
-                                                        blog={blog}
-                                                        isCurrentBlog={blog.id === currentReleaseBlogId}
-                                                        onBlogSelect={handleBlogSelect}
-                                                    />
-                                                ))}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </div>
-                            )}
-
-                            {/* Draft Blogs */}
-                            <div className="flex flex-col">
-                                <div className="flex items-center justify-between mb-2 px-2 flex-shrink-0">
-                                    <span className="font-semibold flex items-center gap-2 truncate">
-                                        <FileEdit className="h-4 w-4 flex-shrink-0" />
-                                        <span className="truncate">Drafts</span>
-                                    </span>
-                                    <Badge variant="outline" className="text-xs flex-shrink-0">
-                                        {draftBlogs.length}
-                                    </Badge>
-                                </div>
-
-                                <Command className="rounded-lg border shadow-md flex-1 h-80 min-h-80">
-                                    <CommandInput placeholder="Search drafts..." className="text-sm" />
-                                    <CommandList className="max-h-none overflow-y-auto">
-                                        <CommandEmpty>No draft blogs found</CommandEmpty>
-                                        {draftBlogs.length > 0 && (
-                                            <CommandGroup>
-                                                {draftBlogs.map((blog: any) => (
-                                                    <ReleaseBlogItem
-                                                        key={blog.id}
-                                                        blog={blog}
-                                                        isCurrentBlog={blog.id === currentReleaseBlogId}
-                                                        onBlogSelect={handleBlogSelect}
-                                                    />
-                                                ))}
-                                            </CommandGroup>
-                                        )}
-                                    </CommandList>
-                                </Command>
-                            </div>
-
-                            {/* Published Blogs */}
-                            <div className="flex flex-col">
-                                <div className="flex items-center justify-between mb-2 px-2 flex-shrink-0">
-                                    <span className="font-semibold flex items-center gap-2 truncate">
-                                        <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                                        <span className="truncate">Published</span>
-                                    </span>
-                                    <Badge variant="outline" className="text-xs flex-shrink-0">
-                                        {publishedBlogs.length}
-                                    </Badge>
-                                </div>
-
-                                <Command className="rounded-lg border shadow-md flex-1 min-h-40">
-                                    <CommandInput placeholder="Search published..." className="text-sm" />
-                                    <CommandList className="max-h-none overflow-y-auto">
-                                        <CommandEmpty>No published blogs found</CommandEmpty>
-                                        {publishedBlogs.length > 0 && (
-                                            <CommandGroup>
-                                                {publishedBlogs.map((blog: any) => (
-                                                    <ReleaseBlogItem
-                                                        key={blog.id}
-                                                        blog={blog}
-                                                        isCurrentBlog={blog.id === currentReleaseBlogId}
-                                                        onBlogSelect={handleBlogSelect}
-                                                    />
-                                                ))}
-                                            </CommandGroup>
-                                        )}
-                                    </CommandList>
-                                </Command>
-                            </div>
+                {(Object.keys(categoryMeta) as CategoryKey[])
+                  .filter((k) => selectedCategories.has(k) && grouped[k].length > 0)
+                  .map((k) => (
+                    <CommandGroup
+                      key={k}
+                      heading={
+                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          {categoryMeta[k].icon}
+                          {categoryMeta[k].label}
+                          <span className="text-[10px] font-normal">
+                            {grouped[k].length}
+                          </span>
                         </div>
-                    </div>
+                      }
+                      className="px-2"
+                    >
+                      {grouped[k].map((blog) => (
+                        <ReleaseBlogItem
+                          key={blog._id}
+                          blog={blog}
+                          isCurrent={blog._id === currentReleaseBlogId}
+                          onSelect={handleBlogSelect}
+                        />
+                      ))}
+                    </CommandGroup>
+                  ))}
+              </CommandList>
+            </Command>
 
-                    {/* Footer */}
-                    <div className="py-2 flex items-center justify-between flex-shrink-0">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Share2 className="h-4 w-4 cursor-pointer flex-shrink-0" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Share Project</p>
-                            </TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <QuestionMarkCircledIcon className="h-4 w-4 cursor-pointer flex-shrink-0" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Help & Support</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </div>
-                </SheetContent>
-            </Sheet>
-        </>
-    );
+            {anyErrorItems && (
+              <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2">
+                <XCircle className="h-4 w-4 text-destructive mt-0.5" />
+                <p className="text-xs leading-relaxed">
+                  Some items failed to process. Re-open or re-run generation.
+                </p>
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
+  );
 };
 
 export default ReleaseBlogWriteSidebar;

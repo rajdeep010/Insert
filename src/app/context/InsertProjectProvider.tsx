@@ -106,7 +106,7 @@ const initialState = {
     clearReleaseSyncStatus: (projectId: string) => { },
     fetchReleaseBlogById: (releaseBlogId: string, projectId: string) => { },
     changeReleaseBlog: (blog: any) => { },
-    loadMore: () => {}
+    loadMore: () => { }
 }
 
 const InsertProjectContext = createContext<InsertProjectProviderProps | null>(null)
@@ -175,7 +175,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
         }
     }
 
-    const fetchAllProjects = async ({cursor, limit = 1, search}: any) => {
+    const fetchAllProjects = async ({ cursor, limit = 5, search }: any) => {
         try {
             dispatch({ type: "SET_IS_ALL_PROJECT_LOADING", payload: true })
 
@@ -186,7 +186,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 params: { cursor, limit, search }
             })
 
-            const {items, nextCursor, hasMore, count} = res.data.data;
+            const { items, nextCursor, hasMore, count } = res.data.data;
             dispatch({
                 type: cursor ? "APPEND_ALL_PROJECTS" : "SET_ALL_PROJECTS",
                 payload: {
@@ -285,7 +285,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     const updateProject = async (project: Project) => {
         try {
             dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
-            const res = await axios.put(`${API_BASE}/api/projects/${project.id}`, project,{
+            const res = await axios.put(`${API_BASE}/api/projects/${project.id}`, project, {
                 headers: {
                     'Authorization': `Bearer ${session?.accessToken}`,
                     'X-GitHub-Token': `Bearer ${session?.user?.githubAccessToken}`,
@@ -375,7 +375,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     const updateReleaseBlog = async (projectId: string, releaseBlogId: string, blog: any) => {
         try {
             const res = await axios.put(
-                `${API_BASE}/api/projects/${projectId}/update-release-blog/${releaseBlogId}`,
+                `${API_BASE}/api/release-blogs/update-release-blog/${projectId}/${releaseBlogId}`,
                 blog,
                 {
                     headers: {
@@ -402,7 +402,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     // Remove a release blog from a project (API)
     const removeReleaseBlog = async (projectId: string, blogId: string) => {
         try {
-            await axios.delete(`${API_BASE}/api/projects/${projectId}/delete-release-blog/${blogId}`, {
+            await axios.delete(`${API_BASE}/api/release-blogs/delete-release-blog/${projectId}/${blogId}`, {
                 headers: {
                     'Authorization': `Bearer ${session?.accessToken}`,
                     'X-GitHub-Token': `Bearer ${session?.user?.githubAccessToken}`,
@@ -521,7 +521,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             return []
         }
     }
-    
+
     const fetchProjectById = async (projectId: string) => {
         try {
             dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
@@ -547,7 +547,9 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     const fetchReleaseBlogById = async (releaseBlogId: string, projectId: string) => {
         try {
             dispatch({ type: "SET_IS_CURR_RELEASE_BLOG_LOADING", payload: true })
-            const res = await axios.get(`${API_BASE}/api/projects/${projectId}/get-release-blog-by-id/${releaseBlogId}`,
+            // console.log('fetching release blog by id: ', releaseBlogId, projectId);
+
+            const res = await axios.get(`${API_BASE}/api/release-blogs/get-release-blog/${projectId}/${releaseBlogId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${session?.accessToken}`,
@@ -555,7 +557,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                     }
                 }
             )
-            dispatch({ type: "SET_CURR_RELEASE_BLOG", payload: res.data })
+            dispatch({ type: "SET_CURR_RELEASE_BLOG", payload: res.data.data })
         } catch (error: any) {
             toast({
                 title: "Error ⭕",
@@ -646,13 +648,13 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 
     const loadMore = () => {
         if (!state.pagination?.hasMore) return;
-        fetchAllProjects({ cursor: state.pagination.nextCursor, limit: 1 });
+        fetchAllProjects({ cursor: state.pagination.nextCursor, limit: 5 });
     };
-    
+
 
     useEffect(() => {
         if (status === "authenticated") {
-            fetchAllProjects({limit: 1});
+            fetchAllProjects({ limit: 5 });
 
             if (project_id && session?.user?.githubAccessToken) {
                 fetchProjectById(project_id);

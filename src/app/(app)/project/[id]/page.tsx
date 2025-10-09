@@ -95,7 +95,7 @@ export default function Page() {
     const handleClearStatus = () => clearReleaseSyncStatus(projectId)
 
     const handleEditProject = () => setIsEditModalOpen(true)
-    
+
     const handleCloseEditModal = () => {
         setIsEditModalOpen(false)
         setIsUpdatingProject(false)
@@ -400,12 +400,12 @@ export default function Page() {
                             </div>
 
                             {curr_project?.releaseBlogs &&
-                                curr_project.releaseBlogs.length > 0 ? (
+                                curr_project?.releaseBlogs?.length > 0 ? (
                                 <div className="space-y-4 overflow-y-auto custom-small-scrollbar max-h-[50vh] pr-1">
-                                    {curr_project.releaseBlogs.map((blog: any, idx: number) => {
+                                    {curr_project?.releaseBlogs?.map((blog: any, idx: number) => {
                                         const statusVariant = getStatusBadgeVariant(blog.status)
                                         return (
-                                            <div key={idx} className={blogCardBase}>
+                                            <Link key={idx} className={`${blogCardBase} cursor-pointer`} href={`/project/${projectId}/edit/${blog._id}`}>
                                                 <CardHeader className="px-5 pb-4 pt-5 relative">
                                                     <div className="flex items-start justify-between">
                                                         <div className="flex-1 min-w-0">
@@ -457,12 +457,12 @@ export default function Page() {
                                                                 </CardDescription>
                                                             )}
 
-                                                            <Link
-                                                                href={`/project/${projectId}/edit/${blog.id}`}
+                                                            {/* <Link
+                                                                href={`/project/${projectId}/edit/${blog._id}`}
                                                                 className="mt-4 inline-block text-[11px] text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
                                                             >
                                                                 View details →
-                                                            </Link>
+                                                            </Link> */}
                                                         </div>
 
                                                         <div className="flex items-start gap-2">
@@ -491,7 +491,7 @@ export default function Page() {
                                                         </div>
                                                     </div>
                                                 </CardHeader>
-                                            </div>
+                                            </Link>
                                         )
                                     })}
                                 </div>
