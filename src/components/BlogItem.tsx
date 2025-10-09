@@ -99,7 +99,7 @@ const BlogItem: React.FC<BlogItemProps> = ({ blog, onBlogDeleted }) => {
             <CommandItem className="flex justify-between items-center cursor-pointer group p-2">
                 <div className="flex items-center gap-2 flex-1">
                     <File className="w-5 h-5" />
-                    <span className="truncate">{blog?.releaseTitle}</span>
+                    <span className="truncate">{blog?.blogTitle}</span>
                 </div>
 
                 <div className="flex items-center gap-1">
