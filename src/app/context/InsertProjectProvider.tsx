@@ -532,7 +532,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 }
             })
             dispatch({ type: "SET_PROJECT", payload: res.data.data })
-            // console.log('current project: ', state.curr_project, res.data.data)
+            console.log('current project: ', res.data.data)
         } catch (error: any) {
             toast({
                 title: "Error ⭕",
