@@ -285,7 +285,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     const updateProject = async (project: Project) => {
         try {
             dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
-            const res = await axios.put(`${API_BASE}/api/projects/${project.id}`, project, {
+            const res = await axios.put(`${API_BASE}/api/projects/update-project/${project.id}`, project, {
                 headers: {
                     'Authorization': `Bearer ${session?.accessToken}`,
                     'X-GitHub-Token': `Bearer ${session?.user?.githubAccessToken}`,
@@ -345,11 +345,10 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     // Add a release blog to a project (API)
     const addReleaseBlog = async (projectId: string, blog: any) => {
         try {
-            const res = await axios.post(`${API_BASE}/api/release-blogs/get-release-blogs/${projectId}`, {
+            const res = await axios.post(`${API_BASE}/api/release-blogs/create-release-blog/${projectId}`, {
                 releaseTitle: blog.title,
                 visibility: blog.visibility,
-                status: "DRAFT",
-                creatorUserId: session?.user?._id
+                status: "DRAFT"
             }, {
                 headers: {
                     'Authorization': `Bearer ${session?.accessToken}`,
@@ -384,7 +383,8 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                     }
                 }
             )
-            dispatch({ type: "UPDATE_RELEASE_BLOG", payload: { projectId, releaseBlogId, blog: res.data } })
+            console.log('update release blog res: ', res.data.data);
+            dispatch({ type: "UPDATE_RELEASE_BLOG", payload: { projectId, releaseBlogId, blog: res.data.data } })
             toast({
                 title: "Success ✅",
                 description: "Release blog updated successfully",
@@ -539,6 +539,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 description: error?.response?.data?.message || "Failed to fetch project",
                 variant: "destructive",
             })
+            router.push(`/u/${session?.user?.username}?tab=projects`)
         } finally {
             dispatch({ type: "SET_IS_PROJECT_LOADING", payload: false })
         }
@@ -564,9 +565,9 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 description: error?.response?.data?.message || "Failed to fetch release blog",
                 variant: "destructive",
             })
-            router.push(`/u/${session?.user?.username}?tab=projects`)
+            router.push(`/u/${session?.user?.username}?tab=projects`);
         } finally {
-            dispatch({ type: "SET_IS_CURR_RELEASE_BLOG_LOADING", payload: false })
+            dispatch({ type: "SET_IS_CURR_RELEASE_BLOG_LOADING", payload: false });
         }
     }
 

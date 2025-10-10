@@ -19,12 +19,12 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
-    Loader2, 
-    MoreHorizontal, 
-    GitBranch, 
-    ExternalLink, 
-    Eye, 
+import {
+    Loader2,
+    MoreHorizontal,
+    GitBranch,
+    ExternalLink,
+    Eye,
     EyeOff,
     Star,
     GitCommit
@@ -35,9 +35,11 @@ import Link from "next/link";
 import { languageColors } from "@/types/master-data";
 
 export default function ProjectsPage() {
-    const { 
-        all_projects, 
-        isAllProjectsLoading 
+    const {
+        all_projects,
+        isAllProjectsLoading,
+        pagination,
+        loadMore
     } = useInsertProjects();
 
     return (
@@ -48,7 +50,7 @@ export default function ProjectsPage() {
                         <Loader2 className="h-12 w-12 animate-spin text-gray-500" />
                     </div>
                 )}
-                
+
                 {!isAllProjectsLoading && (
                     <div>
                         <InsertNavbar />
@@ -64,8 +66,8 @@ export default function ProjectsPage() {
                         {all_projects?.map((project, idx) => (
                             <div key={project?.id} className="group">
                                 <div className="flex gap-6 justify-between px-2 lg:px-8 py-6 hover:bg-blue-50 dark:hover:bg-slate-900 transition ease-in-out border-[1px] rounded-md">
-                                    
-                                   
+
+
                                     <CardContent className="flex flex-col gap-3 pr-6 w-full">
                                         <CardHeader className="flex flex-col gap-3 px-0">
                                             {/* User Info */}
@@ -91,7 +93,7 @@ export default function ProjectsPage() {
                                                         {project?.name}
                                                     </CardTitle>
                                                 </Link>
-                                                
+
                                                 {/* Visibility Badge */}
                                                 {project?.visibility === "private" ? (
                                                     <Badge variant="destructive" className="flex items-center gap-1">
@@ -108,10 +110,10 @@ export default function ProjectsPage() {
                                                 {/* Language Badge */}
                                                 {project?.language && (
                                                     <Badge variant="outline" className="text-sm flex items-center gap-2">
-														<div
-															className="w-3 h-3 rounded-full"
-															style={{ backgroundColor: languageColors[project?.language] || '#586069' }}
-														/>
+                                                        <div
+                                                            className="w-3 h-3 rounded-full"
+                                                            style={{ backgroundColor: languageColors[project?.language] || '#586069' }}
+                                                        />
                                                         {project?.language}
                                                     </Badge>
                                                 )}
@@ -154,8 +156,8 @@ export default function ProjectsPage() {
                                             {/* Actions */}
                                             <div className="flex items-center gap-2">
                                                 {/* Repository Link */}
-                                                <Link 
-                                                    href={project?.repoUrl} 
+                                                <Link
+                                                    href={project?.repoUrl}
                                                     target="_blank"
                                                     className="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md transition-colors"
                                                 >
@@ -171,7 +173,7 @@ export default function ProjectsPage() {
                                                         <DropdownMenuContent className="w-56" align="end">
                                                             <DropdownMenuGroup>
                                                                 <DropdownMenuItem>
-                                                                    <Link 
+                                                                    <Link
                                                                         href={`/posts/projects/${project?.id}`}
                                                                         className="flex w-full"
                                                                     >
@@ -209,6 +211,12 @@ export default function ProjectsPage() {
                                 </div>
                             </div>
                         ))}
+
+                        {pagination?.hasMore && (
+                            <Button disabled={isAllProjectsLoading} onClick={loadMore}>
+                                {isAllProjectsLoading ? "Loading..." : "Load more"}
+                            </Button>
+                        )}
 
                         {/* Empty State */}
                         {all_projects?.length === 0 && (

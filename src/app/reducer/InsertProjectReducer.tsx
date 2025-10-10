@@ -165,8 +165,8 @@ export default function InsertProjectReducer(state: any, action: any) {
                             ? {
                                 ...p,
                                 releaseBlogs: sortByCreatedAt(
-                                    (p.releaseBlogs || []).map((b: ReleaseBlog) =>
-                                        b.id === action.payload.blog.id ? action.payload.blog : b
+                                    (p.releaseBlogs || []).map((b: any) =>
+                                        b._id === action.payload.blog._id ? action.payload.blog : b
                                     )
                                 ),
                             }
@@ -177,8 +177,8 @@ export default function InsertProjectReducer(state: any, action: any) {
                             ? {
                                 ...p,
                                 releaseBlogs: sortByCreatedAt(
-                                    (p.releaseBlogs || []).map((b: ReleaseBlog) =>
-                                        b.id === action.payload.blog.id ? action.payload.blog : b
+                                    (p.releaseBlogs || []).map((b: any) =>
+                                        b._id === action.payload.blog._id ? action.payload.blog : b
                                     )
                                 ),
                             }
@@ -189,8 +189,8 @@ export default function InsertProjectReducer(state: any, action: any) {
                     newState.curr_project = {
                         ...state.curr_project,
                         releaseBlogs: sortByCreatedAt(
-                            (state.curr_project.releaseBlogs || []).map((b: ReleaseBlog) =>
-                                b.id === action.payload.blog.id ? action.payload.blog : b
+                            (state.curr_project.releaseBlogs || []).map((b: any) =>
+                                b._id === action.payload.blog._id ? action.payload.blog : b
                             )
                         )
                     };
@@ -207,7 +207,7 @@ export default function InsertProjectReducer(state: any, action: any) {
                             ? {
                                 ...p,
                                 releaseBlogs: (p.releaseBlogs || []).filter(
-                                    (b: ReleaseBlog) => b.id !== action.payload.blogId
+                                    (b: any) => b._id !== action.payload.blogId
                                 ),
                             }
                             : p
@@ -217,7 +217,7 @@ export default function InsertProjectReducer(state: any, action: any) {
                             ? {
                                 ...p,
                                 releaseBlogs: (p.releaseBlogs || []).filter(
-                                    (b: ReleaseBlog) => b.id !== action.payload.blogId
+                                    (b: any) => b._id !== action.payload.blogId
                                 ),
                             }
                             : p
@@ -227,7 +227,7 @@ export default function InsertProjectReducer(state: any, action: any) {
                     newState.curr_project = {
                         ...state.curr_project,
                         releaseBlogs: (state.curr_project.releaseBlogs || []).filter(
-                            (b: ReleaseBlog) => b.id !== action.payload.blogId
+                            (b: any) => b._id !== action.payload.blogId
                         )
                     };
                 }

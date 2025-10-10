@@ -191,12 +191,8 @@ export default function ProjectDetailsPage() {
                 <div className="px-4 lg:px-8 xl:px-64 pb-10">
                     {/* Header with subtle gradient and ring */}
                     <div className="relative mb-8">
-                        {/* <div className="absolute inset-0 -z-10">
-                            <div className="absolute -top-20 -left-10 h-56 w-56 rounded-full bg-blue-500/10 blur-3xl" />
-                            <div className="absolute -bottom-16 -right-6 h-64 w-64 rounded-full bg-violet-500/10 blur-3xl" />
-                        </div> */}
 
-                        <Card className="relative overflow-hidden rounded-2xl border bg-card/70 backdrop-blur-xl">
+                        <Card className="relative rounded-2xl border bg-card/70 backdrop-blur-xl">
                             <div className="pointer-events-none absolute inset-0">
                                 <div className="absolute inset-0 opacity-[0.12] bg-[radial-gradient(60%_60%_at_30%_20%,theme(colors.blue.400/.6),transparent),radial-gradient(60%_60%_at_70%_80%,theme(colors.violet.400/.6),transparent)]" />
                             </div>

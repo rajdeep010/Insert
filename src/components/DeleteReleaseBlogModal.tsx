@@ -35,7 +35,7 @@ const DeleteReleaseBlogModal: React.FC<DeleteReleaseBlogModalProps> = ({
         if (!releaseBlog || !isConfirmationValid) return
 
         try {
-            await removeReleaseBlog(projectId, releaseBlog.id)
+            await removeReleaseBlog(projectId, releaseBlog._id)
             onClose()
             setConfirmationText('')
         } catch (error) {
@@ -60,7 +60,7 @@ const DeleteReleaseBlogModal: React.FC<DeleteReleaseBlogModalProps> = ({
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'UPLOADED':
+            case 'PUBLISHED':
                 return 'bg-green-500'
             case 'DRAFT':
                 return 'bg-yellow-500'
@@ -105,67 +105,6 @@ const DeleteReleaseBlogModal: React.FC<DeleteReleaseBlogModalProps> = ({
                             <li>Any external links to this blog will break</li>
                         </ul>
                     </div>
-
-                    {/* Blog Information */}
-                    {/* <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                        <div className="flex items-center gap-2 mb-3">
-                            <FileText className="h-4 w-4" />
-                            <span className="font-medium text-sm">Blog to be deleted</span>
-                        </div>
-                        
-                        <div className="space-y-3">
-                            <div>
-                                <h3 className="font-semibold text-lg mb-1">{blogTitle}</h3>
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Badge className={`${getStatusColor(releaseBlog.status)} text-white text-xs`}>
-                                        {releaseBlog.status}
-                                    </Badge>
-                                    {releaseBlog.visibility && (
-                                        <Badge variant="outline" className="text-xs">
-                                            {releaseBlog.visibility}
-                                        </Badge>
-                                    )}
-                                </div>
-                            </div>
-
-                            {releaseBlog.blogContentText && (
-                                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
-                                    {releaseBlog.blogContentText.length > 150 
-                                        ? `${releaseBlog.blogContentText.substring(0, 150)}...` 
-                                        : releaseBlog.blogContentText
-                                    }
-                                </p>
-                            )}
-
-                            <div className="grid grid-cols-2 gap-4 text-sm pt-2 border-t border-gray-200 dark:border-gray-700">
-                                <div>
-                                    <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                        <Clock className="h-3 w-3" />
-                                        Created
-                                    </span>
-                                    <p className="font-medium">{formatDate(releaseBlog.createdAt)}</p>
-                                </div>
-                                <div>
-                                    <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                        <Clock className="h-3 w-3" />
-                                        Last Edited
-                                    </span>
-                                    <p className="font-medium">{formatDate(releaseBlog.lastEdited)}</p>
-                                </div>
-                                {releaseBlog.commitId && (
-                                    <div className="col-span-2">
-                                        <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                            <GitCommit className="h-3 w-3" />
-                                            Commit ID
-                                        </span>
-                                        <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded mt-1 block w-fit">
-                                            {releaseBlog.commitId}
-                                        </code>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div> */}
 
                     <Separator />
 

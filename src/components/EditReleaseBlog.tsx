@@ -23,7 +23,7 @@ interface EditReleaseBlogModalProps {
 interface ReleaseBlogUpdateConfig {
     releaseTitle: string
     visibility: 'public' | 'private'
-    status: 'DRAFT' | 'UPLOADED' | 'PROCESSING'
+    status: 'DRAFT' | 'PROCESSING' | 'PUBLISHED'
 }
 
 const EditReleaseBlogModal: React.FC<EditReleaseBlogModalProps> = ({
@@ -72,8 +72,10 @@ const EditReleaseBlogModal: React.FC<EditReleaseBlogModalProps> = ({
     const handleSubmit = async () => {
         if (!releaseBlog || !hasChanges) return
 
+        console.log('projectid, releaseblog', projectId, releaseBlog)
+
         try {
-            await updateReleaseBlog(projectId, releaseBlog.id, {
+            await updateReleaseBlog(projectId, releaseBlog._id, {
                 releaseTitle: config.releaseTitle,
                 visibility: config.visibility,
                 status: config.status,
@@ -102,7 +104,7 @@ const EditReleaseBlogModal: React.FC<EditReleaseBlogModalProps> = ({
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'UPLOADED':
+            case 'PUBLISHED':
                 return 'bg-green-500'
             case 'DRAFT':
                 return 'bg-yellow-500'
@@ -217,7 +219,7 @@ const EditReleaseBlogModal: React.FC<EditReleaseBlogModalProps> = ({
                             </Label>
                             <Select
                                 value={config.status}
-                                onValueChange={(value: 'DRAFT' | 'UPLOADED' | 'PROCESSING') => setConfig(prev => ({ ...prev, status: value }))}
+                                onValueChange={(value: 'DRAFT' | 'PUBLISHED' | 'PROCESSING') => setConfig(prev => ({ ...prev, status: value }))}
                             >
                                 <SelectTrigger className="w-full">
                                     <SelectValue />
@@ -229,10 +231,10 @@ const EditReleaseBlogModal: React.FC<EditReleaseBlogModalProps> = ({
                                             Draft - Work in progress
                                         </div>
                                     </SelectItem>
-                                    <SelectItem value="UPLOADED">
+                                    <SelectItem value="PUBLISHED">
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 bg-green-500 rounded-full" />
-                                            Uploaded - Published and live
+                                            Published - Live now
                                         </div>
                                     </SelectItem>
                                     <SelectItem value="PROCESSING">

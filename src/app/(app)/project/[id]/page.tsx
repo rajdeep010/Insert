@@ -49,7 +49,7 @@ export default function Page() {
         isSyncingRelease,
         releaseSyncStatus,
         webSocketConnected,
-        clearReleaseSyncStatus
+        clearReleaseSyncStatus,
     } = useInsertProjects()
 
     const params = useParams()
@@ -169,7 +169,7 @@ export default function Page() {
                                                 className={`absolute -bottom-[-2px] -right-[-2px] h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-semibold
                           ${webSocketConnected ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}
                                             >
-                                                
+
                                             </span>
                                         </div>
 
@@ -196,8 +196,8 @@ export default function Page() {
                                                 >
                                                     <span
                                                         className={`h-2 w-2 rounded-full ${webSocketConnected
-                                                                ? 'bg-green-400 animate-pulse'
-                                                                : 'bg-red-400'
+                                                            ? 'bg-green-400 animate-pulse'
+                                                            : 'bg-red-400'
                                                             }`}
                                                     />
                                                     {webSocketConnected ? 'Connected' : 'Offline'}
@@ -456,13 +456,6 @@ export default function Page() {
                                                                     {blog.blogContentText}
                                                                 </CardDescription>
                                                             )}
-
-                                                            {/* <Link
-                                                                href={`/project/${projectId}/edit/${blog._id}`}
-                                                                className="mt-4 inline-block text-[11px] text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
-                                                            >
-                                                                View details →
-                                                            </Link> */}
                                                         </div>
 
                                                         <div className="flex items-start gap-2">

@@ -35,8 +35,7 @@ const AddReleaseBlogModal = ({defaultVisibility, onClose}: any) => {
 	)
 
 	const blogSubmit = async (data: z.infer<typeof blogSchema>) => {
-        // console.log('this is id: ', curr_project, curr_project?.project?.id)
-		await addReleaseBlog(curr_project?.project?.id, {
+		await addReleaseBlog(curr_project?.id, {
             title: data.title, 
             visibility: data.visibility
         })

@@ -37,7 +37,7 @@ import { useInsertProjects } from "@/app/context/InsertProjectProvider";
 import { getLastModifiedText } from "@/helpers/last-modified";
 import { cn } from "@/lib/utils";
 
-type ReleaseBlogStatus = "UPLOADED" | "DRAFT" | "PROCESSING" | "ERROR" | "COMPLETED";
+type ReleaseBlogStatus = "PUBLISHED" | "DRAFT" | "PROCESSING" | "ERROR" | "COMPLETED";
 
 interface ReleaseBlog {
   _id: string;
@@ -56,7 +56,7 @@ interface ReleaseBlogItemProps {
 }
 
 const statusStyles: Record<ReleaseBlogStatus | "DEFAULT", string> = {
-  UPLOADED: "bg-green-500/90 hover:bg-green-500",
+  PUBLISHED: "bg-green-500/90 hover:bg-green-500",
   DRAFT: "bg-yellow-500/90 hover:bg-yellow-500",
   PROCESSING: "bg-blue-500/90 hover:bg-blue-500",
   ERROR: "bg-red-500/90 hover:bg-red-500",
@@ -66,7 +66,7 @@ const statusStyles: Record<ReleaseBlogStatus | "DEFAULT", string> = {
 
 const buildStatusIcon = (status: ReleaseBlogStatus) => {
   switch (status) {
-    case "UPLOADED":
+    case "PUBLISHED":
     case "COMPLETED":
       return <CheckCircle className="h-3 w-3 text-green-500" />;
     case "PROCESSING":
@@ -147,13 +147,13 @@ const categoryMeta: Record<
   published: {
     label: "Published",
     icon: <CheckCircle className="h-3 w-3 text-green-500" />,
-    match: (b) => b.status === "UPLOADED",
+    match: (b) => b.status === "PUBLISHED",
   },
 };
 
 const mapStatusToCategory = (status: ReleaseBlogStatus): CategoryKey => {
   if (status === "PROCESSING") return "processing";
-  if (status === "UPLOADED") return "published";
+  if (status === "PUBLISHED") return "published";
   return "drafts"; // DRAFT / COMPLETED / ERROR -> drafts bucket (adjust if you want ERROR separate)
 };
 
