@@ -151,10 +151,10 @@ const Blogs = () => {
 								</DropdownMenuContent>
 							</DropdownMenu>
 						</div>
-						<div className="mt-auto pt-4 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-							<span>{blog?.readTime || '—'} min read</span>
-							<span>{blog?.createdAt ? new Date(blog.createdAt).toLocaleDateString() : ''}</span>
-						</div>
+						{/* <div className="mt-auto pt-4 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400"> */}
+							{/* <span>{blog?.readTime || '—'} min read</span> */}
+							{/* <span>{blog?.createdAt ? new Date(blog.createdAt).toLocaleDateString() : ''}</span> */}
+						{/* </div> */}
 					</CardContent>
 				</Card>
 			</Link>
@@ -180,7 +180,13 @@ const Blogs = () => {
 	return (
 		<div className="flex flex-col gap-6">
 			<div className="flex items-center justify-between flex-wrap gap-4">
-				<h2 className="text-2xl font-semibold tracking-tight">Blogs</h2>
+				{/* <h2 className="text-2xl font-semibold tracking-tight">Blogs</h2> */}
+				<span className="flex items-center gap-2 text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
+					Blogs
+					<Badge variant="secondary" className="text-xs px-2 py-0.5">
+						{allBlogs.length}
+					</Badge>
+				</span>
 				<div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
 					<span className="flex items-center gap-1">
 						<Globe2 className="h-3 w-3" /> {publicBlogs.length} public

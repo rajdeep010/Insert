@@ -18,7 +18,8 @@ const Overview = () => {
 	const { user } = useInsertUser()
 	const { data: session, status } = useSession()
 
-	const canEdit = status === 'authenticated' && session?.user?.username === user?.username
+	const canEdit =
+		status === 'authenticated' && session?.user?.username === user?.username
 	const hasTopics = !isTopicsLoading && user_Topics && user_Topics.length > 0
 	const firstTopics = (user_Topics || []).slice(0, 4)
 
@@ -26,8 +27,18 @@ const Overview = () => {
 		<div className="py-6 flex flex-col gap-6">
 			{isTopicsLoading && <OverviewSkeleton />}
 
-			<div className="flex items-center justify-between">
-				<h2 className="text-xl font-semibold tracking-tight">Recent Topics</h2>
+			<div className="flex items-center justify-between flex-wrap gap-3">
+				<div className="flex items-center gap-2">
+					<span className="flex items-center gap-2 text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
+						Overview
+						{hasTopics && (
+							<Badge variant="secondary" className="text-xs">
+								{user_Topics?.length || 0}
+							</Badge>
+						)}
+					</span>
+
+				</div>
 				{hasTopics && (
 					<Link
 						href={`/u/${user?.username}?tab=topics`}
@@ -38,18 +49,18 @@ const Overview = () => {
 				)}
 			</div>
 
-			<div className="grid gap-5 sm:grid-cols-2">
+			<div className="grid gap-6 sm:grid-cols-2">
 				{hasTopics &&
 					firstTopics.map((topic, idx) => (
 						<Card
 							key={idx}
-							className={surface + ' shadow-none p-0 ' + hoverable + ' group overflow-hidden'}
+							className={`${surface} shadow-none p-0 ${hoverable} group overflow-hidden`}
 						>
-							<CardHeader className="p-5 pb-4 flex flex-col gap-3">
+							<CardHeader className="p-6 pb-5 flex flex-col gap-3 min-h-[140px]">
 								<div className="flex items-start justify-between gap-4">
 									<div className="flex flex-col gap-2 min-w-0">
 										<div className="flex flex-wrap items-center gap-3">
-											<CardTitle className="text-base font-semibold leading-snug truncate">
+											<CardTitle className="text-lg font-semibold leading-snug truncate">
 												<Link
 													href={`/topic/${topic.id}`}
 													className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
@@ -74,18 +85,17 @@ const Overview = () => {
 											)}
 										</div>
 										{topic?.about && (
-											<CardDescription className="text-xs leading-relaxed line-clamp-2">
-												{topic.about.length > 120
-													? topic.about.slice(0, 118) + '…'
+											<CardDescription className="text-sm leading-relaxed text-gray-600 dark:text-gray-400 line-clamp-3">
+												{topic.about.length > 160
+													? topic.about.slice(0, 158) + '…'
 													: topic.about}
 											</CardDescription>
 										)}
 									</div>
 								</div>
-								<div className="flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400 pt-1">
-									<span className="uppercase tracking-wide">
-										{topic?.visibility}
-									</span>
+
+								<div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 pt-2 mt-1 border-t border-black/5 dark:border-white/10">
+									<span className="uppercase tracking-wide">{topic?.visibility}</span>
 									<Link
 										href={`/topic/${topic.id}`}
 										className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
@@ -98,10 +108,10 @@ const Overview = () => {
 					))}
 
 				{!isTopicsLoading && !hasTopics && canEdit && (
-					<Card className={surface + ' shadow-none'}>
+					<Card className={`${surface} shadow-none`}>
 						<CardHeader className="p-8 flex flex-col items-start gap-4">
 							<CardTitle className="text-base">No topics yet</CardTitle>
-							<CardDescription className="text-xs">
+							<CardDescription className="text-sm text-gray-600 dark:text-gray-400">
 								You have not created any topics. Start by adding your first one.
 							</CardDescription>
 							<Link
@@ -115,10 +125,10 @@ const Overview = () => {
 				)}
 
 				{!isTopicsLoading && !hasTopics && !canEdit && (
-					<Card className={surface + ' shadow-none'}>
+					<Card className={`${surface} shadow-none`}>
 						<CardHeader className="p-8 flex flex-col gap-3">
 							<CardTitle className="text-base">No topics published</CardTitle>
-							<CardDescription className="text-xs">
+							<CardDescription className="text-sm text-gray-600 dark:text-gray-400">
 								This user has not published any topics yet.
 							</CardDescription>
 						</CardHeader>

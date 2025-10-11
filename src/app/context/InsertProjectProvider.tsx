@@ -58,7 +58,8 @@ interface InsertProjectProviderProps {
     clearReleaseSyncStatus: (projectId: string) => void
     fetchReleaseBlogById: (releaseBlogId: string, projectId: string) => void
     changeReleaseBlog: (blog: any) => void
-    loadMore: () => void
+    loadMore: () => void,
+    sendFeedback: (payload: { type: 'message' | 'suggestion'; text: string }) => Promise<void>
 }
 
 const initialState = {
@@ -106,7 +107,8 @@ const initialState = {
     clearReleaseSyncStatus: (projectId: string) => { },
     fetchReleaseBlogById: (releaseBlogId: string, projectId: string) => { },
     changeReleaseBlog: (blog: any) => { },
-    loadMore: () => { }
+    loadMore: () => { },
+    sendFeedback: (_: { type: 'message' | 'suggestion'; text: string }) => { }
 }
 
 const InsertProjectContext = createContext<InsertProjectProviderProps | null>(null)
@@ -291,7 +293,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                     'X-GitHub-Token': `Bearer ${session?.user?.githubAccessToken}`,
                 }
             })
-            dispatch({ type: "UPDATE_PROJECT", payload: res.data })
+            dispatch({ type: "UPDATE_PROJECT", payload: res.data.data })
             toast({
                 title: "Success ✅",
                 description: "Project updated successfully",
@@ -348,14 +350,25 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             const res = await axios.post(`${API_BASE}/api/release-blogs/create-release-blog/${projectId}`, {
                 releaseTitle: blog.title,
                 visibility: blog.visibility,
-                status: "DRAFT"
+                status: "DRAFT",
+                blogContent: JSON.stringify({
+                    type: "doc",
+                    content: [
+                        {
+                            type: "heading",
+                            attrs: { textAlign: null, level: 1 },
+                            content: [{ type: "text", text: String(blog.title ?? "") }],
+                        },
+                        { type: "paragraph", attrs: { textAlign: null } },
+                    ],
+                })
             }, {
                 headers: {
                     'Authorization': `Bearer ${session?.accessToken}`,
                     'X-GitHub-Token': `Bearer ${session?.user?.githubAccessToken}`,
                 }
             })
-            dispatch({ type: "ADD_RELEASE_BLOG", payload: { projectId, blog: res.data } })
+            dispatch({ type: "ADD_RELEASE_BLOG", payload: { projectId, blog: res.data.data } })
             toast({
                 title: "Success ✅",
                 description: "Release blog added successfully",
@@ -423,7 +436,45 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
         }
     }
 
+    const sendFeedback = async (payload: { type: 'message' | 'suggestion'; text: string }) => {
+        try {
+            const text = payload?.text?.trim() || ''
+            if (!text) {
+                toast({
+                    title: "Nothing to send",
+                    description: "Please write a message before sending.",
+                    variant: "destructive",
+                })
+                return
+            }
 
+            const res = await axios.post(`${API_BASE}/api/feedback/send-message`, {
+                ...payload,
+            }, { headers: { Authorization: `Bearer ${session?.accessToken}` } })
+
+            if (res.data.success) {
+                toast({
+                    title: "✅ Sent successfully",
+                    description: `Your ${payload.type === 'suggestion' ? 'suggestion' : 'message'} has been received.`,
+                    variant: "default",
+                })
+            }
+            else {
+                toast({
+                    title: "Error ⭕",
+                    description: res.data.message || "Failed to send feedback",
+                    variant: "destructive",
+                })
+            }
+
+        } catch (error: any) {
+            toast({
+                title: "Error ⭕",
+                description: error?.response?.data?.message || "Failed to send feedback",
+                variant: "destructive",
+            })
+        }
+    }
 
     // Update syncRelease to handle real-time tracking
     const syncRelease = async (projectId: string) => {
@@ -443,12 +494,15 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                     'X-GitHub-Token': `Bearer ${session?.user?.githubAccessToken}`,
                 }
             })
+
+            console.log('this is res1:', res.data, state.curr_project);
+
             dispatch({
                 type: "SET_IS_SYNCING_RELEASE",
                 payload: { projectId, isLoading: false }
             })
 
-            // console.log('res data: ', res.data)
+            console.log('res data2: ', res.data, state.curr_project)
 
             if (res.data?.releaseBlog) {
                 dispatch({
@@ -456,6 +510,8 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                     payload: { projectId, blog: res.data.releaseBlog }
                 })
             }
+
+            console.log('res data3: ', res.data, state.curr_project)
 
             toast({
                 title: "Release Sync Started 🚀",
@@ -614,9 +670,10 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                                 blog: lastMessage?.releaseBlog
                             }
                         })
-                    } else {
-                        fetchReleaseBlogForProject(lastMessage?.projectId)
                     }
+                    // else {
+                    //     fetchReleaseBlogForProject(lastMessage?.projectId)
+                    // }
 
                     toast({
                         title: "Release Ready ✅",
@@ -689,6 +746,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 fetchRepositoryBranches,
                 clearReleaseSyncStatus,
                 fetchReleaseBlogById,
+                sendFeedback,
             }}
         >
             {children}

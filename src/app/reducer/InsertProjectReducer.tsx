@@ -11,6 +11,15 @@ const sortByCreatedAt = (blogs: any[] = []) => {
     })
 }
 
+const mergeDefined = <T extends object>(prev: T, patch: Partial<T>): T => {
+    const next: any = { ...prev }
+    Object.keys(patch || {}).forEach((k) => {
+        const v = (patch as any)[k]
+        if (v !== undefined) next[k] = v // apply only defined values; allow null to intentionally clear
+    })
+    return next
+}
+
 export default function InsertProjectReducer(state: any, action: any) {
 
     switch (action.type) {
@@ -19,7 +28,20 @@ export default function InsertProjectReducer(state: any, action: any) {
         case "SET_IS_CURR_RELEASE_BLOG_LOADING":
             return { ...state, isCurrReleaseBlogLoading: action.payload }
         case "SET_CURR_RELEASE_BLOG":
-            return { ...state, currReleaseBlog: {...action.payload, blogContent: JSON.parse(action.payload.blogContent || "{}")}, }
+            const raw = action.payload
+            let blogContent = raw?.blogContent
+
+            if (typeof blogContent === "string") {
+                try {
+                    blogContent = JSON.parse(blogContent || "{}")
+                } catch {
+                    blogContent = {}
+                }
+            } else if (blogContent == null) {
+                blogContent = {}
+            }
+
+            return { ...state, currReleaseBlog: { ...raw, blogContent } }
         case "SET_IS_ALL_PROJECTS_LOADING":
             return { ...state, isAllProjectsLoading: action.payload }
         case "SET_USER_PROJECTS":
@@ -69,25 +91,25 @@ export default function InsertProjectReducer(state: any, action: any) {
                 all_projects: [...state.all_projects, action.payload]
             }
 
-        case "UPDATE_PROJECT":
+        case "UPDATE_PROJECT": {
+            const patch: Partial<Project> = action.payload
+
             const updatedState = {
                 ...state,
                 user_projects: state.user_projects.map((p: Project) =>
-                    p.id === action.payload.id ? action.payload : p
+                    p.id === patch.id ? mergeDefined<Project>(p, patch) : p
                 ),
                 all_projects: state.all_projects.map((p: Project) =>
-                    p.id === action.payload.id ? action.payload : p
+                    p.id === patch.id ? mergeDefined<Project>(p, patch) : p
                 ),
             }
 
-            if (action.payload.id === state.curr_project?.project?.id) {
-                updatedState.curr_project = {
-                    ...state.curr_project,
-                    project: action.payload
-                }
+            if (state.curr_project?.id === patch.id) {
+                updatedState.curr_project = mergeDefined<Project>(state.curr_project, patch)
             }
 
             return updatedState
+        }
 
         case "REMOVE_PROJECT":
             return {
@@ -117,7 +139,7 @@ export default function InsertProjectReducer(state: any, action: any) {
                     ),
                 };
                 // Update curr_project.releaseBlogs if this is the current project
-                if (state.curr_project?.project?.id === action.payload.projectId) {
+                if (state.curr_project?.id === action.payload.projectId) {
                     newState.curr_project = {
                         ...state.curr_project,
                         releaseBlogs: sortedBlogs
@@ -147,7 +169,7 @@ export default function InsertProjectReducer(state: any, action: any) {
                             : p
                     ),
                 };
-                if (state.curr_project?.project?.id === action.payload.projectId) {
+                if (state.curr_project?.id === action.payload.projectId) {
                     newState.curr_project = {
                         ...state.curr_project,
                         releaseBlogs: sortByCreatedAt([...(state.curr_project.releaseBlogs || []), action.payload.blog])
@@ -185,7 +207,7 @@ export default function InsertProjectReducer(state: any, action: any) {
                             : p
                     ),
                 };
-                if (state.curr_project?.project?.id === action.payload.projectId) {
+                if (state.curr_project?.id === action.payload.projectId) {
                     newState.curr_project = {
                         ...state.curr_project,
                         releaseBlogs: sortByCreatedAt(
@@ -223,7 +245,7 @@ export default function InsertProjectReducer(state: any, action: any) {
                             : p
                     ),
                 };
-                if (state.curr_project?.project?.id === action.payload.projectId) {
+                if (state.curr_project?.id === action.payload.projectId) {
                     newState.curr_project = {
                         ...state.curr_project,
                         releaseBlogs: (state.curr_project.releaseBlogs || []).filter(

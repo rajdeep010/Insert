@@ -7,7 +7,7 @@ import { getSession } from "next-auth/react";
 export async function POST(request: Request) {
     await dbConnect()
     const token = await getToken({ req: request as any })
-    
+
     try {
         const { ...formData } = await request.json()
         const username = token?.username
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
             return Response.json({
                 success: false,
                 message: 'User not found',
-            },{ status: 404 })
+            }, { status: 404 })
         }
 
         const updateData: Record<string, any> = {}
@@ -25,12 +25,16 @@ export async function POST(request: Request) {
             updateData[key] = formData[key]
         })
 
-        const updatedUser = await UserModel.updateOne({ username }, { $set: updateData })
-        if (updatedUser.modifiedCount === 0) {
-            return Response.json({
-                success: false,
-                message: 'Data is same as before'
-            }, { status: 400 })
+        const updatedUser = await UserModel
+            .findOneAndUpdate(
+                { username },
+                { $set: updateData },
+                { new: true, runValidators: true }
+            )
+            .select('-password -__v')
+
+        if (!updatedUser) {
+            return Response.json({ success: false, message: 'User not found' }, { status: 404 })
         }
 
         return Response.json({
@@ -43,6 +47,6 @@ export async function POST(request: Request) {
         return Response.json({
             success: false,
             message: 'Error in updating user'
-        }, {status: 500})
+        }, { status: 500 })
     }
 }

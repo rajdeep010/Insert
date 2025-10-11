@@ -348,6 +348,7 @@ const ReleaseBlogEditor = () => {
         if (!editorContent) return;
         try {
             setIsSaving(true);
+            console.log('release blog content: ', JSON.stringify(editorContent));
             await updateReleaseBlog(projectId, releaseBlogId, {
                 blogContent: JSON.stringify(editorContent),
                 blogContentText: editorTextContent,

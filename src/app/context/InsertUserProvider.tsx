@@ -167,7 +167,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
                 })
 
                 const userdata = await response.data.userdata
-                dispatch({ type: "SET_USER",payload: userdata })
+                dispatch({ type: "SET_USER", payload: userdata })
             }
 
         } catch (error) {

@@ -137,21 +137,23 @@ const Dashboard = () => {
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
                     <div className="flex items-center gap-3">
-                        <h1 className="text-2xl font-semibold tracking-tight">Topics</h1>
-                        <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                            {filteredTopics.length}
-                        </Badge>
+                        <span className="flex items-center gap-2 text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
+                            Topics
+                            <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                                {filteredTopics.length}
+                            </Badge>
+                        </span>
                     </div>
                     <div className="flex items-center gap-3 w-full md:w-auto">
-                        <div className={surfaceMuted + ' flex items-center gap-2 px-3 py-2 w-full md:w-72'}>
+                        {/* <div className={surfaceMuted + ' flex items-center gap-2 px-3 py-2 w-full md:w-80'}>
                             <Search className="h-4 w-4 text-gray-500" />
                             <Input
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
                                 placeholder="Search topics..."
-                                className="h-7 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
+                                className="h-8 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
                             />
-                        </div>
+                        </div> */}
                         {canEdit && (
                             <Button
                                 onClick={() => setIsTopicModalOpen(true)}
@@ -164,7 +166,19 @@ const Dashboard = () => {
                         )}
                     </div>
                 </div>
-                {/* <div className="h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" /> */}
+
+                <div className={`${surface} ${hoverable} shadow-none p-2 pr-3 flex items-center gap-2 w-full`}>
+                    <div className="pl-2 pr-1 text-gray-500">
+                        <Search className="h-4 w-4" />
+                    </div>
+                    <Input
+                        type="text"
+                        placeholder="Search topics by title..."
+                        className="border-0 focus-visible:ring-0 bg-transparent"
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                    />
+                </div>
             </div>
 
             {/* Topics List */}
@@ -180,76 +194,69 @@ const Dashboard = () => {
                             },
                             idx
                         ) => (
-                            <Card
-                                key={id}
-                                className={
-                                    surface +
-                                    ' shadow-none p-0 ' +
-                                    hoverable +
-                                    ' group overflow-hidden'
-                                }
-                            >
-                                <CardHeader className="p-5 pb-4">
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div className="flex flex-col gap-2 min-w-0">
-                                            <div className="flex flex-wrap items-center gap-3">
-                                                <CardTitle className="text-lg font-semibold truncate">
-                                                    <Link
-                                                        href={`/topic/${id}`}
-                                                        className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                                                    >
+                            <Link key={id} href={`/topic/${id}`} className="block group">
+                                {/* Larger card with full-click surface */}
+                                <Card
+                                    className={
+                                        surface +
+                                        ' shadow-none p-0 ' +
+                                        hoverable +
+                                        ' cursor-pointer group/inner overflow-hidden'
+                                    }
+                                >
+                                    <CardHeader className="p-6 lg:p-7 pb-5 lg:pb-6">
+                                        <div className="flex items-start justify-between gap-4">
+                                            {/* Left: content */}
+                                            <div className="flex flex-col gap-3 min-w-0">
+                                                <div className="flex flex-wrap items-center gap-3">
+                                                    <CardTitle className="text-xl font-semibold truncate group-hover/inner:text-indigo-600 dark:group-hover/inner:text-indigo-400 transition-colors">
                                                         {title}
-                                                    </Link>
-                                                </CardTitle>
-                                                {visibility === 'private' ? (
-                                                    <Badge
-                                                        variant="destructive"
-                                                        className="flex items-center gap-1 text-[10px] px-2 py-0.5"
-                                                    >
-                                                        <Lock className="h-3 w-3" />
-                                                        private
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge
-                                                        variant="secondary"
-                                                        className="flex items-center gap-1 text-[10px] px-2 py-0.5"
-                                                    >
-                                                        <Globe2 className="h-3 w-3" />
-                                                        public
-                                                    </Badge>
+                                                    </CardTitle>
+                                                    {visibility === 'private' ? (
+                                                        <Badge
+                                                            variant="destructive"
+                                                            className="flex items-center gap-1 text-[10px] px-2 py-0.5"
+                                                        >
+                                                            <Lock className="h-3 w-3" />
+                                                            private
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className="flex items-center gap-1 text-[10px] px-2 py-0.5"
+                                                        >
+                                                            <Globe2 className="h-3 w-3" />
+                                                            public
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                                {about && (
+                                                    <CardDescription className="text-sm leading-relaxed line-clamp-3">
+                                                        {about}
+                                                    </CardDescription>
                                                 )}
                                             </div>
-                                            {about && (
-                                                <CardDescription className="text-sm leading-relaxed line-clamp-2">
-                                                    {about}
-                                                    {about.length > 40 && (
-                                                        <>
-                                                            ...{' '}
-                                                            <Link
-                                                                href={`/topic/${id}`}
-                                                                className="text-indigo-600 dark:text-indigo-400 hover:underline"
-                                                            >
-                                                                read more
-                                                            </Link>
-                                                        </>
-                                                    )}
-                                                </CardDescription>
+
+                                            {/* Right: action (does not navigate) */}
+                                            {canEdit && (
+                                                <Button
+                                                    variant="destructive"
+                                                    size="icon"
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        e.stopPropagation()
+                                                        handleOpenDeleteTopicModal(id)
+                                                    }}
+                                                    className="h-8 w-8"
+                                                    title="Delete topic"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
                                             )}
                                         </div>
-
-                                        {canEdit && (
-                                            <Button
-                                                variant="destructive"
-                                                size="icon"
-                                                onClick={() => handleOpenDeleteTopicModal(id)}
-                                                className="h-8 w-8"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                    </div>
-                                </CardHeader>
-                            </Card>
+                                    </CardHeader>
+                                </Card>
+                            </Link>
                         )
                     )
                 ) : (
