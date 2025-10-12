@@ -57,7 +57,7 @@ export default function SignInForm() {
 
             if (response?.url) {
                 toast({
-                    title: 'Hello',
+                    title: '👋 Hello',
                     description: 'Welcome from team insert'
                 })
 
