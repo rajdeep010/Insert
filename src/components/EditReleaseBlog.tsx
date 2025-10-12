@@ -176,7 +176,7 @@ const EditReleaseBlogModal: React.FC<EditReleaseBlogModalProps> = ({
                                 onChange={(e) => setConfig(prev => ({ ...prev, releaseTitle: e.target.value }))}
                             />
                             <p className="text-xs text-gray-500">
-                                This title will be displayed in the project's release list
+                                This title will be displayed in the project&apos;s release list
                             </p>
                         </div>
 

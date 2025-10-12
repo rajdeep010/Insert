@@ -30,7 +30,7 @@ const ConfirmDeleteProject: React.FC<ConfirmDeleteProjectProps> = ({
                     <DialogDescription className="text-sm text-gray-600 mt-3">
                         This action cannot be undone. This will permanently delete the project
                         <span className="font-semibold text-black dark:text-white mx-1">
-                            "{deleteConfirm.projectName}"
+                            &quot;{deleteConfirm.projectName}&quot;
                         </span>
                         and all of its data including release blogs and configurations.
                     </DialogDescription>

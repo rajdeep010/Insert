@@ -147,7 +147,7 @@ const BlogItem: React.FC<BlogItemProps> = ({ blog, onBlogDeleted }) => {
                         <DialogDescription className="text-sm text-gray-600 mt-3">
                             This action cannot be undone. This will permanently delete the blog
                             <span className="font-semibold text-black dark:text-white mx-1">
-                                "{blog.blogTitle}"
+                                &quot;{blog.blogTitle}&quot;
                             </span>
                             and all of its content.
                         </DialogDescription>

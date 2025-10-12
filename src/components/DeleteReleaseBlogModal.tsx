@@ -132,7 +132,7 @@ const DeleteReleaseBlogModal: React.FC<DeleteReleaseBlogModalProps> = ({
                         />
                         {confirmationText && !isConfirmationValid && (
                             <p className="text-sm text-red-600 dark:text-red-400">
-                                The blog title doesn't match. Please type it exactly as shown above.
+                                The blog title doesn&apos;t match. Please type it exactly as shown above.
                             </p>
                         )}
                         {isConfirmationValid && (
