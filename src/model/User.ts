@@ -49,6 +49,16 @@ export interface User extends Document{
     // topic_ids: [string];
     notifications: NotificationData[]
     avatar?: string
+
+    // GitHub fields
+    githubAccessToken?: string;
+    githubLogin?: string;
+    githubId?: string | number;
+    githubScopes?: string[];
+    githubConnectedAt?: Date;
+    githubAvatarUrl?: string;
+    githubName?: string;
+    githubEmail?: string;
 }
 
 const UserSchema: Schema<User> = new Schema({
@@ -110,7 +120,17 @@ const UserSchema: Schema<User> = new Schema({
     avatar: {
         type: String,
         default: 'https://github.com/shadcn.png'
-    }
+    },
+
+    // --- GitHub fields ---
+    githubAccessToken: { type: String, default: null },
+    githubLogin: { type: String, default: null },
+    githubId: { type: Schema.Types.Mixed, default: null },
+    githubScopes: { type: [String], default: [] },
+    githubConnectedAt: { type: Date, default: null },
+    githubAvatarUrl: { type: String, default: null },
+    githubName: { type: String, default: null },
+    githubEmail: { type: String, default: 'https://github.com/shadcn.png' }
 })
 
 const UserModel = (mongoose.models.User as mongoose.Model<User>) ||  mongoose.model<User>('User', UserSchema)

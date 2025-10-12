@@ -32,6 +32,12 @@ export default function BlogReducer(state: any,action: any) {
                 allBlogs: [action.payload,...state.allBlogs],
             }
 
+        case "REMOVE_BLOG":
+            return {
+                ...state,
+                allBlogs: state.allBlogs.filter((blog: any) => blog._id !== action.payload),
+            }
+
         case "SET_IS_BLOG_LOADING":
             return {
                 ...state,
@@ -54,6 +60,12 @@ export default function BlogReducer(state: any,action: any) {
             return {
                 ...state,
                 allBlogPosts: action.payload,
+            }
+
+        case "SET_IS_DELETING":
+            return {
+                ...state,
+                isDeleting: action.payload,
             }
 
         default:

@@ -137,7 +137,7 @@ const Heatmap = () => {
                 Showing: {formatDate(startDate)} – {formatDate(endDate)}
             </p>
 
-            <div className="px-6 py-4 border-2 rounded-md">
+            <div className="px-2 py-3 lg:px-6 lg:py-4 border-[1px] rounded-sm">
                 <CalendarHeatmap
                     startDate={startDate}
                     endDate={endDate}

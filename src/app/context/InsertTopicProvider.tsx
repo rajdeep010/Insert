@@ -471,6 +471,8 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
             if (topic_id) {
                 fetchTopicById(topic_id)
             }
+        } else {
+            router.push('/')
         }
     }, [status, topic_id])
 

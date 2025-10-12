@@ -19,6 +19,9 @@ import {
 	Menu,
 	Loader2,
 	LayoutDashboard,
+	PanelsTopLeft,
+	LayoutPanelLeft,
+	LayoutGrid,
 } from "lucide-react";
 import {
 	NavigationMenu,
@@ -50,6 +53,7 @@ import SuggestionNotificationCard from "./SuggestionNotificationCard";
 import InviteNotificationCard from "./InviteNotificationCard";
 import { useInsertUser } from "@/app/context/InsertUserProvider";
 import { Separator } from "./ui/separator";
+import Dashboard from "./Dashboard";
 
 const InsertNavbar = () => {
 	const { data: session,status } = useSession();
@@ -61,16 +65,21 @@ const InsertNavbar = () => {
 
 	const { user,markAllRead,unreadNotifyCount,notifications,getNotifications } = useInsertUser();
 
+	const handleLogOut = () => {
+		signOut();
+		router.push("/");
+	}
+
 	const handleGetNotifier = async () => {
 		try {
-			console.log('get notifications called',notifications)
+			// console.log('get notifications called',notifications)
 			setNotifyLoader(true)
 			await getNotifications()
 		} catch (error) {
 
 		} finally {
 			setNotifyLoader(false)
-			console.log('get notifications finished',notifications)
+			// console.log('get notifications finished',notifications)
 		}
 	}
 
@@ -114,7 +123,7 @@ const InsertNavbar = () => {
 														}?tab=topics`}
 													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
 												>
-													<FileText className="h-4 w-4" />
+													<LayoutDashboard className="h-4 w-4" />
 													<span className="text-sm">Topics</span>
 												</Link>
 											</NavigationMenuLink>
@@ -130,6 +139,20 @@ const InsertNavbar = () => {
 												>
 													<LayoutPanelTop className="h-4 w-4" />
 													<span className="text-sm">Blogs</span>
+												</Link>
+											</NavigationMenuLink>
+										</li>
+										<li>
+											<NavigationMenuLink asChild>
+												<Link
+													href={`/u/${!param_username
+														? session?.user?.username
+														: param_username
+														}?tab=projects`}
+													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
+												>
+													<PanelsTopLeft className="h-4 w-4" />
+													<span className="text-sm">Projects</span>
 												</Link>
 											</NavigationMenuLink>
 										</li>
@@ -185,6 +208,17 @@ const InsertNavbar = () => {
 												>
 													<LayoutPanelTop className="h-4 w-4" />
 													<span className="text-sm">Blogs</span>
+												</Link>
+											</NavigationMenuLink>
+										</li>
+										<li>
+											<NavigationMenuLink asChild>
+												<Link
+													href={`/posts/projects`}
+													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
+												>
+													<PanelsTopLeft className="h-4 w-4" />
+													<span className="text-sm">Projects</span>
 												</Link>
 											</NavigationMenuLink>
 										</li>
@@ -322,7 +356,7 @@ const InsertNavbar = () => {
 									className={navigationMenuTriggerStyle()}
 								>
 									<button
-										onClick={() => signOut()}
+										onClick={handleLogOut}
 										className="flex items-center gap-2 w-full px-2 py-1"
 									>
 										<LogOut className="h-4 w-4" />
@@ -495,9 +529,21 @@ const InsertNavbar = () => {
 									<span className="text-sm">Blogs</span>
 								</Link>
 							</DropdownMenuItem>
+							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
+								<Link
+									href={`/u/${!param_username
+										? session?.user?.username
+										: param_username
+										}?tab=projects`}
+									className="flex gap-2 items-center"
+								>
+									<PanelsTopLeft className="h-4 w-4" />
+									<span className="text-sm">Projects</span>
+								</Link>
+							</DropdownMenuItem>
 						</DropdownMenuGroup>}
 
-						<DropdownMenuSeparator />
+						{status === "authenticated" && <DropdownMenuSeparator />}
 
 						{status === "authenticated" && username && <DropdownMenuGroup>
 							<DropdownMenuLabel>Posts</DropdownMenuLabel>
@@ -506,7 +552,7 @@ const InsertNavbar = () => {
 									href={`/posts/topic`}
 									className=" flex gap-2 items-center"
 								>
-									<LayoutDashboard className="h-4 w-4" />
+									<LayoutGrid className="h-4 w-4" />
 									<span className="text-sm">Topics</span>
 								</Link>
 							</DropdownMenuItem>
@@ -515,13 +561,22 @@ const InsertNavbar = () => {
 									href={`/posts/blog`}
 									className=" flex gap-2 items-center"
 								>
-									<Layout className="h-4 w-4" />
+									<LayoutGrid className="h-4 w-4" />
 									<span className="text-sm">Blogs</span>
+								</Link>
+							</DropdownMenuItem>
+							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
+								<Link
+									href={`/posts/projects`}
+									className=" flex gap-2 items-center"
+								>
+									<LayoutGrid className="h-4 w-4" />
+									<span className="text-sm">Projects</span>
 								</Link>
 							</DropdownMenuItem>
 						</DropdownMenuGroup>}
 
-						<DropdownMenuSeparator />
+						{status === "authenticated" && <DropdownMenuSeparator />}
 
 						{session && status === "authenticated" && <DropdownMenuGroup>
 							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
@@ -546,11 +601,11 @@ const InsertNavbar = () => {
 							</DropdownMenuItem>
 						</DropdownMenuGroup>}
 
-						<DropdownMenuSeparator />
+						{status === "authenticated" && <DropdownMenuSeparator />}
 
 
 						{status === "authenticated" ? (<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
-							<div className="flex items-center gap-2" onClick={() => signOut()}>
+							<div className="flex items-center gap-2" onClick={handleLogOut}>
 								<LogOut className="h-4 w-4" /> <span>Logout</span>
 							</div>
 
@@ -559,7 +614,6 @@ const InsertNavbar = () => {
 								<Link href="/sign-in" className="flex items-center gap-2">
 									<LogIn className="h-4 w-4" /> <span>Login</span>
 								</Link>
-
 							</DropdownMenuItem>
 						)}
 					</DropdownMenuContent>

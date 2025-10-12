@@ -13,7 +13,7 @@ export function About() {
             >
                 <div className="max-w-xs">
                     <h2 className="text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
-                        Craft & Collaborate on Coding Sheets with 2.0
+                        Craft & Collaborate on Coding Sheets with Insert
                     </h2>
                     <p className="mt-4 text-left text-sm lg:text-base/4 text-neutral-200">
                         Create, share, and collaborate on custom problem sheets — with public, private modes built in. Coding just got more connected.
@@ -24,7 +24,7 @@ export function About() {
                     width={500}
                     height={500}
                     alt="linear demo image"
-                    className="absolute -right-4 lg:-right-[10%] grayscale filter -bottom-10 object-contain rounded-2xl"
+                    className="absolute -right-4 lg:-right-[10%] filter -bottom-10 object-contain rounded-2xl"
                 />
             </WobbleCard>
             <WobbleCard containerClassName="col-span-1 min-h-[300px]">
@@ -37,12 +37,12 @@ export function About() {
 
                 </p>
             </WobbleCard>
-            <WobbleCard containerClassName="col-span-1 lg:col-span-3 bg-blue-900 min-h-[500px] lg:min-h-[600px] xl:min-h-[300px]">
-                <div className="max-w-sm">
-                    <h2 className="max-w-sm md:max-w-lg  text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
-                        Signup for cutting-edge art of writing Blogs with Insert 2.0
+            <WobbleCard containerClassName="col-span-1 lg:col-span-3 bg-teal-700  min-h-[500px] lg:min-h-[600px] xl:min-h-[300px]">
+                <div className="max-w-lg">
+                    <h2 className="max-w-lg md:max-w-lg  text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
+                        Signup for cutting-edge art of writing Blogs with Insert
                     </h2>
-                    <p className="mt-4 max-w-[26rem] text-left text-sm lg:text-base/4 text-neutral-200">
+                    <p className="mt-4 max-w-[46rem] text-left text-sm lg:text-base/4 text-neutral-200">
                         Whether you&apos;re sharing ideas or documenting deep dives, our editor adapts to your flow — crisp, intuitive, and always in sync with your thoughts.
                     </p>
                 </div>
@@ -51,7 +51,37 @@ export function About() {
                     width={500}
                     height={500}
                     alt="linear demo image"
-                    className="absolute -right-10 lg:-right-[10%] -bottom-10 object-contain rounded-2xl"
+                    className="absolute -right-10 lg:-right-[5%] -bottom-10 object-contain rounded-2xl"
+                />
+            </WobbleCard>
+            <WobbleCard containerClassName="col-span-1 min-h-[300px] bg-amber-600">
+                <h2 className="max-w-80 text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
+                    Releases on autopilot
+                </h2>
+                <p className="mt-4 max-w-[26rem] text-left text-sm lg:text-base/4 text-yellow-50">
+                    Add a keyword to your commit and get a clean, linked release blog —
+                    keep committing, we&apos;ll handle the rest.
+                </p>
+            </WobbleCard>
+            <WobbleCard
+                containerClassName="col-span-1 lg:col-span-2 h-full bg-blue-800 min-h-[480px] lg:min-h-[300px]"
+                className=""
+            >
+                <div className="max-w-sm">
+                    <h2 className="text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
+                        Project dashboard that stays in sync
+                    </h2>
+                    <p className="mt-4 text-left text-sm lg:text-base/4 text-neutral-200">
+                        Import your GitHub repo once and keep committing as usual. Insert tracks keywords,
+                        compiles commits, and drafts a publish‑ready release blog for review.
+                    </p>
+                </div>
+                <Image
+                    src="/insert_project.png"
+                    width={560}
+                    height={560}
+                    alt="Insert project dashboard"
+                    className="absolute -right-10 lg:-right-[20%] -bottom-[40%] object-contain rounded-2xl"
                 />
             </WobbleCard>
         </div>

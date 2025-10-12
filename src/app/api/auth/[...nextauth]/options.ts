@@ -55,9 +55,18 @@ export const authOptions: NextAuthOptions = {
                 token.email = user.email
                 token.notifications = user.notifications
                 token.name = user.name
+                
+                // GitHub fields
+                token.githubAccessToken = user.githubAccessToken
+                token.githubLogin = user.githubLogin
+                token.githubId = user.githubId
+                token.githubScopes = user.githubScopes
+                token.githubConnectedAt = user.githubConnectedAt
+                token.githubAvatarUrl = user.githubAvatarUrl
+                token.githubName = user.githubName
+                token.githubEmail = user.githubEmail
             }
             if (account) {
-                // console.log('account.access_token',account,account.access_token)
                 token.accessToken = account.access_token
             }
             return token
@@ -71,6 +80,16 @@ export const authOptions: NextAuthOptions = {
                 session.user.email = token.email
                 session.user.notifications = token.notifications
                 session.user.name = token.name
+
+                // GitHub fields
+                session.user.githubAccessToken = token.githubAccessToken
+                session.user.githubLogin = token.githubLogin
+                session.user.githubId = token.githubId
+                session.user.githubScopes = token.githubScopes
+                session.user.githubConnectedAt = token.githubConnectedAt
+                session.user.githubAvatarUrl = token.githubAvatarUrl
+                session.user.githubName = token.githubName
+                session.user.githubEmail = token.githubEmail
 
                 const SECRET = process.env.NEXTAUTH_SECRET as string
                 const rawJwt = jwt.sign(

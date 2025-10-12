@@ -57,10 +57,11 @@ export async function GET(request: Request) {
             return Response.json({
                 success: false,
                 message: 'No blogs found for this user',
-            }, { status: 404 })
+            }, { status: 200 })
         }
 
     } catch (error) {
+        // console.log('this is error', error)
         return Response.json({
             success: false,
             message: 'Error in finding blogs'

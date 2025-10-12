@@ -13,7 +13,7 @@ export async function DELETE(request: NextRequest) {
     try {
         const username = token?.username
         const { topic_id,problem_id } = await request.json()
-        console.log('delete prblm: ',topic_id,problem_id)
+        // console.log('delete prblm: ',topic_id,problem_id)
 
         if (!topic_id || !problem_id) {
             return Response.json(
@@ -72,7 +72,7 @@ export async function DELETE(request: NextRequest) {
         );
 
     } catch (error) {
-        console.log('error in deleting problm: ',error)
+        // console.log('error in deleting problm: ',error)
         return Response.json({
             success: false,
             message: 'Error in deleting problem',

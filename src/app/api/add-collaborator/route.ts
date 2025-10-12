@@ -22,12 +22,12 @@ export async function POST(request: NextRequest) {
         }
 
 
-        console.log('collaborators: ', topic.collaborators)
+        // console.log('collaborators: ', topic.collaborators)
         const alreadyExists = topic.collaborators?.some(
             (collab: any) => collab.username === add_whom_username
         )
 
-        console.log('collab username: ', token?.username)
+        // console.log('collab username: ', token?.username)
 
         if (alreadyExists) {
             return Response.json({
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
             name: add_whom_name
         })
 
-        console.log('topic: ', topic)
+        // console.log('topic: ', topic)
         await topic.save()
 
         return Response.json({

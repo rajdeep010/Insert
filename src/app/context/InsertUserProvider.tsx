@@ -166,7 +166,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
                 })
 
                 const userdata = await response.data.userdata
-                dispatch({ type: "SET_USER",payload: userdata })
+                dispatch({ type: "SET_USER", payload: userdata })
             }
 
         } catch (error) {
@@ -241,7 +241,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
     const getUnreadNotifyCount = async () => {
         try {
             if(!session?.accessToken)   return
-            console.log(session)
+            // console.log(session)
             const response = await axios.get(`${INSERT_NOTIFY_SERVICE}/api/notify/get-unread-count`,{
                 headers: {
                     Authorization: `Bearer ${session?.accessToken}`,
@@ -450,6 +450,8 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
             }
 
             fetchNoti()
+        } else {
+            router.push('/')
         }
     },[status])
 

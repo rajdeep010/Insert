@@ -77,20 +77,6 @@ import {
 
 
 
-function extractBlogTitle(blogContent: any): string {
-	if (!blogContent) return "";
-
-	const content = blogContent?.content || {};
-	if (Array.isArray(content) && content.length > 0) {
-		const firstNode = content[0];
-		if (firstNode.type === "heading" && firstNode.attrs?.level === 1) {
-			return firstNode.content?.[0]?.text || "";
-		}
-		return "";
-	}
-	return "";
-}
-
 const MainToolbarContent = ({
 	onHighlighterClick,
 	onLinkClick,
@@ -236,7 +222,6 @@ const SimpleEditor = () => {
 	const [autoSave, setAutoSave] = React.useState(currentBlog?.autosave || false)
 	const [isSaving, setIsSaving] = React.useState(false)
 
-
 	const getFirstImageFromBlogContent = (blogContent: string) => {
 		try {
 			const contentObj = typeof blogContent === "string" ? JSON.parse(blogContent) : blogContent;
@@ -307,7 +292,7 @@ const SimpleEditor = () => {
 		onUpdate: ({ editor }) => {
 			const json = editor.getJSON() || "";
 			const plainText = editor?.getText().trim() || ""
-			console.log("Plain Text:", typeof plainText);
+			// console.log("Plain Text:", typeof plainText);
 
 			setEditorContent(json)
 			setEditorTextContent(plainText)
@@ -354,9 +339,7 @@ const SimpleEditor = () => {
 	});
 
 	const handleSaveContent = async () => {
-		console.log('handle normal save content: ', editorContent, currentBlog)
 		if (!editorContent && !currentBlog) return;
-		console.log('this is autosave: ', autoSave)
 
 		await handleBlogUpdate({
 			blogContent: JSON.stringify(editorContent),
@@ -376,18 +359,6 @@ const SimpleEditor = () => {
 		editor.chain().focus().setImageUploadNode().run();
 	}, [isMobile, mobileView])
 
-	// const debouncedSave = useDebounceCallback(async (json, plainText) => {
-	// 	if (autoSave) {
-	// 		setIsSaving(true);
-	// 		await handleAutoSaveBlog({
-	// 			blogContent: JSON.stringify(json),
-	// 			blogContentText: plainText,
-	// 			blogBannerImage: getFirstImageFromBlogContent(json),
-	// 		});
-	// 		setIsSaving(false);
-	// 	}
-	// }, 500);
-
 	React.useEffect(() => {
 		const handleAutoSave = async () => {
 			if(debouncedEditorContent){
@@ -400,7 +371,7 @@ const SimpleEditor = () => {
 					});
 					setIsSaving(false);
 				} catch (error) {
-					console.log('this is error: ', error)
+					// console.log('this is error: ', error)
 				}
 			}
 		}
@@ -432,7 +403,6 @@ const SimpleEditor = () => {
 							>
 								{mobileView === "main" ?
 									isBlogLoading ? <Skeleton className="w-32 h-6" /> : (
-
 										<MainToolbarContent
 											onHighlighterClick={() => setMobileView("highlighter")}
 											onLinkClick={() => setMobileView("link")}
@@ -494,14 +464,19 @@ const Write = () => {
 	const { isBlogLoading } = useBlog()
 	const { data: session, status } = useSession();
 
+	// if(isBlogLoading){
+	// 	console.log('Blog is loading...', isBlogLoading)
+	// }else{
+	// 	console.log('Blog is loaded', isBlogLoading)
+	// }
+
 	return (
 		<>
 			<div className="absolute top-5 left-5">
-				{" "}
 				{status === 'authenticated' && <BlogWriteSidebar />}
 			</div>
 
-			<div className="px-6 lg:px-64 pt-8 min-h-screen">
+			<div className="px-6 lg:px-56 pt-8 min-h-screen">
 				<div className="flex item-center justify-center flex-col gap-4">
 					{isBlogLoading
 						? <div className="flex justify-center items-center h-screen">

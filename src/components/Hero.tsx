@@ -4,12 +4,16 @@ import { Button } from "./ui/button";
 import Link from "next/link";
 import { Spotlight } from "./ui/spotlight-new";
 import { BackgroundBeams } from "./ui/background-beams";
+import InsertIcon from "./InsertIcon";
 
 export function Hero() {
     return (
         <div className="relative mx-auto flex h-screen w-screen  flex-col items-center justify-center overflow-hidden">
             <Spotlight/>
-            <div className='text-8xl z-20 font-sans tracking-wide dark:text-white text-black'>Insert</div>
+            <div className='text-8xl z-20 font-sans tracking-wide dark:text-white text-black flex items-center gap-4'>
+                <InsertIcon height={80} width={80} className="z-20 dark:bg-white p-[4px] border-2 border-gray-950 dark:border-gray-800" />
+                <span>Insert</span>
+            </div>
 
             {/* <div className='text-3xl z-20 font-sans text-white mt-[-0.5rem]'>2.0</div> */}
             <p className="relative z-20 mx-auto max-w-[70%] lg:max-w-[40%] text-center font-sans text-md lg:text-2xl my-2 font-semibold dark:text-white text-black">

@@ -81,7 +81,7 @@ export default function BlogPost({ params }: any) {
             try {
                 setBlogLoader(true)
                 const response = await axios.get(`/api/get-blog-by-url?blogUrl=${blogUrl}`)
-                console.log('my response: ',response)
+                // console.log('my response: ',response)
                 if (response.data.success) {
                     setBlog(response.data.blog)
                     setEditorContent(JSON.parse(response?.data?.blog?.blogContent) || {})
@@ -151,10 +151,10 @@ export default function BlogPost({ params }: any) {
 
     return (
         <>
-            <div className="flex flex-col gap-6 pt-8 lg:pt-12 justify-center px-8 lg:px-64">
+            <div className="flex flex-col gap-6 pt-8 lg:pt-12 justify-center px-8 lg:px-56">
                 <InsertNavbar />
             </div>
-            <div className="flex items-center justify-center m-auto px-6 lg:px-64 min-h-screen">
+            <div className="flex items-center justify-center m-auto px-6 lg:px-56 min-h-screen">
                 <div className="flex item-center justify-center flex-col gap-4">
                     {blogLoader
                         ? <div className="flex justify-center items-center h-screen">
