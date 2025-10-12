@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 
 const INSERT_NOTIFY_SERVICE = 'https://insert-notification-service.onrender.com'
 
+
 export async function POST(request: Request) {
     await dbConnect()
 
