@@ -714,8 +714,6 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                     fetchReleaseBlogById(releaseBlogId, project_id)
                 }
             }
-        } else {
-            router.push('/')
         }
     }, [status, project_id, releaseBlogId])
 

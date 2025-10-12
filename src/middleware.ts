@@ -2,13 +2,12 @@ import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 export { default } from 'next-auth/middleware'
 
-
-
 export async function middleware(request: NextRequest) {
     const token = await getToken({ req: request })
     const url = request.nextUrl
 
-    if (token &&
+    if (
+        token &&
         (
             url.pathname.startsWith('/sign-in') ||
             url.pathname.startsWith('/sign-up') ||
@@ -20,9 +19,12 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL(`/u/${username}`, request.url))
     }
 
-    if (!token &&
+    if (
+        !token &&
         (
-            (url.pathname.startsWith('/write')) 
+            url.pathname.startsWith('/write') ||
+            url.pathname.startsWith('/project') ||
+            url.pathname.startsWith('/posts')
         )
     ) {
         return NextResponse.redirect(new URL('/', request.url))
@@ -31,7 +33,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
 }
 
-
 export const config = {
     matcher: [
         '/sign-in',
@@ -39,6 +40,9 @@ export const config = {
         '/',
         '/verify/:path*',
         '/api/:path*',
-        '/u/:path*'
+        '/u/:path*',
+        '/write/:path*',
+        '/project/:path*',
+        '/posts/:path*'
     ]
 }

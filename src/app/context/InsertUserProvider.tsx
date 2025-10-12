@@ -450,8 +450,6 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
             }
 
             fetchNoti()
-        } else {
-            router.push('/')
         }
     },[status])
 
