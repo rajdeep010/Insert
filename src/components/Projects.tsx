@@ -37,7 +37,7 @@ const surface =
 const hoverable =
     'transition-colors hover:border-black/20 dark:hover:border-white/30'
 
-const API_BASE_URL = 'http://localhost:4000/v1/api'
+const NEXT_PROJECT_SERVICE_URL = 'https://insert-projects-service.onrender.com/v1/api'
 
 const Projects = () => {
     const { data: session, status } = useSession();
@@ -154,7 +154,7 @@ const Projects = () => {
                         <Button
                             className="flex gap-2 items-center bg-green-700 text-white hover:bg-green-800"
                             onClick={() =>
-                                window.location.href = `http://localhost:4000/v1/api/oauth2/authorize/github?userId=${session?.user?._id}&username=${session?.user?.username}`
+                                window.location.href = `${NEXT_PROJECT_SERVICE_URL}/oauth2/authorize/github?userId=${session?.user?._id}&username=${session?.user?.username}`
                             }
                         >
                             <GitHubLogoIcon />

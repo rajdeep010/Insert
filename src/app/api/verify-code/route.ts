@@ -5,9 +5,7 @@ import UserModel from "@/model/User";
 import axios from "axios";
 import jwt from 'jsonwebtoken';
 
-// const INSERT_NOTIFY_SERVICE = 'https://insert-notification-service.onrender.com'
-const INSERT_NOTIFY_SERVICE = 'http://localhost:4000/v1/api'
-
+const INSERT_NOTIFY_SERVICE = 'https://insert-notification-service.onrender.com'
 
 export async function POST(request: Request) {
     await dbConnect()

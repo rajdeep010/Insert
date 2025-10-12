@@ -14,10 +14,6 @@ import { Loader2 } from 'lucide-react'
 import { verifySchema } from '@/schemas/verifySchema'
 
 
-// const INSERT_NOTIFY_SERVICE = 'https://insert-notification-service.onrender.com'
-const INSERT_NOTIFY_SERVICE = 'http://localhost:4000/v1/api'
-
-
 export default function VerifyAccount() {
     const router = useRouter()
     const params = useParams()

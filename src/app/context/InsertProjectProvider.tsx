@@ -10,7 +10,6 @@ import { sync } from "motion/react"
 import { useParams, useRouter } from "next/navigation"
 import { useWebSocket } from "@/hooks/use-web-socket"
 
-const API_BASE = "http://localhost:4000/v1"
 
 interface InsertProjectProviderProps {
     curr_project: any,
@@ -114,6 +113,7 @@ const initialState = {
 const InsertProjectContext = createContext<InsertProjectProviderProps | null>(null)
 
 export const InsertProjectProvider = ({ children }: { children: React.ReactNode }) => {
+    const API_BASE = 'https://insert-projects-service.onrender.com/v1'
     const [state, dispatch] = useReducer(InsertProjectReducer, initialState)
 
     const { data: session, status } = useSession()
