@@ -315,7 +315,7 @@ const Projects = () => {
 
                     {pagination?.hasMore && (
                         <div className="pt-2">
-                            <Button disabled={isAllProjectsLoading} onClick={loadMore}>
+                            <Button className='w-full' disabled={isAllProjectsLoading} onClick={loadMore}>
                                 {isAllProjectsLoading ? "Loading..." : "Load more"}
                             </Button>
                         </div>

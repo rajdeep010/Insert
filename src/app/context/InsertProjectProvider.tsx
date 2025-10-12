@@ -640,7 +640,6 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     }, [connected])
 
 
-    // Handle incoming WebSocket messages
     useEffect(() => {
         if (lastMessage) {
 
@@ -654,7 +653,6 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 }
             })
 
-            // Handle sync completion - turn off loading state
             if (lastMessage?.status === 'READY' || lastMessage?.status === 'ERROR') {
                 dispatch({
                     type: "SET_IS_SYNCING_RELEASE",
@@ -671,9 +669,6 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                             }
                         })
                     }
-                    // else {
-                    //     fetchReleaseBlogForProject(lastMessage?.projectId)
-                    // }
 
                     toast({
                         title: "Release Ready ✅",
@@ -688,7 +683,6 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                     })
                 }
             } else if (lastMessage.status === 'BUILDING') {
-                // Show building status as info toast
                 toast({
                     title: "Building Release 🔄",
                     description: lastMessage.message,
@@ -699,7 +693,6 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     }, [lastMessage])
 
 
-    // Add clearReleaseSyncStatus function
     const clearReleaseSyncStatus = (projectId: string) => {
         dispatch({ type: "CLEAR_RELEASE_SYNC_STATUS", payload: projectId })
     }
@@ -721,6 +714,8 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                     fetchReleaseBlogById(releaseBlogId, project_id)
                 }
             }
+        } else {
+            router.push('/')
         }
     }, [status, project_id, releaseBlogId])
 
