@@ -20,15 +20,15 @@ export function Hero() {
                     <InsertIcon
                         height={60}
                         width={60}
-                        className="rounded-md border-2 border-gray-900 p-1 dark:border-gray-700 dark:bg-white"
+                        className="rounded-xl border-2 border-gray-900 p-1 dark:border-gray-700 dark:bg-white"
                     />
-                    <h1 className="text-balance font-sans text-5xl font-extrabold tracking-tight text-black dark:text-white md:text-6xl">
+                    <h1 className="text-balance  text-5xl font-bold tracking-tight text-black dark:text-white md:text-6xl">
                         Insert
                     </h1>
                 </div>
 
                 <p className="mx-auto max-w-2xl text-pretty text-base text-gray-700 dark:text-gray-300 md:text-xl">
-                    Write like a dev, ship like a team. Import your repo once—commit with a keyword and Insert turns commits into polished release blogs automatically.
+                    Simple, powerful, and made for developers. Creating coding sheets, writing blogs or auto release blogs with git commits.
                 </p>
 
                 <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
