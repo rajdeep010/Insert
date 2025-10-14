@@ -9,7 +9,7 @@ import { useInsertUser } from '@/app/context/InsertUserProvider'
 
 /* Shared style helpers (consistent with other pages) */
 const surface =
-	'relative rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 backdrop-blur-xl supports-[backdrop-filter]:bg-white/40 transition-colors'
+	'rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 transition-colors'
 const hoverable =
 	'transition-colors hover:border-black/20 dark:hover:border-white/30'
 

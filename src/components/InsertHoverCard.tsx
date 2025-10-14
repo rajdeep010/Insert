@@ -47,7 +47,7 @@ const InsertHoverCard: React.FC<InsertHoverCardProps> = ({
 						</Avatar>
 				}
 			</HoverCardTrigger>
-			<HoverCardContent className="w-fit z-50">
+			<HoverCardContent className="w-fit">
 				<div className="flex justify-between gap-4">
 					<Avatar>
 						<AvatarImage src={currentUser?.avatar || ""} />
