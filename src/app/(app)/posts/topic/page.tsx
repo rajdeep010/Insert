@@ -51,14 +51,14 @@ export default function AllTopicPosts() {
                     </div>
                 )}
 
-                <div className="flex items-center justify-between flex-wrap gap-3">
+                {!isAllSheetsLoading && <div className="flex items-center justify-between flex-wrap gap-3">
                     <span className="text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
                         Post: Topics
                     </span>
                     <Badge variant="secondary" className="text-xs">
                         {filtered?.length ?? 0} shown{query ? ` of ${all_topics?.length ?? 0}` : ""}
                     </Badge>
-                </div>
+                </div>}
 
                 {/* Search */}
                 <div className={`${surface} ${hoverable} shadow-none p-2 pr-3 flex items-center gap-2`}>

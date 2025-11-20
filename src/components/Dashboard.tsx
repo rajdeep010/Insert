@@ -70,7 +70,8 @@ const Dashboard = () => {
     const {
         addTopic,
         deleteTopic,
-        user_Topics
+        user_Topics,
+        isTopicLoading
     } = useInsertTopics()
 
     const [isTopicSubmitting, setIsTopicSubmitting] = useState(false)
@@ -137,12 +138,12 @@ const Dashboard = () => {
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
                     <div className="flex items-center gap-3">
-                        <span className="flex items-center gap-2 text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
+                        {!isTopicLoading && <span className="flex items-center gap-2 text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
                             Topics
                             <Badge variant="secondary" className="text-xs px-2 py-0.5">
                                 {filteredTopics.length}
                             </Badge>
-                        </span>
+                        </span>}
                     </div>
                     <div className="flex items-center gap-3 w-full md:w-auto">
                         {/* <div className={surfaceMuted + ' flex items-center gap-2 px-3 py-2 w-full md:w-80'}>

@@ -62,14 +62,14 @@ export default function AllBlogPosts() {
 				)}
 
 				<div className="flex flex-col gap-3">
-					<div className="flex items-center justify-between flex-wrap gap-4">
+					{!isAllBlogPostsLoading &&<div className="flex items-center justify-between flex-wrap gap-4">
 						<span className="text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
 							Post: Blogs
 						</span>
 						<div className="text-xs text-gray-500 dark:text-gray-400">
 							{filtered?.length ?? 0} shown{query ? ` of ${allBlogPosts?.length ?? 0}` : ""}
 						</div>
-					</div>
+					</div>}
 
 					{/* Search */}
 					<div className={`${surface} ${hoverable} shadow-none p-2 pr-3 flex items-center gap-2`}>
