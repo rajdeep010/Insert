@@ -28,7 +28,7 @@ const Overview = () => {
 			{isTopicsLoading && <OverviewSkeleton />}
 
 			<div className="flex items-center justify-between flex-wrap gap-3">
-				<div className="flex items-center gap-2">
+				{!isTopicsLoading && <div className="flex items-center gap-2">
 					<span className="flex items-center gap-2 text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
 						Overview
 						{hasTopics && (
@@ -38,7 +38,7 @@ const Overview = () => {
 						)}
 					</span>
 
-				</div>
+				</div>}
 				{hasTopics && (
 					<Link
 						href={`/u/${user?.username}?tab=topics`}

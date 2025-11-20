@@ -35,7 +35,7 @@ const hoverable =
 
 const Blogs = () => {
 	const [currBlog, setCurrBlog] = useState<any>(null)
-	const { allBlogs, removeBlogFromState, deleteBlog } = useBlog()
+	const { allBlogs, removeBlogFromState, deleteBlog, isAllBlogsLoading } = useBlog()
 	const [deleting, setIsDeleting] = useState(false)
 
 	const handleDeleteBlog = async (blogId: string) => {
@@ -181,12 +181,12 @@ const Blogs = () => {
 		<div className="flex flex-col gap-6">
 			<div className="flex items-center justify-between flex-wrap gap-4">
 				{/* <h2 className="text-2xl font-semibold tracking-tight">Blogs</h2> */}
-				<span className="flex items-center gap-2 text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
+				{!isAllBlogsLoading && <span className="flex items-center gap-2 text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
 					Blogs
 					<Badge variant="secondary" className="text-xs px-2 py-0.5">
 						{allBlogs.length}
 					</Badge>
-				</span>
+				</span>}
 				<div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
 					<span className="flex items-center gap-1">
 						<Globe2 className="h-3 w-3" /> {publicBlogs.length} public
