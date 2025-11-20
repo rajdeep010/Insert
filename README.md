@@ -1,34 +1,9 @@
-<img width="1269" height="818" alt="image" src="https://github.com/user-attachments/assets/1b97d102-c0b1-4574-8198-6c06c53bb894" />
+<img width="1340" height="723" alt="image" src="https://github.com/user-attachments/assets/ef09bc76-9bf1-4e6d-a132-82dcb1b2a322" />
 
-# 🚀 Insert
+# 🚀 Insert (v3.0)
 
-**Insert** (v2.0) is a Next.js–powered platform to build and share coding problem sheets and write polished technical blogs—public or private. Collaborate with teammates on problem sheets, draft rich-blog posts with the editor, and manage notifications via a RabbitMQ‑backed microservice. 
-
-*Since the last release(v1.0) back in 2024, focused on performance and features, added the blog feature and public or private posts with better access and maintainance. Stay tuned for the upcoming releases*
-##
-
-## 💡 Key Features
-
-**📝 Problem Sheet Builder**
-  ```
-  - Create, organize, and share coding problem sheets  
-  - Invite collaborators for editing together
-  ```
-
-    
-**✍️ Technical Blogging**  (🚀 New feature)
-  ```
-  - Rich‑text editor for writing blogs
-  - Public & private post visibility  
-  - (👷‍♂️ Coming soon: blog collaborator access!)
-  ```
-    
-**🔔 Notifications & Email**  
-  ```
-  - Dedicated microservice (Express.js + RabbitMQ + MongoDB)  
-  - Containerized with Docker Compose  
-  - Deployed on Railway
-   ```
+**Insert** is a full-stack platform built with **Next.js** that enables developers to create collaborative coding problem sheets, publish structured technical blogs, and manage git activity through distributed release blog generation. 
+Version **3.0** delivers major improvements in newer features, stability, service architecture, and publishing workflows.
 
 ---
 
@@ -58,7 +33,10 @@
 ---
 
 <p align="center">
-<img width="1423" height="882" alt="image" src="https://github.com/user-attachments/assets/a99390ac-2c8b-4d78-940a-53b677a18ceb" />
+<img width="1009" height="767" alt="image" src="https://github.com/user-attachments/assets/cbd7eda8-f52e-4395-bb53-0f8baf8fe20d" />
+  <img width="1009" height="767" alt="image" src="https://github.com/user-attachments/assets/fee6888e-4695-4b4b-8623-cf66dbc916c2" />
+<img width="1009" height="767" alt="image" src="https://github.com/user-attachments/assets/364444aa-487a-4e3a-9c01-743a9dc7d19c" />
+
 </p>
 
 ---
