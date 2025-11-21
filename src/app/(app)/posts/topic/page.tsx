@@ -60,8 +60,7 @@ export default function AllTopicPosts() {
                     </Badge>
                 </div>}
 
-                {/* Search */}
-                <div className={`${surface} ${hoverable} shadow-none p-2 pr-3 flex items-center gap-2`}>
+                {!isAllSheetsLoading && <div className={`${surface} ${hoverable} shadow-none p-2 pr-3 flex items-center gap-2`}>
                     <div className="pl-2 pr-1 text-gray-500">
                         <Search className="h-4 w-4" />
                     </div>
@@ -71,7 +70,7 @@ export default function AllTopicPosts() {
                         placeholder="Search topics by name, creator, or description..."
                         className="border-0 focus-visible:ring-0 bg-transparent"
                     />
-                </div>
+                </div>}
 
                 {!isAllSheetsLoading && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-visible">

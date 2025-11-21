@@ -71,8 +71,7 @@ export default function AllBlogPosts() {
 						</div>
 					</div>}
 
-					{/* Search */}
-					<div className={`${surface} ${hoverable} shadow-none p-2 pr-3 flex items-center gap-2`}>
+					{!isAllBlogPostsLoading && <div className={`${surface} ${hoverable} shadow-none p-2 pr-3 flex items-center gap-2`}>
 						<div className="pl-2 pr-1 text-gray-500">
 							<Search className="h-4 w-4" />
 						</div>
@@ -82,7 +81,7 @@ export default function AllBlogPosts() {
 							placeholder="Search by title or creator..."
 							className="border-0 focus-visible:ring-0 bg-transparent"
 						/>
-					</div>
+					</div>}
 				</div>
 
 				{!isAllBlogPostsLoading && (

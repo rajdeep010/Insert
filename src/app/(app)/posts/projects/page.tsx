@@ -83,8 +83,7 @@ export default function ProjectsPage() {
                     </div>
                 </div>}
 
-                {/* Search */}
-                <div className={`${surface} ${hoverable} shadow-none p-2 pr-3 flex items-center gap-2`}>
+                {!isAllProjectsLoading && <div className={`${surface} ${hoverable} shadow-none p-2 pr-3 flex items-center gap-2`}>
                     <div className="pl-2 pr-1 text-gray-500">
                         <Search className="h-4 w-4" />
                     </div>
@@ -94,7 +93,7 @@ export default function ProjectsPage() {
                         placeholder="Search by project name, owner, or repo..."
                         className="border-0 focus-visible:ring-0 bg-transparent"
                     />
-                </div>
+                </div>}
 
                 {!isAllProjectsLoading && (
                     <div className="flex flex-col gap-4 max-h-[72vh] overflow-visible custom-small-scrollbar">
