@@ -207,22 +207,22 @@ const EditProfile = () => {
                             {/* LinkedIn */}
                             <div>
                                 <label htmlFor="linkedin" className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                                    LinkedIn
+                                    Linkedin Username
                                 </label>
                                 <div className="relative mt-1">
                                     <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                    <Input id="linkedin" value={formData.linkedin} onChange={handleChange} placeholder="LinkedIn profile URL" className="pl-9" />
+                                    <Input id="linkedin" value={formData.linkedin} onChange={handleChange} placeholder="Linkedin username" className="pl-9" />
                                 </div>
                             </div>
 
                             {/* Profile/Handle */}
                             <div>
                                 <label htmlFor="profile" className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                                    Profile
+                                    Github Username
                                 </label>
                                 <div className="relative mt-1">
                                     <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                    <Input id="profile" value={formData.profile} onChange={handleChange} placeholder="Username or handle" className="pl-9" />
+                                    <Input id="profile" value={formData.profile} onChange={handleChange} placeholder="Github username" className="pl-9" />
                                 </div>
                             </div>
 

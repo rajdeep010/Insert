@@ -57,8 +57,8 @@ const Profile = () => {
                     <div className='flex flex-col gap-1'>
                         {user?.company && <div className='flex items-center gap-2 text-sm '> <FaBuilding /> {user?.company} </div>}
                         {user?.location && <div className='flex items-center gap-2 text-sm '> <FaLocationDot /> {user?.location} </div>}
-                        {user?.profile && <Link href={`${user?.profile}`} className='transition hover:text-blue-500 flex items-center gap-2 text-sm '> <FaLink /> {user?.profile}</Link>}
-                        {user?.linkedin && <Link href={`${user?.linkedin}`} className='transition hover:text-blue-500 flex items-center gap-2 text-sm '> <FaLinkedin /> {user?.linkedin}</Link>}
+                        {user?.profile && <Link href={`https://github.com/${user?.profile}`} className='transition hover:text-blue-500 flex items-center gap-2 text-sm '> <FaLink /> {user?.profile}</Link>}
+                        {user?.linkedin && <Link href={`https://www.linkedin.com/in/${user?.linkedin}`} className='transition hover:text-blue-500 flex items-center gap-2 text-sm '> <FaLinkedin /> {user?.linkedin}</Link>}
                     </div>
                 </div>}
 
