@@ -24,7 +24,7 @@ const Overview = () => {
 	const firstTopics = (user_Topics || []).slice(0, 4)
 
 	return (
-		<div className="py-6 flex flex-col gap-6">
+		<div className="flex flex-col gap-6">
 			{isTopicsLoading && <OverviewSkeleton />}
 
 			<div className="flex items-center justify-between flex-wrap gap-3">

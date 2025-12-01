@@ -146,15 +146,6 @@ const Dashboard = () => {
                         </span>}
                     </div>
                     <div className="flex items-center gap-3 w-full md:w-auto">
-                        {/* <div className={surfaceMuted + ' flex items-center gap-2 px-3 py-2 w-full md:w-80'}>
-                            <Search className="h-4 w-4 text-gray-500" />
-                            <Input
-                                value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
-                                placeholder="Search topics..."
-                                className="h-8 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
-                            />
-                        </div> */}
                         {canEdit && (
                             <Button
                                 onClick={() => setIsTopicModalOpen(true)}

@@ -22,6 +22,7 @@ import {
 	PanelsTopLeft,
 	LayoutPanelLeft,
 	LayoutGrid,
+	BadgeCheck,
 } from "lucide-react";
 import {
 	NavigationMenu,
@@ -176,6 +177,20 @@ const InsertNavbar = () => {
 												>
 													<FilePenLine className="h-4 w-4" />
 													<span className="text-sm">Write</span>
+												</Link>
+											</NavigationMenuLink>
+										</li>
+										<li>
+											<NavigationMenuLink asChild>
+												<Link
+													href={`/u/${!param_username
+														? session?.user?.username
+														: param_username
+														}?tab=subscribe`}
+													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
+												>
+													<BadgeCheck className="h-4 w-4" />
+													<span className="text-sm">Subscribe</span>
 												</Link>
 											</NavigationMenuLink>
 										</li>

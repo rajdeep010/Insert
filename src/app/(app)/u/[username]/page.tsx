@@ -12,6 +12,7 @@ import { Loader2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import React from 'react'
+import PaymentPage from '../../subscribe/page'
 
 
 export default function UserPage() {
@@ -42,6 +43,7 @@ export default function UserPage() {
                     {tab === 'overview' && <Overview />}
                     {tab === 'blogs' && <Blogs />}
                     {tab === 'projects' && <Projects/>}
+                    {tab === 'subscribe' && <PaymentPage/>}
                 </div>
                 <div>
                     {tab === 'overview' && <Heatmap />}
