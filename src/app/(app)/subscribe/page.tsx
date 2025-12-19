@@ -15,6 +15,17 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useInsertUser } from '@/app/context/InsertUserProvider'
 import { useSession } from 'next-auth/react'
+import { useInsertPayment } from '@/app/context/InsertPaymentProvider'
+import { toast } from '@/components/ui/use-toast'
+import Script from 'next/script'
+
+
+declare global {
+    interface Window {
+        Razorpay: any
+    }
+}
+
 
 const surface =
     'rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 transition-colors'
@@ -43,6 +54,9 @@ const PaymentPage = () => {
     const { data: session } = useSession()
     useInsertUser() // ensures user context loads if needed (remove if unused)
 
+    const { createOrder, verifyPayment, isPaymentLoading } = useInsertPayment()
+    const RAZORPAY_KEY = process.env.NEXT_PUBLIC_RAZORPAY_API_KEY
+
     const [billing, setBilling] = useState<BillingPeriod>('monthly')
 
     const monthlyPrice = 11
@@ -58,6 +72,79 @@ const PaymentPage = () => {
         billing === 'monthly'
             ? 'Billed monthly • Cancel anytime'
             : `Billed annually • Save ${discountPercent}% (≈3 months free)`
+
+    const handleUpgrade = async () => {
+        try {
+            if (!session?.accessToken) {
+                toast({
+                    title: 'Sign in required',
+                    description: 'Please sign in to upgrade your plan.',
+                    variant: 'destructive',
+                })
+                return
+            }
+
+            const amount = billing === 'monthly' ? monthlyPrice : yearlyPrice
+            const order = await createOrder({
+                amount,
+                currency: 'INR',
+                metadata: {
+                    plan: 'PRO',
+                    period: billing,
+                    username: session?.user?.username,
+                },
+            })
+
+            // If Razorpay script/key not available, stop after order creation
+            // if (!RAZORPAY_KEY || typeof window === 'undefined' || !(window as any).Razorpay) {
+            //     toast({
+            //         title: 'Order created',
+            //         description: 'Complete payment in the next step.',
+            //         variant: 'default',
+            //     })
+            //     return
+            // }
+
+            const options = {
+                key: RAZORPAY_KEY,
+                amount: order?.amount, // backend should return smallest unit if needed
+                currency: order?.currency || 'INR',
+                name: 'Insert Pro',
+                description: `Upgrade to Pro (${billing})`,
+                order_id: order?.id,
+                prefill: {
+                    name: session?.user?.name || session?.user?.username || '',
+                    email: session?.user?.email || '',
+                },
+                theme: { color: '#4F46E5' },
+                handler: async (response: any) => {
+                    console.log('Razorpay response:', response)
+                    // const success = await verifyPayment({
+                    //     orderId: order?.id,
+                    //     paymentId: response.razorpay_payment_id,
+                    //     signature: response.razorpay_signature,
+                    //     gateway: 'razorpay',
+                    // })
+                    // if (success) {
+                    //     // Optionally route or refresh entitlements here
+                    // }
+                },
+            }
+
+            console.log('Razorpay options:', options)
+            const rzp = new (window as any).Razorpay(options)
+
+            console.log('Opening Razorpay checkout: ', rzp);
+            rzp.open()
+
+        } catch (e: any) {
+            toast({
+                title: 'Payment error',
+                description: e?.message || 'Could not start payment',
+                variant: 'destructive',
+            })
+        }
+    }
 
     return (
         <div className="flex flex-col gap-6">
@@ -93,8 +180,8 @@ const PaymentPage = () => {
                                 variant={billing === 'monthly' ? 'default' : 'ghost'}
                                 onClick={() => setBilling('monthly')}
                                 className={`px-4 py-2 transition-all duration-200 relative ${billing === 'monthly'
-                                        ? 'shadow-sm'
-                                        : 'hover:bg-black/5 dark:hover:bg-white/10'
+                                    ? 'shadow-sm'
+                                    : 'hover:bg-black/5 dark:hover:bg-white/10'
                                     }`}
                                 aria-pressed={billing === 'monthly'}
                             >
@@ -105,8 +192,8 @@ const PaymentPage = () => {
                                 variant={billing === 'yearly' ? 'default' : 'ghost'}
                                 onClick={() => setBilling('yearly')}
                                 className={`px-4 py-2 transition-all duration-200 relative ${billing === 'yearly'
-                                        ? 'shadow-sm'
-                                        : 'hover:bg-black/5 dark:hover:bg-white/10'
+                                    ? 'shadow-sm'
+                                    : 'hover:bg-black/5 dark:hover:bg-white/10'
                                     }`}
                                 aria-pressed={billing === 'yearly'}
                             >
@@ -211,9 +298,13 @@ const PaymentPage = () => {
                             </ul>
                         </CardContent>
                         <CardFooter className="px-8 pb-8">
-                            <Button className="w-full group/button transition-all duration-200 bg-indigo-600 hover:bg-indigo-500 text-white">
+                            <Button
+                                className="w-full group/button transition-all duration-200 bg-indigo-600 hover:bg-indigo-500 text-white"
+                                onClick={handleUpgrade}
+                                disabled={isPaymentLoading}                            >
                                 <span className="transition-transform duration-200 group-hover:translate-y-[-1px]">
                                     Upgrade to Pro ({billing === 'monthly' ? 'Monthly' : 'Annual'})
+                                    
                                 </span>
                             </Button>
                         </CardFooter>

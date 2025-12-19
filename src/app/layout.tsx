@@ -14,6 +14,7 @@ import { BlogProvider } from "./context/BlogProvider";
 import { InsertUserProvider } from "./context/InsertUserProvider";
 import { InsertTopicProvider } from "./context/InsertTopicProvider";
 import { InsertProjectProvider } from "./context/InsertProjectProvider";
+import { InsertPaymentProvider } from "./context/InsertPaymentProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -41,16 +42,20 @@ export default function RootLayout({
               <InsertUserProvider>
                 <InsertTopicProvider>
                   <InsertProjectProvider>
-                    <BlogProvider>
-                      <Script
-                        src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
-                        strategy="beforeInteractive"
-                      />
-                      {children}
-                      <Toaster />
-                      <Footer />
-                      <Analytics />
-                    </BlogProvider>
+                    <InsertPaymentProvider>
+                      <BlogProvider>
+                        <Script
+                          src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
+                          strategy="beforeInteractive"
+                        />
+                        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
+
+                        {children}
+                        <Toaster />
+                        <Footer />
+                        <Analytics />
+                      </BlogProvider>
+                    </InsertPaymentProvider>
                   </InsertProjectProvider>
                 </InsertTopicProvider>
               </InsertUserProvider>
