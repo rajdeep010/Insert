@@ -13,10 +13,7 @@ interface InsertPaymentProviderProps {
 
     // Function 1: Create an order
     createOrder: (payload: {
-        amount: number
-        currency?: string
-        notes?: Record<string, string>
-        metadata?: Record<string, any>
+        type: string
     }) => Promise<any>
 
     // Function 2: Verify/Capture the payment after checkout
@@ -44,19 +41,16 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
     const { data: session } = useSession()
 
     // Reuse same base as other services for consistency
-    const API_BASE = 'http://localhost:8080/v1'
+    const API_BASE = 'http://localhost:4000/v1'
 
     const createOrder: InsertPaymentProviderProps['createOrder'] = async (payload) => {
         try {
             dispatch({ type: 'SET_IS_PAYMENT_LOADING', payload: true })
 
             const res = await axios.post(
-                `http://localhost:4000/v1/api/payments/order`,
+                `${API_BASE}/api/payments/order`,
                 {
-                    amount: 1001,
-                    currency: payload.currency ?? 'INR',
-                    notes: payload.notes ?? {},
-                    metadata: payload.metadata ?? {},
+                    type: payload.type,
                 },
                 {
                     headers: {

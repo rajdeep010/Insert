@@ -85,15 +85,7 @@ const PaymentPage = () => {
             }
 
             const amount = billing === 'monthly' ? monthlyPrice : yearlyPrice
-            const order = await createOrder({
-                amount,
-                currency: 'INR',
-                metadata: {
-                    plan: 'PRO',
-                    period: billing,
-                    username: session?.user?.username,
-                },
-            })
+            const order = await createOrder({ type: billing.toUpperCase() })
 
             // If Razorpay script/key not available, stop after order creation
             // if (!RAZORPAY_KEY || typeof window === 'undefined' || !(window as any).Razorpay) {
@@ -107,7 +99,7 @@ const PaymentPage = () => {
 
             const options = {
                 key: RAZORPAY_KEY,
-                amount: order?.amount, // backend should return smallest unit if needed
+                amount: order?.amount || 1, // backend should return smallest unit if needed
                 currency: order?.currency || 'INR',
                 name: 'Insert Pro',
                 description: `Upgrade to Pro (${billing})`,
@@ -118,7 +110,7 @@ const PaymentPage = () => {
                 },
                 theme: { color: '#4F46E5' },
                 handler: async (response: any) => {
-                    console.log('Razorpay response:', response)
+                    console.log('Razorpay response from handler:', response)
                     // const success = await verifyPayment({
                     //     orderId: order?.id,
                     //     paymentId: response.razorpay_payment_id,
@@ -304,7 +296,7 @@ const PaymentPage = () => {
                                 disabled={isPaymentLoading}                            >
                                 <span className="transition-transform duration-200 group-hover:translate-y-[-1px]">
                                     Upgrade to Pro ({billing === 'monthly' ? 'Monthly' : 'Annual'})
-                                    
+
                                 </span>
                             </Button>
                         </CardFooter>
