@@ -74,7 +74,6 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
     const NEXT_PUBLIC_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUD_NAME as string
     const NEXT_PUBLIC_CLOUD_PRESET = process.env.NEXT_PUBLIC_CLOUD_PRESET as string
 
-    console.log('InsertUserProvider session: ',session)
 
     const uploadAvatar = async (file: File) => {
         try {
