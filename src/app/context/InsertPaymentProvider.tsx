@@ -11,17 +11,15 @@ interface InsertPaymentProviderProps {
     paymentStatus: 'IDLE' | 'PENDING' | 'SUCCESS' | 'FAILED'
     isPaymentLoading: boolean
 
-    // Function 1: Create an order
     createOrder: (payload: {
         type: string
     }) => Promise<any>
 
-    // Function 2: Verify/Capture the payment after checkout
     verifyPayment: (payload: {
         orderId: string
         paymentId: string
         signature?: string
-        gateway?: 'razorpay' | 'stripe' | 'custom'
+        gateway?: 'razorpay'
     }) => Promise<boolean>
 }
 
@@ -38,10 +36,24 @@ const InsertPaymentContext = createContext<InsertPaymentProviderProps | null>(nu
 
 export const InsertPaymentProvider = ({ children }: { children: React.ReactNode }) => {
     const [state, dispatch] = useReducer(InsertPaymentReducer, initialState)
-    const { data: session } = useSession()
+    const { data: session, update } = useSession()
 
-    // Reuse same base as other services for consistency
-    const API_BASE = 'http://localhost:4000/v1'
+    const API_BASE = 'http://localhost:4000/v1';
+
+
+    const handleUpdateSessionProAccess = async (updatedUserData: any) => {
+        update((prev: any) => ({
+            ...prev,
+            user: {
+                ...prev?.user,
+                proAccess: updatedUserData?.proAccess,
+                proPlan: updatedUserData?.proPlan,
+                proStartedAt: updatedUserData?.proStartedAt,
+                proExpiresAt: updatedUserData?.proExpiresAt,
+                autoRenew: updatedUserData?.autoRenew,
+            }
+        }))
+    }
 
     const createOrder: InsertPaymentProviderProps['createOrder'] = async (payload) => {
         try {
@@ -106,7 +118,12 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
                 }
             )
 
-            const success = !!(res?.data?.success ?? res?.data?.verified ?? false)
+            const success = res?.data?.success
+            if (success) {
+                const updatedUser = res?.data?.updatedUser;
+                await handleUpdateSessionProAccess(updatedUser);
+                console.log('User session updated with pro access after updation', session)
+            }
 
             dispatch({ type: 'SET_PAYMENT_STATUS', payload: success ? 'SUCCESS' : 'FAILED' })
 
@@ -117,6 +134,7 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
             })
 
             return success
+
         } catch (error: any) {
             dispatch({ type: 'SET_PAYMENT_STATUS', payload: 'FAILED' })
             toast({

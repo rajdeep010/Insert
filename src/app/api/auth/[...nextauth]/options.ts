@@ -53,7 +53,7 @@ export const authOptions: NextAuthOptions = {
                 token.isVerified = user.isVerified
                 token.username = user.username
                 token.email = user.email
-                token.notifications = user.notifications
+                // token.notifications = user.notifications
                 token.name = user.name
                 
                 // GitHub fields
@@ -64,7 +64,13 @@ export const authOptions: NextAuthOptions = {
                 token.githubConnectedAt = user.githubConnectedAt
                 token.githubAvatarUrl = user.githubAvatarUrl
                 token.githubName = user.githubName
-                token.githubEmail = user.githubEmail
+                // token.githubEmail = user.githubEmail
+
+                token.proAccess = user?.proStatus?.active || false
+                token.proPlan = user?.proStatus?.plan || null
+                token.proStartedAt = user?.proStatus?.startedAt || null
+                token.proExpiresAt = user?.proStatus?.expiresAt || null
+                token.autoRenew = user?.proStatus?.autoRenew || false
             }
             if (account) {
                 token.accessToken = account.access_token
@@ -78,7 +84,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.isVerified = token.isVerified
                 session.user.username = token.username
                 session.user.email = token.email
-                session.user.notifications = token.notifications
+                // session.user.notifications = token.notifications
                 session.user.name = token.name
 
                 // GitHub fields
@@ -89,7 +95,13 @@ export const authOptions: NextAuthOptions = {
                 session.user.githubConnectedAt = token.githubConnectedAt
                 session.user.githubAvatarUrl = token.githubAvatarUrl
                 session.user.githubName = token.githubName
-                session.user.githubEmail = token.githubEmail
+                // session.user.githubEmail = token.githubEmail
+
+                session.user.proAccess = token.proAccess
+                session.user.proPlan = token.proPlan
+                session.user.proStartedAt = token.proStartedAt
+                session.user.proExpiresAt = token.proExpiresAt
+                session.user.autoRenew = token.autoRenew
 
                 const SECRET = process.env.NEXTAUTH_SECRET as string
                 const rawJwt = jwt.sign(
