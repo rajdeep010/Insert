@@ -110,17 +110,32 @@ const PaymentPage = () => {
                 },
                 theme: { color: '#4F46E5' },
                 handler: async (response: any) => {
-                    console.log('Razorpay response from handler:', response)
-                    // const success = await verifyPayment({
-                    //     orderId: order?.id,
-                    //     paymentId: response.razorpay_payment_id,
-                    //     signature: response.razorpay_signature,
-                    //     gateway: 'razorpay',
-                    // })
-                    // if (success) {
-                    //     // Optionally route or refresh entitlements here
-                    // }
-                },
+                    try {
+                        console.log('Razorpay response from handler:', response);
+
+                        const success = await verifyPayment({
+                            orderId: order?.id,
+                            paymentId: response.razorpay_payment_id,
+                            signature: response.razorpay_signature,
+                            gateway: 'razorpay',
+                        });
+
+                        if (success) {
+                            console.log('Payment verified successfully');
+                            toast({
+                                title: 'Payment Successful ✅',
+                                description: 'Your plan has been upgraded to Pro.',
+                                variant: 'default',
+                            });
+                        }
+                    } catch (err: any) {
+                        toast({
+                            title: 'Verification error',
+                            description: err?.response?.data?.message || err?.message || 'Payment verification failed',
+                            variant: 'destructive',
+                        });
+                    }
+                }
             }
 
             console.log('Razorpay options:', options)
