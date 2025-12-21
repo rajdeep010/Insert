@@ -52,7 +52,7 @@ type BillingPeriod = 'monthly' | 'yearly'
 
 const PaymentPage = () => {
     const { data: session } = useSession()
-    useInsertUser() // ensures user context loads if needed (remove if unused)
+    const { user } = useInsertUser() // ensures user context loads if needed (remove if unused)
 
     const { createOrder, verifyPayment, isPaymentLoading } = useInsertPayment()
     const RAZORPAY_KEY = process.env.NEXT_PUBLIC_RAZORPAY_API_KEY

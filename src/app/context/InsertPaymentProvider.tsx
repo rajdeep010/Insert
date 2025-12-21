@@ -4,6 +4,7 @@ import axios from 'axios'
 import { toast } from '@/components/ui/use-toast'
 import { useSession } from 'next-auth/react'
 import InsertPaymentReducer from '../reducer/InsertPaymentReducer'
+import { useInsertUser } from './InsertUserProvider'
 
 
 interface InsertPaymentProviderProps {
@@ -39,6 +40,8 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
     const { data: session, update } = useSession()
 
     const API_BASE = 'http://localhost:4000/v1';
+
+    const { updateUserAfterPayment } = useInsertUser();
 
 
     const handleUpdateSessionProAccess = async (updatedUserData: any) => {
@@ -122,10 +125,30 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
             if (success) {
                 const updatedUser = res?.data?.updatedUser;
                 await handleUpdateSessionProAccess(updatedUser);
-                console.log('User session updated with pro access after updation', session)
+                console.log('User session updated with pro access after updation', session);
+                /*
+                
+                updatedUser: {
+                    proAccess: true,
+                    proPlan: updatedUser.proStatus.plan,
+                    proStartedAt: updatedUser.proStatus.startedAt,
+                    proExpiresAt: updatedUser.proStatus.expiresAt,
+                    autoRenew: updatedUser.proStatus.autoRenew,
+                },
+                
+                */
+
+                updateUserAfterPayment({
+                    active: updatedUser?.proAccess,
+                    plan: updatedUser?.proPlan,
+                    startedAt: updatedUser?.proStartedAt,
+                    expiresAt: updatedUser?.proExpiresAt,
+                    autoRenew: updatedUser?.autoRenew
+                })
             }
 
             dispatch({ type: 'SET_PAYMENT_STATUS', payload: success ? 'SUCCESS' : 'FAILED' })
+
 
             toast({
                 title: success ? 'Payment Successful ✅' : 'Payment Failed ⭕',

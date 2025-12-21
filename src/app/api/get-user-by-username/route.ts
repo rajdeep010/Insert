@@ -55,6 +55,7 @@ export async function GET(request: Request) {
                 company: userObj.company,
                 username: userObj.username,
                 avatar: userObj.avatar,
+                proStatus: userObj?.proStatus,
             };
 
             // If token user matches, add private fields
