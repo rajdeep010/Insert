@@ -17,7 +17,8 @@ import { useInsertUser } from '@/app/context/InsertUserProvider'
 import { useSession } from 'next-auth/react'
 import { useInsertPayment } from '@/app/context/InsertPaymentProvider'
 import { toast } from '@/components/ui/use-toast'
-import Script from 'next/script'
+import { Spinner } from '@/components/ui/spinner'
+import { toast as sonnerToast } from 'sonner'
 
 
 declare global {
@@ -73,6 +74,9 @@ const PaymentPage = () => {
             ? 'Billed monthly • Cancel anytime'
             : `Billed annually • Save ${discountPercent}% (≈3 months free)`
 
+    const hasPro = !!(session?.user?.proAccess || user?.proStatus?.active)
+    const currentPlan = (session?.user?.proPlan || user?.proStatus?.plan) as BillingPeriod | null
+
     const handleUpgrade = async () => {
         try {
             if (!session?.accessToken) {
@@ -84,22 +88,22 @@ const PaymentPage = () => {
                 return
             }
 
+            // Block purchasing the same active plan
+            if (hasPro && currentPlan === billing) {
+                toast({
+                    title: 'Already on this plan',
+                    description: `You are already on the ${billing} Pro plan.`,
+                    variant: 'default',
+                })
+                return
+            }
+
             const amount = billing === 'monthly' ? monthlyPrice : yearlyPrice
             const order = await createOrder({ type: billing.toUpperCase() })
 
-            // If Razorpay script/key not available, stop after order creation
-            // if (!RAZORPAY_KEY || typeof window === 'undefined' || !(window as any).Razorpay) {
-            //     toast({
-            //         title: 'Order created',
-            //         description: 'Complete payment in the next step.',
-            //         variant: 'default',
-            //     })
-            //     return
-            // }
-
             const options = {
                 key: RAZORPAY_KEY,
-                amount: order?.amount || 1, // backend should return smallest unit if needed
+                amount: order?.amount || 1,
                 currency: order?.currency || 'INR',
                 name: 'Insert Pro',
                 description: `Upgrade to Pro (${billing})`,
@@ -111,8 +115,6 @@ const PaymentPage = () => {
                 theme: { color: '#4F46E5' },
                 handler: async (response: any) => {
                     try {
-                        console.log('Razorpay response from handler:', response);
-
                         const success = await verifyPayment({
                             orderId: order?.id,
                             paymentId: response.razorpay_payment_id,
@@ -121,7 +123,6 @@ const PaymentPage = () => {
                         });
 
                         if (success) {
-                            console.log('Payment verified successfully');
                             toast({
                                 title: 'Payment Successful ✅',
                                 description: 'Your plan has been upgraded to Pro.',
@@ -138,17 +139,11 @@ const PaymentPage = () => {
                 }
             }
 
-            console.log('Razorpay options:', options)
             const rzp = new (window as any).Razorpay(options)
-
-            console.log('Opening Razorpay checkout: ', rzp);
             rzp.open()
-
         } catch (e: any) {
-            toast({
-                title: 'Payment error',
-                description: e?.message || 'Could not start payment',
-                variant: 'destructive',
+            sonnerToast.error('Order creation failed', {
+                description: e?.response?.data?.message || e?.message || 'Failed to create order',
             })
         }
     }
@@ -189,10 +184,16 @@ const PaymentPage = () => {
                                 className={`px-4 py-2 transition-all duration-200 relative ${billing === 'monthly'
                                     ? 'shadow-sm'
                                     : 'hover:bg-black/5 dark:hover:bg-white/10'
-                                    }`}
+                                    } ${currentPlan === 'monthly' ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 aria-pressed={billing === 'monthly'}
+                                disabled={currentPlan === 'monthly'}
                             >
                                 Monthly
+                                {currentPlan === 'monthly' && (
+                                    <Badge variant="secondary" className="ml-2 text-[10px] tracking-wide">
+                                        Active
+                                    </Badge>
+                                )}
                             </Button>
                             <Button
                                 size="sm"
@@ -201,8 +202,9 @@ const PaymentPage = () => {
                                 className={`px-4 py-2 transition-all duration-200 relative ${billing === 'yearly'
                                     ? 'shadow-sm'
                                     : 'hover:bg-black/5 dark:hover:bg-white/10'
-                                    }`}
+                                    } ${currentPlan === 'yearly' ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 aria-pressed={billing === 'yearly'}
+                                disabled={currentPlan === 'yearly'}
                             >
                                 Yearly
                                 <Badge
@@ -211,6 +213,11 @@ const PaymentPage = () => {
                                 >
                                     Save {discountPercent}%
                                 </Badge>
+                                {currentPlan === 'yearly' && (
+                                    <Badge variant="secondary" className="ml-2 text-[10px] tracking-wide">
+                                        Active
+                                    </Badge>
+                                )}
                             </Button>
                         </div>
                     </div>
@@ -308,11 +315,18 @@ const PaymentPage = () => {
                             <Button
                                 className="w-full group/button transition-all duration-200 bg-indigo-600 hover:bg-indigo-500 text-white"
                                 onClick={handleUpgrade}
-                                disabled={isPaymentLoading}                            >
-                                <span className="transition-transform duration-200 group-hover:translate-y-[-1px]">
-                                    Upgrade to Pro ({billing === 'monthly' ? 'Monthly' : 'Annual'})
-
-                                </span>
+                                disabled={isPaymentLoading || (hasPro && currentPlan === billing)}
+                            >
+                                {isPaymentLoading ? (
+                                    <span className="flex items-center justify-center gap-2">
+                                        <Spinner className="h-4 w-4" />
+                                        Processing...
+                                    </span>
+                                ) : (
+                                    <span className="transition-transform duration-200 group-hover:translate-y-[-1px]">
+                                        Upgrade to Pro ({billing === 'monthly' ? 'Monthly' : 'Annual'})
+                                    </span>
+                                )}
                             </Button>
                         </CardFooter>
                     </Card>

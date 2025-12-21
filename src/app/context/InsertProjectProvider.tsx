@@ -6,9 +6,9 @@ import { createContext, useContext, useEffect, useReducer } from "react"
 import InsertProjectReducer from "../reducer/InsertProjectReducer"
 import { useInsertUser } from "./InsertUserProvider"
 import { useSession } from "next-auth/react"
-import { sync } from "motion/react"
 import { useParams, useRouter } from "next/navigation"
 import { useWebSocket } from "@/hooks/use-web-socket"
+import { toast as sonnerToast } from 'sonner'
 
 
 interface InsertProjectProviderProps {
@@ -453,26 +453,35 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
             }, { headers: { Authorization: `Bearer ${session?.accessToken}` } })
 
             if (res.data.success) {
-                toast({
-                    title: "✅ Sent successfully",
-                    description: `Your ${payload.type === 'suggestion' ? 'suggestion' : 'message'} has been received.`,
-                    variant: "default",
+                // toast({
+                //     title: "✅ Sent successfully",
+                //     description: `Your ${payload.type === 'suggestion' ? 'suggestion' : 'message'} has been received.`,
+                //     variant: "default",
+                // })
+                sonnerToast.success('Sent successfully', {
+                    description: `Your ${payload.type === 'suggestion' ? 'suggestion' : 'message'} has been sent.`,
                 })
             }
             else {
-                toast({
-                    title: "Error ⭕",
+                sonnerToast.error('Failed to send feedback', {
                     description: res.data.message || "Failed to send feedback",
-                    variant: "destructive",
                 })
+                // toast({
+                //     title: "Error ⭕",
+                //     description: res.data.message || "Failed to send feedback",
+                //     variant: "destructive",
+                // })
             }
 
         } catch (error: any) {
-            toast({
-                title: "Error ⭕",
+            sonnerToast.error('Failed to send feedback', {
                 description: error?.response?.data?.message || "Failed to send feedback",
-                variant: "destructive",
             })
+            // toast({
+            // //     title: "Error ⭕",
+            // //     description: error?.response?.data?.message || "Failed to send feedback",
+            // //     variant: "destructive",
+            // })
         }
     }
 

@@ -15,6 +15,7 @@ import { InsertUserProvider } from "./context/InsertUserProvider";
 import { InsertTopicProvider } from "./context/InsertTopicProvider";
 import { InsertProjectProvider } from "./context/InsertProjectProvider";
 import { InsertPaymentProvider } from "./context/InsertPaymentProvider";
+import { Toaster as SoonerToaster } from 'sonner'
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -52,6 +53,7 @@ export default function RootLayout({
 
                         {children}
                         <Toaster />
+                        <SoonerToaster />
                         <Footer />
                         <Analytics />
                       </BlogProvider>

@@ -5,6 +5,7 @@ import { toast } from '@/components/ui/use-toast'
 import { useSession } from 'next-auth/react'
 import InsertPaymentReducer from '../reducer/InsertPaymentReducer'
 import { useInsertUser } from './InsertUserProvider'
+import { toast as sonnerToast } from 'sonner'
 
 
 interface InsertPaymentProviderProps {
@@ -82,18 +83,16 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
             dispatch({ type: 'SET_ORDER', payload: order })
             dispatch({ type: 'SET_PAYMENT_STATUS', payload: 'PENDING' })
 
-            toast({
-                title: 'Order Created ✅',
-                description: 'Proceed to complete the payment.',
-                variant: 'default',
-            })
+            // toast({
+            //     title: 'Order Created ✅',
+            //     description: 'Proceed to complete the payment.',
+            //     variant: 'default',
+            // })
 
             return order
         } catch (error: any) {
-            toast({
-                title: 'Error ⭕',
+            sonnerToast.error('Order creation failed', {
                 description: error?.response?.data?.message || error?.message || 'Failed to create order',
-                variant: 'destructive',
             })
             dispatch({ type: 'SET_PAYMENT_STATUS', payload: 'FAILED' })
             throw error
@@ -145,25 +144,31 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
                     expiresAt: updatedUser?.proExpiresAt,
                     autoRenew: updatedUser?.autoRenew
                 })
+
+                sonnerToast.success('Payment verified', {
+                    description: 'Your Pro plan is active.',
+                })
+
+                sonnerToast.info('Pro features will appear after next login', {
+                    description: 'Sign out and sign back in to refresh your session.',
+                })
             }
 
             dispatch({ type: 'SET_PAYMENT_STATUS', payload: success ? 'SUCCESS' : 'FAILED' })
 
 
-            toast({
-                title: success ? 'Payment Successful ✅' : 'Payment Failed ⭕',
-                description: success ? 'Your payment has been verified.' : (res?.data?.message || 'Verification failed'),
-                variant: success ? 'default' : 'destructive',
-            })
+            if (!success) {
+                sonnerToast.error('Payment verification failed', {
+                    description: res?.data?.message || 'Verification failed',
+                })
+            }
 
             return success
 
         } catch (error: any) {
             dispatch({ type: 'SET_PAYMENT_STATUS', payload: 'FAILED' })
-            toast({
-                title: 'Error ⭕',
+            sonnerToast.error('Payment verification error', {
                 description: error?.response?.data?.message || error?.message || 'Payment verification failed',
-                variant: 'destructive',
             })
             return false
         } finally {
