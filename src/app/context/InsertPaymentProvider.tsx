@@ -23,6 +23,8 @@ interface InsertPaymentProviderProps {
         signature?: string
         gateway?: 'razorpay'
     }) => Promise<boolean>
+
+    cancelSubscription: () => Promise<boolean>
 }
 
 const initialState: InsertPaymentProviderProps = {
@@ -32,6 +34,7 @@ const initialState: InsertPaymentProviderProps = {
 
     createOrder: async () => ({}),
     verifyPayment: async () => false,
+    cancelSubscription: async () => false,
 }
 
 const InsertPaymentContext = createContext<InsertPaymentProviderProps | null>(null)
@@ -176,12 +179,65 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
         }
     }
 
+    const cancelSubscription: InsertPaymentProviderProps['cancelSubscription'] = async () => {
+        try {
+            dispatch({ type: 'SET_IS_PAYMENT_LOADING', payload: true })
+
+            const res = await axios.post(
+                `${API_BASE}/api/payments/cancel-membership`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${session?.accessToken}`,
+                    },
+                }
+            )
+
+            const success = !!res?.data?.success
+            const updatedUser = res?.data?.updatedUser
+
+            if (success && updatedUser) {
+                await handleUpdateSessionProAccess(updatedUser)
+
+                updateUserAfterPayment({
+                    active: updatedUser?.proAccess,
+                    plan: updatedUser?.proPlan,
+                    startedAt: updatedUser?.proStartedAt,
+                    expiresAt: updatedUser?.proExpiresAt,
+                    autoRenew: updatedUser?.autoRenew,
+                })
+
+                sonnerToast.success('Membership cancelled', {
+                    description: updatedUser?.proAccess
+                        ? 'Auto-renew is off. You keep Pro until the end of the current period.'
+                        : 'Your Pro membership has been cancelled.',
+                })
+            } else {
+                sonnerToast.error('Cancellation failed', {
+                    description: res?.data?.message || 'Could not cancel membership',
+                })
+            }
+
+            dispatch({ type: 'SET_PAYMENT_STATUS', payload: success ? 'SUCCESS' : 'FAILED' })
+            return success
+        } catch (error: any) {
+            dispatch({ type: 'SET_PAYMENT_STATUS', payload: 'FAILED' })
+            sonnerToast.error('Cancellation error', {
+                description: error?.response?.data?.message || error?.message || 'Could not cancel membership',
+            })
+            return false
+        } finally {
+            dispatch({ type: 'SET_IS_PAYMENT_LOADING', payload: false })
+        }
+    }
+
     return (
         <InsertPaymentContext.Provider
             value={{
                 ...state,
                 createOrder,
                 verifyPayment,
+                cancelSubscription
             }}
         >
             {children}
