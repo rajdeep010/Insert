@@ -1,63 +1,84 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
-import { BadgeCheck, Calendar, CircleAlert, Crown, ShieldOff, Sparkles, Zap } from 'lucide-react'
+import {
+    BadgeCheck,
+    Calendar,
+    Crown,
+    Info,
+    ShieldOff,
+    Sparkles,
+    Zap,
+    User2
+} from 'lucide-react'
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from '@/components/ui/dialog'
 import {
     Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useInsertUser } from '@/app/context/InsertUserProvider'
-import { useSession } from 'next-auth/react'
-import { useInsertPayment } from '@/app/context/InsertPaymentProvider'
 import { Spinner } from '@/components/ui/spinner'
+import { useInsertUser } from '@/app/context/InsertUserProvider'
+import { useInsertPayment } from '@/app/context/InsertPaymentProvider'
+import { useSession } from 'next-auth/react'
 import { toast as sonnerToast } from 'sonner'
-import {
-    AlertDialog,
-    AlertDialogTrigger,
-    AlertDialogContent,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogCancel,
-    AlertDialogAction
-} from '@/components/ui/alert-dialog'
 
 declare global { interface Window { Razorpay: any } }
 
-const surface = 'rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 transition-colors'
-const hoverable = 'transition-colors hover:border-black/20 dark:hover:border-white/30'
-const subtle = 'text-gray-600 dark:text-gray-400'
-
-const freeFeatures = ['Limited topics', 'Limited sheets', 'No project section access', 'Community support']
-const proFeatures = ['Unlimited topics', 'Unlimited sheets', 'Project handling & management', 'Unlimited blogs (create & organize)', 'Early feature access']
-
 type BillingPeriod = 'monthly' | 'yearly'
 
-const PaymentPage = () => {
+const shell = 'rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 backdrop-blur transition-colors'
+const subtle = 'text-gray-600 dark:text-gray-400'
+const pill = 'px-2.5 py-1 rounded-full text-xs border border-slate-200 dark:border-slate-700 bg-slate-100/60 dark:bg-slate-800/50'
+
+const VerifiedBadge = () => (
+    <span
+        className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-500 ml-1"
+        aria-label="Verified"
+        title="Verified"
+    >
+        <BadgeCheck className="text-white" size={14} strokeWidth={3} />
+    </span>
+)
+
+// ...existing imports...
+// Remove session-derived UI state; use user.proStatus only
+
+export default function PaymentPage() {
     const { data: session } = useSession()
     const { user } = useInsertUser()
-    const { createOrder, verifyPayment, cancelSubscription, isPaymentLoading } = useInsertPayment()
+    const { createOrder, verifyPayment, cancelSubscription, reactivateSubscription, isPaymentLoading } = useInsertPayment()
+
     const RAZORPAY_KEY = process.env.NEXT_PUBLIC_RAZORPAY_API_KEY
-
     const [billing, setBilling] = useState<BillingPeriod>('monthly')
+    const [isPolicyOpen, setPolicyOpen] = useState(false)
 
+    // Prices
     const monthlyPrice = 11
     const yearlyPrice = 99
     const discountPercent = useMemo(() => Math.round((1 - yearlyPrice / (monthlyPrice * 12)) * 100), [monthlyPrice, yearlyPrice])
-
     const displayPrice = billing === 'monthly' ? monthlyPrice : yearlyPrice
     const unit = billing === 'monthly' ? '/mo' : '/yr'
-    const subtext = billing === 'monthly'
-        ? 'Billed monthly • Cancel anytime'
-        : `Billed annually • Save ${discountPercent}% (≈3 months free)`
+    const subtext = billing === 'monthly' ? 'Billed monthly • Cancel anytime' : `Billed annually • Save ${discountPercent}% (≈3 months free)`
 
-    const hasPro = !!(session?.user?.proAccess || user?.proStatus?.active)
-    const currentPlan = (session?.user?.proPlan || user?.proStatus?.plan) as BillingPeriod | null
-    const autoRenew = session?.user?.autoRenew ?? user?.proStatus?.autoRenew ?? false
-    const renewAt = (session?.user?.proExpiresAt || user?.proStatus?.expiresAt) as string | Date | null
+    // Read only from user context
+    const hasPro = !!user?.proStatus?.active
+    const currentPlan = user?.proStatus?.plan as BillingPeriod | null
+    const renewAt = user?.proStatus?.expiresAt as string | Date | null
+    const cancelledAt = (user?.proStatus as any)?.cancelledAt ?? null
+
+    const isCurrentActive = hasPro && currentPlan === billing
+    const showReactivate = hasPro && Boolean(cancelledAt)
+    const showCancel = hasPro && !Boolean(cancelledAt)
 
     const handleUpgrade = async () => {
         try {
@@ -65,13 +86,12 @@ const PaymentPage = () => {
                 sonnerToast.warning('Sign in required', { description: 'Please sign in to upgrade your plan.' })
                 return
             }
-            if (hasPro && currentPlan === billing) {
+            if (isCurrentActive) {
                 sonnerToast.info('Already on this plan', { description: `You are already on the ${billing} Pro plan.` })
                 return
             }
 
             const order = await createOrder({ type: billing.toUpperCase() })
-
             const options = {
                 key: RAZORPAY_KEY,
                 amount: order?.amount || 1,
@@ -80,8 +100,8 @@ const PaymentPage = () => {
                 description: `Upgrade to Pro (${billing})`,
                 order_id: order?.id,
                 prefill: {
-                    name: session?.user?.name || session?.user?.username || '',
-                    email: session?.user?.email || '',
+                    name: user?.name || user?.username || '',
+                    email: user?.email || '',
                 },
                 theme: { color: '#4F46E5' },
                 handler: async (response: any) => {
@@ -92,246 +112,260 @@ const PaymentPage = () => {
                             signature: response.razorpay_signature,
                             gateway: 'razorpay',
                         })
-                        // Success/info toasts are handled inside verifyPayment via Sonner.
                         if (!success) {
                             sonnerToast.error('Payment verification failed', { description: 'Verification failed' })
                         }
                     } catch (err: any) {
-                        sonnerToast.error('Verification error', {
-                            description: err?.response?.data?.message || err?.message || 'Payment verification failed',
-                        })
+                        sonnerToast.error('Verification error', { description: err?.response?.data?.message || err?.message || 'Payment verification failed' })
                     }
                 }
             }
-
             const rzp = new (window as any).Razorpay(options)
             rzp.open()
         } catch (e: any) {
-            sonnerToast.error('Order creation failed', {
-                description: e?.response?.data?.message || e?.message || 'Failed to create order',
-            })
+            sonnerToast.error('Order creation failed', { description: e?.response?.data?.message || e?.message || 'Failed to create order' })
         }
     }
 
     const handleCancel = async () => {
+        if (!showCancel) return
         const ok = await cancelSubscription()
         if (!ok) return
-        // Optionally: further UI updates handled by context + session update
+    }
+
+    const handleReactivate = async () => {
+        if (!showReactivate) return
+        const ok = await reactivateSubscription({ plan: currentPlan || undefined })
+        if (!ok) return
     }
 
     return (
-        <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-10 w-full max-w-6xl">
-                {/* Header */}
-                <div className="flex items-start justify-between gap-6 flex-wrap animate-in slide-in-from-top-2">
-                    <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-2">
-                            <span className="flex items-center gap-2 text-[13px] uppercase tracking-wider font-semibold px-2.5 py-1.5 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
-                                Membership
-                                <Badge variant="secondary" className="text-xs">Insert</Badge>
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Billing Toggle */}
-                    <div className={`${surface} ${hoverable} relative shadow-none px-2 py-2 flex items-center gap-2 rounded-2xl overflow-hidden animate-in fade-in-50`}>
-                        <div className="relative flex items-center gap-1">
-                            <div className="absolute inset-y-0 left-0 flex" style={{ width: '100%', pointerEvents: 'none' }} />
-                            <Button
-                                size="sm"
-                                variant={billing === 'monthly' ? 'default' : 'ghost'}
-                                onClick={() => setBilling('monthly')}
-                                className={`px-4 py-2 transition-all duration-200 relative ${billing === 'monthly' ? 'shadow-sm' : 'hover:bg-black/5 dark:hover:bg-white/10'} ${currentPlan === 'monthly' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                aria-pressed={billing === 'monthly'}
-                                disabled={currentPlan === 'monthly'}
-                            >
-                                Monthly
-                                {currentPlan === 'monthly' && (
-                                    <Badge variant="secondary" className="ml-2 text-[10px] tracking-wide">Active</Badge>
-                                )}
-                            </Button>
-                            <Button
-                                size="sm"
-                                variant={billing === 'yearly' ? 'default' : 'ghost'}
-                                onClick={() => setBilling('yearly')}
-                                className={`px-4 py-2 transition-all duration-200 relative ${billing === 'yearly' ? 'shadow-sm' : 'hover:bg-black/5 dark:hover:bg-white/10'} ${currentPlan === 'yearly' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                aria-pressed={billing === 'yearly'}
-                                disabled={currentPlan === 'yearly'}
-                            >
-                                Yearly
-                                <Badge variant="secondary" className="ml-2 text-[10px] tracking-wide">Save {discountPercent}%</Badge>
-                                {currentPlan === 'yearly' && (
-                                    <Badge variant="secondary" className="ml-2 text-[10px] tracking-wide">Active</Badge>
-                                )}
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Plans */}
-                <div className="grid gap-7 md:grid-cols-2">
-                    {/* Free */}
-                    <Card className={`${surface} ${hoverable} shadow-none p-0 group transition-all duration-300 ease-out hover:-translate-y-0.5 hover:ring-1 hover:ring-indigo-500/20 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] animate-in fade-in-50 slide-in-from-bottom-2`} style={{ animationDelay: '60ms' }}>
-                        <CardHeader className="p-8 pb-5">
-                            <div className="flex items-center gap-2">
-                                <Zap className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                                <Badge variant="secondary" className="text-[10px] uppercase">Basic</Badge>
-                            </div>
-                            <div className="mt-3 flex items-baseline gap-2">
-                                <CardTitle className="text-4xl font-semibold">₹0</CardTitle>
-                                <span className={subtle}>/mo</span>
-                            </div>
-                            <CardDescription className={subtle}>Get started and explore core Insert features.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="px-8 pb-6">
-                            <ul className="mt-5 flex flex-col gap-2.5 text-sm">
-                                {freeFeatures.map(f => (
-                                    <li key={f} className="flex items-center gap-2">
-                                        <BadgeCheck className="h-4 w-4 text-emerald-500" /> {f}
-                                    </li>
-                                ))}
-                            </ul>
-                        </CardContent>
-                        <CardFooter className="px-8 pb-8">
-                            <Link href={`/u/${session?.user?.username || ''}`} className="w-full">
-                                <Button variant="outline" className="w-full transition-transform duration-200 group-hover:translate-y-[-1px]">
-                                    Continue Free
-                                </Button>
-                            </Link>
-                        </CardFooter>
-                    </Card>
-
-                    {/* Pro */}
-                    <Card className={`${surface} ${hoverable} shadow-none p-0 relative group transition-all duration-300 ease-out hover:-translate-y-0.5 hover:ring-1 hover:ring-indigo-500/25 hover:shadow-[0_10px_35px_rgba(67,56,202,0.15)] animate-in fade-in-50 slide-in-from-bottom-2`} style={{ animationDelay: '120ms' }}>
-                        <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
-                            <Badge className="bg-indigo-600 text-white hover:bg-indigo-600/90">Recommended</Badge>
-                            {billing === 'yearly' && (
-                                <Badge variant="secondary" className="text-[10px] font-medium tracking-wide">{discountPercent}% OFF</Badge>
+        <div className="mx-auto w-full max-w-6xl px-4 md:px-6 lg:px-8 py-6 md:py-8">
+            {/* Membership overview */}
+            <Card className={`${shell} shadow-none mb-8`}>
+                <CardContent className="p-6 md:p-7">
+                    <div className="flex flex-wrap items-center gap-5">
+                        <div className="relative">
+                            {user?.avatar ? (
+                                <Image src={user.avatar} alt="avatar" width={72} height={72} className="rounded-full border border-slate-200 dark:border-slate-700" />
+                            ) : (
+                                <div className="h-[72px] w-[72px] rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
+                                    <User2 className="h-6 w-6 text-slate-500" />
+                                </div>
                             )}
                         </div>
-                        <CardHeader className="p-8 pb-5">
-                            <div className="flex items-center gap-2">
-                                <Crown className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                                <Badge variant="secondary" className="text-[10px] uppercase">Pro</Badge>
+
+                        <div className="flex flex-col">
+                            <div className="flex items-center text-lg font-semibold">
+                                {user?.name || 'Member'}
+                                {hasPro && <VerifiedBadge />}
                             </div>
-                            <div className="mt-3 flex items-baseline gap-2">
-                                <CardTitle className="text-4xl font-semibold">₹{displayPrice}</CardTitle>
-                                <span className={subtle}>{unit}</span>
-                            </div>
-                            <CardDescription className={subtle}>{subtext}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="px-8 pb-6">
-                            <ul className="mt-3 flex flex-col gap-2.5 text-sm">
-                                {proFeatures.map(f => (
-                                    <li key={f} className="flex items-center gap-2">
-                                        <BadgeCheck className="h-4 w-4 text-emerald-500" /> {f}
-                                    </li>
-                                ))}
-                            </ul>
-                        </CardContent>
-                        <CardFooter className="px-8 pb-8">
-                            <Button
-                                className="w-full group/button transition-all duration-200 bg-indigo-600 hover:bg-indigo-500 text-white"
-                                onClick={handleUpgrade}
-                                disabled={isPaymentLoading || (hasPro && currentPlan === billing)}
-                            >
-                                {isPaymentLoading ? (
-                                    <span className="flex items-center justify-center gap-2">
-                                        <Spinner className="h-4 w-4" />
-                                        Processing...
-                                    </span>
+                            <div className="text-sm text-slate-500">@{user?.username}</div>
+
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                                {hasPro ? (
+                                    <>
+                                        <span className={`${pill} bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300`}>Pro — {currentPlan}</span>
+                                        <span className={pill}>Ends {renewAt ? new Date(renewAt).toLocaleDateString() : '—'}</span>
+                                        {cancelledAt && <span className={pill}>Cancelled {new Date(cancelledAt).toLocaleDateString()}</span>}
+                                    </>
                                 ) : (
-                                    <span className="transition-transform duration-200 group-hover:translate-y-[-1px]">
-                                       {(hasPro && currentPlan === billing) ? 'Currently active' : `Upgrade to Pro (${billing === 'monthly' ? 'Monthly' : 'Annual'})`} 
-                                    </span>
+                                    <span className={pill}>Free</span>
                                 )}
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Plans */}
+            <div className="grid gap-7 md:grid-cols-2 mb-8">
+                <Card className={`${shell} shadow-none p-0 group transition-all duration-300 ease-out hover:-translate-y-0.5 hover:ring-1 hover:ring-indigo-500/20`}>
+                    <CardHeader className="p-6 pb-3">
+                        <div className="flex items-center gap-2">
+                            <Zap className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                            <Badge variant="secondary" className="text-[10px] uppercase">Basic</Badge>
+                        </div>
+                        <div className="mt-2 flex items-baseline gap-2">
+                            <CardTitle className="text-3xl font-semibold">₹0</CardTitle>
+                            <span className={subtle}>/mo</span>
+                        </div>
+                        <CardDescription className={subtle}>Explore core features.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="px-6 pb-4">
+                        <ul className="mt-3 flex flex-col gap-2 text-sm">
+                            {['Limited topics', 'Limited sheets', 'No project section access', 'Community support'].map(f => (
+                                <li key={f} className="flex items-center gap-2">
+                                    <BadgeCheck className="h-4 w-4 text-emerald-500" /> {f}
+                                </li>
+                            ))}
+                        </ul>
+                    </CardContent>
+                    <CardFooter className="px-6 pb-6">
+                        <Link href={`/u/${user?.username || ''}`} className="w-full">
+                            <Button variant="outline" className="w-full">Continue Free</Button>
+                        </Link>
+                    </CardFooter>
+                </Card>
+
+                <Card className={`${shell} shadow-none p-0 relative group transition-all duration-300 ease-out hover:-translate-y-0.5 hover:ring-1 hover:ring-indigo-500/25`}>
+                    <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
+                        <Badge className="bg-indigo-600 text-white hover:bg-indigo-600/90">Recommended</Badge>
+                        {billing === 'yearly' && <Badge variant="secondary" className="text-[10px] font-medium tracking-wide">{discountPercent}% OFF</Badge>}
+                    </div>
+
+                    <CardHeader className="p-6 pb-3">
+                        <div className="flex items-center gap-2">
+                            <Crown className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                            <Badge variant="secondary" className="text-[10px] uppercase">Pro</Badge>
+                        </div>
+                        <div className="mt-2 flex items-baseline gap-2">
+                            <CardTitle className="text-3xl font-semibold">₹{displayPrice}</CardTitle>
+                            <span className={subtle}>{unit}</span>
+                        </div>
+                        <CardDescription className={subtle}>{subtext}</CardDescription>
+                    </CardHeader>
+
+                    <CardContent className="px-6 pb-4">
+                        <div className="mb-4 flex items-center gap-2">
+                            <Button size="sm" variant={billing === 'monthly' ? 'default' : 'ghost'} onClick={() => setBilling('monthly')}>
+                                Monthly
+                                {currentPlan === 'monthly' && hasPro && <Badge variant="secondary" className="ml-2 text-[10px]">Active</Badge>}
                             </Button>
-                        </CardFooter>
-                    </Card>
-                </div>
+                            <Button size="sm" variant={billing === 'yearly' ? 'default' : 'ghost'} onClick={() => setBilling('yearly')}>
+                                Yearly
+                                <Badge variant="secondary" className="ml-2 text-[10px]">Save {discountPercent}%</Badge>
+                                {currentPlan === 'yearly' && hasPro && <Badge variant="secondary" className="ml-2 text-[10px]">Active</Badge>}
+                            </Button>
+                        </div>
 
-                {/* Manage membership */}
-                {hasPro && (
-                    <Card className={`${surface} ${hoverable} shadow-none p-0 animate-in fade-in-50 slide-in-from-bottom-2`} style={{ animationDelay: '160ms' }}>
-                        <CardHeader className="p-6 pb-4">
-                            <div className="flex items-center gap-2">
-                                <CircleAlert className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                                <CardTitle className="text-base">Manage membership</CardTitle>
-                            </div>
-                            <CardDescription className={subtle}>
-                                View your current plan and cancel auto-renew at any time.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="px-6 pb-2">
-                            <div className="grid gap-3 sm:grid-cols-3">
+                        <ul className="flex flex-col gap-2 text-sm">
+                            {['Unlimited topics', 'Unlimited sheets', 'Project handling & management', 'Unlimited blogs (create & organize)', 'Early feature access'].map(f => (
+                                <li key={f} className="flex items-center gap-2">
+                                    <BadgeCheck className="h-4 w-4 text-emerald-500" /> {f}
+                                </li>
+                            ))}
+                        </ul>
+                    </CardContent>
+
+                    <CardFooter className="px-6 pb-6">
+                        <Button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white" onClick={handleUpgrade} disabled={isPaymentLoading || isCurrentActive}>
+                            {isPaymentLoading ? (
+                                <span className="flex items-center justify-center gap-2">
+                                    <Spinner className="h-4 w-4" />
+                                    Processing...
+                                </span>
+                            ) : (
+                                <span>{isCurrentActive ? 'Currently active' : `Upgrade to Pro (${billing === 'monthly' ? 'Monthly' : 'Annual'})`}</span>
+                            )}
+                        </Button>
+                    </CardFooter>
+                </Card>
+            </div>
+
+            {/* Manage membership */}
+            {hasPro && (
+                <Card className={`${shell} shadow-none`}>
+                    <CardContent className="p-6">
+                        <div className="flex flex-col gap-4">
+                            <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <BadgeCheck className="h-4 w-4 text-emerald-500" />
-                                    <span className="text-sm">Plan: <strong className="ml-1 capitalize">{currentPlan || '—'}</strong></span>
+                                    <Badge className="bg-indigo-600 text-white">Pro</Badge>
+                                    <span className="text-sm text-slate-600 dark:text-slate-300">
+                                        {currentPlan?.toUpperCase()} • Ends {renewAt ? new Date(renewAt).toLocaleDateString() : '—'}
+                                    </span>
+                                    {cancelledAt && <span className={pill}>Cancelled {new Date(cancelledAt).toLocaleDateString()}</span>}
                                 </div>
-                                <div className="flex items-center gap-2">
+
+                                <button type="button" onClick={() => setPolicyOpen(true)} className="inline-flex items-center justify-center rounded-full p-2 hover:bg-black/5 dark:hover:bg-white/10" aria-label="Policy" title="Policy">
+                                    <Info className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+                                </button>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-8">
+                                <div className="flex items-center gap-2 text-sm">
                                     <Calendar className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                                    <span className="text-sm">
-                                        Renews: <strong className="ml-1">{renewAt ? new Date(renewAt).toLocaleDateString() : '—'}</strong>
+                                    <span className={subtle}>
+                                        Renewal date: <strong className="ml-1 text-slate-900 dark:text-slate-100">{renewAt ? new Date(renewAt).toLocaleDateString() : '—'}</strong>
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <ShieldOff className={`h-4 w-4 ${autoRenew ? 'text-amber-500' : 'text-rose-500'}`} />
-                                    <span className="text-sm">
-                                        Auto-renew: <strong className="ml-1">{autoRenew ? 'On' : 'Off'}</strong>
-                                    </span>
+
+                                <div className="ml-auto flex gap-3">
+                                    {showReactivate && (
+                                        <Button variant="default" onClick={handleReactivate} disabled={isPaymentLoading} className="min-w-[180px]">
+                                            {isPaymentLoading ? (
+                                                <span className="flex items-center gap-2"><Spinner className="h-4 w-4" /> Reactivating...</span>
+                                            ) : (
+                                                'Reactivate membership'
+                                            )}
+                                        </Button>
+                                    )}
+
+                                    {showCancel && (
+                                        <Button variant="destructive" onClick={handleCancel} disabled={isPaymentLoading} className="min-w-[160px]">
+                                            {isPaymentLoading ? (
+                                                <span className="flex items-center gap-2"><Spinner className="h-4 w-4" /> Cancelling...</span>
+                                            ) : (
+                                                'Cancel membership'
+                                            )}
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
-                        </CardContent>
-                        <CardFooter className="px-6 pb-6">
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button
-                                        variant="destructive"
-                                        className="w-full sm:w-auto"
-                                        disabled={isPaymentLoading}
-                                    >
-                                        {isPaymentLoading ? (
-                                            <span className="flex items-center gap-2">
-                                                <Spinner className="h-4 w-4" />
-                                                Cancelling...
-                                            </span>
-                                        ) : (
-                                            'Cancel membership'
-                                        )}
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Cancel Pro membership?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            This will turn off pro access {currentPlan ? `for your ${currentPlan} plan` : ''}. You will keep access until the end of your current billing period.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Keep Pro</AlertDialogCancel>
-                                        <AlertDialogAction
-                                            className=""
-                                            onClick={handleCancel}
-                                        >
-                                            Confirm cancel
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        </CardFooter>
-                    </Card>
-                )}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
-                {/* Reassurance */}
-                <div className={`${surface} ${hoverable} shadow-none p-5 md:p-6 flex items-center gap-3 text-sm animate-in fade-in-50 slide-in-from-bottom-2`} style={{ animationDelay: '180ms' }}>
-                    <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                    <p className={subtle}>
-                        Switch or cancel anytime. Annual plan gives you {discountPercent}% off (≈3 months free).
-                    </p>
-                </div>
+            <Dialog open={isPolicyOpen} onOpenChange={setPolicyOpen}>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>Cancellation & plan changes</DialogTitle>
+                        <DialogDescription>What happens when you cancel or reactivate.</DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-3 text-sm">
+                        <div>
+                            <p className="font-medium">Cancellation</p>
+                            <ul className="mt-1 list-disc pl-5 space-y-1">
+                                <li>You’ll keep Pro access until the end of the current billing period.</li>
+                                <li>Pro-only actions may be restricted after your plan ends.</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <p className="font-medium">Reactivation</p>
+                            <ul className="mt-1 list-disc pl-5 space-y-1">
+                                <li>Your Pro plan becomes active again.</li>
+                                <li>If changes aren’t visible, sign out and sign back in.</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <p className="font-medium">Seeing changes</p>
+                            <ul className="mt-1 list-disc pl-5 space-y-1">
+                                <li>Sessions may cache status; re-login can refresh your access.</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <p className="font-medium">Billing</p>
+                            <ul className="mt-1 list-disc pl-5 space-y-1">
+                                <li>Charges are typically non-refundable.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setPolicyOpen(false)}>Close</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <div className={`${shell} shadow-none mt-8 p-5 md:p-6 flex items-center gap-3 text-sm`}>
+                <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <p className={subtle}>Switch or cancel anytime. Annual plan gives you {discountPercent}% off (≈3 months free).</p>
             </div>
         </div>
     )
 }
-
-export default PaymentPage

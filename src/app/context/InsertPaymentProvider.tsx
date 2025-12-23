@@ -25,6 +25,7 @@ interface InsertPaymentProviderProps {
     }) => Promise<boolean>
 
     cancelSubscription: () => Promise<boolean>
+    reactivateSubscription: (payload?: { plan?: 'monthly' | 'yearly' }) => Promise<boolean>
 }
 
 const initialState: InsertPaymentProviderProps = {
@@ -35,6 +36,7 @@ const initialState: InsertPaymentProviderProps = {
     createOrder: async () => ({}),
     verifyPayment: async () => false,
     cancelSubscription: async () => false,
+    reactivateSubscription: async () => false,
 }
 
 const InsertPaymentContext = createContext<InsertPaymentProviderProps | null>(null)
@@ -104,6 +106,7 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
         }
     }
 
+    // ...existing code...
     const verifyPayment: InsertPaymentProviderProps['verifyPayment'] = async (payload) => {
         try {
             dispatch({ type: 'SET_IS_PAYMENT_LOADING', payload: true })
@@ -116,63 +119,36 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
                     signature: payload.signature,
                     gateway: payload.gateway ?? 'razorpay',
                 },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${session?.accessToken}`,
-                    },
-                }
+                { headers: { Authorization: `Bearer ${session?.accessToken}` } }
             )
 
             const success = res?.data?.success
             if (success) {
-                const updatedUser = res?.data?.updatedUser;
-                await handleUpdateSessionProAccess(updatedUser);
-                console.log('User session updated with pro access after updation', session);
-                /*
-                
-                updatedUser: {
-                    proAccess: true,
-                    proPlan: updatedUser.proStatus.plan,
-                    proStartedAt: updatedUser.proStatus.startedAt,
-                    proExpiresAt: updatedUser.proStatus.expiresAt,
-                    autoRenew: updatedUser.proStatus.autoRenew,
-                },
-                
-                */
+                const updatedUser = res?.data?.updatedUser
+                await handleUpdateSessionProAccess(updatedUser)
 
+                // Drive UI solely from InsertUser context
                 updateUserAfterPayment({
                     active: updatedUser?.proAccess,
                     plan: updatedUser?.proPlan,
                     startedAt: updatedUser?.proStartedAt,
                     expiresAt: updatedUser?.proExpiresAt,
-                    autoRenew: updatedUser?.autoRenew
+                    autoRenew: updatedUser?.autoRenew,
+                    cancelledAt: null, // fresh payment => not cancelled
                 })
 
-                sonnerToast.success('Payment verified', {
-                    description: 'Your Pro plan is active.',
-                })
-
-                sonnerToast.info('Pro features will appear after next login', {
-                    description: 'Sign out and sign back in to refresh your session.',
-                })
+                sonnerToast.success('Payment verified', { description: 'Your Pro plan is active.' })
+                sonnerToast.info('Changes may require re-login', { description: 'Sign out and back in if Pro features are not visible.' })
             }
 
             dispatch({ type: 'SET_PAYMENT_STATUS', payload: success ? 'SUCCESS' : 'FAILED' })
-
-
             if (!success) {
-                sonnerToast.error('Payment verification failed', {
-                    description: res?.data?.message || 'Verification failed',
-                })
+                sonnerToast.error('Payment verification failed', { description: res?.data?.message || 'Verification failed' })
             }
-
             return success
-
         } catch (error: any) {
             dispatch({ type: 'SET_PAYMENT_STATUS', payload: 'FAILED' })
-            sonnerToast.error('Payment verification error', {
-                description: error?.response?.data?.message || error?.message || 'Payment verification failed',
-            })
+            sonnerToast.error('Payment verification error', { description: error?.response?.data?.message || error?.message || 'Payment verification failed' })
             return false
         } finally {
             dispatch({ type: 'SET_IS_PAYMENT_LOADING', payload: false })
@@ -186,11 +162,7 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
             const res = await axios.post(
                 `${API_BASE}/api/payments/cancel-membership`,
                 {},
-                {
-                    headers: {
-                        Authorization: `Bearer ${session?.accessToken}`,
-                    },
-                }
+                { headers: { Authorization: `Bearer ${session?.accessToken}` } }
             )
 
             const success = !!res?.data?.success
@@ -198,33 +170,65 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
 
             if (success && updatedUser) {
                 await handleUpdateSessionProAccess(updatedUser)
-
                 updateUserAfterPayment({
                     active: updatedUser?.proAccess,
                     plan: updatedUser?.proPlan,
                     startedAt: updatedUser?.proStartedAt,
                     expiresAt: updatedUser?.proExpiresAt,
                     autoRenew: updatedUser?.autoRenew,
+                    cancelledAt: updatedUser?.cancelledAt ?? new Date().toISOString(),
                 })
 
-                sonnerToast.success('Membership cancelled', {
-                    description: updatedUser?.proAccess
-                        ? 'Auto-renew is off. You keep Pro until the end of the current period.'
-                        : 'Your Pro membership has been cancelled.',
-                })
+                sonnerToast.success('Membership cancelled', { description: 'You will keep Pro until the end of the current period.' })
             } else {
-                sonnerToast.error('Cancellation failed', {
-                    description: res?.data?.message || 'Could not cancel membership',
-                })
+                sonnerToast.error('Cancellation failed', { description: res?.data?.message || 'Could not cancel membership' })
             }
 
             dispatch({ type: 'SET_PAYMENT_STATUS', payload: success ? 'SUCCESS' : 'FAILED' })
             return success
         } catch (error: any) {
             dispatch({ type: 'SET_PAYMENT_STATUS', payload: 'FAILED' })
-            sonnerToast.error('Cancellation error', {
-                description: error?.response?.data?.message || error?.message || 'Could not cancel membership',
-            })
+            sonnerToast.error('Cancellation error', { description: error?.response?.data?.message || error?.message || 'Could not cancel membership' })
+            return false
+        } finally {
+            dispatch({ type: 'SET_IS_PAYMENT_LOADING', payload: false })
+        }
+    }
+
+    const reactivateSubscription: InsertPaymentProviderProps['reactivateSubscription'] = async (payload) => {
+        try {
+            dispatch({ type: 'SET_IS_PAYMENT_LOADING', payload: true })
+
+            const res = await axios.post(
+                `${API_BASE}/api/payments/reactivate-membership`,
+                { plan: payload?.plan },
+                { headers: { Authorization: `Bearer ${session?.accessToken}` } }
+            )
+
+            const success = !!res?.data?.success
+            const updatedUser = res?.data?.updatedUser
+
+            if (success && updatedUser) {
+                await handleUpdateSessionProAccess(updatedUser)
+                updateUserAfterPayment({
+                    active: updatedUser?.proAccess,
+                    plan: updatedUser?.proPlan,
+                    startedAt: updatedUser?.proStartedAt,
+                    expiresAt: updatedUser?.proExpiresAt,
+                    autoRenew: updatedUser?.autoRenew,
+                    cancelledAt: null, // reactivated => not cancelled
+                })
+
+                sonnerToast.success('Membership reactivated', { description: 'Your Pro plan is active again.' })
+            } else {
+                sonnerToast.error('Reactivation failed', { description: res?.data?.message || 'Could not reactivate membership' })
+            }
+
+            dispatch({ type: 'SET_PAYMENT_STATUS', payload: success ? 'SUCCESS' : 'FAILED' })
+            return success
+        } catch (error: any) {
+            dispatch({ type: 'SET_PAYMENT_STATUS', payload: 'FAILED' })
+            sonnerToast.error('Reactivation error', { description: error?.response?.data?.message || error?.message || 'Could not reactivate membership' })
             return false
         } finally {
             dispatch({ type: 'SET_IS_PAYMENT_LOADING', payload: false })
@@ -237,7 +241,8 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
                 ...state,
                 createOrder,
                 verifyPayment,
-                cancelSubscription
+                cancelSubscription,
+                reactivateSubscription
             }}
         >
             {children}

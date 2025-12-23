@@ -1,15 +1,4 @@
-type State = {
-    order: any
-    paymentStatus: 'IDLE' | 'PENDING' | 'SUCCESS' | 'FAILED'
-    isPaymentLoading: boolean
-}
-
-type Action =
-    | { type: 'SET_ORDER'; payload: any }
-    | { type: 'SET_PAYMENT_STATUS'; payload: State['paymentStatus'] }
-    | { type: 'SET_IS_PAYMENT_LOADING'; payload: boolean }
-
-const InsertPaymentReducer = (state: any, action: Action): State => {
+const InsertPaymentReducer = (state: any, action: any) => {
     switch (action.type) {
         case 'SET_ORDER':
             return { ...state, order: action.payload }
@@ -17,6 +6,21 @@ const InsertPaymentReducer = (state: any, action: Action): State => {
             return { ...state, paymentStatus: action.payload }
         case 'SET_IS_PAYMENT_LOADING':
             return { ...state, isPaymentLoading: action.payload }
+        case "SET_USER_AFTER_PAYMENT":
+            return {
+                ...state,
+                user: {
+                    ...state.user,
+                    proStatus: {
+                        active: action.payload.active,
+                        plan: action.payload.plan,
+                        startedAt: action.payload.startedAt,
+                        expiresAt: action.payload.expiresAt,
+                        autoRenew: action.payload.autoRenew,
+                        cancelledAt: action.payload.cancelledAt ?? null,
+                    }
+                }
+            }
         default:
             return state
     }
