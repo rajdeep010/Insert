@@ -59,6 +59,7 @@ declare module 'next-auth' {
             proStartedAt?: Date | string | null;
             proExpiresAt?: Date | string | null;
             autoRenew?: boolean;
+            proCancelledAt?: Date | string | null;
 
         } & DefaultSession['user']
     }
@@ -94,5 +95,6 @@ declare module 'next-auth/jwt' {
         proStartedAt?: Date | string | null;
         proExpiresAt?: Date | string | null;
         autoRenew?: boolean;
+        proCancelledAt?: Date | string | null;
     }
 }

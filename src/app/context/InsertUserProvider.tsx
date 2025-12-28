@@ -436,6 +436,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
                 startedAt: payload?.startedAt,
                 expiresAt: payload?.expiresAt,
                 autoRenew: payload?.autoRenew,
+                cancelledAt: payload?.cancelledAt || null,
             }
         })
     }

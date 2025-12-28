@@ -25,7 +25,8 @@ export default function InsertUserReducer(state: any,action: any) {
                         plan: action.payload.plan,
                         startedAt: action.payload.startedAt,
                         expiresAt: action.payload.expiresAt,
-                        autoRenew: action.payload.autoRenew
+                        autoRenew: action.payload.autoRenew,
+                        cancelledAt: action.payload?.cancelledAt || null,
                     }
                 }
             }
