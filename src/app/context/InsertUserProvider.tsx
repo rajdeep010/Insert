@@ -207,7 +207,6 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
                     Authorization: `Bearer ${session?.accessToken}`,
                 },
             })
-            // console.log(res)
             if (!res.data.success) {
                 toast({
                     title: 'Oops!',
@@ -224,7 +223,6 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
             })
 
         } catch (error: any) {
-            // console.log(error)
             toast({
                 title: 'Oops',
                 description: error.message || 'Collab request not sent',
@@ -249,7 +247,6 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
     const getUnreadNotifyCount = async () => {
         try {
             if (!session?.accessToken) return
-            // console.log(session)
             const response = await axios.get(`${INSERT_NOTIFY_SERVICE}/api/notify/get-unread-count`, {
                 headers: {
                     Authorization: `Bearer ${session?.accessToken}`,
@@ -257,7 +254,6 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
             })
             dispatch({ type: "SET_NOTIFY_COUNT", payload: response.data.count })
         } catch (error) {
-            // console.error()
         }
     }
 
@@ -442,7 +438,6 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
     }
 
     useEffect(() => {
-        // console.log('param username: ', param_username)
         if (status === "authenticated") {
             const fetchData = async () => {
                 try {

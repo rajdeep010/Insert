@@ -80,7 +80,6 @@ export default function PaymentPage() {
     const showReactivate = hasPro && Boolean(cancelledAt)
     const showCancel = hasPro && !Boolean(cancelledAt)
 
-    console.log('User pro status:', user?.proStatus, showCancel, showReactivate);
 
     const handleUpgrade = async () => {
         try {

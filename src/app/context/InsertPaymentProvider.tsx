@@ -168,7 +168,6 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
                 { headers: { Authorization: `Bearer ${session?.accessToken}` } }
             )
 
-            console.log('Cancellation response:', res.data);
 
             const success = !!res?.data?.success
             const updatedUser = res?.data?.subscription
@@ -185,7 +184,6 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
                 })
 
                 sonnerToast.success('Membership cancelled', { description: res?.data?.message || 'You will keep Pro until the end of the current period.' })
-                console.log('Updated user after reactivation:', updatedUser);
 
             } else {
                 sonnerToast.error('Cancellation failed', { description: res?.data?.message || 'Could not cancel membership' })
@@ -212,7 +210,6 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
                 { headers: { Authorization: `Bearer ${session?.accessToken}` } }
             )
 
-            console.log('Reactivation response:', res.data);
 
             const success = !!res?.data?.success
             const updatedUser = res?.data?.subscription
@@ -229,7 +226,6 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
                 })
                 // dispatch({ type: "SET_USER_PAYMENT_UPDATE", payload: updatedUser })
 
-                console.log('Updated user after reactivation:', updatedUser);
 
                 sonnerToast.success('Membership reactivated', { description: res?.data?.message || 'Your Pro plan is active again.' })
             } else {

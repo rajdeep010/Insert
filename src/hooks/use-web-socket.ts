@@ -14,17 +14,13 @@ export const useWebSocket = (projectId: string | null) => {
         socketRef.current = socket;
 
         const onConnect = () => {
-            // console.log('🟢 Connected to WebSocket server');
             setConnected(true);
         };
         const onDisconnect = () => {
-            // console.log('🔴 Disconnected from WebSocket server');
             setConnected(false);
         };
         const onMessage = (payload: any) => {
-            // console.log('Raw message payload:', payload);
             const parsed = typeof payload === 'string' ? JSON.parse(payload) : payload;
-            // console.log('📩 New message received from server:', parsed);
             setLastMessage(parsed);
         };
 
@@ -49,19 +45,16 @@ export const useWebSocket = (projectId: string | null) => {
 
         if (prevDest && prevDest !== newDest) {
             socket.emit('unsubscribe', prevDest);
-            // console.log(`🚪 Unsubscribed from ${prevDest}`);
             currentDestinationRef.current = null;
         }
 
         if (newDest && newDest !== prevDest) {
             socket.emit('subscribe', newDest);
-            // console.log(`🚀 Subscribed to ${newDest}`);
             currentDestinationRef.current = newDest;
         }
 
         return () => {
             if (socket && currentDestinationRef.current) {
-                // console.log(`🚪 Unsubscribing from ${currentDestinationRef.current}`);
                 socket.emit('unsubscribe', currentDestinationRef.current);
                 currentDestinationRef.current = null;
             }

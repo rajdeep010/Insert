@@ -61,7 +61,6 @@ export async function GET(request: Request) {
         }
 
     } catch (error) {
-        // console.log('this is error', error)
         return Response.json({
             success: false,
             message: 'Error in finding blogs'

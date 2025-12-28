@@ -226,7 +226,6 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 variant: "default",
             })
 
-            // console.log('new project: ', res.data?.data)
 
             if (res.data?.data?.id && res.data?.data?.monitorCommits) {
                 const hookRes = await setupWebhook(res.data.data.id);
@@ -270,7 +269,6 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 }
             );
 
-            // console.log('result data: ', result.data);
 
             if (result?.data?.webhookCreated) {
                 return true
@@ -396,7 +394,6 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                     }
                 }
             )
-            console.log('update release blog res: ', res.data.data);
             dispatch({ type: "UPDATE_RELEASE_BLOG", payload: { projectId, releaseBlogId, blog: res.data.data } })
             toast({
                 title: "Success ✅",
@@ -504,14 +501,12 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 }
             })
 
-            console.log('this is res1:', res.data, state.curr_project);
 
             dispatch({
                 type: "SET_IS_SYNCING_RELEASE",
                 payload: { projectId, isLoading: false }
             })
 
-            console.log('res data2: ', res.data, state.curr_project)
 
             if (res.data?.releaseBlog) {
                 dispatch({
@@ -520,7 +515,6 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 })
             }
 
-            console.log('res data3: ', res.data, state.curr_project)
 
             toast({
                 title: "Release Sync Started 🚀",
@@ -597,7 +591,6 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
                 }
             })
             dispatch({ type: "SET_PROJECT", payload: res.data.data })
-            console.log('current project: ', res.data.data)
         } catch (error: any) {
             toast({
                 title: "Error ⭕",
@@ -613,7 +606,6 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
     const fetchReleaseBlogById = async (releaseBlogId: string, projectId: string) => {
         try {
             dispatch({ type: "SET_IS_CURR_RELEASE_BLOG_LOADING", payload: true })
-            // console.log('fetching release blog by id: ', releaseBlogId, projectId);
 
             const res = await axios.get(`${API_BASE}/api/release-blogs/get-release-blog/${projectId}/${releaseBlogId}`,
                 {
@@ -644,7 +636,6 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 
     // Handle WebSocket connection status
     useEffect(() => {
-        // console.log('WebSocket connected: ', connected)
         dispatch({ type: "SET_WEBSOCKET_STATUS", payload: connected })
     }, [connected])
 

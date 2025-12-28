@@ -9,7 +9,6 @@ export async function GET(request: NextRequest) {
     await dbConnect();
 
     try {
-        // console.log('this is my token: ', token)
         const username = token?.username
 
         const { searchParams } = new URL(request.url);

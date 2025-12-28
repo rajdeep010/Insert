@@ -86,7 +86,6 @@ editorContent: any
 }) => {
 
   const handleSaveContent = () => {
-    // console.log('editorContent: ', editorContent)
   }
   
   return (
@@ -187,7 +186,6 @@ export function SimpleEditor({ content }: { content: any }) {
   const toolbarRef = React.useRef<HTMLDivElement>(null)
   const [editorContent, setEditorContent] = React.useState({})
 
-  // console.log(content)
 
   const editor = useEditor({
     immediatelyRender: false,

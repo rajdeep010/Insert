@@ -35,7 +35,6 @@ export async function POST(request: Request) {
         }, { status: 200 });
 
     } catch (error) {
-        // console.log('Error in saving blog:', error);
         return Response.json({
             success: false,
             message: 'Error in saving blog'

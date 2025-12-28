@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
         }
 
         const { topic_id } = result.data
-        console.log('topic_id: ',topic_id)
         if (!topic_id) {
             return Response.json({
                 success: false,
