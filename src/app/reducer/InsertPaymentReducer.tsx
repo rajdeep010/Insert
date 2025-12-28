@@ -17,7 +17,22 @@ const InsertPaymentReducer = (state: any, action: any) => {
                         startedAt: action.payload.startedAt,
                         expiresAt: action.payload.expiresAt,
                         autoRenew: action.payload.autoRenew,
-                        cancelledAt: action.payload.cancelledAt ?? null,
+                        cancelledAt: action.payload?.cancelledAt || null,
+                    }
+                }
+            }
+        case "SET_USER_PAYMENT_UPDATE":
+            return {
+                ...state,
+                user: {
+                    ...state.user,
+                    proStatus: {
+                        active: action.payload.active,
+                        plan: action.payload.plan,
+                        startedAt: action.payload.startedAt,
+                        expiresAt: action.payload.expiresAt,
+                        autoRenew: action.payload.autoRenew,
+                        cancelledAt: action.payload?.cancelledAt || null,
                     }
                 }
             }

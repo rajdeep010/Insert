@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import React, { useState } from 'react'
-import { FaBuilding, FaLinkedin } from 'react-icons/fa';
+import { FaBuilding, FaGithub, FaLinkedin } from 'react-icons/fa';
 import { FaLink, FaLocationDot } from 'react-icons/fa6';
 import { Skeleton } from './ui/skeleton'
 import ProfileSkeleton from './skeletons/ProfileSkeleton'
@@ -28,7 +28,7 @@ const Profile = () => {
 
             <div className='profile-row flex flex-col px-4 items-start profile-flex-row custom-lg-gap'>
 
-                <div className='flex flex-col gap-4'>
+                <div className='flex flex-col lg-gap-4 gap-[0.5rem]'>
                     {isAvatarUploading && <AvatarSkeleton />}
 
                     {!isAvatarUploading && <Image
@@ -70,7 +70,7 @@ const Profile = () => {
                     <div className='flex flex-col gap-1'>
                         {user?.company && <div className='flex items-center gap-2 text-sm '> <FaBuilding /> {user?.company} </div>}
                         {user?.location && <div className='flex items-center gap-2 text-sm '> <FaLocationDot /> {user?.location} </div>}
-                        {user?.profile && <Link href={`https://github.com/${user?.profile}`} className='transition hover:text-blue-500 flex items-center gap-2 text-sm '> <FaLink /> {user?.profile}</Link>}
+                        {user?.profile && <Link href={`https://github.com/${user?.profile}`} className='transition hover:text-blue-500 flex items-center gap-2 text-sm '> <FaGithub /> {user?.profile}</Link>}
                         {user?.linkedin && <Link href={`https://www.linkedin.com/in/${user?.linkedin}`} className='transition hover:text-blue-500 flex items-center gap-2 text-sm '> <FaLinkedin /> {user?.linkedin}</Link>}
                     </div>
                 </div>}

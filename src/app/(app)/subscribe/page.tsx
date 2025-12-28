@@ -74,11 +74,13 @@ export default function PaymentPage() {
     const hasPro = !!user?.proStatus?.active
     const currentPlan = user?.proStatus?.plan as BillingPeriod | null
     const renewAt = user?.proStatus?.expiresAt as string | Date | null
-    const cancelledAt = (user?.proStatus as any)?.cancelledAt ?? null
+    const cancelledAt = user?.proStatus?.cancelledAt || null
 
     const isCurrentActive = hasPro && currentPlan === billing
     const showReactivate = hasPro && Boolean(cancelledAt)
     const showCancel = hasPro && !Boolean(cancelledAt)
+
+    console.log('User pro status:', user?.proStatus, showCancel, showReactivate);
 
     const handleUpgrade = async () => {
         try {

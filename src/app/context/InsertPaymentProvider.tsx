@@ -128,14 +128,17 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
                 await handleUpdateSessionProAccess(updatedUser)
 
                 // Drive UI solely from InsertUser context
-                updateUserAfterPayment({
-                    active: updatedUser?.proAccess,
-                    plan: updatedUser?.proPlan,
-                    startedAt: updatedUser?.proStartedAt,
-                    expiresAt: updatedUser?.proExpiresAt,
-                    autoRenew: updatedUser?.autoRenew,
-                    cancelledAt: null, // fresh payment => not cancelled
-                })
+                // updateUserAfterPayment({
+                //     active: updatedUser?.proAccess,
+                //     plan: updatedUser?.proPlan,
+                //     startedAt: updatedUser?.proStartedAt,
+                //     expiresAt: updatedUser?.proExpiresAt,
+                //     autoRenew: updatedUser?.autoRenew,
+                //     cancelledAt: null, // fresh payment => not cancelled
+                // })
+
+                dispatch({ type: "SET_USER_PAYMENT_UPDATE", payload: updatedUser })
+
 
                 sonnerToast.success('Payment verified', { description: 'Your Pro plan is active.' })
                 sonnerToast.info('Changes may require re-login', { description: 'Sign out and back in if Pro features are not visible.' })
@@ -165,21 +168,23 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
                 { headers: { Authorization: `Bearer ${session?.accessToken}` } }
             )
 
+            console.log('Cancellation response:', res.data);
+
             const success = !!res?.data?.success
-            const updatedUser = res?.data?.updatedUser
+            const updatedUser = res?.data?.subscription
 
             if (success && updatedUser) {
-                await handleUpdateSessionProAccess(updatedUser)
+                // await handleUpdateSessionProAccess(updatedUser)
                 updateUserAfterPayment({
-                    active: updatedUser?.proAccess,
-                    plan: updatedUser?.proPlan,
-                    startedAt: updatedUser?.proStartedAt,
-                    expiresAt: updatedUser?.proExpiresAt,
+                    active: updatedUser?.active,
+                    plan: updatedUser?.plan,
+                    startedAt: updatedUser?.startedAt,
+                    expiresAt: updatedUser?.expiresAt,
                     autoRenew: updatedUser?.autoRenew,
-                    cancelledAt: updatedUser?.cancelledAt ?? new Date().toISOString(),
+                    cancelledAt: updatedUser?.cancelledAt || null,
                 })
 
-                sonnerToast.success('Membership cancelled', { description: 'You will keep Pro until the end of the current period.' })
+                sonnerToast.success('Membership cancelled', { description: res?.data?.message || 'You will keep Pro until the end of the current period.' })
             } else {
                 sonnerToast.error('Cancellation failed', { description: res?.data?.message || 'Could not cancel membership' })
             }
@@ -205,21 +210,26 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
                 { headers: { Authorization: `Bearer ${session?.accessToken}` } }
             )
 
+            console.log('Reactivation response:', res.data);
+
             const success = !!res?.data?.success
-            const updatedUser = res?.data?.updatedUser
+            const updatedUser = res?.data?.subscription
 
             if (success && updatedUser) {
-                await handleUpdateSessionProAccess(updatedUser)
+                // await handleUpdateSessionProAccess(updatedUser)
                 updateUserAfterPayment({
-                    active: updatedUser?.proAccess,
-                    plan: updatedUser?.proPlan,
-                    startedAt: updatedUser?.proStartedAt,
-                    expiresAt: updatedUser?.proExpiresAt,
+                    active: updatedUser?.active,
+                    plan: updatedUser?.plan,
+                    startedAt: updatedUser?.startedAt,
+                    expiresAt: updatedUser?.expiresAt,
                     autoRenew: updatedUser?.autoRenew,
-                    cancelledAt: null, // reactivated => not cancelled
+                    cancelledAt: updatedUser?.cancelledAt || null,
                 })
+                // dispatch({ type: "SET_USER_PAYMENT_UPDATE", payload: updatedUser })
 
-                sonnerToast.success('Membership reactivated', { description: 'Your Pro plan is active again.' })
+                console.log('Updated user after reactivation:', updatedUser);
+
+                sonnerToast.success('Membership reactivated', { description:  res?.data?.message || 'Your Pro plan is active again.' })
             } else {
                 sonnerToast.error('Reactivation failed', { description: res?.data?.message || 'Could not reactivate membership' })
             }

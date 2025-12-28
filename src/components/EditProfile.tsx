@@ -7,6 +7,7 @@ import Image from 'next/image';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { useInsertUser } from '@/app/context/InsertUserProvider';
 import { Loader2, Camera, User, Building2, MapPin, Link2, AtSign, Info } from 'lucide-react';
+import { FaGithub, FaLinkedin } from 'react-icons/fa6';
 
 
 
@@ -210,7 +211,7 @@ const EditProfile = () => {
                                     Linkedin Username
                                 </label>
                                 <div className="relative mt-1">
-                                    <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <FaLinkedin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                     <Input id="linkedin" value={formData.linkedin} onChange={handleChange} placeholder="Linkedin username" className="pl-9" />
                                 </div>
                             </div>
@@ -221,7 +222,7 @@ const EditProfile = () => {
                                     Github Username
                                 </label>
                                 <div className="relative mt-1">
-                                    <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <FaGithub className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                     <Input id="profile" value={formData.profile} onChange={handleChange} placeholder="Github username" className="pl-9" />
                                 </div>
                             </div>
