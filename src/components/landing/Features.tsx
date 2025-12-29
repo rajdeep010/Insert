@@ -393,8 +393,8 @@ export function Features() {
             {/* Pro pricing */}
             <div className="mt-16">
                 <div className="mx-auto max-w-3xl text-center">
-                    <span className="inline-flex items-center rounded-full bg-indigo-600/90 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white">
-                        Pro
+                    <span className="inline-flex items-center rounded-full bg-indigo-600/90 px-2 py-0.5 text-[13px] font-semibold uppercase tracking-wide text-white">
+                        Insert Pro
                     </span>
                     <h3 className="mt-2 text-2xl font-bold tracking-tight text-black dark:text-white md:text-3xl">
                         Upgrade once — Pro unlocks everywhere

@@ -28,7 +28,7 @@ export function About() {
                 />
             </WobbleCard>
 
-            <WobbleCard containerClassName="col-span-1 min-h-[300px] bg-gradient-to-br from-blue-600 to-indigo-600">
+            <WobbleCard containerClassName="col-span-1 min-h-[300px] bg-gradient-to-br from-blue-800 to-indigo-800">
                 <h2 className="max-w-80  text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
                     Build slow. Ship fast. Iterate smarter.
                 </h2>
@@ -39,7 +39,7 @@ export function About() {
                 </p>
             </WobbleCard>
 
-            <WobbleCard containerClassName="col-span-1 lg:col-span-3 bg-teal-700  min-h-[500px] lg:min-h-[600px] xl:min-h-[300px]">
+            <WobbleCard containerClassName="col-span-1 lg:col-span-3 bg-gradient-to-br from-teal-800 to-teal-600  min-h-[500px] lg:min-h-[600px] xl:min-h-[300px]">
                 <div className="max-w-lg">
                     <h2 className="max-w-lg md:max-w-lg  text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
                         Signup for cutting-edge art of writing Blogs with Insert

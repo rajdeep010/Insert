@@ -16,12 +16,18 @@ import { InsertTopicProvider } from "./context/InsertTopicProvider";
 import { InsertProjectProvider } from "./context/InsertProjectProvider";
 import { InsertPaymentProvider } from "./context/InsertPaymentProvider";
 import { Toaster as SoonerToaster } from 'sonner'
+import Head from "next/head";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Insert",
   description: "Create your own coding problem sheet",
+  icons: {
+    icon: '/panda-bear.png',
+    shortcut: '/panda-bear.png',
+    apple: '/panda-bear.png',
+  }
 };
 
 export default function RootLayout({
@@ -31,6 +37,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.className} suppressHydrationWarning>
+      <Head>
+        <link rel="shortcut icon" href="/panda-bear.png" />
+      </Head>
       <body className={`antialiased`} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
