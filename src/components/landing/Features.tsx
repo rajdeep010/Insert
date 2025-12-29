@@ -407,7 +407,7 @@ export function Features() {
                 <div className="mt-8 grid items-center gap-8 md:gap-12 lg:grid-cols-2">
                     <WobbleCard containerClassName="h-full bg-gradient-to-br from-indigo-800 to-violet-800 min-h-[360px]" className="">
                         <Image
-                            src="https://res.cloudinary.com/dgxeg3sju/image/upload/v1767025538/PHOTO-2025-12-29-21-38-25_zzidb6.jpg"
+                            src="https://res.cloudinary.com/dgxeg3sju/image/upload/v1767039488/d295b056-15b7-46c3-8935-21d254ea1687.png"
                             alt="Insert Pro pricing"
                             width={980}
                             height={640}
@@ -447,7 +447,13 @@ export function Features() {
                                 </span>
                             </div>
                             <h3 className="mt-2 text-2xl font-bold tracking-tight text-black dark:text-white md:text-3xl">
-                                Razorpay Pro access and the Verified badge
+                                Pro access with<span
+                                    className="ml-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 align-middle"
+                                    aria-label="Verified"
+                                    title="Verified"
+                                >
+                                    <BadgeCheck className="text-white" size={18} strokeWidth={3} />
+                                </span> badge
                             </h3>
                             <p className="mt-2 max-w-2xl text-sm text-gray-700 dark:text-gray-300 md:text-base">
                                 Pay with Razorpay and unlock Pro instantly. Pro accounts now show a verified badge across profile and mentions. Some regular features will move to Pro soon.
@@ -477,14 +483,7 @@ export function Features() {
                             </div>
                             <p className="text-sm font-semibold text-black dark:text-white">Verified badge</p>
                             <p className="text-sm text-gray-600 dark:text-gray-300">
-                                Pro users display a verified mark for quick trust:
-                                <span
-                                    className="ml-2 inline-flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 align-middle"
-                                    aria-label="Verified"
-                                    title="Verified"
-                                >
-                                    <BadgeCheck className="text-white" size={12} strokeWidth={3} />
-                                </span>
+                                Pro users display a verified mark for quick trust and recognition.
                             </p>
                         </div>
 
