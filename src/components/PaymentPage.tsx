@@ -94,14 +94,15 @@ export default function PaymentPage() {
                 key: RAZORPAY_KEY,
                 amount: order?.amount || 1,
                 currency: order?.currency || 'INR',
-                name: 'Insert Pro',
+                name: 'Insert',
                 description: `Upgrade to Pro (${billing})`,
                 order_id: order?.id,
                 prefill: {
                     name: user?.name || user?.username || '',
                     email: user?.email || '',
                 },
-                theme: { color: '#4F46E5' },
+                theme: { color: '#4f47e5' },
+                image: 'https://insertshare.vercel.app/panda-bear.png',
                 handler: async (response: any) => {
                     try {
                         const success = await verifyPayment({
@@ -116,7 +117,23 @@ export default function PaymentPage() {
                     } catch (err: any) {
                         sonnerToast.error('Verification error', { description: err?.response?.data?.message || err?.message || 'Payment verification failed' })
                     }
-                }
+                },
+                // config: {
+                //     display: {
+                //         blocks: {
+                //             upi: {
+                //                 name: 'Pay via UPI',
+                //                 instruments: [
+                //                     { method: 'upi' }, // UPI collect/intent
+                //                 ],
+                //             },
+                //         },
+                //         sequence: ['block.upi'],
+                //         preferences: {
+                //             show_default_blocks: false, // hide cards, netbanking, wallets, paylater, etc.
+                //         },
+                //     },
+                // },
             }
             const rzp = new (window as any).Razorpay(options)
             rzp.open()

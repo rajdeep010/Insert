@@ -106,7 +106,6 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
         }
     }
 
-    // ...existing code...
     const verifyPayment: InsertPaymentProviderProps['verifyPayment'] = async (payload) => {
         try {
             dispatch({ type: 'SET_IS_PAYMENT_LOADING', payload: true })
