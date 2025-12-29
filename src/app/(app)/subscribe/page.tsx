@@ -35,6 +35,7 @@ export default function SubscribePage() {
             <div className="pointer-events-none fixed left-1/2 top-[-12rem] -z-10 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-gradient-to-tr from-indigo-400/35 via-fuchsia-400/25 to-transparent blur-3xl dark:from-indigo-600/30 dark:via-fuchsia-600/25" />
 
             <section className="mx-auto max-w-7xl px-4 py-10 md:py-14">
+                <Navbar />
                 {/* Hero */}
                 <div className="mx-auto max-w-3xl text-center">
                     <div className="inline-flex items-center justify-center gap-3">
