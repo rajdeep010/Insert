@@ -72,6 +72,12 @@ export default function ProjectDetailsPage() {
         isProjectLoading,
     } = useInsertProjects();
 
+    const project = curr_project;
+    const { user } = useInsertUser();
+    const showSubscribeModal = user?.proStatus ? user?.proStatus === 'active' : false;
+
+
+
     const [selectedBlog, setSelectedBlog] = useState<any>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -176,10 +182,6 @@ export default function ProjectDetailsPage() {
             </div>
         );
     }
-
-    const project = curr_project;
-    const { user } = useInsertUser();
-    const showSubscribeModal = user?.proStatus ? user?.proStatus === 'active' : false;
 
 
     return (
