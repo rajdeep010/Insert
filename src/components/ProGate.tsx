@@ -53,6 +53,7 @@ export default function ProGate({ show, onClose }: ProGateProps) {
                     <CardHeader className="pb-3">
                         <div className="flex items-center gap-2">
                             <Crown className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                            <p className='font-semibold'>Insert</p>
                             <Badge className="bg-indigo-600 text-white">Pro</Badge>
                         </div>
                         <CardTitle id="pro-gate-title" className="text-2xl">
