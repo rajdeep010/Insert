@@ -16,6 +16,11 @@ type ProGateProps = {
 }
 
 export default function ProGate({ show, onClose }: ProGateProps) {
+
+    const {data: session} = useSession()
+    const user = session?.user
+
+
     useEffect(() => {
         if (!show) return
         const prev = document.body.style.overflow
@@ -25,8 +30,6 @@ export default function ProGate({ show, onClose }: ProGateProps) {
 
     if (!show) return null
 
-    const {data: session} = useSession()
-    const user = session?.user
 
     const shell =
         'rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 backdrop-blur transition-colors'
