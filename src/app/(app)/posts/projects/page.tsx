@@ -57,7 +57,7 @@ export default function ProjectsPage() {
     }, [all_projects, query]);
 
     const { user } = useInsertUser();
-    const showSubscribeModal = user?.proStatus ? user?.proStatus === 'active' : false;
+    const showSubscribeModal = user?.proStatus?.active === false;
 
 
     return (

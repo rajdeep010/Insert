@@ -47,6 +47,8 @@ const Projects = () => {
 
     const { user } = useInsertUser();
 
+    const showSubscribeModal = user?.proStatus?.active === false;
+
     const { user_projects, removeProject, updateProject, pagination, isAllProjectsLoading, loadMore } = useInsertProjects();
     const [isRepoModalOpen, setIsRepoModalOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
@@ -99,9 +101,7 @@ const Projects = () => {
         })
     }
 
-    const showSubscribeModal = user?.proStatus ? user?.proStatus === 'active' : false;
-
-
+    
     return (
         <div className="flex flex-col gap-6">
             <ProGate show={showSubscribeModal} />
