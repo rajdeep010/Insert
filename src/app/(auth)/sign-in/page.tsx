@@ -17,6 +17,7 @@ import { signIn } from 'next-auth/react'
 import { BsHourglassSplit } from "react-icons/bs";
 import { FiTarget } from "react-icons/fi";
 import InsertIcon from '@/components/InsertIcon'
+import { Navbar } from '@/components/landing/Navbar'
 
 
 
@@ -80,6 +81,8 @@ export default function SignInForm() {
 
     return (
     <div className='flex min-h-screen'>
+        <Navbar/>
+        
         {/* Left Section - Hidden on smaller screens */}
             <div className='hidden md:flex md:w-1/2 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-600 dark:to-emerald-800 flex-col justify-center items-center p-12'>
             <div className='flex flex-col items-center text-center space-y-6'>
