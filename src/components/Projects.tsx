@@ -104,7 +104,7 @@ const Projects = () => {
 
     return (
         <div className="flex flex-col gap-6">
-            <ProGate show={!showSubscribeModal} />
+            <ProGate show={showSubscribeModal} />
 
             {session?.user?.githubAccessToken && (
                 <>
