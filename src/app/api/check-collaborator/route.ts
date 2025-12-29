@@ -71,9 +71,6 @@ export async function GET(request: NextRequest) {
         }
 
     } catch (error) {
-
-        // console.log(error)
-
         return Response.json({
             success: false,
             message: 'Error in checking'

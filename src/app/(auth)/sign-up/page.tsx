@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation'
 import { FiTarget } from "react-icons/fi"
 import emailjs from 'emailjs-com'
 import InsertIcon from '@/components/InsertIcon'
+import { Navbar } from '@/components/landing/Navbar'
 
 
 
@@ -97,7 +98,6 @@ export default function SignUpForm() {
                         router.replace(`/verify/${debouncedUsername}`)
                     },
                     function (error) {
-                        // console.log(error)
                         toast({
                             title: 'Error',
                             description: 'Could not send verification email'
@@ -125,7 +125,8 @@ export default function SignUpForm() {
 
     return (
         <div className='flex min-h-screen'>
-            {/* Left Section - Hidden on smaller screens */}
+            <Navbar/>
+
             <div className='hidden md:flex md:w-1/2 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-700 dark:to-blue-900  flex-col justify-center items-center p-12'>
                 <div className='flex flex-col items-center text-center space-y-6'>
                     <InsertIcon height={120} width={120} className='border-4 p-2 bg-white border-gray-900 dark:border-gray-800 shadow-xl' />

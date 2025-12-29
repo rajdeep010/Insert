@@ -14,12 +14,20 @@ import { BlogProvider } from "./context/BlogProvider";
 import { InsertUserProvider } from "./context/InsertUserProvider";
 import { InsertTopicProvider } from "./context/InsertTopicProvider";
 import { InsertProjectProvider } from "./context/InsertProjectProvider";
+import { InsertPaymentProvider } from "./context/InsertPaymentProvider";
+import { Toaster as SoonerToaster } from 'sonner'
+import Head from "next/head";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Insert",
   description: "Create your own coding problem sheet",
+  icons: {
+    icon: '/panda-bear.png',
+    shortcut: '/panda-bear.png',
+    apple: '/panda-bear.png',
+  }
 };
 
 export default function RootLayout({
@@ -29,6 +37,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.className} suppressHydrationWarning>
+      <Head>
+        <link rel="shortcut icon" href="/panda-bear.png" />
+      </Head>
       <body className={`antialiased`} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
@@ -41,16 +52,21 @@ export default function RootLayout({
               <InsertUserProvider>
                 <InsertTopicProvider>
                   <InsertProjectProvider>
-                    <BlogProvider>
-                      <Script
-                        src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
-                        strategy="beforeInteractive"
-                      />
-                      {children}
-                      <Toaster />
-                      <Footer />
-                      <Analytics />
-                    </BlogProvider>
+                    <InsertPaymentProvider>
+                      <BlogProvider>
+                        <Script
+                          src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
+                          strategy="beforeInteractive"
+                        />
+                        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
+
+                        {children}
+                        <Toaster />
+                        <SoonerToaster />
+                        <Footer />
+                        <Analytics />
+                      </BlogProvider>
+                    </InsertPaymentProvider>
                   </InsertProjectProvider>
                 </InsertTopicProvider>
               </InsertUserProvider>

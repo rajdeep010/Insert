@@ -73,6 +73,8 @@ import ReleaseBlogWriteSidebar from "@/components/ReleaseBlogWriteSidebar";
 import { useInsertProjects } from "@/app/context/InsertProjectProvider";
 import { useSession } from "next-auth/react";
 import { EyeClosedIcon, EyeOpenIcon } from "@radix-ui/react-icons";
+import { useInsertUser } from "@/app/context/InsertUserProvider";
+import ProGate from "@/components/ProGate";
 
 const EMPTY_DOC = { type: "doc", content: [] };
 
@@ -348,7 +350,6 @@ const ReleaseBlogEditor = () => {
         if (!editorContent) return;
         try {
             setIsSaving(true);
-            console.log('release blog content: ', JSON.stringify(editorContent));
             await updateReleaseBlog(projectId, releaseBlogId, {
                 blogContent: JSON.stringify(editorContent),
                 blogContentText: editorTextContent,
@@ -445,8 +446,13 @@ const WriteReleaseBlog = () => {
     const { isCurrReleaseBlogLoading } = useInsertProjects();
     const { data: session, status } = useSession();
 
+    const { user } = useInsertUser();
+    const showSubscribeModal = user?.proStatus?.active === false;
+
     return (
         <>
+            <ProGate show={showSubscribeModal} />
+            
             <div className="absolute top-5 left-5">
                 {status === "authenticated" && <ReleaseBlogWriteSidebar />}
             </div>

@@ -34,8 +34,9 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { languageColors } from "@/types/master-data";
+import { useInsertUser } from "@/app/context/InsertUserProvider";
+import ProGate from "@/components/ProGate";
 
-/* Surface styles aligned with Posts/Blogs/Projects */
 const surface =
     "relative rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 transition-colors";
 const hoverable = "transition-colors hover:border-black/20 dark:hover:border-white/30";
@@ -43,10 +44,6 @@ const hoverable = "transition-colors hover:border-black/20 dark:hover:border-whi
 export default function ProjectsPage() {
     const { all_projects, isAllProjectsLoading, pagination, loadMore } = useInsertProjects();
     const [query, setQuery] = useState("");
-
-    useEffect(() => {
-        // If fetching is manual elsewhere, keep it as-is. This page just renders what context provides.
-    }, []);
 
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -59,8 +56,14 @@ export default function ProjectsPage() {
         });
     }, [all_projects, query]);
 
+    const { user } = useInsertUser();
+    const showSubscribeModal = user?.proStatus?.active === false;
+
+
     return (
         <>
+            <ProGate show={showSubscribeModal} />
+            
             <div className="flex flex-col gap-6 py-8 lg:py-12 justify-center px-8 lg:px-56">
                 {isAllProjectsLoading && (
                     <div className="flex justify-center items-center h-[60vh]">

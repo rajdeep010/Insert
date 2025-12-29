@@ -13,7 +13,7 @@ export function Hero() {
             <div className="relative z-20 mx-auto max-w-5xl text-center">
                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-1 text-xs font-medium text-black shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10 dark:text-white">
                     <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-                    Insert 3.0 — more features, more powerful
+                    Insert 4.0 — more powerful with pro
                 </div>
 
                 <div className="mb-4 flex items-center justify-center gap-3">

@@ -119,7 +119,6 @@ export function ProblemsDataTable({
 							<Button
 								variant="destructive"
 								onClick={() => {
-									// console.log('row original: ', row.original._id)
 									onDelete?.(row.original._id)
 								}}
 							>

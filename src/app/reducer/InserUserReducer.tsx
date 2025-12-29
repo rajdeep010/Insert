@@ -15,6 +15,22 @@ export default function InsertUserReducer(state: any,action: any) {
                 user: action.payload
             }
 
+        case "SET_USER_AFTER_PAYMENT":
+            return {
+                ...state,
+                user: {
+                    ...state.user,
+                    proStatus: {
+                        active: action.payload.active,
+                        plan: action.payload.plan,
+                        startedAt: action.payload.startedAt,
+                        expiresAt: action.payload.expiresAt,
+                        autoRenew: action.payload.autoRenew,
+                        cancelledAt: action.payload?.cancelledAt || null,
+                    }
+                }
+            }
+
         case "UPDATE_USER_AVATAR":
             return {
                 ...state,

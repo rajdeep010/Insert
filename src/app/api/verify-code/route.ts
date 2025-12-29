@@ -49,8 +49,6 @@ export async function POST(request: Request) {
                     toUserId: user?._id
                 }
 
-                // console.log('this is data: ', data)
-
                 const payload = notifyFormatter("USER_SIGNUP_SUCCESSFUL", data)
 
                 await axios.post(`${INSERT_NOTIFY_SERVICE}/api/email/send-email`,

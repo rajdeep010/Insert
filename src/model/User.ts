@@ -1,37 +1,19 @@
 import { NotificationData } from "@/types/types";
 import mongoose, {Schema, Document} from "mongoose";
 
-const NotificationDataSchema: Schema<NotificationData> = new Schema({
-    noti_type: {
-        type: String,
-        required: [true, 'Notification type required'],
-        trim: true,
-    },
-    from: {
-        type: String,
-        required: [true, 'Sender username required'],
-        trim: true,
-    },
-    topicid: {
-        type: String,
-        trim: true,
-    },
-    problemurl: {
-        type: String,
-        trim: true,
-    },
-    topicname: {
-        type: String,
-        trim: true,
-    },
-    read: {
-        type: Boolean,
-        required: true,
-    },
-    createdAt: {
-        type: Date
-    }
-})
+export type ProPlan = 'monthly' | 'yearly' | null;
+
+export interface ProStatus {
+  active: boolean;
+  plan: ProPlan;
+  startedAt: Date | null;
+  expiresAt: Date | null;
+  autoRenew: boolean;
+  lastOrderId: string | null;
+  lastPaymentId: string | null;
+  cancelledAt: Date | null;
+}
+
 
 export interface User extends Document{
     name: string;
@@ -50,6 +32,8 @@ export interface User extends Document{
     notifications: NotificationData[]
     avatar?: string
 
+    proStatus: ProStatus
+
     // GitHub fields
     githubAccessToken?: string;
     githubLogin?: string;
@@ -60,6 +44,22 @@ export interface User extends Document{
     githubName?: string;
     githubEmail?: string;
 }
+
+
+
+const ProStatusSchema = new Schema<ProStatus>(
+  {
+    active: { type: Boolean, default: false },
+    plan: { type: String, enum: ['monthly', 'yearly', null], default: null },
+    startedAt: { type: Date, default: null },
+    expiresAt: { type: Date, default: null },
+    autoRenew: { type: Boolean, default: false },
+    lastOrderId: { type: String, default: null },
+    lastPaymentId: { type: String, default: null },
+    cancelledAt: { type: Date, default: null },
+  },
+  { _id: false }
+);
 
 const UserSchema: Schema<User> = new Schema({
     name: {
@@ -114,13 +114,12 @@ const UserSchema: Schema<User> = new Schema({
         type: Date,
         required: [true, 'Verify Code Expiry is required'],
     }, 
-    notifications: {
-        type: [NotificationDataSchema],
-    },
     avatar: {
         type: String,
         default: 'https://github.com/shadcn.png'
     },
+
+    proStatus: { type: ProStatusSchema, default: () => ({}) },
 
     // --- GitHub fields ---
     githubAccessToken: { type: String, default: null },

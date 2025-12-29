@@ -1,19 +1,20 @@
 import 'next-auth'
 import { DefaultSession } from 'next-auth'
+import { ProStatus } from '@/model/User';
 
 declare module 'next-auth' {
-    
-    interface User{
+
+    interface User {
         _id: string;
         isVerified?: boolean;
         username?: string;
         email?: string;
         linkedin?: string;
         profile?: string;
-        company?:string;
-        location?:string;
-        about?:string;
-        notifications?:[any];
+        company?: string;
+        location?: string;
+        about?: string;
+        // notifications?:[any];
         accessToken: any;
 
         // GitHub fields
@@ -25,9 +26,11 @@ declare module 'next-auth' {
         githubAvatarUrl?: string;
         githubName?: string;
         githubEmail?: string;
+
+        proStatus: ProStatus;
     }
 
-    interface Session{
+    interface Session {
         accessToken: any;
         user: {
             _id?: string;
@@ -36,11 +39,11 @@ declare module 'next-auth' {
             email?: string;
             linkedin?: string;
             profile?: string;
-            company?:string;
-            about?:string;
-            location?:string;
-            notifications?:[any];
-           
+            company?: string;
+            about?: string;
+            location?: string;
+            // notifications?:[any];
+
             // GitHub fields
             githubAccessToken?: string;
             githubLogin?: string;
@@ -50,6 +53,14 @@ declare module 'next-auth' {
             githubAvatarUrl?: string;
             githubName?: string;
             githubEmail?: string;
+
+            proAccess?: boolean;
+            proPlan?: string | null;
+            proStartedAt?: Date | string | null;
+            proExpiresAt?: Date | string | null;
+            autoRenew?: boolean;
+            proCancelledAt?: Date | string | null;
+
         } & DefaultSession['user']
     }
 }
@@ -61,11 +72,11 @@ declare module 'next-auth/jwt' {
         username?: string;
         email?: string;
         linkedin?: string;
-        profile?:string;
-        company?:string;
-        location?:string;
-        about?:string;
-        notifications?:[any];
+        profile?: string;
+        company?: string;
+        location?: string;
+        about?: string;
+        // notifications?:[any];
         accessToken: any;
 
         // GitHub fields
@@ -76,6 +87,14 @@ declare module 'next-auth/jwt' {
         githubConnectedAt?: string;
         githubAvatarUrl?: string;
         githubName?: string;
-        githubEmail?: string;
+        // githubEmail?: string;
+
+        // proStatus: ProStatus;
+        proAccess?: boolean;
+        proPlan?: string | null;
+        proStartedAt?: Date | string | null;
+        proExpiresAt?: Date | string | null;
+        autoRenew?: boolean;
+        proCancelledAt?: Date | string | null;
     }
 }

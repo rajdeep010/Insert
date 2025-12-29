@@ -32,7 +32,6 @@ const AddBlogModal = ({defaultVisibility}: any) => {
 	)
 
 	const blogSubmit = async (data: z.infer<typeof blogSchema>) => {
-		// console.log('Blog Data:', data)
 		addBlog(data.title, data.visibility)
 	}
 

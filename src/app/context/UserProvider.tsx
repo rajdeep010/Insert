@@ -126,12 +126,10 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
 
     const retriveAvatarURL = async (username: string) => {
         try {
-            // console.log('retriveAvatarURL called with username:', username)
             if (!username) return
 
             setIsAvatarLoading(true)
             const response = await axios.get(`/api/get-avatar-by-username?username=${username}`)
-            // console.log('this is the retrive response: ', response)
             
             let avatar = null
             if (response?.data?.success) {
@@ -186,7 +184,6 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
                 () => {
                     getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
                         // setSessionUserAvatarURL(downloadURL)
-                        // console.log(downloadURL)
                         saveOrUpateAvatarURL(session?.user?.username as string, downloadURL)
                         toast({
                             title: 'Uploaded ✅',
@@ -213,7 +210,6 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
 
     const updateUser = async (formData: Partial<UserInfo>) => {
         try {
-            // console.log(session_user_username, session)
             if (status !== 'authenticated') return
 
             setIsProfileDataLoading(true)
@@ -223,7 +219,6 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
             })
 
             if (response.data.success) {
-                // console.log(response.data)
                 toast({
                     title: 'Updated ✅',
                     description: 'User info updated successfully',
@@ -354,7 +349,6 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
                 setUserNotifications(response.data.notifications.reverse())
             }
         } catch (error) {
-            // // console.log(error)
         }
     }
 
@@ -543,8 +537,6 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
         try {
             if (!username) return
 
-            // console.log('mark all read called', username)
-
             const response = await axios.post(`/api/mark-all-as-read`, { username })
             if (response.data.success) {
                 toast({
@@ -552,9 +544,7 @@ export const UserProvider = ({children}: {children: React.ReactNode}) => {
                     description: 'Successfully marked all read',
                     variant: 'default'
                 })
-                // console.log(response.data)
                 fetchUser(username)
-                // setUserNotifications(response.data.notifications.reverse())
             }
         } catch (error) {
             toast({

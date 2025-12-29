@@ -6,7 +6,6 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import Link from 'next/link';
 import { FiExternalLink } from 'react-icons/fi';
-import { toast } from './ui/use-toast';
 import { Album, GitBranch, MoreHorizontal, Trash2, Search } from 'lucide-react'
 import { Badge } from './ui/badge'
 import {
@@ -29,9 +28,11 @@ import { useInsertProjects } from '@/app/context/InsertProjectProvider'
 import GithubRepoModal from './GithubRepoModal'
 import { languageColors } from '@/types/master-data'
 import ConfirmDeleteProject from './ConfirmDeleteProject'
-import axios from 'axios'
+import { useInsertUser } from '@/app/context/InsertUserProvider';
+import ProGate from './ProGate';
 
-/* Shared style helpers (aligned with Blogs) */
+
+
 const surface =
     'rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 transition-colors'
 const hoverable =
@@ -43,6 +44,10 @@ const Projects = () => {
     const { data: session, status } = useSession();
     const params = useParams();
     const username = params.username as string;
+
+    const { user } = useInsertUser();
+
+    const showSubscribeModal = user?.proStatus?.active === false;
 
     const { user_projects, removeProject, updateProject, pagination, isAllProjectsLoading, loadMore } = useInsertProjects();
     const [isRepoModalOpen, setIsRepoModalOpen] = useState(false)
@@ -96,8 +101,11 @@ const Projects = () => {
         })
     }
 
+    
     return (
         <div className="flex flex-col gap-6">
+            <ProGate show={showSubscribeModal} />
+
             {session?.user?.githubAccessToken && (
                 <>
                     <div className="flex items-center justify-between flex-wrap gap-3">

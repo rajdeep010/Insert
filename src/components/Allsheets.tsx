@@ -11,10 +11,7 @@ import { useInsertTopics } from '@/app/context/InsertTopicProvider'
 
 
 const Allsheets = () => {
-
-    // const { all_topics } = useTopics()
     const { all_topics } = useInsertTopics();
-    // console.log('this is all sheets: ', all_topics)
 
     return (
         <div className='flex flex-col gap-3 my-4'>

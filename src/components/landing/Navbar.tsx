@@ -1,10 +1,18 @@
 "use client";
 import Link from "next/link";
 import InsertIcon from "../InsertIcon";
+import { usePathname } from "next/navigation";
 
 export function Navbar() {
+    const pathname = usePathname();
+    const isSignUp = pathname === "/sign-up";
+    const isSignIn = pathname === "/sign-in";
+
+    const authHref = isSignUp ? "/sign-in" : "/sign-up";
+    const authLabel = isSignUp ? "Sign In" : "Sign Up";
+
     return (
-        <header className="fixed inset-x-0 top-0 z-30 mx-auto w-full border-b border-transparent bg-white/70 backdrop-blur dark:bg-black/40">
+        <header className="fixed inset-x-0 top-0 z-30 mx-auto w-full border-b border-transparent backdrop-blur">
             <nav className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4">
                 <Link href="/" className="flex items-center gap-2">
                     <InsertIcon height={24} width={24} className="rounded-sm border border-gray-900 p-[1px] dark:border-gray-700 dark:bg-white" />
@@ -17,13 +25,14 @@ export function Navbar() {
 
                 <div className="flex items-center gap-3">
                     <Link
-                        href="/sign-up"
+                        href={authHref}
                         className="rounded-md border border-black/10 px-3 py-1.5 text-sm font-medium text-black hover:bg-gray-50 dark:border-white/10 dark:text-white dark:hover:bg-white/10"
                     >
-                        Sign Up
+                        {authLabel}
                     </Link>
                 </div>
             </nav>
         </header>
     );
 }
+

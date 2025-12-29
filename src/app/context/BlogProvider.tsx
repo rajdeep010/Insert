@@ -65,7 +65,6 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
     const param_username = params.username as string
 
     const blogUrl = params.blogUrl as string
-    // console.log("Blog URL from params:",blogUrl,params)
 
     const [state, dispatch] = useReducer(BlogReducer, initialState)
 
@@ -121,11 +120,9 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 
         try {
             const response = await axios.get(`/api/get-blog-by-url?blogUrl=${blogUrl}`)
-            // console.log("Response from getBlogByUrl:", response.data)
 
             if (response.data.success) {
                 dispatch({ type: "SET_CURRENT_BLOG", payload: response.data.blog })
-                // console.log("Blog fetched successfully:",state.currentBlog)
 
             } else {
                 toast({
@@ -195,7 +192,6 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
             }
 
             const data = response.data
-            // console.log("Blog added successfully : ",data)
             if (data) {
                 dispatch({ type: "ADD_BLOG", payload: data.blog })
                 toast({
@@ -225,7 +221,6 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
     const handleBlogUpdate = async (blogData: any) => {
         if (!username) return
 
-        // console.log("Saving blog with content:",blogData)
         const blogContent = blogData?.blogContent
         const blogContentText = blogData?.blogContentText || ""
         const blogBannerImage = blogData?.blogBannerImage || ""
@@ -240,19 +235,8 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (response.data.success) {
             const data = response.data
-            // console.log("Blog saved successfully:",data)
 
             dispatch({ type: "SET_CURRENT_BLOG", payload: data.blog })
-
-            // if (data.blog?.autosave === false) {
-            //     console.log('this is toast: ', data.blog?.autosave)
-            //     toast({
-            //         title: 'Blog Updated ✅',
-            //         description: 'Blog has been updated successfully',
-            //         variant: 'default'
-            //     })
-            // }
-
             toast({
                 title: 'Blog Saved ✅',
                 description: 'Blog has been saved successfully',

@@ -72,8 +72,6 @@ const EditReleaseBlogModal: React.FC<EditReleaseBlogModalProps> = ({
     const handleSubmit = async () => {
         if (!releaseBlog || !hasChanges) return
 
-        console.log('projectid, releaseblog', projectId, releaseBlog)
-
         try {
             await updateReleaseBlog(projectId, releaseBlog._id, {
                 releaseTitle: config.releaseTitle,
