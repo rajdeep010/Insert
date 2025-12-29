@@ -50,9 +50,6 @@ const VerifiedBadge = () => (
     </span>
 )
 
-// ...existing imports...
-// Remove session-derived UI state; use user.proStatus only
-
 export default function PaymentPage() {
     const { data: session } = useSession()
     const { user } = useInsertUser()
