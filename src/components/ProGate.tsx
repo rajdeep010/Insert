@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { useSession } from 'next-auth/react'
 
 type ProGateProps = {
     show: boolean
@@ -23,6 +24,9 @@ export default function ProGate({ show, onClose }: ProGateProps) {
     }, [show])
 
     if (!show) return null
+
+    const {data: session} = useSession()
+    const user = session?.user
 
     const shell =
         'rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 backdrop-blur transition-colors'
@@ -81,7 +85,7 @@ export default function ProGate({ show, onClose }: ProGateProps) {
                     </CardContent>
 
                     <CardFooter className="flex gap-2">
-                        <Link href="/subscribe" className="w-full">
+                        <Link href={`/u/${user?.username}?tab=subscribe`} className="w-full">
                             <Button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white">
                                 View plans & upgrade
                             </Button>

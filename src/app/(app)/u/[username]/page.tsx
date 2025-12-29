@@ -1,27 +1,21 @@
 'use client'
-import { useInsertTopics } from '@/app/context/InsertTopicProvider'
-import { useTopics } from '@/app/context/TopicProvider'
 import Blogs from '@/components/Blogs'
 import Dashboard from '@/components/Dashboard'
 import Heatmap from '@/components/Heatmap'
 import InsertNavbar from '@/components/InsertNavbar'
 import Overview from '@/components/Overview'
+import PaymentPage from '@/components/PaymentPage'
 import Profile from '@/components/Profile'
 import Projects from '@/components/Projects'
 import { Loader2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import React from 'react'
-import PaymentPage from '../../subscribe/page'
 
 
 export default function UserPage() {
-    const params = useParams()
     const {status} = useSession()
     const router = useRouter()
-    const { user_Topics } = useInsertTopics()
-
-    const currentUserTopics = user_Topics
     const searchParams = useSearchParams()
     const tab = searchParams.get('tab') || 'overview'
 
