@@ -21,7 +21,7 @@ const Profile = () => {
     const { data: session } = useSession()
     const { user, isAvatarUploading, isUserLoading } = useInsertUser()
 
-    const hasPro = !!(user?.proStatus?.active || session?.user?.proAccess)
+    const hasPro = !!user?.proStatus?.active
 
     return (
         <div className='flex justify-between'>
