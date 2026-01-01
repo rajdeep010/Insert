@@ -28,7 +28,7 @@ export function Hero() {
                 </div>
 
                 <p className="mx-auto max-w-2xl text-pretty text-base text-gray-700 dark:text-gray-300 md:text-xl">
-                    Simple, powerful, and made for developers. Creating coding sheets, writing blogs or auto release blogs with git commits.
+                    Simple, powerful developer documentation & release‑notes automation
                 </p>
 
                 <div className="mt-6 flex flex-wrap items-center justify-center gap-3">

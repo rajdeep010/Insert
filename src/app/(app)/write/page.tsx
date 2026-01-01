@@ -70,7 +70,7 @@ const Write = () => {
 										onClick={() => setMode("message")}
 										aria-pressed={mode === "message"}
 									>
-										Message
+										Text
 									</Button>
 									<Button
 										type="button"
@@ -116,7 +116,7 @@ const Write = () => {
 									className="self-start gap-2"
 								>
 									{sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-									Send message
+									Send
 								</Button>
 							</div>
 						</div>

@@ -13,10 +13,10 @@ export function About() {
             >
                 <div className="max-w-xs">
                     <h2 className="text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
-                        Craft and collaborate on coding sheets
+                        Create structured coding sheets
                     </h2>
                     <p className="mt-4 text-left text-sm lg:text-base/4 text-rose-50/90">
-                        Create, share, and co‑edit custom problem sheets with public and private modes built‑in. Your flow, your way.
+                        Build and refine problem sets with versioned drafts and workspace controls. Publish or export when ready.
                     </p>
                 </div>
                 <Image
@@ -33,19 +33,17 @@ export function About() {
                     Build slow. Ship fast. Iterate smarter.
                 </h2>
                 <p className="mt-4 max-w-[26rem] text-left text-sm lg:text-base/4 text-neutral-200">
-                    It&apos;s not just pixels and commits — it&apos;s the craft, the chaos, and the coffee.
-                    Embrace the bumps, celebrate the breakthroughs.
-
+                    Plan, write, and release with focus. Keep momentum without sacrificing quality.
                 </p>
             </WobbleCard>
 
             <WobbleCard containerClassName="col-span-1 lg:col-span-3 bg-gradient-to-br from-teal-800 to-teal-600  min-h-[500px] lg:min-h-[600px] xl:min-h-[300px]">
                 <div className="max-w-lg">
                     <h2 className="max-w-lg md:max-w-lg  text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
-                        Signup for cutting-edge art of writing Blogs with Insert
+                        Write technical blogs and documentation with Insert
                     </h2>
                     <p className="mt-4 max-w-[46rem] text-left text-sm lg:text-base/4 text-neutral-200">
-                        Whether you&apos;re sharing ideas or documenting deep dives, our editor adapts to your flow — crisp, intuitive, and always in sync with your thoughts.
+                        Draft technical articles and project docs with a clean, focused editor — rich formatting, code blocks, and simple publishing.
                     </p>
                 </div>
                 <Image
@@ -62,7 +60,7 @@ export function About() {
                     Seamless Pro — no interruptions
                 </h2>
                 <p className="mt-4 max-w-[26rem] text-left text-sm lg:text-base/4 text-yellow-50">
-                    Upgrade in seconds and your Pro features unlock instantly across Insert. Projects service, unlimited sheets, and release automation — all stay in sync without breaking your flow.
+                    Upgrade in seconds and Pro features unlock instantly: project dashboards, unlimited sheets, and automated release notes — all consistent with your workflow.
                 </p>
             </WobbleCard>
 
@@ -78,11 +76,10 @@ export function About() {
                         <span className="text-xs text-indigo-100/80">Projects</span>
                     </div>
                     <h2 className="text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
-                        Project dashboard that stays in sync
+                        Project dashboard for automated release notes
                     </h2>
                     <p className="mt-4 text-left text-sm lg:text-base/4 text-indigo-100/90">
-                        Pro‑first feature: import your GitHub repo once and keep committing as usual.
-                        Insert tracks keywords, compiles commits, and drafts a publish‑ready release blog for review — all in one place.
+                        Connect a GitHub repository once. Insert analyzes commit messages, groups changes by keywords, and prepares a draft release note for review — all in one workspace.
                     </p>
                 </div>
                 <Image
