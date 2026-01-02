@@ -1,4 +1,4 @@
-import mongoose,{ Document,Schema } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface Comment {
   commentor: string
@@ -11,29 +11,30 @@ export interface Blog extends Document {
   blogContent: string
   blogContentText?: string
   blogUrl: string
-  lastEdited: Date
   status: string
   type: string
   likes: string[]
   comments: Comment[]
   creator: string
   autosave: boolean
-  blogBannerImage?: string
+  blogBannerImage?: string,
+  createdAt: Date
+  lastEdited: Date
 }
 
 const CommentSchema = new Schema<Comment>({
-  commentor: { type: String,required: true },
-  description: { type: String,required: true },
-  timestamp: { type: Date,default: Date.now },
+  commentor: { type: String, required: true },
+  description: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now },
 })
 
 const BlogSchema = new Schema<Blog>({
-  blogTitle: { type: String,required: true },
+  blogTitle: { type: String, required: true },
   blogContent: {
     type: String,
     required: true,
     default:
-    `{
+      `{
         "type": "doc",
         "content": 
         [
@@ -51,19 +52,21 @@ const BlogSchema = new Schema<Blog>({
         ]
       }`
   },
-  blogUrl: { type: String,required: true },
-  lastEdited: { type: Date,default: Date.now },
-  status: { type: String,required: true,default: "active" },
+  blogUrl: { type: String, required: true },
+  lastEdited: { type: Date, default: Date.now },
+  status: { type: String, required: true, default: "active" },
   type: { type: String, required: true },
-  likes: [{ type: String,default: [] }],
+  likes: [{ type: String, default: [] }],
   comments: [CommentSchema],
-  creator: { type: String,required: true },
-  autosave: { type: Boolean,default: false },
-  blogContentText: { type: String,default: "" },
+  creator: { type: String, required: true },
+  autosave: { type: Boolean, default: false },
+  blogContentText: { type: String, default: "" },
   blogBannerImage: { type: String, default: "" },
+}, {
+  timestamps: { createdAt: 'createdAt', updatedAt: 'lastEdited' }
 })
 
 
-const BlogModel = (mongoose.models.Blog as mongoose.Model<Blog>) || mongoose.model<Blog>('Blog',BlogSchema)
+const BlogModel = (mongoose.models.Blog as mongoose.Model<Blog>) || mongoose.model<Blog>('Blog', BlogSchema)
 export default BlogModel
 

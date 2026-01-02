@@ -355,7 +355,7 @@ const SimpleEditor = () => {
 			return;
 		}
 
-		editor.chain().focus().setImageUploadNode().run();
+		// editor.chain().focus().setImageUploadNode().run();
 	}, [isMobile, mobileView])
 
 	React.useEffect(() => {
@@ -367,15 +367,17 @@ const SimpleEditor = () => {
 						blogContent: JSON.stringify(debouncedEditorContent),
 						blogContentText: debouncedEditorTextContent,
 						blogBannerImage: getFirstImageFromBlogContent(debouncedEditorContent),
+						autosave: true,
 					});
 					setIsSaving(false);
 				} catch (error) {
 				}
 			}
 		}
+		// console.log("contents: ", currentBlog, 'current blog content: ', currentBlog?.blogContent, 'debounded editor content: ', debouncedEditorContent);
+		if(autoSave && currentBlog && currentBlog?.blogContent !== debouncedEditorContent)	handleAutoSave()
 
-		handleAutoSave()
-	}, [debouncedEditorContent])
+	}, [debouncedEditorContent, autoSave])
 
 
 	React.useEffect(() => {
@@ -387,7 +389,7 @@ const SimpleEditor = () => {
 	return (
 		<EditorContext.Provider value={{ editor }}>
 
-			<div className="flex w-full flex-col gap-6">
+			<div className="flex w-full flex-col gap-6 mt-[2rem]">
 				{status === 'authenticated' && session?.user?.username === currentBlog?.creator &&
 					<Tabs defaultValue="write">
 						<TabsList>

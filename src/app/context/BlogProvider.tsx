@@ -157,6 +157,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
                 blogTitle: title,
                 type: visibility,
                 blogUrl: formattedTitle + '-' + uniqueId,
+                autosave: false,
                 blogContent: JSON.stringify
                     ({
                         type: "doc",
@@ -258,13 +259,15 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
         const blogContent = blogData?.blogContent
         const blogContentText = blogData?.blogContentText || ""
         const blogBannerImage = blogData?.blogBannerImage || ""
+        const autosave = blogData?.autosave || false
 
         const response = await axios.put('/api/update-blog', {
             blogContent,
             blogUrl,
             creator: username,
             blogContentText,
-            blogBannerImage
+            blogBannerImage,
+            autosave,
         })
 
         if (response.data.success) {
