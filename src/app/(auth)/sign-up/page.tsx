@@ -4,20 +4,18 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import Link from 'next/link'
-import { useDebounceCallback, useDebounceValue } from 'usehooks-ts'
-import { useToast } from "@/components/ui/use-toast"
+import { useDebounceValue } from 'usehooks-ts'
 import { signUpSchema } from '@/schemas/signUpSchema'
 import axios, { AxiosError } from 'axios'
 import { ApiResponse } from '@/types/ApiResponse'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Loader2, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Eye, EyeOff, Mail, Clock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { FiTarget } from "react-icons/fi"
-import emailjs from 'emailjs-com'
 import InsertIcon from '@/components/InsertIcon'
 import { Navbar } from '@/components/landing/Navbar'
+import { toast as sonnerToast } from 'sonner'
 
 
 
@@ -30,9 +28,6 @@ export default function SignUpForm() {
     const [isCheckingUsername, setIsCheckingUsername] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
-
-    // const debouncedUsername = useDebounceValue(setUsername, 500)
-    const { toast } = useToast()
 
     const togglePasswordVisibility = () => setShowPassword(!showPassword)
 
@@ -70,62 +65,26 @@ export default function SignUpForm() {
     const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
         setIsSubmitting(true)
         try {
-            const uname = data.username
-            const em = data.email
-
             const response = await axios.post<ApiResponse>('/api/sign-up', data)
 
             if (response.data.success) {
-                const vcode = response.data.verifyCode
-
-                const templateParams = {
-                    reply_to: em,
-                    to_name: uname,
-                    message: vcode,
-                }
-
-                emailjs.send(
-                    process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID ?? "",
-                    process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ?? "",
-                    templateParams,
-                    process.env.NEXT_PUBLIC_EMAILJS_USER_ID ?? ""
-                ).then(
-                    function (response) {
-                        toast({
-                            title: 'Enter Verify Code',
-                            description: 'Verification code sent to your email'
-                        })
-                        router.replace(`/verify/${debouncedUsername}`)
-                    },
-                    function (error) {
-                        toast({
-                            title: 'Error',
-                            description: 'Could not send verification email'
-                        })
-                    }
-                )
+                sonnerToast.success('Verification code sent to your email')
+                router.replace(`/verify/${debouncedUsername}`)
             } else {
-                toast({
-                    title: 'Error',
-                    description: response.data.message,
-                })
+                sonnerToast.error('Signup failed. Please try again.')
             }
             setIsSubmitting(false)
         } catch (error) {
             const axiosError = error as AxiosError<ApiResponse>
             let errorMessage = axiosError.response?.data.message
-            toast({
-                title: 'Signup Failed',
-                description: errorMessage,
-                variant: 'destructive'
-            })
+            sonnerToast.error(errorMessage || 'Something went wrong during signup')
             setIsSubmitting(false)
         }
     }
 
     return (
         <div className='flex min-h-screen'>
-            <Navbar/>
+            <Navbar />
 
             <div className='hidden md:flex md:w-1/2 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-700 dark:to-blue-900  flex-col justify-center items-center p-12'>
                 <div className='flex flex-col items-center text-center space-y-6'>
@@ -157,7 +116,13 @@ export default function SignUpForm() {
 
             {/* Right Section - Always visible */}
             <div className='w-full md:w-1/2 flex justify-center items-center p-8'>
+
                 <div className='w-full max-w-md space-y-8'>
+                    <div className="fixed inset-0 -z-10 bg-gradient-to-b from-indigo-50 via-white to-white dark:from-indigo-950 dark:via-gray-900 dark:to-gray-900" />
+                    <div className="fixed inset-0 -z-10 opacity-40 [mask-image:radial-gradient(ellipse_at_center,black,transparent)] [background-image:linear-gradient(to_right,rgba(99,102,241,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.08)_1px,transparent_1px)] [background-size:20px_20px] [background-position:center] dark:opacity-35 dark:[background-image:linear-gradient(to_right,rgba(99,102,241,0.12)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.12)_1px,transparent_1px)]" />
+                    <div className="pointer-events-none fixed left-1/2 top-[-12rem] -z-10 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-gradient-to-tr from-indigo-400/35 via-fuchsia-400/25 to-transparent blur-3xl dark:from-indigo-600/30 dark:via-fuchsia-600/25" />
+
+
                     <div className='flex flex-col justify-center items-center'>
                         <div className='flex flex-col items-center gap-2'>
                             <span className='text-gray-400 dark:text-gray-600'>join</span>
@@ -192,6 +157,7 @@ export default function SignUpForm() {
                                                     field.onChange(e)
                                                     setUsername(e.target.value)
                                                 }}
+                                                className='border dark:border-white/50 border-black/10'
                                             />
                                         </FormControl>
                                         {isCheckingUsername && <Loader2 className='animate-spin' />}
@@ -210,7 +176,9 @@ export default function SignUpForm() {
                                     <FormItem>
                                         <FormLabel>Email</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Email" {...field} />
+                                            <Input placeholder="Email" {...field}
+                                                className='border dark:border-white/50 border-black/10'
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -229,6 +197,7 @@ export default function SignUpForm() {
                                                     type={showPassword ? 'text' : 'password'}
                                                     placeholder="Password"
                                                     {...field}
+                                                    className='border dark:border-white/50 border-black/10'
                                                 />
                                                 <div
                                                     className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
@@ -259,6 +228,19 @@ export default function SignUpForm() {
                             <Link href='/sign-in' className='text-blue-600 hover:text-blue-800 font-medium transition-colors'>
                                 Sign in
                             </Link>
+                        </div>
+                    </div>
+
+                    <div className="mt-1 w-full max-w-md">
+                        <div className="gap-1 rounded-lg border border-black/10 bg-white/70 px-3 py-2 text-sm text-gray-700 shadow-sm backdrop-blur-sm dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
+                            <div className="inline-flex items-center gap-2 mx-auto w-full text-xs">
+                                <Mail className="h-3 w-3" />
+                                <span>You’ll receive a 6‑digit code by email to verify your account</span>
+                            </div>
+                            <div className="inline-flex items-center gap-2 mx-auto w-full text-xs">
+                                <Clock className="h-3 w-3" />
+                                <span>Expires in 5 minutes</span>
+                            </div>
                         </div>
                     </div>
                 </div>

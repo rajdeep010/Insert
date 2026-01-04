@@ -1,8 +1,8 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { useSession,signOut } from "next-auth/react";
-import { useParams,useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
+import { useParams, useRouter } from "next/navigation";
 import { RiMenu3Line } from "react-icons/ri";
 import {
 	MessageSquare,
@@ -55,16 +55,20 @@ import InviteNotificationCard from "./InviteNotificationCard";
 import { useInsertUser } from "@/app/context/InsertUserProvider";
 import { Separator } from "./ui/separator";
 import Dashboard from "./Dashboard";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import InsertIcon from "./InsertIcon";
+
+
 
 const InsertNavbar = () => {
-	const { data: session,status } = useSession();
+	const { data: session, status } = useSession();
 	const params = useParams();
 	const router = useRouter();
 	const username = session?.user?.username;
 	const param_username = params?.username as string;
-	const [notifyLoader,setNotifyLoader] = React.useState(false)
+	const [notifyLoader, setNotifyLoader] = React.useState(false)
 
-	const { user,markAllRead,unreadNotifyCount,notifications,getNotifications } = useInsertUser();
+	const { user, markAllRead, unreadNotifyCount, notifications, getNotifications } = useInsertUser();
 
 	const handleLogOut = () => {
 		signOut();
@@ -155,7 +159,7 @@ const InsertNavbar = () => {
 												</Link>
 											</NavigationMenuLink>
 										</li>
-										<Separator/>
+										<Separator />
 										<li>
 											<NavigationMenuLink asChild>
 												<Link
@@ -294,7 +298,7 @@ const InsertNavbar = () => {
 										)}
 										{!notifyLoader && notifications &&
 											notifications?.map(
-												(msg: any,idx: number) => (
+												(msg: any, idx: number) => (
 													<DropdownMenuItem key={idx}>
 														{msg?.actionType === "collab-request" && (
 															<>
@@ -417,221 +421,210 @@ const InsertNavbar = () => {
 							</DropdownMenuLabel>
 							<DropdownMenuSeparator />
 							<div>
-								{
-									notifyLoader && <Loader2 className="h-4 w-4 animate-spin" />
-								}
+								{notifyLoader && <Loader2 className="h-4 w-4 animate-spin" />}
 
-								{!notifications && !notifyLoader && (
-									<>
-										<div className="p-2 text-sm opacity-50">
-											No notifications
-										</div>
-									</>
+								{!notifyLoader && notifications && notifications.length === 0 && (
+									<div className="p-2 text-xs opacity-50">No notifications</div>
 								)}
 
 								{!notifyLoader &&
-									notifications?.map(
-										(msg: any,idx: number) => (
-											<DropdownMenuItem key={idx}>
-												
-												{msg?.actionType === "collab-request" && (
-													<>
-														<InviteNotificationCard
-															key={idx}
-															from={msg?.from as string}
-															to={msg.to as string}
-															topicid={msg?.topicId as string}
-															topicname={msg?.topicName as string}
-															notifyid={msg?._id as string}
-															read={msg?.read}
-															fromUserId={msg?.fromUserId}
-															toUserId={msg?.toUserId}
-														/>
-														<DropdownMenuSeparator />
-													</>
-												)}
+									notifications?.map((msg: any, idx: number) => (
+										<DropdownMenuItem key={idx}>
+											{msg?.actionType === "collab-request" && (
+												<>
+													<InviteNotificationCard
+														key={idx}
+														from={msg?.from as string}
+														to={msg.to as string}
+														topicid={msg?.topicId as string}
+														topicname={msg?.topicName as string}
+														notifyid={msg?._id as string}
+														read={msg?.read}
+														fromUserId={msg?.fromUserId}
+														toUserId={msg?.toUserId}
+													/>
+													<DropdownMenuSeparator />
+												</>
+											)}
 
-												{msg?.actionType === "suggestion" && (
-													<>
-														<SuggestionNotificationCard
-															key={idx}
-															from={msg?.from as string}
-															to={msg.to as string}
-															topicid={msg?.topicId as string}
-															problemurl={msg?.problemUrl as string}
-															topicname={msg?.topicName as string}
-															read={msg?.read}
-														/>
-														<DropdownMenuSeparator />
-													</>
-												)}
+											{msg?.actionType === "suggestion" && (
+												<>
+													<SuggestionNotificationCard
+														key={idx}
+														from={msg?.from as string}
+														to={msg.to as string}
+														topicid={msg?.topicId as string}
+														problemurl={msg?.problemUrl as string}
+														topicname={msg?.topicName as string}
+														read={msg?.read}
+													/>
+													<DropdownMenuSeparator />
+												</>
+											)}
 
-												{msg?.actionType === "collab-accept" && (
-													<>
-														<AcceptedInviteCard
-															key={idx}
-															from={msg?.from as string}
-															to={msg.to as string}
-															topicid={msg?.topicId as string}
-															topicname={msg?.topicName as string}
-															read={msg?.read}
-														/>
-														<DropdownMenuSeparator />
-													</>
-												)}
+											{msg?.actionType === "collab-accept" && (
+												<>
+													<AcceptedInviteCard
+														key={idx}
+														from={msg?.from as string}
+														to={msg.to as string}
+														topicid={msg?.topicId as string}
+														topicname={msg?.topicName as string}
+														read={msg?.read}
+													/>
+													<DropdownMenuSeparator />
+												</>
+											)}
 
-												{msg?.actionType === "collab-decline" && (
-													<>
-														<DeclineInviteCard
-															key={idx}
-															from={msg?.from as string}
-															topicid={msg?.topicId as string}
-															topicname={msg?.topicName as string}
-															read={msg?.read}
-														/>
-													</>
-												)}
-											</DropdownMenuItem>
-										)
-									)
-								}
+											{msg?.actionType === "collab-decline" && (
+												<>
+													<DeclineInviteCard
+														key={idx}
+														from={msg?.from as string}
+														topicid={msg?.topicId as string}
+														topicname={msg?.topicName as string}
+														read={msg?.read}
+													/>
+												</>
+											)}
+										</DropdownMenuItem>
+									))}
 							</div>
 						</DropdownMenuContent>
 					</DropdownMenu>
 				)}
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Menu className="h-6 w-6 mx-2 outline-none border-none" />
-					</DropdownMenuTrigger>
-					<DropdownMenuContent className="w-56" align="start">
 
-						{status === "authenticated" && username && <DropdownMenuGroup>
-							<DropdownMenuLabel>Sections</DropdownMenuLabel>
-							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
-								<Link
-									href={`/u/${!param_username
-										? session?.user?.username
-										: param_username
-										}?tab=overview`}
-									className="flex gap-2 items-center"
+				<Sheet>
+					<SheetTrigger asChild>
+						<button
+							aria-label="Open menu"
+							className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted dark:hover:bg-muted/50"
+						>
+							<Menu className="h-5 w-5 mx-2" />
+						</button>
+					</SheetTrigger>
+					<SheetContent side="left" className="w-[85vw] sm:max-w-sm p-0">
+						<div className="p-4 border-b">
+							<Link href={`/`} className="flex items-center gap-2 text-2xl">
+								<InsertIcon className="p-[4px] border-2 bg-white" />
+								<span className="font-sans">Insert</span>
+							</Link>
+							{session && (
+								<div className="mt-2 text-sm text-muted-foreground">
+									Signed in as @{session.user?.username}
+								</div>
+							)}
+						</div>
+
+						<div className="p-2">
+							{status === "authenticated" && username && (
+								<>
+									<div className="px-3 py-2 text-xs uppercase tracking-wide text-muted-foreground">
+										Sections
+									</div>
+									<div className="space-y-1">
+										<Link
+											href={`/u/${!param_username ? session?.user?.username : param_username}?tab=overview`}
+											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
+										>
+											<User2 className="h-4 w-4" /> <span>Overview</span>
+										</Link>
+										<Link
+											href={`/u/${!param_username ? session?.user?.username : param_username}?tab=topics`}
+											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
+										>
+											<FileText className="h-4 w-4" /> <span>Topics</span>
+										</Link>
+										<Link
+											href={`/u/${!param_username ? session?.user?.username : param_username}?tab=blogs`}
+											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
+										>
+											<LayoutPanelTop className="h-4 w-4" /> <span>Blogs</span>
+										</Link>
+										<Link
+											href={`/u/${!param_username ? session?.user?.username : param_username}?tab=projects`}
+											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
+										>
+											<PanelsTopLeft className="h-4 w-4" /> <span>Projects</span>
+										</Link>
+									</div>
+
+									<div className="px-3 pt-4 pb-2 text-xs uppercase tracking-wide text-muted-foreground">
+										Posts
+									</div>
+									<div className="space-y-1">
+										<Link
+											href={`/posts/topic`}
+											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
+										>
+											<LayoutGrid className="h-4 w-4" /> <span>Topics</span>
+										</Link>
+										<Link
+											href={`/posts/blog`}
+											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
+										>
+											<LayoutGrid className="h-4 w-4" /> <span>Blogs</span>
+										</Link>
+										<Link
+											href={`/posts/projects`}
+											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
+										>
+											<LayoutGrid className="h-4 w-4" /> <span>Projects</span>
+										</Link>
+									</div>
+								</>
+							)}
+
+							{session && status === "authenticated" && (
+								<>
+									<div className="px-3 pt-4 pb-2 text-xs uppercase tracking-wide text-muted-foreground">
+										Account
+									</div>
+									<div className="space-y-1">
+										<Link
+											href={`/u/${session.user?.username}`}
+											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
+										>
+											<User className="h-4 w-4" /> <span>Profile</span>
+										</Link>
+										<Link
+											href="/write"
+											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
+										>
+											<FilePenLine className="h-4 w-4" /> <span>Write</span>
+										</Link>
+										<Link
+											href="mailto:insertcontact999@gmail.com"
+											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
+										>
+											<Contact className="h-4 w-4" /> <span>Contact</span>
+										</Link>
+									</div>
+								</>
+							)}
+						</div>
+
+						<div className="mt-auto p-4 border-t">
+							{status === "authenticated" ? (
+								<button
+									onClick={handleLogOut}
+									className="flex w-full items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
 								>
-									<User2 className="h-4 w-4" /> <span>Overview</span>
-								</Link>
-							</DropdownMenuItem>
-							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
+									<LogOut className="h-4 w-4" /> <span>Logout</span>
+								</button>
+							) : (
 								<Link
-									href={`/u/${!param_username
-										? session?.user?.username
-										: param_username
-										}?tab=topics`}
-									className="flex gap-2 items-center"
+									href="/sign-in"
+									className="flex w-full items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
 								>
-									<FileText className="h-4 w-4" />
-									<span className="text-sm">Topics</span>
-								</Link>
-							</DropdownMenuItem>
-							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
-								<Link
-									href={`/u/${!param_username
-										? session?.user?.username
-										: param_username
-										}?tab=blogs`}
-									className="flex gap-2 items-center"
-								>
-									<LayoutPanelTop className="h-4 w-4" />
-									<span className="text-sm">Blogs</span>
-								</Link>
-							</DropdownMenuItem>
-							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
-								<Link
-									href={`/u/${!param_username
-										? session?.user?.username
-										: param_username
-										}?tab=projects`}
-									className="flex gap-2 items-center"
-								>
-									<PanelsTopLeft className="h-4 w-4" />
-									<span className="text-sm">Projects</span>
-								</Link>
-							</DropdownMenuItem>
-						</DropdownMenuGroup>}
-
-						{status === "authenticated" && <DropdownMenuSeparator />}
-
-						{status === "authenticated" && username && <DropdownMenuGroup>
-							<DropdownMenuLabel>Posts</DropdownMenuLabel>
-							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
-								<Link
-									href={`/posts/topic`}
-									className=" flex gap-2 items-center"
-								>
-									<LayoutGrid className="h-4 w-4" />
-									<span className="text-sm">Topics</span>
-								</Link>
-							</DropdownMenuItem>
-							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
-								<Link
-									href={`/posts/blog`}
-									className=" flex gap-2 items-center"
-								>
-									<LayoutGrid className="h-4 w-4" />
-									<span className="text-sm">Blogs</span>
-								</Link>
-							</DropdownMenuItem>
-							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
-								<Link
-									href={`/posts/projects`}
-									className=" flex gap-2 items-center"
-								>
-									<LayoutGrid className="h-4 w-4" />
-									<span className="text-sm">Projects</span>
-								</Link>
-							</DropdownMenuItem>
-						</DropdownMenuGroup>}
-
-						{status === "authenticated" && <DropdownMenuSeparator />}
-
-						{session && status === "authenticated" && <DropdownMenuGroup>
-							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
-								<Link href={`/u/${session.user?.username}`}>
-									<User className="inline mr-2 h-4 w-4" />
-									Profile
-								</Link>
-							</DropdownMenuItem>
-
-							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
-								<Link href="/write">
-									<FilePenLine className="inline mr-2 h-4 w-4" />
-									Write
-								</Link>
-							</DropdownMenuItem>
-
-							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
-								<Link href="mailto:insertcontact999@gmail.com">
-									<Contact className="inline mr-2 h-4 w-4" />
-									Contact
-								</Link>
-							</DropdownMenuItem>
-						</DropdownMenuGroup>}
-
-						{status === "authenticated" && <DropdownMenuSeparator />}
-
-
-						{status === "authenticated" ? (<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
-							<div className="flex items-center gap-2" onClick={handleLogOut}>
-								<LogOut className="h-4 w-4" /> <span>Logout</span>
-							</div>
-
-						</DropdownMenuItem>) : (
-							<DropdownMenuItem className="rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
-								<Link href="/sign-in" className="flex items-center gap-2">
 									<LogIn className="h-4 w-4" /> <span>Login</span>
 								</Link>
-							</DropdownMenuItem>
-						)}
-					</DropdownMenuContent>
-				</DropdownMenu>
+							)}
+						</div>
+					</SheetContent>
+				</Sheet>
 			</div>
+
 		</nav>
 	);
 };

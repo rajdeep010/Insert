@@ -80,121 +80,127 @@ export default function SignInForm() {
     }
 
     return (
-    <div className='flex min-h-screen'>
-        <Navbar/>
-        
-        {/* Left Section - Hidden on smaller screens */}
+        <div className='flex min-h-screen'>
+            <Navbar />
+
+            {/* Left Section - Hidden on smaller screens */}
             <div className='hidden md:flex md:w-1/2 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-600 dark:to-emerald-800 flex-col justify-center items-center p-12'>
-            <div className='flex flex-col items-center text-center space-y-6'>
-                <InsertIcon height={120} width={120} className='border-4 p-2 bg-white border-gray-900 dark:border-gray-800 shadow-xl' />
-                <div className='space-y-4'>
-                    <h2 className='text-4xl font-semibold font-sans'>
-                        Welcome Back
-                    </h2>
-                    <p className='text-lg max-w-md leading-relaxed font-sans'>
-                        Sign in to continue your development journey. Access your projects, collaborate with your team, and build amazing things.
-                    </p>
-                </div>
-                <div className='flex flex-col space-y-2 text-sm'>
-                    <div className='flex items-center space-x-2 font-sans'>
-                        <div className='w-2 h-2 bg-green-500 rounded-full'></div>
-                        <span>Quick Access</span>
+                <div className='flex flex-col items-center text-center space-y-6'>
+                    <InsertIcon height={120} width={120} className='border-4 p-2 bg-white border-gray-900 dark:border-gray-800 shadow-xl' />
+                    <div className='space-y-4'>
+                        <h2 className='text-4xl font-semibold font-sans'>
+                            Welcome Back
+                        </h2>
+                        <p className='text-lg max-w-md leading-relaxed font-sans'>
+                            Sign in to continue your development journey. Access your projects, collaborate with your team, and build amazing things.
+                        </p>
                     </div>
-                    <div className='flex items-center space-x-2 font-sans'>
-                        <div className='w-2 h-2 bg-blue-500 rounded-full'></div>
-                        <span>Project Management</span>
-                    </div>
-                    <div className='flex items-center space-x-2 font-sans'>
-                        <div className='w-2 h-2 bg-purple-500 rounded-full'></div>
-                        <span>Team Collaboration</span>
+                    <div className='flex flex-col space-y-2 text-sm'>
+                        <div className='flex items-center space-x-2 font-sans'>
+                            <div className='w-2 h-2 bg-green-500 rounded-full'></div>
+                            <span>Quick Access</span>
+                        </div>
+                        <div className='flex items-center space-x-2 font-sans'>
+                            <div className='w-2 h-2 bg-blue-500 rounded-full'></div>
+                            <span>Project Management</span>
+                        </div>
+                        <div className='flex items-center space-x-2 font-sans'>
+                            <div className='w-2 h-2 bg-purple-500 rounded-full'></div>
+                            <span>Team Collaboration</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        {/* Right Section - Always visible */}
-        <div className='w-full md:w-1/2 flex justify-center items-center p-8'>
-            <div className='w-full max-w-md space-y-8'>
-                <div className='flex flex-col justify-center items-center'>
-                    <div className='flex flex-col items-center gap-1'>
-                        <span className='text-gray-400 dark:text-gray-600'>welcome back</span>
-                        <div className='flex items-center gap-2 mb-3 md:hidden'>
-                            <InsertIcon height={45} width={45} className='border-2 p-[4px] dark:bg-white border-gray-950 dark:border-gray-800' />
-                            <h1 className='font-sans text-5xl tracking-wide'>
-                                Insert
-                            </h1>
+            {/* Right Section - Always visible */}
+            <div className='w-full md:w-1/2 flex justify-center items-center p-8'>
+                <div className="fixed inset-0 -z-10 bg-gradient-to-b from-indigo-50 via-white to-white dark:from-indigo-950 dark:via-gray-900 dark:to-gray-900" />
+                <div className="fixed inset-0 -z-10 opacity-40 [mask-image:radial-gradient(ellipse_at_center,black,transparent)] [background-image:linear-gradient(to_right,rgba(99,102,241,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.08)_1px,transparent_1px)] [background-size:20px_20px] [background-position:center] dark:opacity-35 dark:[background-image:linear-gradient(to_right,rgba(99,102,241,0.12)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.12)_1px,transparent_1px)]" />
+                <div className="pointer-events-none fixed left-1/2 top-[-12rem] -z-10 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-gradient-to-tr from-indigo-400/35 via-fuchsia-400/25 to-transparent blur-3xl dark:from-indigo-600/30 dark:via-fuchsia-600/25" />
+
+                <div className='w-full max-w-md space-y-8'>
+                    <div className='flex flex-col justify-center items-center'>
+                        <div className='flex flex-col items-center gap-1'>
+                            <span className='text-gray-400 dark:text-gray-600'>welcome back</span>
+                            <div className='flex items-center gap-2 mb-3 md:hidden'>
+                                <InsertIcon height={45} width={45} className='border-2 p-[4px] dark:bg-white border-gray-950 dark:border-gray-800' />
+                                <h1 className='font-sans text-5xl tracking-wide'>
+                                    Insert
+                                </h1>
+                            </div>
+                            <div className='hidden md:block'>
+                                <h1 className='text-4xl tracking-wide text-center'>
+                                    Sign In
+                                </h1>
+                            </div>
                         </div>
-                        <div className='hidden md:block'>
-                            <h1 className='text-4xl tracking-wide text-center'>
-                                Sign In
-                            </h1>
-                        </div>
+                        <p className='mb-4 text-gray-600 dark:text-gray-400'>Start by signing in</p>
                     </div>
-                    <p className='mb-4 text-gray-600 dark:text-gray-400'>Start by signing in</p>
-                </div>
 
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Email</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Email" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Email" {...field}
+                                                className='border dark:border-white/50 border-black/10' />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-                        <FormField
-                            control={form.control}
-                            name="password"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Password</FormLabel>
-                                    <FormControl>
-                                        <div className="relative">
-                                            <Input
-                                                type={showPassword ? 'text' : 'password'}
-                                                placeholder="Password"
-                                                {...field}
-                                            />
-                                            <div
-                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
-                                                onClick={togglePasswordVisibility}
-                                            >
-                                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            <FormField
+                                control={form.control}
+                                name="password"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Password</FormLabel>
+                                        <FormControl>
+                                            <div className="relative">
+                                                <Input
+                                                    type={showPassword ? 'text' : 'password'}
+                                                    placeholder="Password"
+                                                    {...field}
+                                                    className='border dark:border-white/50 border-black/10'
+                                                />
+                                                <div
+                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                                                    onClick={togglePasswordVisibility}
+                                                >
+                                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                                </div>
                                             </div>
-                                        </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-                        <Button type='submit' disabled={isSubmitting} className='w-full'>
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
-                                </>
-                            ) : ('Sign In')}
-                        </Button>
-                    </form>
-                </Form>
+                            <Button type='submit' disabled={isSubmitting} className='w-full'>
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
+                                    </>
+                                ) : ('Sign In')}
+                            </Button>
+                        </form>
+                    </Form>
 
-                <div className='text-center mt-4'>
-                    <div className='text-gray-600 dark:text-gray-400'>
-                        Not registered yet? {' '}
-                        <Link href='/sign-up' className='text-blue-600 hover:text-blue-800 font-medium transition-colors'>
-                            Sign up
-                        </Link>
+                    <div className='text-center mt-4'>
+                        <div className='text-gray-600 dark:text-gray-400'>
+                            Not registered yet? {' '}
+                            <Link href='/sign-up' className='text-blue-600 hover:text-blue-800 font-medium transition-colors'>
+                                Sign up
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-)
+    )
 }

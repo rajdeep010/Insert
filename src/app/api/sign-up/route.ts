@@ -2,8 +2,10 @@
 // import { sendVerifyEmailJS } from "@/helpers/sendVerificationEmailJS";
 // import { sendVerifyEmailResend } from "@/helpers/sendVerifyEmailResend";
 import dbConnect from "@/lib/dbConnect";
+import { userOTPEmail } from "@/mail-templates/user-otp";
 import AlltopicModel from "@/model/Alltopic";
 import UserModel from "@/model/User";
+import { sendEmail } from "@/utils/sendMail";
 import bcrypt from 'bcryptjs'
 
 
@@ -41,7 +43,7 @@ export async function POST(request: Request) {
         const hashedPassword = await bcrypt.hash(password, 10)
         const verifyCode = Math.floor(100000 + Math.random() * 900000).toString()
         const expiryDate = new Date()
-        expiryDate.setHours(expiryDate.getHours() + 1)
+        expiryDate.setMinutes(expiryDate.getMinutes() + 5)
 
         const newUser = new UserModel({
             username,
@@ -57,8 +59,17 @@ export async function POST(request: Request) {
             location: '',
         })
 
-
         await newUser.save()
+
+        // Send verification email
+        const formatted = userOTPEmail(username, verifyCode);
+        const data = {
+            to: email,
+            subject: formatted.subject,
+            html: formatted.html
+        }
+
+        await sendEmail(data);
 
         return Response.json({
             success: true,
