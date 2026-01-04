@@ -1,9 +1,5 @@
-// import { sendVerifyEmail } from "@/helpers/sendVerificationEmail";
-// import { sendVerifyEmailJS } from "@/helpers/sendVerificationEmailJS";
-// import { sendVerifyEmailResend } from "@/helpers/sendVerifyEmailResend";
 import dbConnect from "@/lib/dbConnect";
 import { userOTPEmail } from "@/mail-templates/user-otp";
-import AlltopicModel from "@/model/Alltopic";
 import UserModel from "@/model/User";
 import { sendEmail } from "@/utils/sendMail";
 import bcrypt from 'bcryptjs'
@@ -78,6 +74,7 @@ export async function POST(request: Request) {
         },{ status: 201 })
 
     } catch (error) {
+        console.log("Error in user registration: ", error);
         return Response.json({
             success: false,
             message: 'Error registering user'
