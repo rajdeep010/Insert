@@ -13,7 +13,7 @@ const InsertIcon: React.FC<InsertIconProps> = ({
     width = 40,
     height = 40,
     className,
-    alt = "Insert Logo"
+    alt = "U"
 }) => {
     const sizeStyle = {
         width: typeof width === 'number' ? `${width}px` : width,
@@ -26,16 +26,11 @@ const InsertIcon: React.FC<InsertIconProps> = ({
             style={sizeStyle}
         >
             <AvatarImage
-                src="/panda-bear.png"
+                src="https://res.cloudinary.com/dgxeg3sju/image/upload/v1767523800/animal_uxsxos.png"
                 alt={alt}
                 className="object-contain"
             />
-            <AvatarFallback
-                className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold"
-                style={sizeStyle}
-            >
-                IN
-            </AvatarFallback>
+            <AvatarFallback>i</AvatarFallback>
         </Avatar>
     )
 }
