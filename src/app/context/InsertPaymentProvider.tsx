@@ -45,7 +45,8 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
     const [state, dispatch] = useReducer(InsertPaymentReducer, initialState)
     const { data: session, update } = useSession()
 
-    const API_BASE = 'http://localhost:4000/v1';
+    // const API_BASE = 'http://localhost:4000/v1';
+    const API_BASE = 'https://insert-payment-service.onrender.com/v1'
 
     const { updateUserAfterPayment } = useInsertUser();
 
