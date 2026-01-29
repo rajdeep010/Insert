@@ -1,14 +1,14 @@
 'use client'
 import { toast } from "@/components/ui/use-toast";
-import { questionSchema,topicSchema } from "@/schemas/topicSchema";
+import { questionSchema, topicSchema } from "@/schemas/topicSchema";
 import { ApiResponse } from "@/types/ApiResponse";
-import { HeatmapDateValues,Topic } from "@/types/types";
+import { HeatmapDateValues, Topic } from "@/types/types";
 import axios from "axios";
 import { useSession } from "next-auth/react";
-import { useParams,useRouter } from "next/navigation";
-import React,{ createContext,useContext,useEffect,useReducer,useState } from "react";
-import { string,z } from "zod";
-import { ref as databaseRef,get,onValue,set } from 'firebase/database'
+import { useParams, useRouter } from "next/navigation";
+import React, { createContext, useContext, useEffect, useReducer } from "react";
+import { z } from "zod";
+import { ref as databaseRef, get, onValue, set } from 'firebase/database'
 import db from "@/firebaseConfig";
 import InsertTopicReducer from "../reducer/InsertTopicReducer";
 
@@ -30,12 +30,13 @@ interface InsertTopicProviderProps {
     // states
     addTopic: (data: z.infer<typeof topicSchema>) => void
     addProblem: (data: z.infer<typeof questionSchema>, currentTopicId: string) => void
-    deleteProblem: (topic_id: string,problem_id: string) => void
+    deleteProblem: (topic_id: string, problem_id: string) => void
     deleteTopic: (topic_id: string) => void
     updateHeatmapActivity: (date: string) => void
     fetchTopicById: (topic_id: string) => void
     addCollaborator: (add_whom_username: string, add_whom_name: string) => void
-    fetchAllTopicPosts: () => void 
+    fetchAllTopicPosts: () => void
+    editProblem: (topic_id: string, problem_id: string, question: z.infer<typeof questionSchema>) => void
 }
 
 const initialState: InsertTopicProviderProps = {
@@ -55,15 +56,16 @@ const initialState: InsertTopicProviderProps = {
     updateHeatmapActivity: () => { },
 
     fetchTopicById: () => { },
-    addCollaborator: () => {},
-    fetchAllTopicPosts: () => {}
+    addCollaborator: () => { },
+    fetchAllTopicPosts: () => { },
+    editProblem: () => { },
 }
 
 const InsertTopicContext = createContext<InsertTopicProviderProps | null>(null)
 
 
 export const InsertTopicProvider = ({ children }: { children: React.ReactNode }) => {
-    const { data: session,status } = useSession()
+    const { data: session, status } = useSession()
     const session_user_username = session?.user?.username as string
 
     const params = useParams()
@@ -71,12 +73,12 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
     const topic_id = params.topicid as string;
     const router = useRouter()
 
-    const [state,dispatch] = useReducer(InsertTopicReducer,initialState)
+    const [state, dispatch] = useReducer(InsertTopicReducer, initialState)
 
     const formatDate = (date: Date): string => {
         const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2,'0'); // Months are zero-based
-        const day = String(date.getDate()).padStart(2,'0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+        const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
     }
 
@@ -86,12 +88,12 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
         updateHeatmapActivity(formattedDate)
     }
 
-    
+
     const getTopicsByUsername = async (username: string) => {
         if (!username) return;
 
         try {
-            dispatch({ type: "SET_TOPICS_LOADING",payload: true });
+            dispatch({ type: "SET_TOPICS_LOADING", payload: true });
 
             const response = await axios.get<ApiResponse>(
                 `/api/get-topics-by-username?username=${username}`
@@ -99,9 +101,9 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 
             if (response.data.success) {
                 const arr = response.data.topics;
-                dispatch({ type: "SET_USER_TOPICS",payload: arr });
+                dispatch({ type: "SET_USER_TOPICS", payload: arr });
             } else {
-                dispatch({ type: "SET_USER_TOPICS",payload: [] });
+                dispatch({ type: "SET_USER_TOPICS", payload: [] });
             }
         } catch (error) {
             toast({
@@ -110,15 +112,15 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
                 variant: "destructive",
             });
         } finally {
-            dispatch({ type: "SET_TOPICS_LOADING",payload: false });
+            dispatch({ type: "SET_TOPICS_LOADING", payload: false });
         }
     };
 
     const addTopic = async (data: z.infer<typeof topicSchema>) => {
-        if(!session?.user?.username)    return
+        if (!session?.user?.username) return
 
         try {
-            const response = await axios.post("/api/add-topic",{topic: data});
+            const response = await axios.post("/api/add-topic", { topic: data });
 
             if (!response.data.success) {
                 toast({
@@ -130,7 +132,7 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
             }
 
             const newTopic: Topic = response.data.topic
-            dispatch({ type: 'ADD_TOPIC',payload: newTopic })
+            dispatch({ type: 'ADD_TOPIC', payload: newTopic })
 
             // Update heatmap activity for today
             await addActivity();
@@ -153,7 +155,7 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
         if (!session_user_username) return;
 
         try {
-            const response = await axios.delete('/api/delete-topic',{
+            const response = await axios.delete('/api/delete-topic', {
                 data: {
                     creator_username: session_user_username,
                     topic_id
@@ -169,8 +171,8 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
                 return;
             }
 
-            dispatch({ type: "DELETE_TOPIC",payload: topic_id });
-            dispatch({ type: "DELETE_ALL_TOPICS",payload: topic_id });
+            dispatch({ type: "DELETE_TOPIC", payload: topic_id });
+            dispatch({ type: "DELETE_ALL_TOPICS", payload: topic_id });
 
             toast({
                 title: 'Topic Deleted ✅',
@@ -190,7 +192,7 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
     }
 
     const addProblem = async (data: z.infer<typeof questionSchema>, currentTopicId: string) => {
-        if(!session?.user?.username)    return
+        if (!session?.user?.username) return
 
         if (data.qname.trim() === '' || data.url.trim() === '') {
             toast({
@@ -202,7 +204,7 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
         }
 
         try {
-            const response = await axios.post('/api/add-problem',{
+            const response = await axios.post('/api/add-problem', {
                 topic_id: currentTopicId,
                 question: data
             });
@@ -241,11 +243,11 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
         }
     };
 
-    const deleteProblem = async (topic_id: string,problem_id: string) => {
+    const deleteProblem = async (topic_id: string, problem_id: string) => {
         if (!session_user_username) return;
 
         try {
-            const response = await axios.delete(`/api/delete-problem`,{
+            const response = await axios.delete(`/api/delete-problem`, {
                 data: {
                     topic_id,
                     problem_id
@@ -289,14 +291,14 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 
     const updateHeatmapActivity = async (date: string) => {
         try {
-            const userValuesRef = databaseRef(db,`users/${session_user_username}/values`)
-            onValue(userValuesRef,async (snapshot) => {
+            const userValuesRef = databaseRef(db, `users/${session_user_username}/values`)
+            onValue(userValuesRef, async (snapshot) => {
                 const data = snapshot.val() || {}
                 if (data[date]) data[date].count += 1
-                else data[date] = { date,count: 1 }
+                else data[date] = { date, count: 1 }
 
                 try {
-                    await set(userValuesRef,data)
+                    await set(userValuesRef, data)
 
                     dispatch({
                         type: 'UPDATE_HEATMAP_ACTIVITY',
@@ -309,7 +311,7 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
                         variant: 'destructive'
                     })
                 }
-            },{ onlyOnce: true })
+            }, { onlyOnce: true })
         } catch (error) {
             toast({
                 title: 'Error ⭕',
@@ -329,9 +331,9 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
                 return
             }
 
-            dispatch({ type: 'SET_HEATMAP_LOADING',payload: true })
+            dispatch({ type: 'SET_HEATMAP_LOADING', payload: true })
 
-            const userValuesRef = databaseRef(db,`users/${username}/values`)
+            const userValuesRef = databaseRef(db, `users/${username}/values`)
             const snapshot = await get(userValuesRef)
 
             if (snapshot.exists()) {
@@ -359,13 +361,13 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
                 variant: 'destructive'
             })
         } finally {
-            dispatch({ type: 'SET_HEATMAP_LOADING',payload: false })
+            dispatch({ type: 'SET_HEATMAP_LOADING', payload: false })
         }
     }
 
     const fetchTopicById = async (topic_id: string) => {
         try {
-            dispatch({ type: 'SET_LOADING_TOPIC',payload: true })
+            dispatch({ type: 'SET_LOADING_TOPIC', payload: true })
 
             const response = await axios.get(`/api/get-topic-by-topicid?topic_id=${topic_id}`)
             if (!response.data.success) {
@@ -379,7 +381,7 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
             }
 
             dispatch({
-                type: 'SET_CURR_TOPIC',payload: {
+                type: 'SET_CURR_TOPIC', payload: {
                     topic: response.data.topic,
                     problems: response.data.problems
                 }
@@ -391,28 +393,28 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
                 variant: "destructive"
             })
         } finally {
-            dispatch({ type: 'SET_LOADING_TOPIC',payload: false })
+            dispatch({ type: 'SET_LOADING_TOPIC', payload: false })
         }
     }
 
 
     const addCollaborator = async (add_whom_username: string, add_whom_name: string, topicid: string) => {
-        if(!session_user_username)  return
+        if (!session_user_username) return
 
         try {
             const response = await axios.post(`/api/add-collaborator`, {
                 add_whom_username,
                 add_whom_name
-            })   
-            
-            if(response.data.success){
+            })
+
+            if (response.data.success) {
                 toast({
                     title: "Done ✅",
                     description: "Collaborator added successfully",
                     variant: "default"
                 })
             }
-            else{
+            else {
                 toast({
                     title: "Error 🔴 ",
                     description: response.data.message,
@@ -430,13 +432,13 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 
     const fetchAllTopicPosts = async () => {
         try {
-            dispatch({ type: "SET_ALL_SHEETS_LOADING",payload: true });
+            dispatch({ type: "SET_ALL_SHEETS_LOADING", payload: true });
 
             const response = await axios.get(`/api/get-all-topics`);
             if (response.data.success) {
-                dispatch({ type: "SET_ALL_TOPICS",payload: response.data.topics });
+                dispatch({ type: "SET_ALL_TOPICS", payload: response.data.topics });
             } else {
-                dispatch({ type: "SET_ALL_TOPICS",payload: [] });
+                dispatch({ type: "SET_ALL_TOPICS", payload: [] });
             }
         } catch (error) {
             toast({
@@ -445,28 +447,70 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
                 variant: "destructive",
             });
         } finally {
-            dispatch({ type: "SET_ALL_SHEETS_LOADING",payload: false });
+            dispatch({ type: "SET_ALL_SHEETS_LOADING", payload: false });
         }
     };
 
+    const editProblem = async (topic_id: string, problem_id: string, question: z.infer<typeof questionSchema>) => {
+        if (!session_user_username) return
+
+        try {
+            const response = await axios.put(`/api/edit-problem`, {
+                topic_id,
+                problem_id,
+                question
+            })
+
+            if (!response.data.success) {
+                toast({
+                    title: "Error ⭕",
+                    description: response.data.message || "Failed to edit problem",
+                    variant: "destructive"
+                })
+                return
+            }
+
+            dispatch({
+                type: 'UPDATE_PROBLEM_IN_TOPIC',
+                payload: {
+                    topic: response.data.topic,
+                    problems: response.data.problems
+                }
+            })
+
+            toast({
+                title: "Edited ✅",
+                description: "Problem edited successfully",
+                variant: "default"
+            })
+
+        } catch (error: any) {
+            toast({
+                title: "Error ⭕",
+                description: error?.response?.data?.message || "Error in editing problem",
+                variant: "destructive"
+            })
+        }
+    }
+
 
     useEffect(() => {
-        if(status === "authenticated"){
+        if (status === "authenticated") {
             if (param_username) {
                 getTopicsByUsername(param_username)
                 fetchHeatmapActivity(param_username)
             }
 
-            if(!param_username && session && session?.user && session?.user?.username){
+            if (!param_username && session && session?.user && session?.user?.username) {
                 getTopicsByUsername(session?.user?.username)
                 fetchHeatmapActivity(session?.user?.username)
             }
         }
-        
-    },[status, param_username])
+
+    }, [status, param_username])
 
     useEffect(() => {
-        if(status === "authenticated"){
+        if (status === "authenticated") {
 
             if (topic_id) {
                 fetchTopicById(topic_id)
@@ -483,7 +527,8 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
         updateHeatmapActivity,
         fetchTopicById,
         addCollaborator,
-        fetchAllTopicPosts
+        fetchAllTopicPosts,
+        editProblem
     }
 
     return (
