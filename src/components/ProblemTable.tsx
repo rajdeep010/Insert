@@ -27,7 +27,7 @@ import {
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ArrowUpDown,ChevronDown } from "lucide-react";
+import { ArrowUpDown, ChevronDown, Edit, ExternalLink, Trash } from "lucide-react";
 import Link from "next/link";
 import {
 	Tooltip,
@@ -35,29 +35,43 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+// ...existing code...
 export function ProblemsDataTable({
 	problems,
 	showDelete,
 	onDelete,
+	onEdit,
 }: {
 	problems: {
-		id: string;
+		_id: string;
 		qname: string;
 		url: string;
 		difficulty: string;
 	}[];
 	showDelete: boolean;
 	onDelete?: (problemId: string) => void;
+	onEdit?: (problem: any) => void;
 }) {
-	const [sorting,setSorting] = React.useState<SortingState>([]);
-	const [columnFilters,setColumnFilters] = React.useState<ColumnFiltersState>(
+	const [sorting, setSorting] = React.useState<SortingState>([]);
+	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+	const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+	const [rowSelection, setRowSelection] = React.useState({});
+
+	// Custom difficulty order
+	const DIFFICULTY_ORDER = [
+		"Easy",
+		"Easy-Med",
+		"Medium",
+		"Med-Hard",
+		"Hard",
+		"Advanced",
+	] as const;
+	const DIFFICULTY_ORDER_MAP = React.useMemo(
+		() =>
+			Object.fromEntries(DIFFICULTY_ORDER.map((d, i) => [d, i])) as Record<string, number>,
 		[]
 	);
-	const [columnVisibility,setColumnVisibility] =
-		React.useState<VisibilityState>({});
-	const [rowSelection,setRowSelection] = React.useState({});
 
-	// Define columns for problems
 	const columns = React.useMemo<ColumnDef<any>[]>(
 		() => [
 			{
@@ -69,7 +83,7 @@ export function ProblemsDataTable({
 							<span>
 								{row.original.qname.length < 22
 									? row.original.qname
-									: row.original.qname.substring(0,70)}
+									: row.original.qname.substring(0, 70)}
 								{row.original.qname.length >= 70 ? "..." : ""}
 							</span>
 						</TooltipTrigger>
@@ -80,28 +94,12 @@ export function ProblemsDataTable({
 				),
 			},
 			{
-				accessorKey: "url",
-				header: "Link",
-				cell: ({ row }) => (
-					<Link
-						href={row.original.url}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="text-blue-500 hover:text-blue-300 hover:underline"
-					>
-						Go Problem
-					</Link>
-				),
-			},
-			{
 				accessorKey: "difficulty",
 				header: ({ column }) => {
 					return (
 						<Button
 							variant="ghost"
-							onClick={() =>
-								column.toggleSorting(column.getIsSorted() === "asc")
-							}
+							onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 						>
 							Difficulty
 							<ArrowUpDown />
@@ -109,27 +107,53 @@ export function ProblemsDataTable({
 					);
 				},
 				cell: ({ row }) => row.original.difficulty,
+				sortingFn: (rowA, rowB) => {
+					const a = DIFFICULTY_ORDER_MAP[String(rowA.getValue("difficulty"))] ?? 999;
+					const b = DIFFICULTY_ORDER_MAP[String(rowB.getValue("difficulty"))] ?? 999;
+					return a - b;
+				},
+			},
+			{
+				accessorKey: "url",
+				header: () => <div className="text-center w-full">Link</div>,
+				cell: ({ row }) => (
+					<div className="flex items-center justify-center">
+						<Link
+							href={row.original.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="inline-flex items-center justify-center text-blue-500 hover:text-blue-300 cursor-pointer"
+						>
+							<ExternalLink className="h-5 w-5" />
+						</Link>
+					</div>
+				),
+			},
+			{
+				accessorKey: "edit",
+				header: "Edit",
+				cell: ({ row }) => (
+					<Edit className="h-5 w-5 cursor-pointer" onClick={() => onEdit?.(row.original)} />
+				),
 			},
 			...(showDelete
 				? [
 					{
 						id: "delete",
 						header: "Delete",
-						cell: ({ row}: any) => (
-							<Button
-								variant="destructive"
+						cell: ({ row }: any) => (
+							<Trash
+								className="h-5 w-5 text-red-500 hover:text-red-300 cursor-pointer"
 								onClick={() => {
-									onDelete?.(row.original._id)
+									onDelete?.(row.original._id);
 								}}
-							>
-								Delete
-							</Button>
+							/>
 						),
 					},
 				]
 				: []),
 		],
-		[showDelete, onDelete]
+		[showDelete, onDelete, onEdit, DIFFICULTY_ORDER_MAP]
 	);
 
 	const table = useReactTable({
@@ -143,12 +167,7 @@ export function ProblemsDataTable({
 		getFilteredRowModel: getFilteredRowModel(),
 		onColumnVisibilityChange: setColumnVisibility,
 		onRowSelectionChange: setRowSelection,
-		state: {
-			sorting,
-			columnFilters,
-			columnVisibility,
-			rowSelection,
-		},
+		state: { sorting, columnFilters, columnVisibility, rowSelection },
 	});
 
 	return (
@@ -162,7 +181,7 @@ export function ProblemsDataTable({
 					}
 					className="max-w-sm"
 				/>
-				
+
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<Button variant="outline" className="ml-auto">

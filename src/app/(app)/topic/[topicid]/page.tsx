@@ -1,31 +1,9 @@
 "use client";
-import { toast } from "@/components/ui/use-toast";
-import {
-	ProblemDifficulty,
-	Topic,
-	TopicVisibility,
-	UserInfo,
-} from "@/types/types";
-import axios,{ AxiosError } from "axios";
-import { useParams,useRouter } from "next/navigation";
-import React,{ useEffect,useState } from "react";
-// import { useTopics } from '@/app/context/TopicProvider'
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+import { UserInfo } from "@/types/types";
+import axios, { AxiosError } from "axios";
+import { useParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@radix-ui/react-tooltip";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -40,7 +18,6 @@ import {
 	SelectContent,
 	SelectGroup,
 	SelectItem,
-	SelectLabel,
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
@@ -50,74 +27,63 @@ import {
 	FormControl,
 	FormField,
 	FormItem,
-	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { questionSchema,suggestionSchema } from "@/schemas/topicSchema";
+import { questionSchema, suggestionSchema } from "@/schemas/topicSchema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiResponse } from "@/types/ApiResponse";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounceCallback, useDebounceValue } from "usehooks-ts";
-import { CirclePlus,FileInput,Loader2,Trash2,UserPlus } from "lucide-react";
+import { CirclePlus, FileInput, Loader2, Trash2, UserPlus } from "lucide-react";
 import UserCard from "@/components/UserCard";
-import Collaborator from "@/components/Collaborator";
-import CollaboratorsSkeleton from "@/components/skeletons/CollaboratorsSkeleton";
-import { NotificationData } from "@/types/types";
-import { useTopics } from "@/app/context/TopicProvider";
-import ProfileModal from "@/components/ProfileModal";
 import InsertNavbar from "@/components/InsertNavbar";
 import { ProblemsDataTable } from "@/components/ProblemTable";
 import { useInsertUser } from "@/app/context/InsertUserProvider";
 import InsertHoverCard from "@/components/InsertHoverCard";
-import { Avatar,AvatarFallback,AvatarImage } from "@/components/ui/avatar";
 import { useInsertTopics } from "@/app/context/InsertTopicProvider";
-import NotFound from "@/app/not-found";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 const EachTopic = () => {
 	const params = useParams();
 	const topic_id = params.topicid as string;
-	const { data: session,status } = useSession();
-	const router = useRouter();
+	const { data: session, status } = useSession();
 
 	const {
 		curr_topic,
 		isTopicLoading,
-		fetchTopicById,
 		addProblem,
 		deleteProblem,
-		deleteTopic
+		deleteTopic,
+		editProblem
 	} = useInsertTopics();
 
 	const { sendSuggestion } = useInsertUser();
 
 	// Modal state
-	const [currentProblemId,setCurrentProblemId] = useState<string | null>(null);
-	// const [currentProblem,setCurrentProblem] = useState<any>({})
+	const [currentProblemId, setCurrentProblemId] = useState<string | null>(null);
 
-	const [isItemModalOpen,setIsItemModalOpen] = useState(false);
-	const [isItemDeleteModalOpen,setIsItemDeleteModalOpen] = useState(false);
-	const [isSuggestProblemOpen,setIsSuggestProblemOpen] = useState(false);
+	const [isItemModalOpen, setIsItemModalOpen] = useState(false);
+	const [isItemDeleteModalOpen, setIsItemDeleteModalOpen] = useState(false);
+	const [isSuggestProblemOpen, setIsSuggestProblemOpen] = useState(false);
 
-	const [isAddingProblem,setIsAddingProblem] = useState(false)
-	const [isDeletingProblem,setIsDeletingProblem] = useState(false)
+	const [isAddingProblem, setIsAddingProblem] = useState(false)
+	const [isDeletingProblem, setIsDeletingProblem] = useState(false)
 
 	// collaborator search
-	const [debouncedUsername,setSearchUsername] = useDebounceValue<string>('', 500)
-	const [isSearchingUsername,setIsSearchingUsername] = useState(false);
-	const [searchUsernameMessage,setSearchUsernameMessage] = useState("");
-	const [similarUsers,setSimilarUsers] = useState<UserInfo[]>([]);
+	const [debouncedUsername, setSearchUsername] = useDebounceValue<string>('', 500)
+	const [isSearchingUsername, setIsSearchingUsername] = useState(false);
+	const [searchUsernameMessage, setSearchUsernameMessage] = useState("");
+	const [similarUsers, setSimilarUsers] = useState<UserInfo[]>([]);
 
-	const debounced = useDebounceCallback(setSearchUsername,500);
+	const debounced = useDebounceCallback(setSearchUsername, 500);
 
-	const [isTopicDeleting,setIsTopicDeleting] = useState(false)
+	const [isTopicDeleting, setIsTopicDeleting] = useState(false)
 
-	const [isTopicModalOpen,setIsTopicModalOpen] = useState(false);
-	const [isTopicDeleteModalOpen,setIsTopicDeleteModalOpen] = useState(false);
+	const [isTopicModalOpen, setIsTopicModalOpen] = useState(false);
+	const [isTopicDeleteModalOpen, setIsTopicDeleteModalOpen] = useState(false);
 
 	const handleOpenItemModal = () => setIsItemModalOpen(true);
 	const handleOpenDeleteProblemModal = (problemId: string) => {
@@ -129,7 +95,7 @@ const EachTopic = () => {
 	const handleDeleteProblem = async () => {
 		if (!topic_id || !currentProblemId) return;
 		setIsDeletingProblem(true);
-		await deleteProblem(topic_id,currentProblemId);
+		await deleteProblem(topic_id, currentProblemId);
 		setIsItemDeleteModalOpen(false);
 		setIsDeletingProblem(false);
 		setCurrentProblemId(null);
@@ -138,13 +104,13 @@ const EachTopic = () => {
 	// ------------------------------------------
 	const questionForm = useForm<z.infer<typeof questionSchema>>({
 		resolver: zodResolver(questionSchema),
-		defaultValues: { qname: "",url: "",difficulty: "Easy" },
+		defaultValues: { qname: "", url: "", difficulty: "Easy" },
 	});
 
 	const problemSubmit = async (data: z.infer<typeof questionSchema>) => {
 		if (!topic_id || !session?.user?.username) return;
 		setIsAddingProblem(true);
-		await addProblem(data,topic_id);
+		await addProblem(data, topic_id);
 		questionForm.reset()
 		setIsAddingProblem(false)
 		setIsItemModalOpen(false);
@@ -155,12 +121,12 @@ const EachTopic = () => {
 
 	const suggestionForm = useForm<z.infer<typeof suggestionSchema>>({
 		resolver: zodResolver(suggestionSchema),
-		defaultValues: { problemname: "",problemurl: "" },
+		defaultValues: { problemname: "", problemurl: "" },
 	});
 
 	const suggestionSubmit = async (data: z.infer<typeof suggestionSchema>) => {
 		if (!curr_topic || !session?.user?.username) return;
-		await sendSuggestion(curr_topic.topic?.creator_username,{
+		await sendSuggestion(curr_topic.topic?.creator_username, {
 			noti_type: "suggestion",
 			from: session.user.username,
 			topicid: curr_topic.topic.id,
@@ -172,7 +138,7 @@ const EachTopic = () => {
 		suggestionForm.reset()
 	};
 
-	const [iscollabModalOpen,setIsCollabModalOpen] = useState(false);
+	const [iscollabModalOpen, setIsCollabModalOpen] = useState(false);
 	const handleCollabModal = (id: string) => {
 		setIsCollabModalOpen(true);
 	};
@@ -195,7 +161,7 @@ const EachTopic = () => {
 				setIsSearchingUsername(false);
 			}
 		})();
-	},[debouncedUsername]);
+	}, [debouncedUsername]);
 
 	const handleOpenDeleteTopicModal = () => {
 		setIsTopicDeleteModalOpen(true);
@@ -210,6 +176,36 @@ const EachTopic = () => {
 		}
 	}
 
+	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+	const [editingProblem, setEditingProblem] = useState<any | null>(null);
+	const [isUpdatingProblem, setIsUpdatingProblem] = useState(false);
+
+	const editForm = useForm<z.infer<typeof questionSchema>>({
+		resolver: zodResolver(questionSchema),
+		defaultValues: { qname: "", url: "", difficulty: "Easy" },
+	});
+
+	const handleOpenEditProblemModal = (problem: any) => {
+		setEditingProblem(problem);
+		editForm.reset({
+			qname: problem?.qname ?? "",
+			url: problem?.url ?? "",
+			difficulty: problem?.difficulty ?? "Easy",
+		});
+		setIsEditModalOpen(true);
+	};
+
+	const handleEditProblemSubmit = async (data: z.infer<typeof questionSchema>) => {
+		if (!topic_id || !editingProblem?._id) return;
+		try {
+			setIsUpdatingProblem(true);
+			await editProblem(topic_id, editingProblem._id, data);
+			setIsEditModalOpen(false);
+			setEditingProblem(null);
+		} finally {
+			setIsUpdatingProblem(false);
+		}
+	};
 
 	if (!curr_topic) return null
 
@@ -247,7 +243,7 @@ const EachTopic = () => {
 						</div>
 
 						<div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
-							{curr_topic?.topic?.collaborators.map((each: any,idx: any) => (
+							{curr_topic?.topic?.collaborators.map((each: any, idx: any) => (
 								<InsertHoverCard
 									key={idx}
 									username={each?.username as string}
@@ -326,7 +322,7 @@ const EachTopic = () => {
 						</p>
 
 						<div className="flex flex-col gap-2 p-2 overflow-y-scroll custom-small-scrollbar">
-							{similarUsers?.map((user,idx) => (
+							{similarUsers?.map((user, idx) => (
 								<>
 									<UserCard
 										key={idx}
@@ -530,14 +526,100 @@ const EachTopic = () => {
 					</DialogContent>
 				</Dialog>
 
-				{!isTopicLoading && <ProblemsDataTable
-					problems={curr_topic?.problems || []}
-					showDelete={
-						status === "authenticated" &&
-						(session?.user.username === curr_topic?.topic?.creator_username || curr_topic?.topic?.collaborators.find((each: any) => each.username === session?.user?.username))
-					}
-					onDelete={handleOpenDeleteProblemModal}
-				/>}
+				<Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Edit Problem</DialogTitle>
+							<DialogDescription>Update the problem details</DialogDescription>
+						</DialogHeader>
+						<Form {...editForm}>
+							<form onSubmit={editForm.handleSubmit(handleEditProblemSubmit)} className="space-y-6">
+								<FormField
+									control={editForm.control}
+									name="qname"
+									render={({ field }) => (
+										<FormItem>
+											<FormControl>
+												<Input placeholder="Problem Name" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={editForm.control}
+									name="url"
+									render={({ field }) => (
+										<FormItem>
+											<FormControl>
+												<Input placeholder="URL" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={editForm.control}
+									name="difficulty"
+									render={({ field }) => (
+										<FormItem>
+											<FormControl>
+												<Select onValueChange={field.onChange} value={field.value}>
+													<SelectTrigger>
+														<SelectValue placeholder="Difficulty" />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectGroup>
+															<SelectItem value="Easy">Easy</SelectItem>
+															<SelectItem value="Easy-Med">Easy-Med</SelectItem>
+															<SelectItem value="Medium">Medium</SelectItem>
+															<SelectItem value="Med-Hard">Med-Hard</SelectItem>
+															<SelectItem value="Hard">Hard</SelectItem>
+															<SelectItem value="Advanced">Advanced</SelectItem>
+														</SelectGroup>
+													</SelectContent>
+												</Select>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<DialogFooter>
+									<Button type="submit" variant="default" disabled={isUpdatingProblem}>
+										{isUpdatingProblem ? (
+											<>
+												<Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving
+											</>
+										) : (
+											"Save"
+										)}
+									</Button>
+									<Button
+										type="button"
+										variant="destructive"
+										disabled={isUpdatingProblem}
+										onClick={() => setIsEditModalOpen(false)}
+									>
+										Cancel
+									</Button>
+								</DialogFooter>
+							</form>
+						</Form>
+					</DialogContent>
+				</Dialog>
+
+				{!isTopicLoading && (
+					<ProblemsDataTable
+						problems={curr_topic?.problems || []}
+						showDelete={
+							status === "authenticated" &&
+							(session?.user.username === curr_topic?.topic?.creator_username ||
+								curr_topic?.topic?.collaborators.find((each: any) => each.username === session?.user?.username))
+						}
+						onDelete={handleOpenDeleteProblemModal}
+						onEdit={handleOpenEditProblemModal}
+					/>
+				)}
 
 				{isTopicLoading && <TableSkeleton />}
 			</div>
