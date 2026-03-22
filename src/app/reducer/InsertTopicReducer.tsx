@@ -24,18 +24,18 @@ export default function InsertTopicReducer(state: any, action: any) {
         case "DELETE_TOPIC":
             return {
                 ...state,
-                user_Topics: state.user_Topics.filter((topic: any) => topic.id !== action.payload)
+                user_Topics: state.user_Topics?.filter((topic: any) => topic.id !== action.payload)
             };
 
         case "DELETE_ALL_TOPICS":
             return {
                 ...state,
-                all_topics: state.all_topics.filter((topic: any) => topic.id !== action.payload)
+                all_topics: state.all_topics?.filter((topic: any) => topic.id !== action.payload)
             };
 
         case "UPDATE_TOPICS_AFTER_PROBLEM_ADD": {
             // console.log('after adding problem: ',action.payload,state.user_Topics)
-            const updatedUserTopics = state.user_Topics.map((topic: any) =>
+            const updatedUserTopics = state.user_Topics?.map((topic: any) =>
                 topic?.id === action.payload?.topic?.id
                     ? {
                         ...topic,
@@ -65,11 +65,11 @@ export default function InsertTopicReducer(state: any, action: any) {
             const { topic_id, problem_id } = action.payload;
             // console.log('payload', topic_id, problem_id)
 
-            const updatedUserTopics = state.user_Topics.map((topic: any) =>
+            const updatedUserTopics = state.user_Topics?.map((topic: any) =>
                 topic?.id === topic_id
                     ? {
                         ...topic,
-                        problems: topic.problems.filter(
+                        problems: topic.problems?.filter(
                             (p: any) => {
                                 // console.log('this is p:', p)
                                 return p._id !== problem_id
@@ -83,7 +83,7 @@ export default function InsertTopicReducer(state: any, action: any) {
                 state.curr_topic?.topic?.id === topic_id
                     ? {
                         ...state.curr_topic,
-                        problems: state.curr_topic.problems.filter(
+                        problems: state.curr_topic.problems?.filter(
                             (p: any) => p._id !== problem_id
                         ),
                     }
@@ -105,11 +105,11 @@ export default function InsertTopicReducer(state: any, action: any) {
         }
 
         case 'UPDATE_HEATMAP_ACTIVITY': {
-            const existing = state.user_heatmapValues.find((v: any) => v.date === action.payload.date)
+            const existing = state.user_heatmapValues?.find((v: any) => v.date === action.payload.date)
 
             let updatedHeatmap;
             if (existing) {
-                updatedHeatmap = state.user_heatmapValues.map((val: any) =>
+                updatedHeatmap = state.user_heatmapValues?.map((val: any) =>
                     val.date === action.payload.date ? { ...val, count: val.count + 1 } : val
                 )
             } else {
@@ -153,7 +153,7 @@ export default function InsertTopicReducer(state: any, action: any) {
         case "UPDATE_PROBLEM_IN_TOPIC": {
             const topicId = action.payload?.topic?.id;
 
-            const updatedUserTopics = state.user_Topics.map((topic: any) =>
+            const updatedUserTopics = state.user_Topics?.map((topic: any) =>
                 topic?.id === topicId
                     ? { ...topic, problems: action.payload?.problems }
                     : topic
