@@ -7,7 +7,7 @@ import { questionSchema, topicSchema } from "@/schemas/topicSchema";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { createContext, useContext, useReducer } from "react";
+import { createContext, useCallback, useContext, useMemo, useReducer } from "react";
 import type { CurrentTopicState, HeatmapDateValues, Topic } from "@/types/topic";
 import { z } from "zod";
 import { ref as databaseRef, get, onValue, set } from "firebase/database";
@@ -64,14 +64,14 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 	const router = useRouter();
 	const [state, dispatch] = useReducer(InsertTopicReducer, initialState);
 
-	const formatDate = (date: Date): string => {
+	const formatDate = useCallback((date: Date): string => {
 		const year = date.getFullYear();
 		const month = String(date.getMonth() + 1).padStart(2, "0");
 		const day = String(date.getDate()).padStart(2, "0");
 		return `${year}-${month}-${day}`;
-	};
+	}, []);
 
-	const updateHeatmapActivity = async (date: string) => {
+	const updateHeatmapActivity = useCallback(async (date: string) => {
 		try {
 			if (!sessionUsername) return;
 			const userValuesRef = databaseRef(db, `users/${sessionUsername}/values`);
@@ -89,13 +89,13 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 		} catch {
 			toast({ title: "Error ⭕", description: "Error in updating heatmap", variant: "destructive" });
 		}
-	};
+	}, [sessionUsername]);
 
-	const addActivity = async () => {
+	const addActivity = useCallback(async () => {
 		await updateHeatmapActivity(formatDate(new Date()));
-	};
+	}, [formatDate, updateHeatmapActivity]);
 
-	const fetchTopicsByUsername = async (username: string) => {
+	const fetchTopicsByUsername = useCallback(async (username: string) => {
 		if (!username) return;
 		try {
 			dispatch({ type: "SET_TOPICS_LOADING", payload: true });
@@ -107,9 +107,9 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 		} finally {
 			dispatch({ type: "SET_TOPICS_LOADING", payload: false });
 		}
-	};
+	}, []);
 
-	const addTopic = async (data: z.infer<typeof topicSchema>) => {
+	const addTopic = useCallback(async (data: z.infer<typeof topicSchema>) => {
 		if (!sessionUsername) return;
 		try {
 			const response = await axios.post("/api/topics", data);
@@ -123,9 +123,9 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Error in adding topic", variant: "destructive" });
 		}
-	};
+	}, [addActivity, sessionUsername]);
 
-	const deleteTopic = async (topic_id: string) => {
+	const deleteTopic = useCallback(async (topic_id: string) => {
 		if (!sessionUsername) return;
 		try {
 			const response = await axios.delete(`/api/topics/${topic_id}`);
@@ -140,9 +140,26 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Something went wrong", variant: "destructive" });
 		}
-	};
+	}, [addActivity, sessionUsername]);
 
-	const addProblem = async (data: z.infer<typeof questionSchema>, currentTopicId: string) => {
+	const fetchTopicById = useCallback(async (topic_id: string) => {
+		try {
+			dispatch({ type: "SET_LOADING_TOPIC", payload: true });
+			const response = await axios.get(`/api/topics/${topic_id}`);
+			if (!response.data.success) {
+				toast({ title: "Error ⭕", description: response.data.message || "Topic not found", variant: "destructive" });
+				router.replace("/");
+				return;
+			}
+			dispatch({ type: "SET_CURR_TOPIC", payload: { topic: response.data.topic, problems: response.data.problems ?? [] } });
+		} catch (error: any) {
+			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Error fetching topic", variant: "destructive" });
+		} finally {
+			dispatch({ type: "SET_LOADING_TOPIC", payload: false });
+		}
+	}, [router]);
+
+	const addProblem = useCallback(async (data: z.infer<typeof questionSchema>, currentTopicId: string) => {
 		if (!sessionUsername) return;
 		if (data.qname.trim() === "" || data.url.trim() === "") {
 			toast({ title: "Unable to Add", description: "Please fill all the fields", variant: "default" });
@@ -160,9 +177,9 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Error in adding problem", variant: "destructive" });
 		}
-	};
+	}, [addActivity, fetchTopicById, sessionUsername]);
 
-	const deleteProblem = async (topic_id: string, problem_id: string) => {
+	const deleteProblem = useCallback(async (topic_id: string, problem_id: string) => {
 		if (!sessionUsername) return;
 		try {
 			const response = await axios.delete(`/api/topics/${topic_id}/problems/${problem_id}`);
@@ -176,9 +193,9 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Error in deleting problem", variant: "destructive" });
 		}
-	};
+	}, [addActivity, sessionUsername]);
 
-	const fetchHeatmapActivity = async (username: string) => {
+	const fetchHeatmapActivity = useCallback(async (username: string) => {
 		try {
 			if (!username) {
 				dispatch({ type: "SET_HEATMAP_VALUES", payload: [] });
@@ -197,26 +214,9 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 		} finally {
 			dispatch({ type: "SET_HEATMAP_LOADING", payload: false });
 		}
-	};
+	}, []);
 
-	const fetchTopicById = async (topic_id: string) => {
-		try {
-			dispatch({ type: "SET_LOADING_TOPIC", payload: true });
-			const response = await axios.get(`/api/topics/${topic_id}`);
-			if (!response.data.success) {
-				toast({ title: "Error ⭕", description: response.data.message || "Topic not found", variant: "destructive" });
-				router.replace("/");
-				return;
-			}
-			dispatch({ type: "SET_CURR_TOPIC", payload: { topic: response.data.topic, problems: response.data.problems ?? [] } });
-		} catch (error: any) {
-			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Error fetching topic", variant: "destructive" });
-		} finally {
-			dispatch({ type: "SET_LOADING_TOPIC", payload: false });
-		}
-	};
-
-	const addCollaborator = async (add_whom_username: string, add_whom_name: string, topicid: string) => {
+	const addCollaborator = useCallback(async (add_whom_username: string, add_whom_name: string, topicid: string) => {
 		if (!sessionUsername) return;
 		try {
 			const response = await axios.post(`/api/topics/${topicid}/collaborators`, { collaborator: { username: add_whom_username, name: add_whom_name } });
@@ -229,9 +229,9 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Something went wrong", variant: "destructive" });
 		}
-	};
+	}, [fetchTopicById, sessionUsername]);
 
-	const fetchAllTopicPosts = async () => {
+	const fetchAllTopicPosts = useCallback(async () => {
 		try {
 			dispatch({ type: "SET_ALL_SHEETS_LOADING", payload: true });
 			const response = await axios.get("/api/topics");
@@ -241,9 +241,9 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 		} finally {
 			dispatch({ type: "SET_ALL_SHEETS_LOADING", payload: false });
 		}
-	};
+	}, []);
 
-	const editProblem = async (topic_id: string, problem_id: string, question: z.infer<typeof questionSchema>) => {
+	const editProblem = useCallback(async (topic_id: string, problem_id: string, question: z.infer<typeof questionSchema>) => {
 		if (!sessionUsername) return;
 		try {
 			const response = await axios.patch(`/api/topics/${topic_id}/problems/${problem_id}`, question);
@@ -256,10 +256,38 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Error in editing problem", variant: "destructive" });
 		}
-	};
+	}, [fetchTopicById, sessionUsername]);
+
+	const contextValue = useMemo(() => ({
+		...state,
+		addTopic,
+		addProblem,
+		deleteProblem,
+		deleteTopic,
+		updateHeatmapActivity,
+		fetchTopicById,
+		fetchTopicsByUsername,
+		fetchHeatmapActivity,
+		addCollaborator,
+		fetchAllTopicPosts,
+		editProblem,
+	}), [
+		state,
+		addTopic,
+		addProblem,
+		deleteProblem,
+		deleteTopic,
+		updateHeatmapActivity,
+		fetchTopicById,
+		fetchTopicsByUsername,
+		fetchHeatmapActivity,
+		addCollaborator,
+		fetchAllTopicPosts,
+		editProblem,
+	]);
 
 	return (
-		<InsertTopicContext.Provider value={{ ...state, addTopic, addProblem, deleteProblem, deleteTopic, updateHeatmapActivity, fetchTopicById, fetchTopicsByUsername, fetchHeatmapActivity, addCollaborator, fetchAllTopicPosts, editProblem }}>
+		<InsertTopicContext.Provider value={contextValue}>
 			{children}
 		</InsertTopicContext.Provider>
 	);

@@ -21,3 +21,12 @@ export interface UserInfo {
     avatar?: string | null;
     proStatus?: UserProStatus | null;
 }
+
+export interface UserState {
+    currentUser: UserInfo | null;
+    profileUser: UserInfo | null;
+    publicUsersByUsername: Record<string, UserInfo>;
+    isCurrentUserLoading: boolean;
+    isUserLoading: boolean;
+    isAvatarUploading: boolean;
+}

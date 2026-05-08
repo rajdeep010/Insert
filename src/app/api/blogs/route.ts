@@ -1,5 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
 import { getAuthenticatedUsername } from "@/lib/api/auth";
+import { normalizeBlogSlug } from "@/lib/blog-slug";
 import BlogModel from "@/model/Blog";
 import { createBlogSchema } from "@/schemas/blogSchema";
 
@@ -92,8 +93,19 @@ export async function POST(request: Request) {
     await dbConnect();
 
     try {
+        const normalizedSlug = normalizeBlogSlug(parsedBody.data.slug);
+        if (!normalizedSlug) {
+            return Response.json(
+                {
+                    success: false,
+                    message: "Slug must contain only lowercase letters, numbers, and hyphens",
+                },
+                { status: 400 }
+            );
+        }
+
         const existingBlog = await BlogModel.findOne({
-            blogUrl: parsedBody.data.slug,
+            blogUrl: normalizedSlug,
         }).select("_id");
 
         if (existingBlog) {
@@ -111,7 +123,7 @@ export async function POST(request: Request) {
             blogContent: parsedBody.data.blogContent,
             blogContentText: parsedBody.data.blogContentText,
             blogBannerImage: parsedBody.data.blogBannerImage || "",
-            blogUrl: parsedBody.data.slug,
+            blogUrl: normalizedSlug,
             type: parsedBody.data.type,
             creator: currentUsername,
             autosave: parsedBody.data.autosave,

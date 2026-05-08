@@ -10,6 +10,8 @@ import bcrypt from "bcryptjs";
 const SEARCH_USER_SELECT =
     "_id name username about linkedin profile location company avatar proStatus";
 
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const usernameQuery = searchParams.get("username")?.trim() ?? "";
@@ -24,28 +26,29 @@ export async function GET(request: Request) {
         );
     }
 
-    await dbConnect();
-
     try {
+        await dbConnect();
         const currentUsername = await getAuthenticatedUsername(request);
         const filters: Array<Record<string, unknown>> = [
-            { username: { $regex: usernameQuery, $options: "i" } },
+            { username: { $regex: escapeRegex(usernameQuery), $options: "i" } },
         ];
 
         if (currentUsername) {
             filters.push({ username: { $ne: currentUsername } });
         }
 
-        const users = await UserModel.find({ $and: filters })
+        const matchedUsers = await UserModel.find({ $and: filters })
             .select(SEARCH_USER_SELECT)
             .limit(10);
+
+        const users = matchedUsers.map(buildPublicUserPayload);
 
         return Response.json(
             {
                 success: true,
                 message: users.length > 0 ? "Found" : "No users found",
-                users: users.map(buildPublicUserPayload),
-                similar_users: users.map(buildPublicUserPayload),
+                users,
+                similar_users: users,
             },
             { status: 200 }
         );

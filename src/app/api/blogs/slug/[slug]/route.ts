@@ -1,7 +1,7 @@
 import dbConnect from "@/lib/dbConnect";
 import { getAuthenticatedUsername } from "@/lib/api/auth";
+import { escapeRegex, normalizeBlogSlug } from "@/lib/blog-slug";
 import BlogModel from "@/model/Blog";
-import { blogSlugParamsSchema } from "@/schemas/blogSchema";
 
 type RouteContext = {
     params: {
@@ -13,13 +13,14 @@ export async function GET(
     request: Request,
     context: RouteContext
 ) {
-    const parsedParams = blogSlugParamsSchema.safeParse(context.params);
+    const requestedSlug = context.params.slug?.trim() ?? "";
+    const normalizedRequestedSlug = normalizeBlogSlug(requestedSlug);
 
-    if (!parsedParams.success) {
+    if (!requestedSlug || requestedSlug.length > 150 || !normalizedRequestedSlug) {
         return Response.json(
             {
                 success: false,
-                message: parsedParams.error.issues[0]?.message ?? "Invalid slug",
+                message: "Slug must contain only lowercase letters, numbers, and hyphens",
             },
             { status: 400 }
         );
@@ -31,7 +32,10 @@ export async function GET(
 
     try {
         const blog = await BlogModel.findOne({
-            blogUrl: parsedParams.data.slug,
+            blogUrl: {
+				$regex: `^${escapeRegex(requestedSlug)}$`,
+				$options: "i",
+			},
         });
 
         if (!blog || blog.status !== "active") {

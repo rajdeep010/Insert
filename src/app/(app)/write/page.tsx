@@ -10,6 +10,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Card, CardContent } from "@/components/ui/card";
 import { useBlog } from "@/features/blog/context/BlogProvider";
 import { useInsertProjects } from "@/features/project/context/InsertProjectProvider";
+import { useSession } from "next-auth/react";
 
 /* Consistent surface styles */
 const surface =

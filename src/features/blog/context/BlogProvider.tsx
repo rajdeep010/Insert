@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useReducer } from "react";
+import { createContext, useCallback, useContext, useMemo, useReducer } from "react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -8,6 +8,7 @@ import BlogReducer from "@/features/blog/reducers/BlogReducer";
 import { uniqueId } from "@/helpers/unique-id";
 import { useToast } from "@/components/ui/use-toast";
 import type { BlogEntry, BlogState, BlogUpdatePayload, BlogVisibility } from "@/types/blog";
+import { createBlogSlug } from "@/lib/blog-slug";
 
 interface BlogProviderProps {
 	allBlogs: BlogEntry[];
@@ -51,7 +52,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 	const [state, dispatch] = useReducer(BlogReducer, initialState);
 	const username = session?.user?.username || null;
 
-	const deleteBlog = async (blog_id: string) => {
+	const deleteBlog = useCallback(async (blog_id: string) => {
 		try {
 			if (!username || !blog_id) return;
 			dispatch({ type: "SET_IS_DELETING", payload: true });
@@ -64,11 +65,13 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 		} finally {
 			dispatch({ type: "SET_IS_DELETING", payload: false });
 		}
-	};
+	}, [toast, username]);
 
-	const removeBlogFromState = (blogId: string) => dispatch({ type: "REMOVE_BLOG", payload: blogId });
+	const removeBlogFromState = useCallback((blogId: string) => {
+		dispatch({ type: "REMOVE_BLOG", payload: blogId });
+	}, []);
 
-	const fetchBlogByUrl = async (slug: string) => {
+	const fetchBlogByUrl = useCallback(async (slug: string) => {
 		if (!slug) return;
 		dispatch({ type: "SET_IS_BLOG_LOADING", payload: true });
 		try {
@@ -85,13 +88,13 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 		} finally {
 			dispatch({ type: "SET_IS_BLOG_LOADING", payload: false });
 		}
-	};
+	}, [router, toast]);
 
-	const addBlog = async (title: string, visibility: BlogVisibility) => {
+	const addBlog = useCallback(async (title: string, visibility: BlogVisibility) => {
 		dispatch({ type: "SET_IS_BLOG_ADDING", payload: true });
 		try {
 			if (!username) return;
-			const slug = `${title.trim().toLowerCase().replace(/\s+/g, "-")}-${uniqueId}`;
+			const slug = createBlogSlug(title, uniqueId);
 			const response = await axios.post("/api/blogs", {
 				blogTitle: title,
 				type: visibility,
@@ -114,9 +117,9 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 			dispatch({ type: "SET_IS_BLOG_ADDING", payload: false });
 			dispatch({ type: "SET_IS_ADD_BLOG_MODAL_OPEN", payload: false });
 		}
-	};
+	}, [router, toast, username]);
 
-	const handleBlogUpdate = async (blogData: BlogUpdatePayload) => {
+	const handleBlogUpdate = useCallback(async (blogData: BlogUpdatePayload) => {
 		if (!username || !state.currentBlog?._id) return;
 		try {
 			const response = await axios.patch(`/api/blogs/${state.currentBlog._id}`, {
@@ -133,9 +136,9 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to save blog", variant: "destructive" });
 		}
-	};
+	}, [state.currentBlog?._id, toast, username]);
 
-	const handleAutoSaveBlog = async (blogData: BlogUpdatePayload) => {
+	const handleAutoSaveBlog = useCallback(async (blogData: BlogUpdatePayload) => {
 		if (!username || !state.currentBlog?._id) return;
 		try {
 			await axios.patch(`/api/blogs/${state.currentBlog._id}`, {
@@ -145,9 +148,9 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 				autosave: blogData?.autosave || false,
 			});
 		} catch { }
-	};
+	}, [state.currentBlog?._id, username]);
 
-	const fetchBlogsByUsername = async (queryUsername: string) => {
+	const fetchBlogsByUsername = useCallback(async (queryUsername: string) => {
 		if (!queryUsername) return;
 		dispatch({ type: "SET_ALL_BLOGS_LOADING", payload: true });
 		try {
@@ -158,11 +161,13 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 		} finally {
 			dispatch({ type: "SET_ALL_BLOGS_LOADING", payload: false });
 		}
-	};
+	}, []);
 
-	const setIsAddBlogModalOpen = (isOpen: boolean) => dispatch({ type: "SET_IS_ADD_BLOG_MODAL_OPEN", payload: isOpen });
+	const setIsAddBlogModalOpen = useCallback((isOpen: boolean) => {
+		dispatch({ type: "SET_IS_ADD_BLOG_MODAL_OPEN", payload: isOpen });
+	}, []);
 
-	const fetchAllBlogPosts = async () => {
+	const fetchAllBlogPosts = useCallback(async () => {
 		dispatch({ type: "SET_ALL_BLOG_POSTS_LOADING", payload: true });
 		try {
 			const response = await axios.get("/api/blogs");
@@ -172,10 +177,34 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 		} finally {
 			dispatch({ type: "SET_ALL_BLOG_POSTS_LOADING", payload: false });
 		}
-	};
+	}, []);
+
+	const contextValue = useMemo(() => ({
+		...state,
+		deleteBlog,
+		handleBlogUpdate,
+		addBlog,
+		setIsAddBlogModalOpen,
+		fetchBlogByUrl,
+		fetchAllBlogPosts,
+		fetchBlogsByUsername,
+		handleAutoSaveBlog,
+		removeBlogFromState,
+	}), [
+		state,
+		deleteBlog,
+		handleBlogUpdate,
+		addBlog,
+		setIsAddBlogModalOpen,
+		fetchBlogByUrl,
+		fetchAllBlogPosts,
+		fetchBlogsByUsername,
+		handleAutoSaveBlog,
+		removeBlogFromState,
+	]);
 
 	return (
-		<BlogContext.Provider value={{ ...state, deleteBlog, handleBlogUpdate, addBlog, setIsAddBlogModalOpen, fetchBlogByUrl, fetchAllBlogPosts, fetchBlogsByUsername, handleAutoSaveBlog, removeBlogFromState }}>
+		<BlogContext.Provider value={contextValue}>
 			{children}
 		</BlogContext.Provider>
 	);

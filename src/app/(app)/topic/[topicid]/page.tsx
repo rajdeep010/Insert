@@ -145,24 +145,29 @@ const EachTopic = () => {
 	};
 
 	useEffect(() => {
-		if (!debouncedUsername) return;
+		if (!debouncedUsername) {
+			setSearchUsernameMessage("");
+			setSimilarUsers([]);
+			return;
+		}
 		(async () => {
 			setIsSearchingUsername(true);
 			setSearchUsernameMessage("");
 			try {
 				const res = await axios.get<ApiResponse>(
-					`/api/users?username=${debouncedUsername}`
+					`/api/users/search?query=${encodeURIComponent(debouncedUsername)}${session?.user?.username ? `&exclude=${encodeURIComponent(session.user.username)}` : ""}`
 				);
 				setSearchUsernameMessage(res.data.message);
-				setSimilarUsers(res.data.similar_users || []);
+				setSimilarUsers(res.data.users || []);
 			} catch (err) {
 				const e = err as AxiosError<ApiResponse>;
+				setSimilarUsers([]);
 				setSearchUsernameMessage(e.response?.data.message ?? "Error searching");
 			} finally {
 				setIsSearchingUsername(false);
 			}
 		})();
-	}, [debouncedUsername]);
+	}, [debouncedUsername, session?.user?.username]);
 
 	const handleOpenDeleteTopicModal = () => {
 		setIsTopicDeleteModalOpen(true);

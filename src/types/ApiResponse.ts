@@ -9,5 +9,6 @@ export interface ApiResponse{
     topics?: Topic[],
     heatmap?: HeatmapDateValues[]
     curr_topic?: Topic;
-    similar_users?: [UserInfo]
+    users?: UserInfo[];
+    similar_users?: UserInfo[]
 }

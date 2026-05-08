@@ -349,7 +349,7 @@ const SimpleEditor = () => {
 		await handleBlogUpdate({
 			blogContent: JSON.stringify(editorContent),
 			blogContentText: editorTextContent,
-			blogBannerImage: getFirstImageFromBlogContent(editorContent),
+			blogBannerImage: getFirstImageFromBlogContent(editorContent) ?? undefined,
 		})
 	}
 
@@ -372,7 +372,7 @@ const SimpleEditor = () => {
 					await handleAutoSaveBlog({
 						blogContent: JSON.stringify(debouncedEditorContent),
 						blogContentText: debouncedEditorTextContent,
-						blogBannerImage: getFirstImageFromBlogContent(debouncedEditorContent),
+						blogBannerImage: getFirstImageFromBlogContent(debouncedEditorContent) ?? undefined,
 						autosave: true,
 					});
 					setIsSaving(false);

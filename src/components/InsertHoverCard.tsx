@@ -1,9 +1,9 @@
 import React, { useEffect, useState, ReactNode } from "react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import axios from "axios";
 import Link from "next/link";
 import { BadgeCheck } from "lucide-react";
+import { usePublicUser } from "@/features/user/context/InsertUserProvider";
 
 interface InsertHoverCardProps {
 	username: string;
@@ -16,24 +16,7 @@ const InsertHoverCard: React.FC<InsertHoverCardProps> = ({
 	type,
 	avatarSize,
 }) => {
-	const [currentUser, setCurrentUser] = useState<any>(null)
-
-	useEffect(() => {
-		const collectUser = async () => {
-			try {
-				if (!username) return
-				const response = await axios.get(`/api/users/${username}`)
-				if (response.data?.success) {
-					setCurrentUser(response?.data?.userdata)
-				} else {
-					setCurrentUser(null)
-				}
-			} catch {
-				setCurrentUser(null)
-			}
-		}
-		collectUser()
-	}, [username])
+	const currentUser = usePublicUser(username)
 
 
 	return (
@@ -57,7 +40,7 @@ const InsertHoverCard: React.FC<InsertHoverCardProps> = ({
 						</div>
 						: <Avatar className={avatarSize === "small" ? 'h-5 w-5' : 'cursor-pointer outline-2 outline-black border-2 border-red-500 dark:border-white'}>
 							<AvatarImage src={currentUser?.avatar || ''} />
-							<AvatarFallback>{currentUser?.username[0]}</AvatarFallback>
+							<AvatarFallback>{currentUser?.username?.[0]}</AvatarFallback>
 						</Avatar>
 				}
 			</HoverCardTrigger>
