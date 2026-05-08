@@ -1,18 +1,17 @@
 import { getAuthenticatedUsername } from "@/lib/api/auth";
 import dbConnect from "@/lib/dbConnect";
 import TopicModel from "@/model/Topic";
-import {
-    addCollaboratorSchema,
-    topicIdParamSchema,
-} from "@/schemas/topicSchema";
+import { topicIdParamSchema } from "@/schemas/topicSchema";
+import { usernameParamsSchema } from "@/schemas/userSchema";
 
 type RouteContext = {
     params: {
         topicId: string;
+        username: string;
     };
 };
 
-export async function POST(
+export async function DELETE(
     request: Request,
     context: RouteContext
 ) {
@@ -28,7 +27,9 @@ export async function POST(
         );
     }
 
-    const parsedTopicParams = topicIdParamSchema.safeParse(context.params);
+    const parsedTopicParams = topicIdParamSchema.safeParse({
+        topicId: context.params.topicId,
+    });
 
     if (!parsedTopicParams.success) {
         return Response.json(
@@ -41,27 +42,16 @@ export async function POST(
         );
     }
 
-    let body: unknown;
+    const parsedUsernameParams = usernameParamsSchema.safeParse({
+        username: context.params.username,
+    });
 
-    try {
-        body = await request.json();
-    } catch {
+    if (!parsedUsernameParams.success) {
         return Response.json(
             {
                 success: false,
-                message: "Invalid JSON body",
-            },
-            { status: 400 }
-        );
-    }
-
-    const parsedBody = addCollaboratorSchema.safeParse(body);
-
-    if (!parsedBody.success) {
-        return Response.json(
-            {
-                success: false,
-                message: parsedBody.error.issues[0]?.message ?? "Invalid request body",
+                message:
+                    parsedUsernameParams.error.issues[0]?.message ?? "Invalid username",
             },
             { status: 400 }
         );
@@ -88,50 +78,50 @@ export async function POST(
             return Response.json(
                 {
                     success: false,
-                    message: "You are not allowed to add collaborators to this topic",
+                    message: "You are not allowed to remove collaborators from this topic",
                 },
                 { status: 403 }
             );
         }
 
-        const collaboratorUsername = parsedBody.data.collaborator.username;
+        const collaboratorUsername = parsedUsernameParams.data.username;
 
         if (collaboratorUsername === topic.creator_username) {
             return Response.json(
                 {
                     success: false,
-                    message: "Creator cannot be added as collaborator",
+                    message: "Creator cannot be removed as collaborator",
                 },
                 { status: 400 }
             );
         }
 
-        const alreadyExists = topic.collaborators?.some(
+        const exists = topic.collaborators?.some(
             (collaborator: { username: string }) =>
                 collaborator.username === collaboratorUsername
         );
 
-        if (alreadyExists) {
+        if (!exists) {
             return Response.json(
                 {
                     success: false,
-                    message: "User is already a collaborator",
+                    message: "Collaborator not found",
                 },
-                { status: 409 }
+                { status: 404 }
             );
         }
 
-        topic.collaborators.push({
-            username: parsedBody.data.collaborator.username,
-            name: parsedBody.data.collaborator.name || "",
-        });
+        topic.collaborators = topic.collaborators.filter(
+            (collaborator: { username: string }) =>
+                collaborator.username !== collaboratorUsername
+        );
 
         await topic.save();
 
         return Response.json(
             {
                 success: true,
-                message: "Collaborator added successfully",
+                message: "Collaborator removed successfully",
                 topic,
             },
             { status: 200 }
@@ -140,7 +130,7 @@ export async function POST(
         return Response.json(
             {
                 success: false,
-                message: "Error adding collaborator",
+                message: "Error removing collaborator",
             },
             { status: 500 }
         );
