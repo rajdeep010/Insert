@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { topicSchema } from '@/schemas/topicSchema'
-import { useInsertTopics } from '@/app/context/InsertTopicProvider'
+import { useInsertTopics } from '@/features/topic/context/InsertTopicProvider'
 import { toast } from './ui/use-toast'
 
 import {

@@ -13,7 +13,7 @@ import {
 	Lock
 } from 'lucide-react'
 
-import { useBlog } from '@/app/context/BlogProvider'
+import { useBlog } from '@/features/blog/context/BlogProvider'
 import {
 	Tabs,
 	TabsContent,
@@ -24,6 +24,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import type { BlogEntry } from '@/types/blog'
 
 /* Shared style helpers (aligned with other pages) */
 const surface =
@@ -34,7 +35,7 @@ const hoverable =
 	'transition-colors hover:border-black/20 dark:hover:border-white/30'
 
 const Blogs = () => {
-	const [currBlog, setCurrBlog] = useState<any>(null)
+	const [currBlog, setCurrBlog] = useState<BlogEntry | null>(null)
 	const { allBlogs, removeBlogFromState, deleteBlog, isAllBlogsLoading } = useBlog()
 	const [deleting, setIsDeleting] = useState(false)
 
@@ -59,7 +60,7 @@ const Blogs = () => {
 
 	const defaultBanner = '/insert.png'
 
-	const BlogCard = ({ blog }: { blog: any }) => {
+	const BlogCard = ({ blog }: { blog: BlogEntry }) => {
 		return (
 			<Link
 				href={`/blog/${blog?.blogUrl}`}

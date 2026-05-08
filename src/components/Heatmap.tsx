@@ -3,7 +3,7 @@ import CalendarHeatmap from 'react-calendar-heatmap'
 import { Tooltip } from 'react-tooltip'
 import 'react-calendar-heatmap/dist/styles.css'
 import 'react-tooltip/dist/react-tooltip.css'
-import { useInsertTopics } from '@/app/context/InsertTopicProvider'
+import { useInsertTopics } from '@/features/topic/context/InsertTopicProvider'
 import {
     Select,
     SelectTrigger,

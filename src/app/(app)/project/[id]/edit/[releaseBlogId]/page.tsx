@@ -70,10 +70,10 @@ import {
     TabsTrigger,
 } from "@/components/ui/tabs";
 import ReleaseBlogWriteSidebar from "@/components/ReleaseBlogWriteSidebar";
-import { useInsertProjects } from "@/app/context/InsertProjectProvider";
+import { useInsertProjects } from "@/features/project/context/InsertProjectProvider";
 import { useSession } from "next-auth/react";
 import { EyeClosedIcon, EyeOpenIcon } from "@radix-ui/react-icons";
-import { useInsertUser } from "@/app/context/InsertUserProvider";
+import { useInsertUser } from "@/features/user/context/InsertUserProvider";
 import ProGate from "@/components/ProGate";
 
 const EMPTY_DOC = { type: "doc", content: [] };
@@ -443,11 +443,20 @@ const ReleaseBlogEditor = () => {
 };
 
 const WriteReleaseBlog = () => {
-    const { isCurrReleaseBlogLoading } = useInsertProjects();
+    const { isCurrReleaseBlogLoading, fetchProjectById, fetchReleaseBlogById } = useInsertProjects();
     const { data: session, status } = useSession();
+    const params = useParams();
+    const projectId = params?.id as string;
+    const releaseBlogId = params?.releaseBlogId as string;
 
-    const { user } = useInsertUser();
-    const showSubscribeModal = user?.proStatus?.active === false;
+    const { currentUser } = useInsertUser();
+    const showSubscribeModal = currentUser?.proStatus?.active === false;
+
+    React.useEffect(() => {
+        if (status !== "authenticated" || !session?.user?.githubAccessToken || !projectId) return
+        fetchProjectById(projectId)
+        if (releaseBlogId) fetchReleaseBlogById(releaseBlogId, projectId)
+    }, [status, session?.user?.githubAccessToken, projectId, releaseBlogId, fetchProjectById, fetchReleaseBlogById]);
 
     return (
         <>

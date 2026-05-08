@@ -1,4 +1,11 @@
-import type { NotificationData } from "@/types/notifications";
+export interface UserProStatus {
+    active?: boolean | null;
+    plan?: string | null;
+    startedAt?: string | Date | null;
+    expiresAt?: string | Date | null;
+    autoRenew?: boolean | null;
+    cancelledAt?: string | Date | null;
+}
 
 export interface UserInfo {
     _id?: string | null;
@@ -12,5 +19,5 @@ export interface UserInfo {
     company?: string | null;
     location?: string | null;
     avatar?: string | null;
-    notifications?: NotificationData[];
+    proStatus?: UserProStatus | null;
 }

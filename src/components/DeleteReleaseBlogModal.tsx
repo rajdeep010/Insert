@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { AlertTriangle, Loader2, Trash2, FileText, GitCommit, Clock, X } from 'lucide-react'
 import { toast } from '@/components/ui/use-toast'
-import { useInsertProjects } from '@/app/context/InsertProjectProvider'
+import { useInsertProjects } from '@/features/project/context/InsertProjectProvider'
 
 interface DeleteReleaseBlogModalProps {
     isOpen: boolean

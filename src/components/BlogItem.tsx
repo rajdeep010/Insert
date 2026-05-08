@@ -29,7 +29,7 @@ import {
     Loader2
 } from "lucide-react";
 import { toast } from "./ui/use-toast";
-import { useBlog } from "@/app/context/BlogProvider";
+import { useBlog } from "@/features/blog/context/BlogProvider";
 
 interface BlogItemProps {
     blog: {

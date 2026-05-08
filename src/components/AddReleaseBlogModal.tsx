@@ -10,8 +10,8 @@ import { blogSchema } from "@/schemas/blogSchema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useBlog } from "@/app/context/BlogProvider";
-import { useInsertProjects } from "@/app/context/InsertProjectProvider";
+import { useBlog } from "@/features/blog/context/BlogProvider";
+import { useInsertProjects } from "@/features/project/context/InsertProjectProvider";
 
 
 

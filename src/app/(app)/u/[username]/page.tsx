@@ -1,4 +1,8 @@
 'use client'
+import { useBlog } from '@/features/blog/context/BlogProvider'
+import { useInsertProjects } from '@/features/project/context/InsertProjectProvider'
+import { useInsertTopics } from '@/features/topic/context/InsertTopicProvider'
+import { useInsertUser } from '@/features/user/context/InsertUserProvider'
 import Blogs from '@/components/Blogs'
 import Dashboard from '@/components/Dashboard'
 import Heatmap from '@/components/Heatmap'
@@ -9,15 +13,51 @@ import Profile from '@/components/Profile'
 import Projects from '@/components/Projects'
 import { Loader2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import React from 'react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import React, { useEffect } from 'react'
 
 
 export default function UserPage() {
     const {status} = useSession()
     const router = useRouter()
+    const params = useParams()
+    const username = params.username as string
     const searchParams = useSearchParams()
     const tab = searchParams.get('tab') || 'overview'
+
+    const { fetchProfileUser } = useInsertUser()
+    const { fetchTopicsByUsername, fetchHeatmapActivity } = useInsertTopics()
+    const { fetchBlogsByUsername } = useBlog()
+    const { fetchProjectsByUsername } = useInsertProjects()
+
+    useEffect(() => {
+        if (!username) return
+        fetchProfileUser(username)
+    }, [username])
+
+    useEffect(() => {
+        if (!username) return
+
+        if (tab === 'overview') {
+            fetchTopicsByUsername(username)
+            fetchHeatmapActivity(username)
+            return
+        }
+
+        if (tab === 'topics') {
+            fetchTopicsByUsername(username)
+            return
+        }
+
+        if (tab === 'blogs') {
+            fetchBlogsByUsername(username)
+            return
+        }
+
+        if (tab === 'projects') {
+            fetchProjectsByUsername(username)
+        }
+    }, [username, tab])
 
     if(status === "unauthenticated"){
         router.push('/sign-in')

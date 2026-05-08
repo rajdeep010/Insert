@@ -14,7 +14,7 @@ import { GitBranch, Eye, EyeOff, GitFork, Star, Loader2, AlertCircle } from 'luc
 import type { GitHubRepo } from '@/types/project'
 import { languageColors } from '@/types/master-data'
 import { toast } from '@/components/ui/use-toast'
-import { useInsertProjects } from '@/app/context/InsertProjectProvider'
+import { useInsertProjects } from '@/features/project/context/InsertProjectProvider'
 import InsertIcon from './InsertIcon'
 
 interface ImportConfigModalProps {

@@ -51,7 +51,7 @@ import {
 
 import InsertNavbar from "@/components/InsertNavbar";
 import InsertHoverCard from "@/components/InsertHoverCard";
-import { useInsertProjects } from "@/app/context/InsertProjectProvider";
+import { useInsertProjects } from "@/features/project/context/InsertProjectProvider";
 import { getLastModifiedText } from "@/helpers/last-modified";
 
 import "@/components/tiptap-node/code-block-node/code-block-node.scss";
@@ -59,12 +59,12 @@ import "@/components/tiptap-node/list-node/list-node.scss";
 import "@/components/tiptap-node/image-node/image-node.scss";
 import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
 import "@/components/tiptap-templates/simple/simple-editor.scss";
-import { useInsertUser } from "@/app/context/InsertUserProvider";
+import { useInsertUser } from "@/features/user/context/InsertUserProvider";
 import ProGate from "@/components/ProGate";
 
 export default function ProjectDetailsPage() {
     const { id } = useParams();
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const router = useRouter();
 
     const {
@@ -73,8 +73,8 @@ export default function ProjectDetailsPage() {
     } = useInsertProjects();
 
     const project = curr_project;
-    const { user } = useInsertUser();
-    const showSubscribeModal = user?.proStatus?.active === false;
+    const { currentUser } = useInsertUser();
+    const showSubscribeModal = currentUser?.proStatus?.active === false;
 
 
 

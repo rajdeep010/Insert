@@ -1,4 +1,4 @@
-import { useBlog } from "@/app/context/BlogProvider";
+import { useBlog } from "@/features/blog/context/BlogProvider";
 import React from "react";
 
 

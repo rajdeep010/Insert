@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useBlog } from "@/app/context/BlogProvider";
+import { useBlog } from "@/features/blog/context/BlogProvider";
 import InsertNavbar from "@/components/InsertNavbar";
 import InsertHoverCard from "@/components/InsertHoverCard";
 import { getLastModifiedText } from "@/helpers/last-modified";

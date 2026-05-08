@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { GitBranch, Eye, EyeOff, Loader2, AlertCircle, Settings } from 'lucide-react'
 import { toast } from '@/components/ui/use-toast'
-import { useInsertProjects } from '@/app/context/InsertProjectProvider'
+import { useInsertProjects } from '@/features/project/context/InsertProjectProvider'
 
 interface EditProjectModalProps {
     isOpen: boolean

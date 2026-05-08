@@ -53,7 +53,7 @@ import { useCursorVisibility } from "@/hooks/use-cursor-visibility";
 import { Button as Btn } from "@/components/ui/button";
 import { handleImageUpload,MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 import "@/components/tiptap-templates/simple/simple-editor.scss";
-import { useBlog } from "@/app/context/BlogProvider";
+import { useBlog } from "@/features/blog/context/BlogProvider";
 import { useSession } from "next-auth/react";
 import { useParams,useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";

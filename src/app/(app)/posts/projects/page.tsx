@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { useInsertProjects } from "@/app/context/InsertProjectProvider";
+import { useInsertProjects } from "@/features/project/context/InsertProjectProvider";
 import InsertNavbar from "@/components/InsertNavbar";
 import {
     Card,
@@ -34,16 +34,18 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { languageColors } from "@/types/master-data";
-import { useInsertUser } from "@/app/context/InsertUserProvider";
+import { useInsertUser } from "@/features/user/context/InsertUserProvider";
 import ProGate from "@/components/ProGate";
+import { useSession } from "next-auth/react";
 
 const surface =
     "relative rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 transition-colors";
 const hoverable = "transition-colors hover:border-black/20 dark:hover:border-white/30";
 
 export default function ProjectsPage() {
-    const { all_projects, isAllProjectsLoading, pagination, loadMore } = useInsertProjects();
+    const { all_projects, isAllProjectsLoading, pagination, loadMore, fetchAllProjects } = useInsertProjects();
     const [query, setQuery] = useState("");
+    const { data: session, status } = useSession();
 
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -56,9 +58,12 @@ export default function ProjectsPage() {
         });
     }, [all_projects, query]);
 
-    const { user } = useInsertUser();
-    const showSubscribeModal = user?.proStatus?.active === false;
+    const { currentUser } = useInsertUser();
+    const showSubscribeModal = currentUser?.proStatus?.active === false;
 
+    useEffect(() => {
+        fetchAllProjects({ limit: 5 })
+    }, [])
 
     return (
         <>

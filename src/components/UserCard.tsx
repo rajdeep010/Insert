@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Loader2, Send } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "./ui/use-toast";
-import { useInsertUser } from "@/app/context/InsertUserProvider";
+import { useNotifications } from "@/features/notification/context/NotificationProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 
@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 const UserCard = ({user, topicid, topic, collaborators}: any) => {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
     const { data: session } = useSession()
-    const { sendCollabInvite } = useInsertUser()
+    const { sendCollabInvite } = useNotifications()
 
 
     const handleAdd = async () => {

@@ -1,5 +1,5 @@
 // Example usage component to show how to use the real-time tracking
-import { useInsertProjects } from "@/app/context/InsertProjectProvider"
+import { useInsertProjects } from "@/features/project/context/InsertProjectProvider"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 

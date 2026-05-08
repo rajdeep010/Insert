@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { uniqueId } from '@/helpers/unique-id'
+import { externalServices } from '@/lib/config/services'
 
-const NEXT_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUD_NAME || ''
-const NEXT_CLOUD_PRESET = process.env.NEXT_PUBLIC_CLOUD_PRESET || ''
+const { cloudName: NEXT_CLOUD_NAME, uploadPreset: NEXT_CLOUD_PRESET, uploadUrl: CLOUDINARY_UPLOAD_URL } = externalServices.cloudinary
 
 type UploadType = 'avatar' | 'blog'
 
@@ -35,7 +35,7 @@ export const uploadImage = async ({
     formData.append('public_id', uuid)
 
     const response = await axios.post(
-      `https://api.cloudinary.com/v1_1/${NEXT_CLOUD_NAME}/image/upload`,
+      CLOUDINARY_UPLOAD_URL,
       formData,
       {
         onUploadProgress: (progressEvent) => {

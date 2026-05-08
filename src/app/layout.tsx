@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Insert",
-  description: "Create your own coding problem sheet",
+  description: "A platform made for developers and their day to day needs",
   icons: {
     icon: '/panda-bear.png',
     shortcut: '/panda-bear.png',

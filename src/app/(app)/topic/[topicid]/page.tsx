@@ -40,9 +40,9 @@ import { CirclePlus, FileInput, Loader2, Trash2, UserPlus } from "lucide-react";
 import UserCard from "@/components/UserCard";
 import InsertNavbar from "@/components/InsertNavbar";
 import { ProblemsDataTable } from "@/components/ProblemTable";
-import { useInsertUser } from "@/app/context/InsertUserProvider";
+import { useNotifications } from "@/features/notification/context/NotificationProvider";
 import InsertHoverCard from "@/components/InsertHoverCard";
-import { useInsertTopics } from "@/app/context/InsertTopicProvider";
+import { useInsertTopics } from "@/features/topic/context/InsertTopicProvider";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
@@ -54,13 +54,14 @@ const EachTopic = () => {
 	const {
 		curr_topic,
 		isTopicLoading,
+		fetchTopicById,
 		addProblem,
 		deleteProblem,
 		deleteTopic,
 		editProblem
 	} = useInsertTopics();
 
-	const { sendSuggestion } = useInsertUser();
+	const { sendSuggestion } = useNotifications();
 
 	// Modal state
 	const [currentProblemId, setCurrentProblemId] = useState<string | null>(null);
@@ -180,6 +181,11 @@ const EachTopic = () => {
 	const [editingProblem, setEditingProblem] = useState<any | null>(null);
 	const [isUpdatingProblem, setIsUpdatingProblem] = useState(false);
 
+	useEffect(() => {
+		if (!topic_id) return;
+		fetchTopicById(topic_id);
+	}, [topic_id, fetchTopicById]);
+
 	const editForm = useForm<z.infer<typeof questionSchema>>({
 		resolver: zodResolver(questionSchema),
 		defaultValues: { qname: "", url: "", difficulty: "Easy" },
@@ -206,6 +212,19 @@ const EachTopic = () => {
 			setIsUpdatingProblem(false);
 		}
 	};
+
+	const tableProblems = (curr_topic?.problems || []).map((problem) => ({
+		_id: String(problem._id ?? problem.id ?? ""),
+		qname: problem.qname,
+		url: problem.url,
+		difficulty: problem.difficulty,
+	}));
+
+	const canManageProblems = Boolean(
+		status === "authenticated" &&
+			(session?.user.username === curr_topic?.topic?.creator_username ||
+				curr_topic?.topic?.collaborators.find((each: any) => each.username === session?.user?.username))
+	);
 
 	if (!curr_topic) return null
 
@@ -610,12 +629,8 @@ const EachTopic = () => {
 
 				{!isTopicLoading && (
 					<ProblemsDataTable
-						problems={curr_topic?.problems || []}
-						showDelete={
-							status === "authenticated" &&
-							(session?.user.username === curr_topic?.topic?.creator_username ||
-								curr_topic?.topic?.collaborators.find((each: any) => each.username === session?.user?.username))
-						}
+						problems={tableProblems}
+						showDelete={canManageProblems}
 						onDelete={handleOpenDeleteProblemModal}
 						onEdit={handleOpenEditProblemModal}
 					/>

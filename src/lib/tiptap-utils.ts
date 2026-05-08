@@ -1,3 +1,5 @@
+import { externalServices } from "@/lib/config/services"
+
 import type { Attrs, Node } from "@tiptap/pm/model"
 import type { Editor } from "@tiptap/react"
 
@@ -150,8 +152,7 @@ export const handleImageUpload = async (
     )
   }
 
-  const NEXT_CLOUD_PRESET = process.env.NEXT_PUBLIC_CLOUD_PRESET ?? ""
-  const NEXT_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUD_NAME
+  const { uploadPreset: NEXT_CLOUD_PRESET, uploadUrl: CLOUDINARY_UPLOAD_URL } = externalServices.cloudinary
 
 
   const formData = new FormData()
@@ -166,7 +167,7 @@ export const handleImageUpload = async (
       await new Promise((resolve) => setTimeout(resolve, 500))
       onProgress?.({ progress })
     }
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${NEXT_CLOUD_NAME}/image/upload`, {
+    const response = await fetch(CLOUDINARY_UPLOAD_URL, {
       method: "POST",
       body: formData,
       signal: abortSignal,

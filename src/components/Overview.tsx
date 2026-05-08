@@ -4,8 +4,8 @@ import { useSession } from 'next-auth/react'
 import { Card, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Badge } from './ui/badge'
 import OverviewSkeleton from './skeletons/OverviewSkeleton'
-import { useInsertTopics } from '@/app/context/InsertTopicProvider'
-import { useInsertUser } from '@/app/context/InsertUserProvider'
+import { useInsertTopics } from '@/features/topic/context/InsertTopicProvider'
+import { useInsertUser } from '@/features/user/context/InsertUserProvider'
 
 /* Shared style helpers (consistent with other pages) */
 const surface =
@@ -15,11 +15,11 @@ const hoverable =
 
 const Overview = () => {
 	const { isTopicsLoading, user_Topics } = useInsertTopics()
-	const { user } = useInsertUser()
+	const { profileUser } = useInsertUser()
 	const { data: session, status } = useSession()
 
 	const canEdit =
-		status === 'authenticated' && session?.user?.username === user?.username
+		status === 'authenticated' && session?.user?.username === profileUser?.username
 	const hasTopics = !isTopicsLoading && user_Topics && user_Topics.length > 0
 	const firstTopics = (user_Topics || []).slice(0, 4)
 
@@ -41,7 +41,7 @@ const Overview = () => {
 				</div>}
 				{hasTopics && (
 					<Link
-						href={`/u/${user?.username}?tab=topics`}
+						href={`/u/${profileUser?.username}?tab=topics`}
 						className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
 					>
 						View all →
@@ -115,7 +115,7 @@ const Overview = () => {
 								You have not created any topics. Start by adding your first one.
 							</CardDescription>
 							<Link
-								href={`/u/${user?.username}?tab=topics`}
+								href={`/u/${profileUser?.username}?tab=topics`}
 								className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
 							>
 								Create one →
@@ -138,7 +138,7 @@ const Overview = () => {
 
 			{hasTopics && firstTopics.length < (user_Topics?.length || 0) && (
 				<Link
-					href={`/u/${user?.username}?tab=topics`}
+					href={`/u/${profileUser?.username}?tab=topics`}
 					className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline w-fit"
 				>
 					Show more...

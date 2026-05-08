@@ -27,8 +27,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
-import { useInsertUser } from '@/app/context/InsertUserProvider'
-import { useInsertPayment } from '@/app/context/InsertPaymentProvider'
+import { useInsertUser } from '@/features/user/context/InsertUserProvider'
+import { useInsertPayment } from '@/features/payment/context/InsertPaymentProvider'
 import { useSession } from 'next-auth/react'
 import { toast as sonnerToast } from 'sonner'
 
@@ -52,7 +52,7 @@ const VerifiedBadge = () => (
 
 export default function PaymentPage() {
     const { data: session } = useSession()
-    const { user } = useInsertUser()
+    const { currentUser } = useInsertUser()
     const { createOrder, verifyPayment, cancelSubscription, reactivateSubscription, isPaymentLoading } = useInsertPayment()
 
     const RAZORPAY_KEY = process.env.NEXT_PUBLIC_RAZORPAY_API_KEY
@@ -68,10 +68,10 @@ export default function PaymentPage() {
     const subtext = billing === 'monthly' ? 'Billed monthly • Cancel anytime' : `Billed annually • Save ${discountPercent}% (≈3 months free)`
 
     // Read only from user context
-    const hasPro = !!user?.proStatus?.active
-    const currentPlan = user?.proStatus?.plan as BillingPeriod | null
-    const renewAt = user?.proStatus?.expiresAt as string | Date | null
-    const cancelledAt = user?.proStatus?.cancelledAt || null
+    const hasPro = !!currentUser?.proStatus?.active
+    const currentPlan = currentUser?.proStatus?.plan as BillingPeriod | null
+    const renewAt = currentUser?.proStatus?.expiresAt as string | Date | null
+    const cancelledAt = currentUser?.proStatus?.cancelledAt || null
 
     const isCurrentActive = hasPro && currentPlan === billing
     const showReactivate = hasPro && Boolean(cancelledAt)
@@ -98,8 +98,8 @@ export default function PaymentPage() {
                 description: `Upgrade to Pro (${billing})`,
                 order_id: order?.id,
                 prefill: {
-                    name: user?.name || user?.username || '',
-                    email: user?.email || '',
+                    name: currentUser?.name || currentUser?.username || '',
+                    email: currentUser?.email || '',
                 },
                 theme: { color: '#4f47e5' },
                 image: 'https://insertshare.vercel.app/panda-bear.png',
@@ -161,8 +161,8 @@ export default function PaymentPage() {
                 <CardContent className="p-6 md:p-7">
                     <div className="flex flex-wrap items-center gap-5">
                         <div className="relative">
-                            {user?.avatar ? (
-                                <Image src={user.avatar} alt="avatar" width={72} height={72} className="rounded-full border border-slate-200 dark:border-slate-700" />
+                            {currentUser?.avatar ? (
+                                <Image src={currentUser.avatar} alt="avatar" width={72} height={72} className="rounded-full border border-slate-200 dark:border-slate-700" />
                             ) : (
                                 <div className="h-[72px] w-[72px] rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
                                     <User2 className="h-6 w-6 text-slate-500" />
@@ -172,10 +172,10 @@ export default function PaymentPage() {
 
                         <div className="flex flex-col">
                             <div className="flex items-center text-lg font-semibold">
-                                {user?.name || 'Member'}
+                                {currentUser?.name || 'Member'}
                                 {hasPro && <VerifiedBadge />}
                             </div>
-                            <div className="text-sm text-slate-500">@{user?.username}</div>
+                            <div className="text-sm text-slate-500">@{currentUser?.username}</div>
 
                             <div className="mt-2 flex flex-wrap items-center gap-2">
                                 {hasPro ? (
@@ -217,7 +217,7 @@ export default function PaymentPage() {
                         </ul>
                     </CardContent>
                     <CardFooter className="px-6 pb-6">
-                        <Link href={`/u/${user?.username || ''}`} className="w-full">
+                        <Link href={`/u/${currentUser?.username || ''}`} className="w-full">
                             <Button variant="outline" className="w-full">Continue Free</Button>
                         </Link>
                     </CardFooter>

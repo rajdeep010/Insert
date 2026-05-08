@@ -52,7 +52,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import SuggestionNotificationCard from "./SuggestionNotificationCard";
 import InviteNotificationCard from "./InviteNotificationCard";
-import { useInsertUser } from "@/app/context/InsertUserProvider";
+import { useNotifications } from "@/features/notification/context/NotificationProvider";
 import { Separator } from "./ui/separator";
 import Dashboard from "./Dashboard";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -68,7 +68,7 @@ const InsertNavbar = () => {
 	const param_username = params?.username as string;
 	const [notifyLoader, setNotifyLoader] = React.useState(false)
 
-	const { user, markAllRead, unreadNotifyCount, notifications, getNotifications } = useInsertUser();
+	const { markAllRead, unreadNotifyCount, notifications, getNotifications } = useNotifications();
 
 	const handleLogOut = () => {
 		signOut();

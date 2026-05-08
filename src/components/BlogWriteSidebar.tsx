@@ -50,7 +50,7 @@ import {
   File,
   Share2,
 } from "lucide-react";
-import { useBlog } from "@/app/context/BlogProvider";
+import { useBlog } from "@/features/blog/context/BlogProvider";
 import AddBlogModal from "./AddBlogModal";
 import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import {

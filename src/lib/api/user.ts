@@ -57,6 +57,7 @@ export function buildPublicUserPayload(user: UserLike) {
         location: user.location ?? null,
         company: user.company ?? null,
         avatar: user.avatar ?? null,
+        proStatus: user.proStatus ?? null,
         proAccess: Boolean(user.proStatus?.active),
     };
 }

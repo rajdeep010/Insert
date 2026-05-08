@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
     ExternalLink,
     Calendar,
@@ -17,7 +17,7 @@ import {
     Edit
 } from 'lucide-react'
 import Link from 'next/link'
-import { useInsertProjects } from '@/app/context/InsertProjectProvider'
+import { useInsertProjects } from '@/features/project/context/InsertProjectProvider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -45,6 +45,7 @@ export default function Page() {
     const {
         curr_project,
         isProjectLoading,
+        fetchProjectById,
         syncRelease,
         isSyncingRelease,
         releaseSyncStatus,
@@ -63,6 +64,11 @@ export default function Page() {
     const [isUpdatingReleaseBlog, setIsUpdatingReleaseBlog] = useState(false)
     const [isDeleteReleaseBlogModalOpen, setIsDeleteReleaseBlogModalOpen] = useState(false)
     const [isDeletingReleaseBlog, setIsDeletingReleaseBlog] = useState(false)
+
+    useEffect(() => {
+        if (!session?.user?.githubAccessToken || !projectId) return
+        fetchProjectById(projectId)
+    }, [projectId, session?.user?.githubAccessToken, fetchProjectById])
 
     const isLoading = isSyncingRelease[projectId] || false
     const syncStatus = releaseSyncStatus[projectId]

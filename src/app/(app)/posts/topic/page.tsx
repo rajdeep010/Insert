@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import InsertNavbar from "@/components/InsertNavbar";
 import TopicCard from "@/components/TopicCard";
-import { useInsertTopics } from "@/app/context/InsertTopicProvider";
+import { useInsertTopics } from "@/features/topic/context/InsertTopicProvider";
 import {
     Card,
     CardContent,
