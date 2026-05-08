@@ -19,7 +19,8 @@ export interface Collaborator {
 }
 
 export interface Question {
-    id: string;
+    _id?: string;
+    id?: string;
     qname: string;
     url: string;
     difficulty: ProblemDifficulty;
@@ -41,4 +42,9 @@ export interface TopicPublicOrPrivate {
     creator_username: string;
     topicid: string;
     visibility: string;
+}
+
+export interface CurrentTopicState {
+    topic: Topic;
+    problems: Question[];
 }

@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose"
-import { Topic, Collaborator } from '@/types/types';
+import type { Topic, Collaborator } from "@/types/topic";
 
 
 const CollaboratorSchema: Schema<Collaborator> = new Schema({

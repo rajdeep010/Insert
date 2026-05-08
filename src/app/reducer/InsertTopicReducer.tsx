@@ -96,14 +96,6 @@ export default function InsertTopicReducer(state: any, action: any) {
             };
         }
 
-
-        case 'SET_HEATMAP_VALUES': {
-            return {
-                ...state,
-                user_heatmapValues: action.payload
-            }
-        }
-
         case 'UPDATE_HEATMAP_ACTIVITY': {
             const existing = state.user_heatmapValues?.find((v: any) => v.date === action.payload.date)
 

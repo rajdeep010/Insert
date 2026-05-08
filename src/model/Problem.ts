@@ -1,4 +1,6 @@
-import mongoose,{ Schema,Types } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
+import type { Document } from "mongoose";
+
 
 interface Problem extends Document {
     topicId: Types.ObjectId;
@@ -26,11 +28,11 @@ const ProblemSchema: Schema<Problem> = new Schema({
     difficulty: {
         type: String,
         required: true,
-        enum: ['Easy','Easy-Med','Medium','Med-Hard','Hard','Advanced'],
+        enum: ['Easy', 'Easy-Med', 'Medium', 'Med-Hard', 'Hard', 'Advanced'],
     },
-},{
+}, {
     timestamps: true
 });
 
-const ProblemModel = (mongoose.models.Problem as mongoose.Model<Problem>) ||  mongoose.model<Problem>('Problem', ProblemSchema)
+const ProblemModel = (mongoose.models.Problem as mongoose.Model<Problem>) || mongoose.model<Problem>('Problem', ProblemSchema)
 export default ProblemModel;

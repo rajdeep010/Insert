@@ -4,7 +4,7 @@ import React from "react";
 
 
 const EachBlog = () => {
-    const {blogContent} = useBlog()
+    const { currentBlog } = useBlog()
 
     return <div>EachBlog</div>;
 };

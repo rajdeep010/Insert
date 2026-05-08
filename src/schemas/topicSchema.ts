@@ -95,3 +95,10 @@ export const updateTopicSchema = z
     .refine((data) => Object.keys(data).length > 0, {
         message: "At least one field is required",
     });
+
+export const topicSchema = createTopicSchema;
+
+export const suggestionSchema = z.object({
+    problemname: z.string().trim().min(1, "Problem name is required"),
+    problemurl: urlValidation,
+});
