@@ -1,4 +1,3 @@
-import { NotificationData } from "@/types/types";
 import { Document } from "mongoose";
 
 
@@ -77,7 +76,7 @@ export interface NotificationData {
     toUserId?: string;
 }
 
-interface UserInfo {
+export interface UserInfo {
     name?: string | null;
     username?: string | null;
     about?: string | null;
