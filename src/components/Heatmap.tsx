@@ -13,7 +13,7 @@ import {
     SelectLabel,
     SelectItem
 } from '@/components/ui/select'
-import { HeatmapDateValues } from '@/types/types'
+import type { HeatmapDateValues } from '@/types/topic'
 import HeatmapSkeleton from './skeletons/HeatmapSkeleton'
 
 const Heatmap = () => {

@@ -1,5 +1,5 @@
 'use client'
-import { InviteNotificationCardProps } from '@/types/types'
+import type { InviteNotificationCardProps } from '@/types/notifications'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import React from 'react'

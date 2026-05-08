@@ -1,4 +1,4 @@
-import { SuggestionNotificationCardProps } from '@/types/types'
+import type { SuggestionNotificationCardProps } from '@/types/notifications'
 import Link from 'next/link'
 import React from 'react'
 

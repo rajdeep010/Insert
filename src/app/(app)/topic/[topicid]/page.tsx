@@ -1,5 +1,5 @@
 "use client";
-import { UserInfo } from "@/types/types";
+import type { UserInfo } from "@/types/user";
 import axios, { AxiosError } from "axios";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -150,7 +150,7 @@ const EachTopic = () => {
 			setSearchUsernameMessage("");
 			try {
 				const res = await axios.get<ApiResponse>(
-					`/api/get-similar-users?username=${debouncedUsername}`
+					`/api/users?username=${debouncedUsername}`
 				);
 				setSearchUsernameMessage(res.data.message);
 				setSimilarUsers(res.data.similar_users || []);

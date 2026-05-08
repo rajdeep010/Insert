@@ -1,4 +1,3 @@
-import { useUser } from '@/app/context/UserProvider';
 import React, { useEffect, useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import axios from 'axios';
@@ -15,7 +14,7 @@ const UserProfilePic = ({username}: UserProfilePicProps) => {
     useEffect(() => {
         const collectUser = async () => {
             try {
-                const response = await axios.get(`/api/get-user-by-username?username=${username}`)
+                const response = await axios.get(`/api/users/${username}`)
                 setCurrentUser(response.data?.userdata)
             } catch (error) {
                 setCurrentUser(null)

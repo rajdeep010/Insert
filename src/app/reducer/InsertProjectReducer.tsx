@@ -1,4 +1,4 @@
-import { Project, ReleaseBlog } from "@/types/types"
+import type { Project, ReleaseBlog } from "@/types/project"
 
 const sortByCreatedAt = (blogs: any[] = []) => {
     if (!Array.isArray(blogs)) {

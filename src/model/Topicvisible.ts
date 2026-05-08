@@ -1,4 +1,4 @@
-import { TopicPublicOrPrivate } from '@/types/types';
+import type { TopicPublicOrPrivate } from '@/types/topic';
 import mongoose from "mongoose";
 import { Schema } from "mongoose";
 

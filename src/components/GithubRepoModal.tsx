@@ -11,7 +11,7 @@ import { useInsertProjects } from '@/app/context/InsertProjectProvider'
 import { Eye, EyeOff, GitFork, Loader2, Search, Star } from 'lucide-react'
 import { toast } from '@/components/ui/use-toast'
 import InsertIcon from './InsertIcon'
-import { GitHubRepo } from '@/types/types'
+import type { GitHubRepo } from '@/types/project'
 import { languageColors } from '@/types/master-data'
 import ImportConfigModal from './ImportConfigModal'
 

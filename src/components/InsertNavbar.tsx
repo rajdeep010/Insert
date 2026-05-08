@@ -277,7 +277,7 @@ const InsertNavbar = () => {
 											notifications.length > 0 && (
 												<div
 													className="p-1 cursor-pointer flex items-center gap-1 text-xs underline text-blue-400"
-													onClick={() => markAllRead(session?.user?.username!)}
+													onClick={() => markAllRead()}
 												>
 													<CircleCheckBig className="h-4 w-4" /> Mark all read
 												</div>
@@ -413,7 +413,7 @@ const InsertNavbar = () => {
 									notifications.length > 0 && (
 										<div
 											className="p-1 cursor-pointer flex items-center gap-1 text-xs underline text-blue-400"
-											onClick={() => markAllRead(session?.user?.username!)}
+											onClick={() => markAllRead()}
 										>
 											<CircleCheckBig className="h-4 w-4" /> Mark all read
 										</div>

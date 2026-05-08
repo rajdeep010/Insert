@@ -1,3 +1,5 @@
+import type { Document } from "mongoose";
+
 export type TopicVisibility = "public" | "private";
 
 export type ProblemDifficulty =
@@ -41,7 +43,12 @@ export interface Topic {
 export interface TopicPublicOrPrivate {
     creator_username: string;
     topicid: string;
-    visibility: string;
+    visibility: TopicVisibility;
+}
+
+export interface Alltopic extends Document {
+    username: string;
+    topics: Topic[];
 }
 
 export interface CurrentTopicState {

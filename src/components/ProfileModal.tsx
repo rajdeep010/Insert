@@ -15,7 +15,7 @@ const ProfileModal = ({creator_username, creator_name}: ProfileModalProps) => {
     useEffect(() => {
         const collectUser = async () => {
             try {
-                const response = await axios.get(`/api/get-user-by-username?username=${creator_username}`)
+                const response = await axios.get(`/api/users/${creator_username}`)
                 setCurrentUser(response.data?.userdata)
             } catch (error) {
                 setCurrentUser(null)

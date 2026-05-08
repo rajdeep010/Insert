@@ -34,20 +34,17 @@ export default function InsertUserReducer(state: any,action: any) {
         case "UPDATE_USER_AVATAR":
             return {
                 ...state,
+                isAvatarUploading: false,
                 user: {
                     ...state.user,
                     avatar: action.payload,
-                    isAvatarUploading: false,
                 }
             }
 
         case "SET_IS_AVATAR_LOADING":
             return {
                 ...state,
-                user: {
-                    ...state.user,
-                    isAvatarUploading: action.payload
-                }
+                isAvatarUploading: action.payload
             }
         
         case "SET_NOTIFY_COUNT":
@@ -68,9 +65,10 @@ export default function InsertUserReducer(state: any,action: any) {
         }
 
         case "MARK_ALL_READ_NOTIFICATIONS": {
-            const marked = state.notifications.map((each: any) => {
-                each.read = true
-            })
+            const marked = state.notifications.map((each: any) => ({
+                ...each,
+                read: true,
+            }))
             return {
                 ...state,
                 notifications: marked,

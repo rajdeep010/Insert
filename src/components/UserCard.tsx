@@ -2,7 +2,6 @@
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { Loader2, Send } from "lucide-react";
-import { NotificationData } from '@/types/types';
 import { useSession } from "next-auth/react";
 import { toast } from "./ui/use-toast";
 import { useInsertUser } from "@/app/context/InsertUserProvider";

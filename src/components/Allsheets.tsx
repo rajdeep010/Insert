@@ -1,4 +1,3 @@
-import { useTopics } from '@/app/context/TopicProvider'
 import React from 'react'
 import {
     Avatar,

@@ -1,8 +1,9 @@
 'use client'
-import { NotificationData, UserInfo } from "@/types/types";
-import { getCsrfToken, getSession, useSession } from "next-auth/react";
+import type { NotificationData } from "@/types/notifications";
+import type { UserInfo } from "@/types/user";
+import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useReducer, useState } from "react";
+import { createContext, useContext, useEffect, useReducer } from "react";
 import InsertUserReducer from "../reducer/InserUserReducer";
 import axios from "axios";
 import { toast } from "@/components/ui/use-toast";
@@ -14,7 +15,7 @@ const INSERT_NOTIFY_SERVICE = 'https://insert-notification-service.onrender.com'
 
 
 interface InsertUserProviderProps {
-    user: any
+    user: UserInfo | Record<string, any>
     isUserLoading: boolean
     isAvatarUploading: boolean
 
@@ -26,14 +27,12 @@ interface InsertUserProviderProps {
     sendCollabInvite: (to_whom: string, noti: any) => void
     addCollab: (add_whom_username: string, add_whom_name: string, topicid: string, topicname: string, whose_topic: string, to: string, notifyid: string, fromUserId: string, toUserId: string) => void
     sendSuggestion: (to_whom: string, noti: any) => void
-    markAllRead: (username: string) => void
+    markAllRead: () => void
     getNotifications: () => void
 
     sendAcceptedCollabNotification: (to_whom: string, noti: any) => void
     sendDeclinedCollabNotification: (to_whom: string, noti: any) => void
 
-    isAlreadyCollaborator: (username: string, topicid: string, creator_username: string) => Promise<boolean>
-    isInviteAlreadySent: (username: string, topicid: string, creator_username: string) => Promise<boolean>
     uploadAvatar: (file: File) => void
 
     updateUserAfterPayment: (payload: any) => void
@@ -54,14 +53,12 @@ const initialState: InsertUserProviderProps = {
     sendCollabInvite: (to_whom: string, noti: any) => { },
     addCollab: (add_whom_username: string, add_whom_name: string, topicid: string, topicname: string, whose_topic: string, to: string, notifyid: string, fromUserId: string, toUserId: string) => { },
     sendSuggestion: (to_whom: string, noti: any) => { },
-    markAllRead: (username: string) => { },
+    markAllRead: () => { },
     getNotifications: () => { },
 
     sendAcceptedCollabNotification: (to_whom: string, noti: any) => { },
     sendDeclinedCollabNotification: (to_whom: string, noti: any) => { },
 
-    isAlreadyCollaborator: async () => true,
-    isInviteAlreadySent: async () => true,
     uploadAvatar: (file: File) => { },
 
     updateUserAfterPayment: (payload: any) => { },
@@ -101,7 +98,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
             )
 
             const avatarUrl = response.data.secure_url
-            const res = await axios.post(`/api/save-user-avatar`, { avatarURL: avatarUrl })
+            const res = await axios.patch(`/api/me/avatar`, { avatarURL: avatarUrl })
 
             if (res.data.success) {
                 toast({
@@ -110,7 +107,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
                     variant: 'default'
                 })
 
-                dispatch({ type: "UPDATE_USER_AVATAR", payload: res.data?.avatar })
+                dispatch({ type: "UPDATE_USER_AVATAR", payload: res.data?.userdata?.avatar })
             } else {
                 toast({
                     title: 'Failed ⭕',
@@ -135,11 +132,11 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
             if (!username) return
 
             dispatch({ type: "SET_IS_USER_LOADING", payload: true })
-            const response = await axios.get(`/api/get-user-by-username?username=${username}`)
-            if (!response) {
+            const response = await axios.get(`/api/users/${username}`)
+            if (!response?.data?.success) {
                 toast({
                     title: 'Not Found',
-                    description: 'No such user exists',
+                    description: response?.data?.message || 'No such user exists',
                     variant: 'destructive'
                 })
                 router.push('/')
@@ -162,9 +159,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
             if (status !== 'authenticated') return
 
             dispatch({ type: "SET_IS_USER_LOADING", payload: true })
-            const response = await axios.post(`/api/update-user-info`, {
-                ...formData
-            })
+            const response = await axios.patch(`/api/me`, formData)
 
             if (response.data.success) {
                 toast({
@@ -261,11 +256,11 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
         try {
             if (!add_whom_username || !topicid) return
 
-            const response = await axios.post(`/api/add-collaborator`, {
-                whose_topic,
-                add_whom_username,
-                add_whom_name,
-                topicid
+            const response = await axios.post(`/api/topics/${topicid}/collaborators`, {
+                collaborator: {
+                    username: add_whom_username,
+                    name: add_whom_name,
+                }
             })
 
             if (!response.data.success) {
@@ -438,23 +433,23 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
     }
 
     useEffect(() => {
-        if (status === "authenticated") {
-            const fetchData = async () => {
-                try {
-                    await fetchUser(param_username)
+        const usernameToLoad = param_username || session?.user?.username
+        if (!usernameToLoad) return
 
-                } catch (error) {
-                    dispatch({
-                        type: "SET_USER",
-                        user: null
-                    })
-                }
+        const fetchData = async () => {
+            try {
+                await fetchUser(usernameToLoad)
+            } catch {
+                dispatch({
+                    type: "SET_USER",
+                    payload: null
+                })
             }
-
-            fetchData()
         }
 
-    }, [status, param_username])
+        fetchData()
+
+    }, [param_username, session?.user?.username])
 
     useEffect(() => {
         if (status === "authenticated") {
@@ -483,7 +478,6 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
                 sendSuggestion,
                 markAllRead,
                 getNotifications,
-                getUnreadNotifyCount,
                 updateUserAfterPayment
             }}>
             {children}

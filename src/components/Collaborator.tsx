@@ -16,7 +16,7 @@ const Collaborator = ({ username,name }: CollaboratorProps) => {
     useEffect(() => {
         const collectUser = async () => {
             try {
-                const response = await axios.get(`/api/get-user-by-username?username=${username}`)
+                const response = await axios.get(`/api/users/${username}`)
                 setCurrentUser(response.data?.userdata)
             } catch (error) {
                 setCurrentUser(null)

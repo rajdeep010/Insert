@@ -1,6 +1,6 @@
 'use client'
 import { toast } from "@/components/ui/use-toast"
-import { Project, ReleaseBlog } from "@/types/types"
+import type { Project, ReleaseBlog } from "@/types/project"
 import axios from "axios"
 import { createContext, useContext, useEffect, useReducer } from "react"
 import InsertProjectReducer from "../reducer/InsertProjectReducer"

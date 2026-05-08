@@ -22,7 +22,7 @@ const InsertHoverCard: React.FC<InsertHoverCardProps> = ({
 		const collectUser = async () => {
 			try {
 				if (!username) return
-				const response = await axios.get(`/api/get-user-by-username?username=${username}`)
+				const response = await axios.get(`/api/users/${username}`)
 				if (response.data?.success) {
 					setCurrentUser(response?.data?.userdata)
 				} else {

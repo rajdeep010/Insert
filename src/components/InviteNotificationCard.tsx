@@ -2,12 +2,9 @@
 import React,{ useState } from 'react'
 import { Button } from './ui/button';
 import Link from 'next/link';
-import { InviteNotificationCardProps } from '@/types/types';
+import type { InviteNotificationCardProps, NotificationData } from '@/types/notifications';
 import { Loader2 } from 'lucide-react';
-import { useUser } from '@/app/context/UserProvider';
 import { useSession } from 'next-auth/react';
-import { NotificationData } from '@/types/types';
-import { toast } from './ui/use-toast';
 import { useInsertUser } from '@/app/context/InsertUserProvider';
 
 

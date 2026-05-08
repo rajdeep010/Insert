@@ -2,7 +2,7 @@ import db from "@/firebaseConfig";
 import { usernameValidation } from "@/schemas/signUpSchema";
 import { get, ref } from "firebase/database";
 import { z } from "zod";
-import { HeatmapDateValues } from '@/types/types'
+import type { HeatmapDateValues } from '@/types/topic'
 
 
 const UsernameQueryValidation = z.object({

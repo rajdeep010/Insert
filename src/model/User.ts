@@ -1,4 +1,4 @@
-import { NotificationData } from "@/types/types";
+import type { NotificationData } from "@/types/notifications";
 import mongoose, {Schema, Document} from "mongoose";
 
 export type ProPlan = 'monthly' | 'yearly' | null;
