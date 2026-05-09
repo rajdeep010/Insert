@@ -66,7 +66,7 @@ function SplitRow({
                 alt={imageAlt}
                 width={980}
                 height={640}
-                className={`absolute ${!reverse ? "-left-6 lg:-left-[10%]" : "-right-6 lg:-right-[10%]"} ${idx === 4 ? "-bottom-30 md:-bottom-35 lg:-bottom-40 -left-24 lg:-left-[16%]" : idx === 3 ? "-bottom-36 md:-bottom-36" : "-bottom-12"} object-contain rounded-2xl ${imageClassName ?? ""}`}
+                className={`absolute ${!reverse ? "-left-6 lg:-left-[10%]" : "-right-6 lg:-right-[10%]"} ${idx === 4 ? "-bottom-30 md:-bottom-30 lg:-bottom-30 -left-24 lg:-left-[16%]" : idx === 3 ? "-bottom-20 md:-bottom-20" : "-bottom-14"} object-contain rounded-2xl ${imageClassName ?? ""}`}
                 priority
             />
         </WobbleCard>
@@ -160,7 +160,7 @@ export function Features() {
                     ]}
                     image="https://res.cloudinary.com/dgxeg3sju/image/upload/v1778334681/22c3959d-0e05-4f0b-9218-68c839a6807b.png"
                     imageAlt="Blog collection management preview"
-                    wobbleBg="bg-gradient-to-br from-violet-700 to-indigo-700"
+                    wobbleBg="bg-gradient-to-br from-yellow-700 to-orange-700"
                     imageClassName="w-[108%] max-w-none"
                     idx={4}
                 />
