@@ -1,4 +1,5 @@
 import type {
+	GitHubRepo,
 	Project,
 	ProjectPagination,
 	ProjectState,
@@ -16,7 +17,7 @@ type ProjectReducerAction =
 	| { type: "APPEND_ALL_PROJECTS"; payload: { projects: Project[]; meta: ProjectPagination; user?: { _id?: string | null } | null } }
 	| { type: "SET_IS_RELEASE_BLOG_LOADING"; payload: boolean }
 	| { type: "SET_IS_GITHUB_REPOS_LOADING"; payload: boolean }
-	| { type: "SET_GITHUB_REPOS"; payload: Array<Record<string, unknown>> }
+	| { type: "SET_GITHUB_REPOS"; payload: GitHubRepo[] }
 	| { type: "SET_PROJECT"; payload: Project | null }
 	| { type: "SET_IS_PROJECT_LOADING"; payload: boolean }
 	| { type: "ADD_PROJECT"; payload: Project }
@@ -31,8 +32,8 @@ type ProjectReducerAction =
 	| { type: "CLEAR_RELEASE_SYNC_STATUS"; payload: string }
 	| { type: "SET_IS_SYNCING_RELEASE"; payload: { projectId: string; isLoading: boolean } }
 
-const sortByCreatedAt = (blogs: ReleaseBlog[] = []) => {
-	return [...blogs].sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())
+const sortByCreatedAt = <T extends { createdAt?: string | null }>(items: T[] = []) => {
+	return [...items].sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())
 }
 
 const mergeDefined = <T extends object>(prev: T, patch: Partial<T>): T => {
@@ -95,7 +96,9 @@ export default function InsertProjectReducer(state: ProjectState, action: Projec
 				user_projects: state.user_projects.map((p: Project) => p.id === patch.id ? mergeDefined<Project>(p, patch) : p),
 				all_projects: state.all_projects.map((p: Project) => p.id === patch.id ? mergeDefined<Project>(p, patch) : p),
 			}
-			if (state.curr_project?.id === patch.id) updatedState.curr_project = mergeDefined<Project>(state.curr_project, patch)
+			if (state.curr_project && state.curr_project.id === patch.id) {
+				updatedState.curr_project = mergeDefined<Project>(state.curr_project, patch)
+			}
 			return updatedState
 		}
 		case "REMOVE_PROJECT":

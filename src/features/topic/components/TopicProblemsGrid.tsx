@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import type { ColDef } from 'ag-grid-community'
-import { ExternalLink, PencilLine, Trash2 } from 'lucide-react'
+import { ExternalLink, FolderKanban, PencilLine, Trash2 } from 'lucide-react'
 
 import { AgGridTable } from '@/components/data-grid/AgGridTable'
 import { Badge } from '@/components/ui/badge'
@@ -13,12 +13,23 @@ import {
 	TooltipTrigger,
 } from '@/components/ui/tooltip'
 import type { ProblemDifficulty } from '@/types/topic'
+export type TopicProblemReferenceDisplay = {
+	_id?: string
+	blogId: string
+	collectionId?: string | null
+	kind: 'solution' | 'reference' | 'note'
+	label?: string
+	blogTitle?: string
+	blogUrl?: string
+	collectionName?: string
+}
 
 export type TopicProblemGridRow = {
 	_id: string
 	qname: string
 	url: string
 	difficulty: ProblemDifficulty
+	blogReferences?: TopicProblemReferenceDisplay[]
 }
 
 const difficultyOrder = ['Easy', 'Easy-Med', 'Medium', 'Med-Hard', 'Hard', 'Advanced'] as const
@@ -38,6 +49,7 @@ type TopicProblemsGridProps = {
 	canManageProblems: boolean
 	onDelete?: (problemId: string) => void
 	onEdit?: (problem: TopicProblemGridRow) => void
+	onManageReferences?: (problem: TopicProblemGridRow) => void
 }
 
 const getHostname = (url: string) => {
@@ -53,6 +65,7 @@ export function TopicProblemsGrid({
 	canManageProblems,
 	onDelete,
 	onEdit,
+	onManageReferences,
 }: TopicProblemsGridProps) {
 	const columnDefs = React.useMemo<ColDef<TopicProblemGridRow>[]>(() => [
 		{
@@ -72,8 +85,8 @@ export function TopicProblemsGrid({
 			field: 'difficulty',
 			minWidth: 160,
 			maxWidth: 190,
-			filter: 'agSetColumnFilter',
-			sortComparator: (left: ProblemDifficulty, right: ProblemDifficulty) => {
+			filter: 'agTextColumnFilter',
+			comparator: (left: ProblemDifficulty, right: ProblemDifficulty) => {
 				return (difficultyRank[left] ?? 999) - (difficultyRank[right] ?? 999)
 			},
 			cellRenderer: (params: { value: ProblemDifficulty }) => (
@@ -96,10 +109,31 @@ export function TopicProblemsGrid({
 			),
 		},
 		{
+			headerName: 'References',
+			field: 'blogReferences',
+			minWidth: 260,
+			flex: 1.2,
+			filter: false,
+			sortable: false,
+			valueGetter: (params) => params.data?.blogReferences?.length ?? 0,
+			cellRenderer: (params: { data?: TopicProblemGridRow }) => {
+				const references = params.data?.blogReferences ?? []
+				const count = references.length
+
+				return (
+					<div className="flex min-w-0 flex-col gap-1.5 py-2">
+						<Badge className="w-fit rounded-full border border-slate-500/15 bg-slate-500/10 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-200">
+							{count} ref{count === 1 ? '' : 's'}
+						</Badge>
+					</div>
+				)
+			},
+		},
+		{
 			headerName: 'Actions',
 			field: '_id',
-			minWidth: canManageProblems ? 176 : 118,
-			maxWidth: canManageProblems ? 176 : 118,
+			minWidth: canManageProblems ? 224 : 118,
+			maxWidth: canManageProblems ? 224 : 118,
 			filter: false,
 			sortable: false,
 			floatingFilter: false,
@@ -130,6 +164,24 @@ export function TopicProblemsGrid({
 
 						{canManageProblems ? (
 							<>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Button
+											type="button"
+											variant="ghost"
+											size="icon"
+											className="h-9 w-9 rounded-xl border border-transparent text-violet-600 hover:border-violet-500/20 hover:bg-violet-500/10 hover:text-violet-700 dark:text-violet-300 dark:hover:text-violet-200"
+											onClick={(event) => {
+												event.stopPropagation()
+												onManageReferences?.(params.data!)
+											}}
+										>
+											<FolderKanban className="h-4 w-4" />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>Manage references</TooltipContent>
+								</Tooltip>
+
 								<Tooltip>
 									<TooltipTrigger asChild>
 										<Button
@@ -171,7 +223,7 @@ export function TopicProblemsGrid({
 				)
 			},
 		},
-	], [canManageProblems, onDelete, onEdit])
+	], [canManageProblems, onDelete, onEdit, onManageReferences])
 
 	return (
 		<AgGridTable<TopicProblemGridRow>

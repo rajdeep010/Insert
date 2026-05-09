@@ -30,19 +30,13 @@ import {
 } from "lucide-react";
 import { toast } from "./ui/use-toast";
 import { useBlog } from "@/features/blog/context/BlogProvider";
+import type { BlogEntry } from "@/types/blog";
 
 interface BlogItemProps {
-    blog: {
-        _id: string;
-        blogTitle: string;
-        blogUrl: string;
-        creator: string;
-        releaseTitle: string;
-    };
-    onBlogDeleted?: (blogId: string) => void;
+    blog: BlogEntry;
 }
 
-const BlogItem: React.FC<BlogItemProps> = ({ blog, onBlogDeleted }) => {
+const BlogItem: React.FC<BlogItemProps> = ({ blog }) => {
     const { data: session } = useSession();
     const username = session?.user?.username;
 
@@ -67,9 +61,12 @@ const BlogItem: React.FC<BlogItemProps> = ({ blog, onBlogDeleted }) => {
     // Confirm delete action
     const confirmDelete = async () => {
         try {
+            if (!blog._id) {
+                return;
+            }
+
             setDeleteConfirm(prev => ({ ...prev, isDeleting: true }));
             await deleteBlog(blog._id);
-            onBlogDeleted?.(blog._id);
         } catch (error: any) {
             setDeleteConfirm(prev => ({ ...prev, isDeleting: false }));
         } finally{

@@ -35,7 +35,12 @@ const AddReleaseBlogModal = ({defaultVisibility, onClose}: any) => {
 	)
 
 	const blogSubmit = async (data: z.infer<typeof blogSchema>) => {
-		await addReleaseBlog(curr_project?.id, {
+		const projectId = curr_project?.id
+		if (!projectId) {
+			return
+		}
+
+		await addReleaseBlog(projectId, {
             title: data.title, 
             visibility: data.visibility
         })
@@ -54,6 +59,7 @@ const AddReleaseBlogModal = ({defaultVisibility, onClose}: any) => {
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Add Release Blog</DialogTitle>
+					<DialogDescription>Create a new release blog for the current project and set its initial visibility.</DialogDescription>
 				</DialogHeader>
 				<Form {...blogform}>
 					<form onSubmit={blogform.handleSubmit(blogSubmit)} className='space-y-6'>

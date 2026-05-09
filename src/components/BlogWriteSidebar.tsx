@@ -11,6 +11,7 @@ import {
   CreditCard,
   DiamondMinus,
   FileText,
+  FolderKanban,
   Layout,
   LayoutDashboard,
   LayoutGrid,
@@ -72,7 +73,7 @@ import InsertIcon from "./InsertIcon";
 const BlogWriteSidebar = () => {
   const { data: session } = useSession();
   const username = session?.user?.username;
-  const { setIsAddBlogModalOpen, allBlogs, isAllBlogsLoading, isBlogAdding, deleteBlog, removeBlogFromState } = useBlog();
+  const { setIsAddBlogModalOpen, allBlogs, isAllBlogsLoading, isBlogAdding, deleteBlog } = useBlog();
 
   const [defaultVisibility, setDefaultVisibility] = React.useState("public");
 
@@ -90,10 +91,6 @@ const BlogWriteSidebar = () => {
     () => allBlogs.filter((blog) => blog?.type === "public"),
     [allBlogs]
   );
-
-  const handleBlogDeleted = (blogId: string) => {
-    removeBlogFromState(blogId);
-  };
 
   return (
     <>
@@ -142,6 +139,13 @@ const BlogWriteSidebar = () => {
                 </DropdownMenuItem>
               </Link>
 
+              <Link href={`/u/${username}?tab=collections`}>
+                <DropdownMenuItem className="hover:dark:bg-gray-800 hover:bg-gray-300 cursor-pointer flex gap-2 items-center">
+                  <FolderKanban className="h-4 w-4" />
+                  Collections
+                </DropdownMenuItem>
+              </Link>
+
               <Link href={`/u/${username}?tab=projects`}>
                 <DropdownMenuItem className="hover:dark:bg-gray-800 hover:bg-gray-300 cursor-pointer flex gap-2 items-center">
                   <PanelsTopLeft className="h-4 w-4" />
@@ -171,6 +175,13 @@ const BlogWriteSidebar = () => {
                 <DropdownMenuItem className="hover:dark:bg-gray-800 hover:bg-gray-300  cursor-pointer flex gap-2 items-center">
                   <LayoutGrid className="h-4 w-4" />
                   Project
+                </DropdownMenuItem>
+              </Link>
+
+              <Link href={`/posts/collections`}>
+                <DropdownMenuItem className="hover:dark:bg-gray-800 hover:bg-gray-300  cursor-pointer flex gap-2 items-center">
+                  <FolderKanban className="h-4 w-4" />
+                  Collections
                 </DropdownMenuItem>
               </Link>
 
@@ -206,7 +217,6 @@ const BlogWriteSidebar = () => {
                         <BlogItem
                           key={blog._id}
                           blog={blog}
-                          onBlogDeleted={handleBlogDeleted}
                         />
                       ))}
                     </CommandGroup>
@@ -242,7 +252,6 @@ const BlogWriteSidebar = () => {
                         <BlogItem
                           key={blog._id}
                           blog={blog}
-                          onBlogDeleted={handleBlogDeleted}
                         />
                       ))}
                     </CommandGroup>

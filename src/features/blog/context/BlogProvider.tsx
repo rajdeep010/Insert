@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useCallback, useContext, useMemo, useReducer } from "react";
+import { createContext, useCallback, useContext, useMemo, useReducer, useRef } from "react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -8,12 +8,16 @@ import BlogReducer from "@/features/blog/reducers/BlogReducer";
 import { uniqueId } from "@/helpers/unique-id";
 import { useToast } from "@/components/ui/use-toast";
 import type { BlogEntry, BlogState, BlogUpdatePayload, BlogVisibility } from "@/types/blog";
+import type { BlogCollectionEntry } from "@/types/blog-collection";
 import { createBlogSlug } from "@/lib/blog-slug";
 
 interface BlogProviderProps {
 	allBlogs: BlogEntry[];
 	allBlogPosts: BlogEntry[];
+	blogCollections: BlogCollectionEntry[];
 	isAllBlogsLoading: boolean;
+	isBlogCollectionsLoading: boolean;
+	isCollectionMutating: boolean;
 	isBlogAdding: boolean;
 	isAddBlogModalOpen: boolean;
 	currentBlog: BlogEntry | null;
@@ -28,15 +32,23 @@ interface BlogProviderProps {
 	fetchBlogByUrl: (slug: string) => void;
 	fetchAllBlogPosts: () => void;
 	fetchBlogsByUsername: (username: string) => void;
-	removeBlogFromState: (blogId: string) => void;
+	fetchBlogCollections: () => Promise<void>;
+	createBlogCollection: (payload: { name: string; description?: string; visibility: BlogVisibility }) => Promise<void>;
+	updateBlogCollection: (collectionId: string, payload: { name: string; description?: string; visibility: BlogVisibility; linkedTopicId?: string | null }) => Promise<void>;
+	deleteBlogCollection: (collectionId: string) => Promise<void>;
+	addBlogToCollection: (collectionId: string, blogId: string) => Promise<void>;
+	removeBlogFromCollection: (collectionId: string, blogId: string) => Promise<void>;
 }
 
 const initialState: BlogState = {
 	allBlogs: [],
 	currentBlog: null,
 	allBlogPosts: [],
+	blogCollections: [],
 	isBlogLoading: false,
 	isAllBlogsLoading: false,
+	isBlogCollectionsLoading: false,
+	isCollectionMutating: false,
 	isBlogAdding: false,
 	isAddBlogModalOpen: false,
 	isAllBlogPostsLoading: false,
@@ -50,6 +62,8 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 	const { toast } = useToast();
 	const router = useRouter();
 	const [state, dispatch] = useReducer(BlogReducer, initialState);
+	const inflightBlogsByUsernameRef = useRef(new Map<string, Promise<void>>());
+	const inflightBlogCollectionsRef = useRef<Promise<void> | null>(null);
 	const username = session?.user?.username || null;
 
 	const deleteBlog = useCallback(async (blog_id: string) => {
@@ -66,10 +80,6 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 			dispatch({ type: "SET_IS_DELETING", payload: false });
 		}
 	}, [toast, username]);
-
-	const removeBlogFromState = useCallback((blogId: string) => {
-		dispatch({ type: "REMOVE_BLOG", payload: blogId });
-	}, []);
 
 	const fetchBlogByUrl = useCallback(async (slug: string) => {
 		if (!slug) return;
@@ -152,15 +162,27 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const fetchBlogsByUsername = useCallback(async (queryUsername: string) => {
 		if (!queryUsername) return;
-		dispatch({ type: "SET_ALL_BLOGS_LOADING", payload: true });
-		try {
-			const response = await axios.get(`/api/users/${queryUsername}/blogs`);
-			dispatch({ type: "LOAD_BLOGS", payload: response.data.success ? response.data.blogs ?? [] : [] });
-		} catch {
-			dispatch({ type: "LOAD_BLOGS", payload: [] });
-		} finally {
-			dispatch({ type: "SET_ALL_BLOGS_LOADING", payload: false });
+
+		const inflightRequest = inflightBlogsByUsernameRef.current.get(queryUsername);
+		if (inflightRequest) {
+			return inflightRequest;
 		}
+
+		dispatch({ type: "SET_ALL_BLOGS_LOADING", payload: true });
+		const request = axios.get(`/api/users/${queryUsername}/blogs`)
+			.then((response) => {
+				dispatch({ type: "LOAD_BLOGS", payload: response.data.success ? response.data.blogs ?? [] : [] });
+			})
+			.catch(() => {
+				dispatch({ type: "LOAD_BLOGS", payload: [] });
+			})
+			.finally(() => {
+				inflightBlogsByUsernameRef.current.delete(queryUsername);
+				dispatch({ type: "SET_ALL_BLOGS_LOADING", payload: false });
+			});
+
+		inflightBlogsByUsernameRef.current.set(queryUsername, request);
+		return request;
 	}, []);
 
 	const setIsAddBlogModalOpen = useCallback((isOpen: boolean) => {
@@ -179,6 +201,134 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 		}
 	}, []);
 
+	const fetchBlogCollections = useCallback(async () => {
+		if (!username) return;
+
+		if (inflightBlogCollectionsRef.current) {
+			return inflightBlogCollectionsRef.current;
+		}
+
+		dispatch({ type: "SET_BLOG_COLLECTIONS_LOADING", payload: true });
+		const request = axios.get("/api/blog-collections")
+			.then((response) => {
+				dispatch({ type: "SET_BLOG_COLLECTIONS", payload: response.data.success ? response.data.collections ?? [] : [] });
+			})
+			.catch(() => {
+				dispatch({ type: "SET_BLOG_COLLECTIONS", payload: [] });
+			})
+			.finally(() => {
+				inflightBlogCollectionsRef.current = null;
+				dispatch({ type: "SET_BLOG_COLLECTIONS_LOADING", payload: false });
+			});
+
+		inflightBlogCollectionsRef.current = request;
+		return request;
+	}, [username]);
+
+	const createBlogCollection = useCallback(async (payload: { name: string; description?: string; visibility: BlogVisibility }) => {
+		if (!username) return;
+		dispatch({ type: "SET_COLLECTION_MUTATING", payload: true });
+		try {
+			const response = await axios.post("/api/blog-collections", payload);
+			if (!response.data.success) {
+				toast({ title: "Error ⭕", description: response.data.message || "Failed to create collection", variant: "destructive" });
+				return;
+			}
+
+			dispatch({ type: "ADD_BLOG_COLLECTION", payload: response.data.collection });
+			toast({ title: "Collection created ✅", description: "Blog collection created successfully", variant: "default" });
+		} catch (error: any) {
+			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to create collection", variant: "destructive" });
+		} finally {
+			dispatch({ type: "SET_COLLECTION_MUTATING", payload: false });
+		}
+	}, [toast, username]);
+
+	const deleteBlogCollection = useCallback(async (collectionId: string) => {
+		if (!username || !collectionId) return;
+		dispatch({ type: "SET_COLLECTION_MUTATING", payload: true });
+		try {
+			const response = await axios.delete(`/api/blog-collections/${collectionId}`);
+			if (!response.data.success) {
+				toast({ title: "Error ⭕", description: response.data.message || "Failed to delete collection", variant: "destructive" });
+				return;
+			}
+
+			dispatch({ type: "REMOVE_BLOG_COLLECTION", payload: collectionId });
+			toast({ title: "Collection deleted ✅", description: "Collection removed successfully", variant: "default" });
+		} catch (error: any) {
+			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to delete collection", variant: "destructive" });
+		} finally {
+			dispatch({ type: "SET_COLLECTION_MUTATING", payload: false });
+		}
+	}, [toast, username]);
+
+	const updateBlogCollection = useCallback(async (
+		collectionId: string,
+		payload: { name: string; description?: string; visibility: BlogVisibility; linkedTopicId?: string | null }
+	) => {
+		if (!username || !collectionId) return;
+		dispatch({ type: "SET_COLLECTION_MUTATING", payload: true });
+		try {
+			const response = await axios.patch(`/api/blog-collections/${collectionId}`, payload);
+			if (!response.data.success) {
+				toast({ title: "Error ⭕", description: response.data.message || "Failed to update collection", variant: "destructive" });
+				return;
+			}
+
+			dispatch({ type: "UPDATE_BLOG_COLLECTION", payload: response.data.collection });
+			toast({ title: "Collection updated ✅", description: "Collection details saved successfully", variant: "default" });
+		} catch (error: any) {
+			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to update collection", variant: "destructive" });
+		} finally {
+			dispatch({ type: "SET_COLLECTION_MUTATING", payload: false });
+		}
+	}, [toast, username]);
+
+	const addBlogToCollection = useCallback(async (collectionId: string, blogId: string) => {
+		if (!username || !collectionId || !blogId) return;
+		dispatch({ type: "SET_COLLECTION_MUTATING", payload: true });
+		try {
+			const response = await axios.post(`/api/blog-collections/${collectionId}/blogs`, {
+				blogIds: [blogId],
+			});
+
+			if (!response.data.success) {
+				toast({ title: "Error ⭕", description: response.data.message || "Failed to add blog to collection", variant: "destructive" });
+				return;
+			}
+
+			dispatch({ type: "UPDATE_BLOG_COLLECTION", payload: response.data.collection });
+			toast({ title: "Added to collection ✅", description: "Blog added to collection successfully", variant: "default" });
+		} catch (error: any) {
+			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to add blog to collection", variant: "destructive" });
+		} finally {
+			dispatch({ type: "SET_COLLECTION_MUTATING", payload: false });
+		}
+	}, [toast, username]);
+
+	const removeBlogFromCollection = useCallback(async (collectionId: string, blogId: string) => {
+		if (!username || !collectionId || !blogId) return;
+		dispatch({ type: "SET_COLLECTION_MUTATING", payload: true });
+		try {
+			const response = await axios.delete(`/api/blog-collections/${collectionId}/blogs`, {
+				data: { blogIds: [blogId] },
+			});
+
+			if (!response.data.success) {
+				toast({ title: "Error ⭕", description: response.data.message || "Failed to remove blog from collection", variant: "destructive" });
+				return;
+			}
+
+			dispatch({ type: "UPDATE_BLOG_COLLECTION", payload: response.data.collection });
+			toast({ title: "Removed from collection ✅", description: "Blog removed from collection successfully", variant: "default" });
+		} catch (error: any) {
+			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to remove blog from collection", variant: "destructive" });
+		} finally {
+			dispatch({ type: "SET_COLLECTION_MUTATING", payload: false });
+		}
+	}, [toast, username]);
+
 	const contextValue = useMemo(() => ({
 		...state,
 		deleteBlog,
@@ -188,8 +338,13 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 		fetchBlogByUrl,
 		fetchAllBlogPosts,
 		fetchBlogsByUsername,
+		fetchBlogCollections,
+		createBlogCollection,
+		updateBlogCollection,
+		deleteBlogCollection,
+		addBlogToCollection,
+		removeBlogFromCollection,
 		handleAutoSaveBlog,
-		removeBlogFromState,
 	}), [
 		state,
 		deleteBlog,
@@ -199,8 +354,13 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 		fetchBlogByUrl,
 		fetchAllBlogPosts,
 		fetchBlogsByUsername,
+		fetchBlogCollections,
+		createBlogCollection,
+		updateBlogCollection,
+		deleteBlogCollection,
+		addBlogToCollection,
+		removeBlogFromCollection,
 		handleAutoSaveBlog,
-		removeBlogFromState,
 	]);
 
 	return (

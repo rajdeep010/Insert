@@ -1,3 +1,5 @@
+import "../swiper.css";
+
 import AppFeatureProviders from "./providers";
 
 interface RootLayoutProps {

@@ -120,7 +120,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
 
 	const fetchProfileUser: InsertUserProviderProps["fetchProfileUser"] = async (username: string) => {
 		try {
-			if (!username) return
+			if (!username) return null
 			if (state.profileUser?.username === username) return state.profileUser
 			const cachedUser = state.publicUsersByUsername[username]
 			if (cachedUser) {
@@ -130,7 +130,7 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
 			dispatch({ type: "SET_IS_PROFILE_USER_LOADING", payload: true })
 			const userdata = await fetchPublicUser(username, { force: true })
 			if (!userdata) {
-				toast({ title: 'Not Found', description: response?.data?.message || 'No such user exists', variant: 'destructive' })
+				toast({ title: 'Not Found', description: 'No such user exists', variant: 'destructive' })
 				router.push('/')
 				return null
 			}

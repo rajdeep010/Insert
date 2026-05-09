@@ -1,3 +1,5 @@
+import type { BlogCollectionEntry } from "@/types/blog-collection"
+
 export type BlogVisibility = 'public' | 'private'
 
 export interface BlogComment {
@@ -35,7 +37,10 @@ export interface BlogUpdatePayload {
 export interface BlogState {
 	allBlogs: BlogEntry[]
 	allBlogPosts: BlogEntry[]
+	blogCollections: BlogCollectionEntry[]
 	isAllBlogsLoading: boolean
+	isBlogCollectionsLoading: boolean
+	isCollectionMutating: boolean
 	isBlogAdding: boolean
 	isAddBlogModalOpen: boolean
 	currentBlog: BlogEntry | null

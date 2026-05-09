@@ -2,6 +2,7 @@
 import { createContext, useContext, useReducer } from 'react'
 import axios from 'axios'
 import { useSession } from 'next-auth/react'
+import type { Session } from 'next-auth'
 import InsertPaymentReducer from '@/features/payment/reducers/InsertPaymentReducer'
 import { useInsertUser } from '@/features/user/context/InsertUserProvider'
 import { toast as sonnerToast } from 'sonner'
@@ -41,7 +42,7 @@ export const InsertPaymentProvider = ({ children }: { children: React.ReactNode 
 	const { updateUserAfterPayment } = useInsertUser();
 
 	const handleUpdateSessionProAccess = async (updatedUserData: SessionPaymentUpdate | undefined) => {
-		update((prev) => ({
+		update((prev: Session | null) => ({
 			...prev,
 			user: {
 				...prev?.user,

@@ -198,7 +198,11 @@ const Projects = () => {
                         description,
                         language
                     }) => {
-                        const formatDate = (dateString: string) => {
+                        const formatDate = (dateString?: string) => {
+                            if (!dateString) {
+                                return 'Unknown date'
+                            }
+
                             return new Date(dateString).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'short',
@@ -289,7 +293,13 @@ const Projects = () => {
                                                         <DropdownMenuGroup>
                                                             <DropdownMenuItem
                                                                 className="text-red-500 focus:text-red-600"
-                                                                onClick={() => handleDeleteProject(id, name)}
+                                                                onClick={() => {
+                                                                    if (!id || !name) {
+                                                                        return
+                                                                    }
+
+                                                                    handleDeleteProject(id, name)
+                                                                }}
                                                             >
                                                                 <Trash2 className="h-4 w-4 mr-2" />
                                                                 Delete Project
@@ -306,7 +316,7 @@ const Projects = () => {
                                             <span>Created {formatDate(createdAt)}</span>
                                             <span className="opacity-40">•</span>
                                             <span>Updated {formatDate(updatedAt)}</span>
-                                            {lastMonitoredCommitSha && (
+                                            {typeof lastMonitoredCommitSha === 'string' && lastMonitoredCommitSha && (
                                                 <>
                                                     <span className="opacity-40">•</span>
                                                     <span>Last commit: {lastMonitoredCommitSha.substring(0, 7)}</span>

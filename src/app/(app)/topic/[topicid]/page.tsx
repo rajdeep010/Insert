@@ -39,6 +39,8 @@ import { useDebounceCallback, useDebounceValue } from "usehooks-ts";
 import {
 	CirclePlus,
 	FileInput,
+	FolderKanban,
+	Link2,
 	Loader2,
 	Trash2,
 	UserPlus,
@@ -48,15 +50,19 @@ import UserCard from "@/components/UserCard";
 import InsertNavbar from "@/components/InsertNavbar";
 import { useNotifications } from "@/features/notification/context/NotificationProvider";
 import InsertHoverCard from "@/components/InsertHoverCard";
+import { useBlog } from "@/features/blog/context/BlogProvider";
 import { useInsertTopics } from "@/features/topic/context/InsertTopicProvider";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { TopicProblemsGrid } from "@/features/topic/components/TopicProblemsGrid";
+import { useToast } from "@/components/ui/use-toast";
+import { TopicProblemsGrid, type TopicProblemReferenceDisplay } from "@/features/topic/components/TopicProblemsGrid";
+import type { BlogCollectionEntry, BlogReferenceKind, ProblemBlogReference } from "@/types/blog-collection";
 
 const EachTopic = () => {
 	const params = useParams();
 	const topic_id = params.topicid as string;
 	const { data: session, status } = useSession();
+	const { toast } = useToast();
 
 	const {
 		curr_topic,
@@ -67,6 +73,14 @@ const EachTopic = () => {
 		deleteTopic,
 		editProblem
 	} = useInsertTopics();
+	const {
+		allBlogs,
+		blogCollections,
+		isAllBlogsLoading,
+		isBlogCollectionsLoading,
+		fetchBlogsByUsername,
+		fetchBlogCollections,
+	} = useBlog();
 
 	const { sendSuggestion } = useNotifications();
 
@@ -76,6 +90,15 @@ const EachTopic = () => {
 	const [isItemModalOpen, setIsItemModalOpen] = useState(false);
 	const [isItemDeleteModalOpen, setIsItemDeleteModalOpen] = useState(false);
 	const [isSuggestProblemOpen, setIsSuggestProblemOpen] = useState(false);
+	const [isReferenceModalOpen, setIsReferenceModalOpen] = useState(false);
+	const [referenceProblem, setReferenceProblem] = useState<any | null>(null);
+	const [selectedBlogId, setSelectedBlogId] = useState("");
+	const [selectedCollectionId, setSelectedCollectionId] = useState("");
+	const [referenceKind, setReferenceKind] = useState<BlogReferenceKind>("reference");
+	const [referenceLabel, setReferenceLabel] = useState("");
+	const [isReferenceSubmitting, setIsReferenceSubmitting] = useState(false);
+	const [removingReferenceId, setRemovingReferenceId] = useState<string | null>(null);
+	const [editingReferenceId, setEditingReferenceId] = useState<string | null>(null);
 
 	const [isAddingProblem, setIsAddingProblem] = useState(false)
 	const [isDeletingProblem, setIsDeletingProblem] = useState(false)
@@ -99,6 +122,23 @@ const EachTopic = () => {
 		setIsItemDeleteModalOpen(true);
 	};
 	const handleOpenSuggestProblem = () => setIsSuggestProblemOpen(true);
+	const handleOpenReferenceModal = (problem: any) => {
+		setReferenceProblem(problem);
+		setSelectedBlogId("");
+		setSelectedCollectionId("");
+		setReferenceKind("reference");
+		setReferenceLabel("");
+		setEditingReferenceId(null);
+		setIsReferenceModalOpen(true);
+	};
+
+	const resetReferenceForm = () => {
+		setSelectedBlogId("");
+		setSelectedCollectionId("");
+		setReferenceKind("reference");
+		setReferenceLabel("");
+		setEditingReferenceId(null);
+	};
 
 	const handleDeleteProblem = async () => {
 		if (!topic_id || !currentProblemId) return;
@@ -225,11 +265,41 @@ const EachTopic = () => {
 		}
 	};
 
+	const blogMap = React.useMemo(() => {
+		return new Map(allBlogs.map((blog) => [String(blog._id ?? blog.id ?? ""), blog]))
+	}, [allBlogs]);
+
+	const collectionMap = React.useMemo(() => {
+		return new Map(blogCollections.map((collection) => [String(collection._id ?? ""), collection]))
+	}, [blogCollections]);
+
+	const resolveProblemReference = React.useCallback((reference: ProblemBlogReference): TopicProblemReferenceDisplay => {
+		const blog = blogMap.get(String(reference.blogId));
+		const collection = reference.collectionId ? collectionMap.get(String(reference.collectionId)) : undefined;
+		const resolvedBlogUrl = typeof reference.blogUrl === "string"
+			? `/blog/${reference.blogUrl}`
+			: typeof blog?.blogUrl === "string"
+				? `/blog/${blog.blogUrl}`
+				: undefined;
+
+		return {
+			_id: reference._id,
+			blogId: String(reference.blogId),
+			collectionId: reference.collectionId ? String(reference.collectionId) : null,
+			kind: reference.kind,
+			label: reference.label,
+			blogTitle: reference.blogTitle || blog?.blogTitle,
+			blogUrl: resolvedBlogUrl,
+			collectionName: reference.collectionName || collection?.name,
+		};
+	}, [blogMap, collectionMap]);
+
 	const tableProblems = (curr_topic?.problems || []).map((problem) => ({
 		_id: String(problem._id ?? problem.id ?? ""),
 		qname: problem.qname,
 		url: problem.url,
 		difficulty: problem.difficulty,
+		blogReferences: (problem.blogReferences || []).map(resolveProblemReference),
 	}));
 
 	const canManageProblems = Boolean(
@@ -251,6 +321,95 @@ const EachTopic = () => {
 	const collaboratorCount = curr_topic?.topic?.collaborators?.length ?? 0;
 	const resolvedTopicId = String(curr_topic?.topic?.id ?? "");
 	const isResolvedTopic = Boolean(curr_topic && resolvedTopicId === topic_id);
+
+	useEffect(() => {
+		if (status !== "authenticated" || !session?.user?.username || !canManageProblems) return;
+		void fetchBlogsByUsername(session.user.username);
+		void fetchBlogCollections();
+	}, [canManageProblems, fetchBlogCollections, fetchBlogsByUsername, session?.user?.username, status]);
+
+	const selectedBlogCollections = React.useMemo(() => {
+		if (!selectedBlogId) return blogCollections
+		return blogCollections.filter((collection) => collection.blogIds.includes(selectedBlogId))
+	}, [blogCollections, selectedBlogId]);
+
+	const handleAttachReference = async () => {
+		if (!topic_id || !referenceProblem?._id || !selectedBlogId) return;
+
+		try {
+			setIsReferenceSubmitting(true);
+
+			const payload = {
+				blogId: selectedBlogId,
+				collectionId: selectedCollectionId || null,
+				kind: referenceKind,
+				label: referenceLabel.trim(),
+			};
+
+			if (editingReferenceId) {
+				await axios.patch(`/api/topics/${topic_id}/problems/${referenceProblem._id}/blog-references/${editingReferenceId}`, payload);
+			} else {
+				await axios.post(`/api/topics/${topic_id}/problems/${referenceProblem._id}/blog-references`, payload);
+			}
+
+			await fetchTopicById(topic_id, { force: true });
+			toast({
+				title: editingReferenceId ? "Reference updated ✅" : "Reference added ✅",
+				description: editingReferenceId
+					? "Blog reference updated successfully"
+					: "Blog reference added successfully",
+				variant: "default",
+			});
+			resetReferenceForm();
+		} catch (error: any) {
+			toast({
+				title: "Reference update failed ⭕",
+				description: error?.response?.data?.message || error?.message || "Unable to save blog reference",
+				variant: "destructive",
+			});
+		} finally {
+			setIsReferenceSubmitting(false);
+		}
+	};
+
+	const handleEditReference = (reference: TopicProblemReferenceDisplay) => {
+		setEditingReferenceId(reference._id ?? null);
+		setSelectedBlogId(String(reference.blogId || ""));
+		setSelectedCollectionId(reference.collectionId ? String(reference.collectionId) : "");
+		setReferenceKind(reference.kind);
+		setReferenceLabel(reference.label || "");
+	};
+
+	const handleRemoveReference = async (referenceId: string) => {
+		if (!topic_id || !referenceProblem?._id || !referenceId) return;
+
+		try {
+			setRemovingReferenceId(referenceId);
+			await axios.delete(`/api/topics/${topic_id}/problems/${referenceProblem._id}/blog-references/${referenceId}`);
+			await fetchTopicById(topic_id, { force: true });
+			toast({
+				title: "Reference removed ✅",
+				description: "Blog reference removed successfully",
+				variant: "default",
+			});
+		} catch (error: any) {
+			toast({
+				title: "Reference removal failed ⭕",
+				description: error?.response?.data?.message || error?.message || "Unable to remove blog reference",
+				variant: "destructive",
+			});
+		} finally {
+			setRemovingReferenceId(null);
+			if (editingReferenceId === referenceId) {
+				resetReferenceForm();
+			}
+		}
+	};
+
+	const referenceProblemFromState = referenceProblem?._id
+		? curr_topic?.problems.find((problem) => String(problem._id ?? problem.id ?? "") === String(referenceProblem._id))
+		: null;
+	const resolvedReferenceProblemReferences = (referenceProblemFromState?.blogReferences || []).map(resolveProblemReference);
 
 	if (isTopicLoading || !isResolvedTopic) {
 		return (
@@ -517,6 +676,7 @@ const EachTopic = () => {
 						<DialogContent>
 							<DialogHeader>
 								<DialogTitle>Problem Details</DialogTitle>
+								<DialogDescription>Share a problem suggestion with its name and source URL for this topic.</DialogDescription>
 							</DialogHeader>
 							<Form {...suggestionForm}>
 								<form
@@ -664,11 +824,180 @@ const EachTopic = () => {
 						</DialogContent>
 					</Dialog>
 
+					<Dialog open={isReferenceModalOpen} onOpenChange={(open) => {
+						setIsReferenceModalOpen(open)
+						if (!open) {
+							resetReferenceForm()
+						}
+					}}>
+						<DialogContent className="sm:max-w-2xl">
+							<DialogHeader>
+								<DialogTitle>Manage blog references</DialogTitle>
+								<DialogDescription>
+									Attach blogs or collection-backed references to this problem.
+								</DialogDescription>
+							</DialogHeader>
+
+							<div className="space-y-6">
+								<div className="rounded-2xl border border-border/60 bg-card/50 p-4">
+									<p className="text-sm font-medium text-foreground">{referenceProblem?.qname}</p>
+									<p className="mt-1 text-xs text-muted-foreground">Choose one of your blogs and optionally tie it to a collection.</p>
+									{editingReferenceId ? (
+										<Badge variant="secondary" className="mt-3 rounded-full px-2.5 py-1 text-[11px]">
+											Editing existing reference
+										</Badge>
+									) : null}
+								</div>
+
+								<div className="grid gap-4 md:grid-cols-2">
+									<div className="space-y-2">
+										<p className="text-sm font-medium">Blog</p>
+										<Select value={selectedBlogId} onValueChange={(value) => {
+											setSelectedBlogId(value)
+											setSelectedCollectionId("")
+										}}>
+											<SelectTrigger>
+												<SelectValue placeholder={isAllBlogsLoading ? "Loading blogs..." : "Select a blog"} />
+											</SelectTrigger>
+											<SelectContent>
+												{allBlogs.map((blog) => (
+													<SelectItem key={blog._id} value={blog._id || ""}>
+														{blog.blogTitle}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</div>
+
+									<div className="space-y-2">
+										<p className="text-sm font-medium">Collection</p>
+										<Select value={selectedCollectionId} onValueChange={setSelectedCollectionId}>
+											<SelectTrigger>
+												<SelectValue placeholder={isBlogCollectionsLoading ? "Loading collections..." : "Optional collection"} />
+											</SelectTrigger>
+											<SelectContent>
+												{selectedBlogCollections.map((collection: BlogCollectionEntry) => (
+													<SelectItem key={collection._id} value={collection._id || ""}>
+														{collection.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</div>
+								</div>
+
+								<div className="grid gap-4 md:grid-cols-[180px_minmax(0,1fr)]">
+									<div className="space-y-2">
+										<p className="text-sm font-medium">Type</p>
+										<Select value={referenceKind} onValueChange={(value: BlogReferenceKind) => setReferenceKind(value)}>
+											<SelectTrigger>
+												<SelectValue placeholder="Reference type" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="solution">Solution</SelectItem>
+												<SelectItem value="reference">Reference</SelectItem>
+												<SelectItem value="note">Note</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
+
+									<div className="space-y-2">
+										<p className="text-sm font-medium">Label</p>
+										<Input placeholder="Optional label like DP approach or edge cases" value={referenceLabel} onChange={(event) => setReferenceLabel(event.target.value)} />
+									</div>
+								</div>
+
+								<DialogFooter>
+									<Button type="button" variant="outline" onClick={() => {
+										if (editingReferenceId) {
+											resetReferenceForm()
+											return
+										}
+										setIsReferenceModalOpen(false)
+									}} disabled={isReferenceSubmitting}>
+										{editingReferenceId ? "Stop editing" : "Cancel"}
+									</Button>
+									<Button type="button" onClick={handleAttachReference} disabled={isReferenceSubmitting || !selectedBlogId}>
+										{isReferenceSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FolderKanban className="mr-2 h-4 w-4" />}
+										{editingReferenceId ? "Save changes" : "Attach reference"}
+									</Button>
+								</DialogFooter>
+
+								<div className="space-y-3 border-t border-border/60 pt-4">
+									<div className="flex items-center justify-between gap-3">
+										<p className="text-sm font-medium">Attached references</p>
+										<Badge variant="secondary" className="rounded-full px-2.5 py-1 text-[11px]">
+											{referenceProblemFromState?.blogReferences?.length ?? 0}
+										</Badge>
+									</div>
+
+									{resolvedReferenceProblemReferences.length ? (
+										<div className="space-y-3">
+											{resolvedReferenceProblemReferences.map((reference) => (
+												<div key={reference._id} className="flex items-center justify-between gap-4 rounded-2xl border border-border/60 bg-background/50 px-4 py-3">
+													<div className="min-w-0 space-y-1">
+														<div className="flex flex-wrap items-center gap-2">
+															<Badge className="rounded-full border border-violet-500/20 bg-violet-500/10 px-2.5 py-1 text-[11px] font-semibold capitalize text-violet-700 dark:text-violet-200">
+																{reference.kind}
+															</Badge>
+															<span className="text-sm font-medium text-foreground">
+																{reference.blogTitle || reference.label || "Linked blog"}
+															</span>
+															{reference.label && reference.blogTitle && reference.label !== reference.blogTitle ? (
+																<span className="text-xs text-muted-foreground">{reference.label}</span>
+															) : null}
+														</div>
+														<div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+															{reference.collectionName ? <span>Collection: {reference.collectionName}</span> : null}
+															{reference.blogUrl ? (
+																<a href={reference.blogUrl} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 text-sky-600 hover:underline dark:text-sky-300">
+																	<Link2 className="h-3.5 w-3.5" />
+																	Open blog
+																</a>
+															) : null}
+														</div>
+													</div>
+													<div className="flex items-center gap-1">
+														<Button
+															type="button"
+															variant="ghost"
+															size="icon"
+															className="h-8 w-8 rounded-lg text-amber-600 hover:bg-amber-500/10 hover:text-amber-700 dark:text-amber-300 dark:hover:text-amber-200"
+															onClick={() => handleEditReference(reference)}
+															disabled={!reference._id || isReferenceSubmitting || removingReferenceId === reference._id}
+														>
+															<FileInput className="h-4 w-4" />
+														</Button>
+														<Button
+															type="button"
+															variant="ghost"
+															size="icon"
+															className="h-8 w-8 rounded-lg text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 dark:text-rose-300 dark:hover:text-rose-200"
+															onClick={() => handleRemoveReference(String(reference._id || ""))}
+															disabled={removingReferenceId === reference._id || !reference._id}
+														>
+															{removingReferenceId === reference._id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+														</Button>
+													</div>
+												</div>
+											))}
+										</div>
+									) : (
+										<div className="rounded-2xl border border-dashed border-border/60 px-4 py-6 text-center text-sm text-muted-foreground">
+											No blog references attached yet.
+										</div>
+									)}
+								</div>
+							</div>
+						</DialogContent>
+					</Dialog>
+
 					<TopicProblemsGrid
 						problems={tableProblems}
 						canManageProblems={canManageProblems}
 						onDelete={handleOpenDeleteProblemModal}
 						onEdit={handleOpenEditProblemModal}
+						onManageReferences={handleOpenReferenceModal}
 					/>
 				</div>
 			</div>

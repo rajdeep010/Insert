@@ -1,4 +1,5 @@
-import { HeatmapDateValues, Topic, UserInfo } from './types'
+import type { HeatmapDateValues, Topic } from './topic'
+import type { UserInfo } from './user'
 
 
 export interface ApiResponse{

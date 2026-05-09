@@ -2,6 +2,11 @@ import { z } from "zod";
 
 export const blogVisibilitySchema = z.enum(["public", "private"]);
 
+export const blogSchema = z.object({
+    title: z.string().trim().min(1, "Blog title is required").max(200, "Blog title is too long"),
+    visibility: blogVisibilitySchema,
+});
+
 export const blogSlugSchema = z
     .string()
     .trim()

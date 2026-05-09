@@ -1,7 +1,14 @@
+import type { BlogCollectionEntry } from "@/types/blog-collection";
 import type { BlogEntry, BlogState } from "@/types/blog";
 
 type BlogAction =
 	| { type: "LOAD_BLOGS"; payload: BlogEntry[] }
+	| { type: "SET_BLOG_COLLECTIONS"; payload: BlogCollectionEntry[] }
+	| { type: "ADD_BLOG_COLLECTION"; payload: BlogCollectionEntry }
+	| { type: "UPDATE_BLOG_COLLECTION"; payload: BlogCollectionEntry }
+	| { type: "REMOVE_BLOG_COLLECTION"; payload: string }
+	| { type: "SET_BLOG_COLLECTIONS_LOADING"; payload: boolean }
+	| { type: "SET_COLLECTION_MUTATING"; payload: boolean }
 	| { type: "SET_ALL_BLOGS_LOADING"; payload: boolean }
 	| { type: "SET_IS_ADD_BLOG_MODAL_OPEN"; payload: boolean }
 	| { type: "SET_IS_BLOG_ADDING"; payload: boolean }
@@ -17,6 +24,26 @@ export default function BlogReducer(state: BlogState, action: BlogAction): BlogS
 	switch (action.type) {
 		case "LOAD_BLOGS":
 			return { ...state, allBlogs: action.payload }
+		case "SET_BLOG_COLLECTIONS":
+			return { ...state, blogCollections: action.payload }
+		case "ADD_BLOG_COLLECTION":
+			return { ...state, blogCollections: [action.payload, ...state.blogCollections] }
+		case "UPDATE_BLOG_COLLECTION":
+			return {
+				...state,
+				blogCollections: state.blogCollections.map((collection) =>
+					collection._id === action.payload._id ? action.payload : collection
+				),
+			}
+		case "REMOVE_BLOG_COLLECTION":
+			return {
+				...state,
+				blogCollections: state.blogCollections.filter((collection) => collection._id !== action.payload),
+			}
+		case "SET_BLOG_COLLECTIONS_LOADING":
+			return { ...state, isBlogCollectionsLoading: action.payload }
+		case "SET_COLLECTION_MUTATING":
+			return { ...state, isCollectionMutating: action.payload }
 		case "SET_ALL_BLOGS_LOADING":
 			return { ...state, isAllBlogsLoading: action.payload }
 		case "SET_IS_ADD_BLOG_MODAL_OPEN":
@@ -26,7 +53,14 @@ export default function BlogReducer(state: BlogState, action: BlogAction): BlogS
 		case "ADD_BLOG":
 			return { ...state, allBlogs: [action.payload, ...state.allBlogs] }
 		case "REMOVE_BLOG":
-			return { ...state, allBlogs: state.allBlogs.filter((blog) => blog._id !== action.payload) }
+			return {
+				...state,
+				allBlogs: state.allBlogs.filter((blog) => blog._id !== action.payload),
+				blogCollections: state.blogCollections.map((collection) => ({
+					...collection,
+					blogIds: collection.blogIds.filter((blogId) => blogId !== action.payload),
+				})),
+			}
 		case "SET_IS_BLOG_LOADING":
 			return { ...state, isBlogLoading: action.payload }
 		case "SET_CURRENT_BLOG": {
@@ -34,10 +68,14 @@ export default function BlogReducer(state: BlogState, action: BlogAction): BlogS
 				return { ...state, currentBlog: null }
 			}
 			let parsedBlogContent = {}
-			try {
-				parsedBlogContent = JSON.parse(action.payload.blogContent || "{}")
-			} catch {
-				parsedBlogContent = {}
+			if (typeof action.payload.blogContent === "string") {
+				try {
+					parsedBlogContent = JSON.parse(action.payload.blogContent || "{}")
+				} catch {
+					parsedBlogContent = {}
+				}
+			} else if (action.payload.blogContent && typeof action.payload.blogContent === "object") {
+				parsedBlogContent = action.payload.blogContent
 			}
 			return { ...state, currentBlog: { ...action.payload, blogContent: parsedBlogContent } }
 		}

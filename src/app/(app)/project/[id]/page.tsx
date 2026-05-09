@@ -75,7 +75,7 @@ export default function Page() {
 
     if (!curr_project) return null
 
-    const formatDate = (dateString: string) =>
+    const formatDate = (dateString?: string) =>
         !dateString
             ? ''
             : new Date(dateString).toLocaleDateString('en-US', {
@@ -84,7 +84,7 @@ export default function Page() {
                 day: 'numeric'
             })
 
-    const formatRelativeTime = (dateString: string) => {
+    const formatRelativeTime = (dateString?: string) => {
         if (!dateString) return ''
         const date = new Date(dateString)
         const now = new Date()
@@ -93,6 +93,11 @@ export default function Page() {
         const diffInDays = Math.floor(diffInHours / 24)
         return `${diffInDays}d ago`
     }
+
+    const lastCommitSha =
+        typeof curr_project?.lastMonitoredCommitSha === 'string'
+            ? curr_project.lastMonitoredCommitSha
+            : ''
 
     const handleSyncRelease = async () => {
         await syncRelease(projectId)
@@ -286,11 +291,8 @@ export default function Page() {
                                                 Last Commit
                                             </span>
                                             <span className="text-sm font-medium">
-                                                {curr_project?.lastMonitoredCommitSha
-                                                    ? curr_project.lastMonitoredCommitSha.substring(
-                                                        0,
-                                                        7
-                                                    )
+                                                {lastCommitSha
+                                                    ? lastCommitSha.substring(0, 7)
                                                     : '—'}
                                             </span>
                                         </div>

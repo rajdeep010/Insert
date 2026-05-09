@@ -23,6 +23,7 @@ import {
 	LayoutPanelLeft,
 	LayoutGrid,
 	BadgeCheck,
+	FolderKanban,
 } from "lucide-react";
 import {
 	NavigationMenu,
@@ -59,6 +60,13 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import InsertIcon from "./InsertIcon";
 
 
+type NavItem = {
+	href: string;
+	label: string;
+	icon: React.ComponentType<{ className?: string }>;
+};
+
+
 
 const InsertNavbar = () => {
 	const { data: session, status } = useSession();
@@ -66,7 +74,30 @@ const InsertNavbar = () => {
 	const router = useRouter();
 	const username = session?.user?.username;
 	const param_username = params?.username as string;
+	const canManageCollections = !param_username || session?.user?.username === param_username;
 	const [notifyLoader, setNotifyLoader] = React.useState(false)
+	const profileUsername = !param_username ? session?.user?.username : param_username;
+
+	const sectionLinks: NavItem[] = [
+		{ href: `/u/${profileUsername}?tab=overview`, label: "Overview", icon: User2 },
+		{ href: `/u/${profileUsername}?tab=topics`, label: "Topics", icon: LayoutDashboard },
+		{ href: `/u/${profileUsername}?tab=blogs`, label: "Blogs", icon: LayoutPanelTop },
+		...(canManageCollections ? [{ href: `/u/${profileUsername}?tab=collections`, label: "Collections", icon: FolderKanban }] : []),
+		{ href: `/u/${profileUsername}?tab=projects`, label: "Projects", icon: PanelsTopLeft },
+	];
+
+	const workspaceLinks: NavItem[] = [
+		{ href: `/u/${session?.user?.username}`, label: "Profile", icon: User },
+		{ href: `/write`, label: "Write", icon: FilePenLine },
+		{ href: `/u/${profileUsername}?tab=subscribe`, label: "Subscribe", icon: BadgeCheck },
+	];
+
+	const postLinks: NavItem[] = [
+		{ href: `/posts/topic`, label: "Topics", icon: LayoutDashboard },
+		{ href: `/posts/blog`, label: "Blogs", icon: LayoutPanelTop },
+		{ href: `/posts/collections`, label: "Collections", icon: FolderKanban },
+		{ href: `/posts/projects`, label: "Projects", icon: PanelsTopLeft },
+	];
 
 	const { markAllRead, unreadNotifyCount, notifications, getNotifications } = useNotifications();
 
@@ -103,99 +134,42 @@ const InsertNavbar = () => {
 								<NavigationMenuTrigger>Sections</NavigationMenuTrigger>
 								<NavigationMenuContent>
 									<ul className="flex flex-col gap-2 w-[220px] p-2">
-										<li>
-											<NavigationMenuLink asChild>
-												<Link
-													href={`/u/${!param_username
-														? session?.user?.username
-														: param_username
-														}?tab=overview`}
-													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
-												>
-													<User2 className="h-4 w-4" />
-													<span className="text-sm">Overview</span>
-												</Link>
-											</NavigationMenuLink>
-										</li>
-										<li>
-											<NavigationMenuLink asChild>
-												<Link
-													href={`/u/${!param_username
-														? session?.user?.username
-														: param_username
-														}?tab=topics`}
-													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
-												>
-													<LayoutDashboard className="h-4 w-4" />
-													<span className="text-sm">Topics</span>
-												</Link>
-											</NavigationMenuLink>
-										</li>
-										<li>
-											<NavigationMenuLink asChild>
-												<Link
-													href={`/u/${!param_username
-														? session?.user?.username
-														: param_username
-														}?tab=blogs`}
-													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
-												>
-													<LayoutPanelTop className="h-4 w-4" />
-													<span className="text-sm">Blogs</span>
-												</Link>
-											</NavigationMenuLink>
-										</li>
-										<li>
-											<NavigationMenuLink asChild>
-												<Link
-													href={`/u/${!param_username
-														? session?.user?.username
-														: param_username
-														}?tab=projects`}
-													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
-												>
-													<PanelsTopLeft className="h-4 w-4" />
-													<span className="text-sm">Projects</span>
-												</Link>
-											</NavigationMenuLink>
-										</li>
-										<Separator />
-										<li>
-											<NavigationMenuLink asChild>
-												<Link
-													href={`/u/${session.user?.username}`}
-													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
-												>
-													<User className="h-4 w-4" />
-													<span className="text-sm">Profile</span>
-												</Link>
-											</NavigationMenuLink>
-										</li>
-										<li>
-											<NavigationMenuLink asChild>
-												<Link
-													href={`/write`}
-													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
-												>
-													<FilePenLine className="h-4 w-4" />
-													<span className="text-sm">Write</span>
-												</Link>
-											</NavigationMenuLink>
-										</li>
-										<li>
-											<NavigationMenuLink asChild>
-												<Link
-													href={`/u/${!param_username
-														? session?.user?.username
-														: param_username
-														}?tab=subscribe`}
-													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
-												>
-													<BadgeCheck className="h-4 w-4" />
-													<span className="text-sm">Subscribe</span>
-												</Link>
-											</NavigationMenuLink>
-										</li>
+										{sectionLinks.map(({ href, label, icon: Icon }) => (
+											<li key={href}>
+												<NavigationMenuLink asChild>
+													<Link
+														href={href}
+														className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
+													>
+														<Icon className="h-4 w-4" />
+														<span className="text-sm">{label}</span>
+													</Link>
+												</NavigationMenuLink>
+											</li>
+										))}
+									</ul>
+								</NavigationMenuContent>
+							</NavigationMenuItem>
+						)}
+
+						{status === "authenticated" && username && (
+							<NavigationMenuItem>
+								<NavigationMenuTrigger>Workspace</NavigationMenuTrigger>
+								<NavigationMenuContent>
+									<ul className="flex flex-col gap-2 w-[220px] p-2">
+										{workspaceLinks.map(({ href, label, icon: Icon }) => (
+											<li key={href}>
+												<NavigationMenuLink asChild>
+													<Link
+														href={href}
+														className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
+													>
+														<Icon className="h-4 w-4" />
+														<span className="text-sm">{label}</span>
+													</Link>
+												</NavigationMenuLink>
+											</li>
+										))}
 									</ul>
 								</NavigationMenuContent>
 							</NavigationMenuItem>
@@ -206,39 +180,19 @@ const InsertNavbar = () => {
 								<NavigationMenuTrigger>Posts</NavigationMenuTrigger>
 								<NavigationMenuContent>
 									<ul className="flex flex-col gap-2 w-[220px] p-2">
-										<li>
-											<NavigationMenuLink asChild>
-												<Link
-													href={`/posts/topic`}
-													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
-												>
-													<LayoutDashboard className="h-4 w-4" />
-													<span className="text-sm">Topics</span>
-												</Link>
-											</NavigationMenuLink>
-										</li>
-										<li>
-											<NavigationMenuLink asChild>
-												<Link
-													href={`/posts/blog`}
-													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
-												>
-													<LayoutPanelTop className="h-4 w-4" />
-													<span className="text-sm">Blogs</span>
-												</Link>
-											</NavigationMenuLink>
-										</li>
-										<li>
-											<NavigationMenuLink asChild>
-												<Link
-													href={`/posts/projects`}
-													className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
-												>
-													<PanelsTopLeft className="h-4 w-4" />
-													<span className="text-sm">Projects</span>
-												</Link>
-											</NavigationMenuLink>
-										</li>
+										{postLinks.map(({ href, label, icon: Icon }) => (
+											<li key={href}>
+												<NavigationMenuLink asChild>
+													<Link
+														href={href}
+														className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex gap-2 items-center"
+													>
+														<Icon className="h-4 w-4" />
+														<span className="text-sm">{label}</span>
+													</Link>
+												</NavigationMenuLink>
+											</li>
+										))}
 									</ul>
 								</NavigationMenuContent>
 							</NavigationMenuItem>
@@ -523,54 +477,30 @@ const InsertNavbar = () => {
 										Sections
 									</div>
 									<div className="space-y-1">
-										<Link
-											href={`/u/${!param_username ? session?.user?.username : param_username}?tab=overview`}
-											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
-										>
-											<User2 className="h-4 w-4" /> <span>Overview</span>
-										</Link>
-										<Link
-											href={`/u/${!param_username ? session?.user?.username : param_username}?tab=topics`}
-											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
-										>
-											<FileText className="h-4 w-4" /> <span>Topics</span>
-										</Link>
-										<Link
-											href={`/u/${!param_username ? session?.user?.username : param_username}?tab=blogs`}
-											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
-										>
-											<LayoutPanelTop className="h-4 w-4" /> <span>Blogs</span>
-										</Link>
-										<Link
-											href={`/u/${!param_username ? session?.user?.username : param_username}?tab=projects`}
-											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
-										>
-											<PanelsTopLeft className="h-4 w-4" /> <span>Projects</span>
-										</Link>
+										{sectionLinks.map(({ href, label, icon: Icon }) => (
+											<Link
+												key={href}
+												href={href}
+												className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
+											>
+												<Icon className="h-4 w-4" /> <span>{label}</span>
+											</Link>
+										))}
 									</div>
 
 									<div className="px-3 pt-4 pb-2 text-xs uppercase tracking-wide text-muted-foreground">
 										Posts
 									</div>
 									<div className="space-y-1">
-										<Link
-											href={`/posts/topic`}
-											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
-										>
-											<LayoutGrid className="h-4 w-4" /> <span>Topics</span>
-										</Link>
-										<Link
-											href={`/posts/blog`}
-											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
-										>
-											<LayoutGrid className="h-4 w-4" /> <span>Blogs</span>
-										</Link>
-										<Link
-											href={`/posts/projects`}
-											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
-										>
-											<LayoutGrid className="h-4 w-4" /> <span>Projects</span>
-										</Link>
+										{postLinks.map(({ href, label, icon: Icon }) => (
+											<Link
+												key={href}
+												href={href}
+												className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
+											>
+												<Icon className="h-4 w-4" /> <span>{label}</span>
+											</Link>
+										))}
 									</div>
 								</>
 							)}
@@ -578,21 +508,18 @@ const InsertNavbar = () => {
 							{session && status === "authenticated" && (
 								<>
 									<div className="px-3 pt-4 pb-2 text-xs uppercase tracking-wide text-muted-foreground">
-										Account
+										Workspace
 									</div>
 									<div className="space-y-1">
-										<Link
-											href={`/u/${session.user?.username}`}
-											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
-										>
-											<User className="h-4 w-4" /> <span>Profile</span>
-										</Link>
-										<Link
-											href="/write"
-											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
-										>
-											<FilePenLine className="h-4 w-4" /> <span>Write</span>
-										</Link>
+										{workspaceLinks.map(({ href, label, icon: Icon }) => (
+											<Link
+												key={href}
+												href={href}
+												className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"
+											>
+												<Icon className="h-4 w-4" /> <span>{label}</span>
+											</Link>
+										))}
 										<Link
 											href="mailto:insertcontact999@gmail.com"
 											className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted"

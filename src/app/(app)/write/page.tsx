@@ -3,7 +3,6 @@ import * as React from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { CalendarCheck2, Clock3, FileText, Lightbulb, Rocket, Search, Send, Loader2 } from "lucide-react";
-import "../../swiper.css";
 import Link from "next/link";
 import BlogWriteSidebar from "@/components/BlogWriteSidebar";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";

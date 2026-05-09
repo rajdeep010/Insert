@@ -11,6 +11,7 @@ import Overview from '@/components/Overview'
 import PaymentPage from '@/components/PaymentPage'
 import Profile from '@/components/Profile'
 import Projects from '@/components/Projects'
+import { BlogCollectionsPage } from '@/features/blog/components/BlogCollectionsPage'
 import { Loader2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
@@ -18,7 +19,7 @@ import React, { useEffect } from 'react'
 
 
 export default function UserPage() {
-    const {status} = useSession()
+    const { data: session, status } = useSession()
     const router = useRouter()
     const params = useParams()
     const username = params.username as string
@@ -27,7 +28,7 @@ export default function UserPage() {
 
     const { fetchProfileUser } = useInsertUser()
     const { fetchTopicsByUsername, fetchHeatmapActivity } = useInsertTopics()
-    const { fetchBlogsByUsername } = useBlog()
+    const { fetchBlogsByUsername, fetchBlogCollections } = useBlog()
     const { fetchProjectsByUsername } = useInsertProjects()
 
     useEffect(() => {
@@ -51,13 +52,24 @@ export default function UserPage() {
 
         if (tab === 'blogs') {
             fetchBlogsByUsername(username)
+            if (session?.user?.username === username) {
+                fetchBlogCollections()
+            }
+            return
+        }
+
+        if (tab === 'collections') {
+            if (session?.user?.username === username) {
+                fetchBlogsByUsername(username)
+                fetchBlogCollections()
+            }
             return
         }
 
         if (tab === 'projects') {
             fetchProjectsByUsername(username)
         }
-    }, [username, tab])
+    }, [username, tab, session?.user?.username, fetchBlogCollections])
 
     if(status === "unauthenticated"){
         router.push('/sign-in')
@@ -76,6 +88,7 @@ export default function UserPage() {
                     {tab === 'topics' && <Dashboard />}
                     {tab === 'overview' && <Overview />}
                     {tab === 'blogs' && <Blogs />}
+                    {tab === 'collections' && <BlogCollectionsPage />}
                     {tab === 'projects' && <Projects/>}
                     {tab === 'subscribe' && <PaymentPage/>}
                 </div>

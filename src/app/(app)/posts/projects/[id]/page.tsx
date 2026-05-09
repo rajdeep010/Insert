@@ -71,8 +71,6 @@ export default function ProjectDetailsPage() {
         curr_project,
         isProjectLoading,
     } = useInsertProjects();
-
-    const project = curr_project;
     const { currentUser } = useInsertUser();
     const showSubscribeModal = currentUser?.proStatus?.active === false;
 
@@ -139,7 +137,11 @@ export default function ProjectDetailsPage() {
         // If you want to remove delete from this public post page later, just remove the dropdown below.
     };
 
-    const getRepoName = (repoUrl: string) => {
+    const getRepoName = (repoUrl?: string) => {
+        if (!repoUrl) {
+            return "Repository";
+        }
+
         try {
             const url = new URL(repoUrl);
             const pathParts = url.pathname.split("/");
@@ -182,6 +184,8 @@ export default function ProjectDetailsPage() {
             </div>
         );
     }
+
+    const project = curr_project;
 
 
     return (

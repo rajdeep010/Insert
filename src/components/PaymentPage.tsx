@@ -90,13 +90,19 @@ export default function PaymentPage() {
             }
 
             const order = await createOrder({ type: billing.toUpperCase() })
+            if (!order?.id) {
+                sonnerToast.error('Order creation failed', { description: 'Missing payment order id' })
+                return
+            }
+            const orderId = order.id
+
             const options = {
                 key: RAZORPAY_KEY,
                 amount: order?.amount || 1,
                 currency: order?.currency || 'INR',
                 name: 'Insert',
                 description: `Upgrade to Pro (${billing})`,
-                order_id: order?.id,
+                order_id: orderId,
                 prefill: {
                     name: currentUser?.name || currentUser?.username || '',
                     email: currentUser?.email || '',
@@ -106,7 +112,7 @@ export default function PaymentPage() {
                 handler: async (response: any) => {
                     try {
                         const success = await verifyPayment({
-                            orderId: order?.id,
+                            orderId,
                             paymentId: response.razorpay_payment_id,
                             signature: response.razorpay_signature,
                             gateway: 'razorpay',

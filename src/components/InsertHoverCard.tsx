@@ -17,6 +17,7 @@ const InsertHoverCard: React.FC<InsertHoverCardProps> = ({
 	avatarSize,
 }) => {
 	const currentUser = usePublicUser(username)
+	const fallbackInitial = currentUser?.username?.[0]?.toUpperCase() ?? username?.[0]?.toUpperCase() ?? "?"
 
 
 	return (
@@ -40,7 +41,7 @@ const InsertHoverCard: React.FC<InsertHoverCardProps> = ({
 						</div>
 						: <Avatar className={avatarSize === "small" ? 'h-5 w-5' : 'cursor-pointer outline-2 outline-black border-2 border-red-500 dark:border-white'}>
 							<AvatarImage src={currentUser?.avatar || ''} />
-							<AvatarFallback>{currentUser?.username?.[0]}</AvatarFallback>
+							<AvatarFallback>{fallbackInitial}</AvatarFallback>
 						</Avatar>
 				}
 			</HoverCardTrigger>
@@ -48,7 +49,7 @@ const InsertHoverCard: React.FC<InsertHoverCardProps> = ({
 				<div className="flex justify-between gap-4">
 					<Avatar>
 						<AvatarImage src={currentUser?.avatar || ""} />
-						<AvatarFallback>{currentUser?.username[0]?.toUpperCase()}</AvatarFallback>
+						<AvatarFallback>{fallbackInitial}</AvatarFallback>
 					</Avatar>
 					<div className="flex flex-col gap-2">
 						<div className="flex flex-col gap-1">

@@ -368,6 +368,7 @@ const Dashboard = () => {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>New Topic</DialogTitle>
+                        <DialogDescription>Create a new topic with a short title, description, and visibility.</DialogDescription>
                     </DialogHeader>
                     <Form {...topicForm}>
                         <form

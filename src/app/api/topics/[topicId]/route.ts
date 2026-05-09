@@ -1,5 +1,7 @@
 import { getAuthenticatedUsername } from "@/lib/api/auth";
 import dbConnect from "@/lib/dbConnect";
+import BlogCollectionModel from "@/model/BlogCollection";
+import BlogModel from "@/model/Blog";
 import ProblemModel from "@/model/Problem";
 import TopicModel from "@/model/Topic";
 import {
@@ -15,6 +17,8 @@ type RouteContext = {
 
 const TOPIC_SELECT =
     "_id id title about visibility creator_username collaborators createdAt";
+const BLOG_REFERENCE_SELECT = "_id blogTitle blogUrl";
+const BLOG_COLLECTION_REFERENCE_SELECT = "_id name";
 
 export async function GET(
     request: Request,
@@ -71,14 +75,71 @@ export async function GET(
 
         const problems = await ProblemModel.find({
             topicId: topic._id,
-        }).sort({ createdAt: -1 });
+        })
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const blogIds = Array.from(
+            new Set(
+                problems.flatMap((problem) =>
+                    (problem.blogReferences ?? []).map((reference) => String(reference.blogId))
+                )
+            )
+        );
+
+        const collectionIds = Array.from(
+            new Set(
+                problems.flatMap((problem) =>
+                    (problem.blogReferences ?? [])
+                        .map((reference) => reference.collectionId)
+                        .filter(Boolean)
+                        .map((collectionId) => String(collectionId))
+                )
+            )
+        );
+
+        const [blogs, collections] = await Promise.all([
+            blogIds.length
+                ? BlogModel.find({ _id: { $in: blogIds } }).select(BLOG_REFERENCE_SELECT).lean()
+                : Promise.resolve([]),
+            collectionIds.length
+                ? BlogCollectionModel.find({ _id: { $in: collectionIds } }).select(BLOG_COLLECTION_REFERENCE_SELECT).lean()
+                : Promise.resolve([]),
+        ]);
+
+        const blogMap = new Map(
+            blogs.map((blog) => [String(blog._id), blog])
+        );
+
+        const collectionMap = new Map(
+            collections.map((collection) => [String(collection._id), collection])
+        );
+
+        const enrichedProblems = problems.map((problem) => ({
+            ...problem,
+            blogReferences: (problem.blogReferences ?? []).map((reference) => {
+                const blog = blogMap.get(String(reference.blogId));
+                const collection = reference.collectionId
+                    ? collectionMap.get(String(reference.collectionId))
+                    : undefined;
+
+                return {
+                    ...reference,
+                    blogId: String(reference.blogId),
+                    collectionId: reference.collectionId ? String(reference.collectionId) : null,
+                    blogTitle: blog?.blogTitle,
+                    blogUrl: blog?.blogUrl,
+                    collectionName: collection?.name,
+                };
+            }),
+        }));
 
         return Response.json(
             {
                 success: true,
                 message: "Topic fetched successfully",
                 topic,
-                problems,
+                problems: enrichedProblems,
             },
             { status: 200 }
         );

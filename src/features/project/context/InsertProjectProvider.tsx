@@ -160,10 +160,25 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 
 	const fetchAllProjects = async ({ cursor, limit = 5, search }: { cursor?: string | null; limit?: number; search?: string } = {}) => {
 		try {
-			dispatch({ type: "SET_IS_ALL_PROJECT_LOADING", payload: true })
+			dispatch({ type: "SET_IS_ALL_PROJECTS_LOADING", payload: true })
 			const res = await axios.get(`${API_BASE}/api/projects/list-projects`, { headers: { Authorization: `Bearer ${session?.accessToken}` }, params: { cursor, limit, search } })
 			const { items, nextCursor, hasMore, count } = res.data.data;
-			dispatch({ type: cursor ? "APPEND_ALL_PROJECTS" : "SET_ALL_PROJECTS", payload: { projects: items, meta: { nextCursor, hasMore, count }, user: session?.user } });
+			const payload = {
+				projects: items,
+				meta: {
+					currentPage: cursor ? state.pagination.currentPage + 1 : 1,
+					pageSize: limit,
+					totalItems: count,
+					hasMore,
+					nextCursor: nextCursor ?? null,
+				},
+				user: session?.user ? { _id: session.user._id ?? null } : null,
+			}
+			if (cursor) {
+				dispatch({ type: "APPEND_ALL_PROJECTS", payload })
+			} else {
+				dispatch({ type: "SET_ALL_PROJECTS", payload })
+			}
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to fetch projects", variant: "destructive" })
 		} finally {

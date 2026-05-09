@@ -1,4 +1,5 @@
 import type { Document } from "mongoose";
+import type { ProblemBlogReference } from "@/types/blog-collection";
 
 export type TopicVisibility = "public" | "private";
 
@@ -26,6 +27,7 @@ export interface Question {
     qname: string;
     url: string;
     difficulty: ProblemDifficulty;
+    blogReferences?: ProblemBlogReference[];
 }
 
 export interface Topic {

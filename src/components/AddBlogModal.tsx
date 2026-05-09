@@ -47,6 +47,7 @@ const AddBlogModal = ({defaultVisibility}: any) => {
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Blog Details</DialogTitle>
+					<DialogDescription>Create a new blog and choose whether it starts public or private.</DialogDescription>
 				</DialogHeader>
 				<Form {...blogform}>
 					<form onSubmit={blogform.handleSubmit(blogSubmit)} className='space-y-6'>
