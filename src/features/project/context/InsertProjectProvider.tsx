@@ -2,7 +2,7 @@
 import { toast } from "@/components/ui/use-toast"
 import type { Project } from "@/types/project"
 import axios from "axios"
-import { createContext, useContext, useEffect, useReducer } from "react"
+import { createContext, useCallback, useContext, useEffect, useReducer } from "react"
 import InsertProjectReducer from "@/features/project/reducers/InsertProjectReducer"
 import { useInsertUser } from "@/features/user/context/InsertUserProvider"
 import { useSession } from "next-auth/react"
@@ -142,7 +142,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 		}
 	}
 
-	const fetchProjectsByUsername = async (username: string) => {
+	const fetchProjectsByUsername = useCallback(async (username: string) => {
 		try {
 			if (status == "unauthenticated") {
 				toast({ title: "Error ⭕", description: "You must be logged in to view your projects", variant: "destructive" })
@@ -156,7 +156,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 		} finally {
 			dispatch({ type: "SET_IS_USER_PROJECTS_LOADING", payload: false })
 		}
-	}
+	}, [API_BASE, session?.accessToken, status])
 
 	const fetchAllProjects = async ({ cursor, limit = 5, search }: { cursor?: string | null; limit?: number; search?: string } = {}) => {
 		try {

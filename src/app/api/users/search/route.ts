@@ -1,4 +1,5 @@
 import dbConnect from "@/lib/dbConnect";
+import { getAuthenticatedUsername } from "@/lib/api/auth";
 import { buildPublicUserPayload } from "@/lib/api/user";
 import UserModel from "@/model/User";
 
@@ -8,6 +9,18 @@ const SEARCH_USER_SELECT =
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 export async function GET(request: Request) {
+	const currentUsername = await getAuthenticatedUsername(request);
+	if (!currentUsername) {
+		return Response.json(
+			{
+				success: false,
+				message: "Authentication required",
+				users: [],
+			},
+			{ status: 401 }
+		);
+	}
+
 	const { searchParams } = new URL(request.url);
 	const query = searchParams.get("query")?.trim() ?? "";
 	const excludeUsername = searchParams.get("exclude")?.trim() ?? "";

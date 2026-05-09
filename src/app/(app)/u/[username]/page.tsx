@@ -32,12 +32,18 @@ export default function UserPage() {
     const { fetchProjectsByUsername } = useInsertProjects()
 
     useEffect(() => {
-        if (!username) return
-        fetchProfileUser(username)
-    }, [username])
+        if (status === 'unauthenticated') {
+            router.replace('/sign-in')
+        }
+    }, [router, status])
 
     useEffect(() => {
-        if (!username) return
+        if (status !== 'authenticated' || !username) return
+        fetchProfileUser(username)
+    }, [fetchProfileUser, status, username])
+
+    useEffect(() => {
+        if (status !== 'authenticated' || !username) return
 
         if (tab === 'overview') {
             fetchTopicsByUsername(username)
@@ -69,12 +75,14 @@ export default function UserPage() {
         if (tab === 'projects') {
             fetchProjectsByUsername(username)
         }
-    }, [username, tab, session?.user?.username, fetchBlogCollections])
+    }, [fetchBlogsByUsername, fetchBlogCollections, fetchHeatmapActivity, fetchProjectsByUsername, fetchTopicsByUsername, session?.user?.username, status, tab, username])
 
-    if(status === "unauthenticated"){
-        router.push('/sign-in')
-    } else if(status === "loading") {
+    if(status === "loading") {
         return <Loader2 className='absolute inset-0 m-auto animate-spin h-8 w-8' />
+    }
+
+    if(status !== "authenticated") {
+        return null
     }
 
     return (

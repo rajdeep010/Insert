@@ -1,3 +1,5 @@
+import { normalizeProStatus } from "@/lib/pro-status";
+
 type UserLike = {
     _id?: unknown;
     name?: string | null;
@@ -12,6 +14,12 @@ type UserLike = {
     avatar?: string | null;
     proStatus?: {
         active?: boolean;
+        plan?: string | null;
+        startedAt?: Date | string | null;
+        expiresAt?: Date | string | null;
+        autoRenew?: boolean | null;
+        cancelledAt?: Date | string | null;
+        badgeState?: 'none' | 'expired' | 'active' | null;
     } | null;
     githubLogin?: string | null;
     githubId?: string | number | null;
@@ -22,6 +30,8 @@ type UserLike = {
 };
 
 export function buildMePayload(user: UserLike) {
+    const proStatus = normalizeProStatus(user.proStatus)
+
     return {
         _id: user._id != null ? String(user._id) : null,
         name: user.name ?? null,
@@ -34,7 +44,7 @@ export function buildMePayload(user: UserLike) {
         location: user.location ?? null,
         company: user.company ?? null,
         avatar: user.avatar ?? null,
-        proStatus: user.proStatus ?? null,
+        proStatus,
         github: {
             connected: Boolean(user.githubId),
             login: user.githubLogin ?? null,
@@ -47,6 +57,8 @@ export function buildMePayload(user: UserLike) {
 }
 
 export function buildPublicUserPayload(user: UserLike) {
+    const proStatus = normalizeProStatus(user.proStatus)
+
     return {
         _id: user._id != null ? String(user._id) : null,
         name: user.name ?? null,
@@ -57,7 +69,11 @@ export function buildPublicUserPayload(user: UserLike) {
         location: user.location ?? null,
         company: user.company ?? null,
         avatar: user.avatar ?? null,
-        proStatus: user.proStatus ?? null,
-        proAccess: Boolean(user.proStatus?.active),
+        proStatus: proStatus
+            ? {
+                active: proStatus.active,
+                badgeState: proStatus.badgeState,
+            }
+            : null,
     };
 }

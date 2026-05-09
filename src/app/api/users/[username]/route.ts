@@ -1,4 +1,5 @@
 import dbConnect from "@/lib/dbConnect";
+import { getAuthenticatedUsername } from "@/lib/api/auth";
 import { buildPublicUserPayload } from "@/lib/api/user";
 import UserModel from "@/model/User";
 import { usernameParamsSchema } from "@/schemas/userSchema";
@@ -13,9 +14,21 @@ const PUBLIC_USER_SELECT =
     "_id name username about linkedin profile location company avatar proStatus";
 
 export async function GET(
-    _request: Request,
+    request: Request,
     context: RouteContext
 ) {
+    const currentUsername = await getAuthenticatedUsername(request);
+
+    if (!currentUsername) {
+        return Response.json(
+            {
+                success: false,
+                message: "Authentication required",
+            },
+            { status: 401 }
+        );
+    }
+
     const parsedParams = usernameParamsSchema.safeParse(context.params);
 
     if (!parsedParams.success) {

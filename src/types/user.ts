@@ -1,5 +1,6 @@
 export interface UserProStatus {
     active?: boolean | null;
+    badgeState?: 'none' | 'expired' | 'active' | null;
     plan?: string | null;
     startedAt?: string | Date | null;
     expiresAt?: string | Date | null;

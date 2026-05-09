@@ -64,6 +64,10 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 	const router = useRouter();
 	const [state, dispatch] = useReducer(InsertTopicReducer, initialState);
 	const inflightTopicRequestsRef = useRef(new Map<string, Promise<CurrentTopicState | null>>());
+	const inflightTopicsByUsernameRef = useRef(new Map<string, Promise<void>>());
+	const inflightHeatmapByUsernameRef = useRef(new Map<string, Promise<void>>());
+	const lastFetchedTopicsUsernameRef = useRef<string | null>(null);
+	const lastFetchedHeatmapUsernameRef = useRef<string | null>(null);
 
 	const formatDate = useCallback((date: Date): string => {
 		const year = date.getFullYear();
@@ -98,17 +102,46 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 
 	const fetchTopicsByUsername = useCallback(async (username: string) => {
 		if (!username) return;
+		if (!sessionUsername) {
+			dispatch({ type: "SET_USER_TOPICS", payload: [] });
+			lastFetchedTopicsUsernameRef.current = null;
+			return;
+		}
+
+		if (lastFetchedTopicsUsernameRef.current === username) {
+			return;
+		}
+
+		const inflightRequest = inflightTopicsByUsernameRef.current.get(username);
+		if (inflightRequest) {
+			return inflightRequest;
+		}
+
 		try {
 			dispatch({ type: "SET_TOPICS_LOADING", payload: true });
-			const response = await axios.get(`/api/users/${username}/topics`);
-			dispatch({ type: "SET_USER_TOPICS", payload: response.data.success ? response.data.topics ?? [] : [] });
+			const request = axios.get(`/api/users/${username}/topics`)
+				.then((response) => {
+					dispatch({ type: "SET_USER_TOPICS", payload: response.data.success ? response.data.topics ?? [] : [] });
+					lastFetchedTopicsUsernameRef.current = username;
+				})
+				.catch(() => {
+					toast({ title: "Error ⭕", description: "Error fetching user topics", variant: "destructive" });
+					dispatch({ type: "SET_USER_TOPICS", payload: [] });
+					lastFetchedTopicsUsernameRef.current = null;
+				})
+				.finally(() => {
+					inflightTopicsByUsernameRef.current.delete(username);
+					dispatch({ type: "SET_TOPICS_LOADING", payload: false });
+				});
+
+			inflightTopicsByUsernameRef.current.set(username, request);
+			return await request;
 		} catch {
-			toast({ title: "Error ⭕", description: "Error fetching user topics", variant: "destructive" });
-			dispatch({ type: "SET_USER_TOPICS", payload: [] });
-		} finally {
+			inflightTopicsByUsernameRef.current.delete(username);
 			dispatch({ type: "SET_TOPICS_LOADING", payload: false });
+			lastFetchedTopicsUsernameRef.current = null;
 		}
-	}, []);
+	}, [sessionUsername]);
 
 	const addTopic = useCallback(async (data: z.infer<typeof topicSchema>) => {
 		if (!sessionUsername) return;
@@ -226,24 +259,56 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 
 	const fetchHeatmapActivity = useCallback(async (username: string) => {
 		try {
-			if (!username) {
+			if (!sessionUsername) {
 				dispatch({ type: "SET_HEATMAP_VALUES", payload: [] });
+				lastFetchedHeatmapUsernameRef.current = null;
 				return;
 			}
-			dispatch({ type: "SET_HEATMAP_LOADING", payload: true });
-			const userValuesRef = databaseRef(db, `users/${username}/values`);
-			const snapshot = await get(userValuesRef);
-			if (snapshot.exists()) {
-				dispatch({ type: "SET_HEATMAP_VALUES", payload: Object.values(snapshot.val()) as HeatmapDateValues[] });
-			} else {
+			if (!username) {
 				dispatch({ type: "SET_HEATMAP_VALUES", payload: [] });
+				lastFetchedHeatmapUsernameRef.current = null;
+				return;
 			}
+
+			if (lastFetchedHeatmapUsernameRef.current === username) {
+				return;
+			}
+
+			const inflightRequest = inflightHeatmapByUsernameRef.current.get(username);
+			if (inflightRequest) {
+				return inflightRequest;
+			}
+
+			dispatch({ type: "SET_HEATMAP_LOADING", payload: true });
+			const request = get(databaseRef(db, `users/${username}/values`))
+				.then((snapshot) => {
+					if (snapshot.exists()) {
+						dispatch({ type: "SET_HEATMAP_VALUES", payload: Object.values(snapshot.val()) as HeatmapDateValues[] });
+					} else {
+						dispatch({ type: "SET_HEATMAP_VALUES", payload: [] });
+					}
+					lastFetchedHeatmapUsernameRef.current = username;
+				})
+				.catch(() => {
+					toast({ title: "Error ⭕", description: "Error in fetching heatmap", variant: "destructive" });
+					lastFetchedHeatmapUsernameRef.current = null;
+				})
+				.finally(() => {
+					inflightHeatmapByUsernameRef.current.delete(username);
+					dispatch({ type: "SET_HEATMAP_LOADING", payload: false });
+				});
+
+			inflightHeatmapByUsernameRef.current.set(username, request);
+			return await request;
 		} catch {
 			toast({ title: "Error ⭕", description: "Error in fetching heatmap", variant: "destructive" });
+			lastFetchedHeatmapUsernameRef.current = null;
 		} finally {
-			dispatch({ type: "SET_HEATMAP_LOADING", payload: false });
+			if (!inflightHeatmapByUsernameRef.current.has(username)) {
+				dispatch({ type: "SET_HEATMAP_LOADING", payload: false });
+			}
 		}
-	}, []);
+	}, [sessionUsername]);
 
 	const addCollaborator = useCallback(async (add_whom_username: string, add_whom_name: string, topicid: string) => {
 		if (!sessionUsername) return;

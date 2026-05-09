@@ -3,7 +3,7 @@ import type { UserPaymentUpdate } from "@/types/payment";
 import type { UserInfo, UserState } from "@/types/user";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useReducer, useRef } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "react";
 import InsertUserReducer from "@/features/user/reducers/InsertUserReducer";
 import axios from "axios";
 import { toast } from "@/components/ui/use-toast";
@@ -43,14 +43,15 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
 	const inflightPublicUsersRef = useRef(new Map<string, Promise<UserInfo | null>>())
 	const username = session?.user?.username || null
 	const { cloudName, uploadPreset, uploadUrl } = externalServices.cloudinary
-	const syncCurrentUserIntoProfile = (updatedUser: UserInfo) => {
+	const syncCurrentUserIntoProfile = useCallback((updatedUser: UserInfo) => {
 		if (state.profileUser?.username && state.profileUser?.username === updatedUser?.username) {
 			dispatch({ type: "SET_PROFILE_USER", payload: updatedUser })
 		}
-	}
+	}, [state.profileUser?.username])
 
-	const fetchPublicUser: InsertUserProviderProps["fetchPublicUser"] = async (targetUsername, options) => {
+	const fetchPublicUser: InsertUserProviderProps["fetchPublicUser"] = useCallback(async (targetUsername, options) => {
 		if (!targetUsername) return null
+		if (status !== "authenticated") return null
 		if (!options?.force && state.publicUsersByUsername[targetUsername]) {
 			return state.publicUsersByUsername[targetUsername]
 		}
@@ -75,9 +76,9 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
 
 		inflightPublicUsersRef.current.set(targetUsername, request)
 		return request
-	}
+	}, [state.publicUsersByUsername, status])
 
-	const fetchCurrentUser = async () => {
+	const fetchCurrentUser = useCallback(async () => {
 		try {
 			if (status !== 'authenticated') return
 			dispatch({ type: "SET_IS_CURRENT_USER_LOADING", payload: true })
@@ -88,9 +89,9 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
 		} finally {
 			dispatch({ type: "SET_IS_CURRENT_USER_LOADING", payload: false })
 		}
-	}
+	}, [status])
 
-	const uploadAvatar = async (file: File) => {
+	const uploadAvatar = useCallback(async (file: File) => {
 		try {
 			if (!username) return
 			dispatch({ type: "SET_IS_AVATAR_LOADING", payload: true })
@@ -116,10 +117,11 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
 		} finally {
 			dispatch({ type: "SET_IS_AVATAR_LOADING", payload: false })
 		}
-	}
+	}, [cloudName, syncCurrentUserIntoProfile, uploadPreset, uploadUrl, username])
 
-	const fetchProfileUser: InsertUserProviderProps["fetchProfileUser"] = async (username: string) => {
+	const fetchProfileUser: InsertUserProviderProps["fetchProfileUser"] = useCallback(async (username: string) => {
 		try {
+			if (status !== "authenticated") return null
 			if (!username) return null
 			if (state.profileUser?.username === username) return state.profileUser
 			const cachedUser = state.publicUsersByUsername[username]
@@ -142,9 +144,9 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
 		} finally {
 			dispatch({ type: "SET_IS_PROFILE_USER_LOADING", payload: false })
 		}
-	}
+	}, [fetchPublicUser, router, state.profileUser, state.publicUsersByUsername, status])
 
-	const updateUser = async (formData: Partial<UserInfo>) => {
+	const updateUser = useCallback(async (formData: Partial<UserInfo>) => {
 		try {
 			if (status !== 'authenticated') return
 			dispatch({ type: "SET_IS_CURRENT_USER_LOADING", payload: true })
@@ -159,9 +161,9 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
 		} finally {
 			dispatch({ type: "SET_IS_CURRENT_USER_LOADING", payload: false })
 		}
-	}
+	}, [status, syncCurrentUserIntoProfile])
 
-	const updateUserAfterPayment = async (payload: UserPaymentUpdate) => {
+	const updateUserAfterPayment = useCallback(async (payload: UserPaymentUpdate) => {
 		dispatch({
 			type: "SET_USER_AFTER_PAYMENT",
 			payload: {
@@ -173,16 +175,26 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
 				cancelledAt: payload?.cancelledAt || null,
 			}
 		})
-	}
+	}, [])
 
 	useEffect(() => {
 		if (status === "authenticated") {
 			void fetchCurrentUser()
 		}
-	}, [status])
+	}, [fetchCurrentUser, status])
+
+	const contextValue = useMemo(() => ({
+		...state,
+		uploadAvatar,
+		fetchCurrentUser,
+		fetchProfileUser,
+		fetchPublicUser,
+		updateUser,
+		updateUserAfterPayment,
+	}), [state, uploadAvatar, fetchCurrentUser, fetchProfileUser, fetchPublicUser, updateUser, updateUserAfterPayment])
 
 	return (
-		<InsertUserContext.Provider value={{ ...state, uploadAvatar, fetchCurrentUser, fetchProfileUser, fetchPublicUser, updateUser, updateUserAfterPayment }}>
+		<InsertUserContext.Provider value={contextValue}>
 			{children}
 		</InsertUserContext.Provider>
 	)
@@ -196,12 +208,14 @@ export const useInsertUser = () => {
 
 export const usePublicUser = (username?: string | null) => {
 	const { publicUsersByUsername, fetchPublicUser } = useInsertUser()
+	const { status } = useSession()
 	const cachedUser = username ? publicUsersByUsername[username] ?? null : null
 
 	useEffect(() => {
+		if (status !== "authenticated") return
 		if (!username || cachedUser) return
 		void fetchPublicUser(username)
-	}, [cachedUser, fetchPublicUser, username])
+	}, [cachedUser, fetchPublicUser, status, username])
 
 	return cachedUser
 }

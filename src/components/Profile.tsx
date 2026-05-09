@@ -11,7 +11,7 @@ import { Skeleton } from './ui/skeleton'
 import ProfileSkeleton from './skeletons/ProfileSkeleton'
 import AvatarSkeleton from './skeletons/AvatarSkeleton'
 import { useInsertUser } from '@/features/user/context/InsertUserProvider'
-import { BadgeCheck } from 'lucide-react'
+import ProBadgeIcon from './ProBadgeIcon'
 
 
 
@@ -21,7 +21,7 @@ const Profile = () => {
     const { data: session } = useSession()
     const { profileUser, isAvatarUploading, isUserLoading } = useInsertUser()
 
-    const hasPro = !!profileUser?.proStatus?.active
+    const badgeState = profileUser?.proStatus?.badgeState ?? 'none'
 
     return (
         <div className='flex justify-between'>
@@ -53,15 +53,7 @@ const Profile = () => {
                 {!isUserLoading && <div className='flex flex-col items-start justify-between mt-4 gap-6 profile-details-gap'>
                     <div className='flex flex-col'>
                         <p className='flex items-center gap-1 text-md text-slate-500 profile-text-sm'>@{profileUser?.username}
-                            {hasPro && (
-                                <span
-                                    className='inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-500'
-                                    aria-label='Verified'
-                                    title='Verified'
-                                >
-                                    <BadgeCheck className='text-white' size={14} strokeWidth={3} />
-                                </span>
-                            )}
+                            <ProBadgeIcon state={badgeState} />
                         </p>
                         <p className='text-2xl font-bold mb-1 profile-text-md'>{profileUser?.name}</p>
                         <p className='text-sm '>{profileUser?.about}</p>

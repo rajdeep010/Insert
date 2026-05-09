@@ -29,6 +29,17 @@ export async function GET(
     const requestedUsername = parsedParams.data.username;
     const currentUsername = await getAuthenticatedUsername(request);
 
+    if (!currentUsername) {
+        return Response.json(
+            {
+                success: false,
+                message: "Authentication required",
+                topics: [],
+            },
+            { status: 401 }
+        );
+    }
+
     await dbConnect();
 
     try {
