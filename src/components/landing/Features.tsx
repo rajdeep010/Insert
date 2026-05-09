@@ -251,8 +251,8 @@ export function Features() {
                         </div>
                     </div>
 
-                    <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-                        <div className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-white/10">
+                    <div className="mt-6 grid grid-cols-3 gap-4 lg:grid-cols-3">
+                        {/* <div className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-white/10">
                             <Image
                                 src="https://res.cloudinary.com/dgxeg3sju/image/upload/v1778334643/b0c02cc0-cc1b-45db-946f-ca4891bc9e3b.png"
                                 alt="Public collection detail page preview"
@@ -260,9 +260,9 @@ export function Features() {
                                 height={1000}
                                 className="h-full w-full object-cover"
                             />
-                        </div>
+                        </div> */}
 
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-1">
+                        {/* <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-1"> */}
                             <div className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/10">
                                 <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-black text-white dark:bg-white dark:text-black">
                                     <BookMarked className="h-4 w-4" />
@@ -292,7 +292,7 @@ export function Features() {
                                     Billing, higher-scale workflows, and project release tooling remain part of the Pro story.
                                 </p>
                             </div>
-                        </div>
+                        {/* </div> */}
                     </div>
                 </div>
             </div>
