@@ -30,10 +30,10 @@ export function About() {
 
             <WobbleCard containerClassName="col-span-1 min-h-[300px] bg-gradient-to-br from-blue-800 to-indigo-800">
                 <h2 className="max-w-80  text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
-                    Build slow. Ship fast. Iterate smarter.
+                    Curate blog collections that stay easy to share
                 </h2>
                 <p className="mt-4 max-w-[26rem] text-left text-sm lg:text-base/4 text-neutral-200">
-                    Plan, write, and release with focus. Keep momentum without sacrificing quality.
+                    Group multiple posts into a single collection, control visibility, and publish a cleaner public reading flow instead of sharing loose blog links one by one.
                 </p>
             </WobbleCard>
 
@@ -43,7 +43,7 @@ export function About() {
                         Write technical blogs and documentation with Insert
                     </h2>
                     <p className="mt-4 max-w-[46rem] text-left text-sm lg:text-base/4 text-neutral-200">
-                        Draft technical articles and project docs with a clean, focused editor — rich formatting, code blocks, and simple publishing.
+                        Draft technical articles and project docs with a clean, focused editor, then organize related posts into collections for tutorials, release trails, or learning paths.
                     </p>
                 </div>
                 <Image
@@ -57,10 +57,10 @@ export function About() {
 
             <WobbleCard containerClassName="col-span-1 min-h-[300px] bg-gradient-to-br from-amber-600 to-orange-600">
                 <h2 className="max-w-80 text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
-                    Seamless Pro — no interruptions
+                    Seamless Pro when you need more scale
                 </h2>
                 <p className="mt-4 max-w-[26rem] text-left text-sm lg:text-base/4 text-yellow-50">
-                    Upgrade in seconds and Pro features unlock instantly: project dashboards, unlimited sheets, and automated release notes — all consistent with your workflow.
+                    Upgrade in seconds and Pro features unlock instantly: project dashboards, unlimited sheets, organized publishing workflows, and automated release notes — all consistent with your workflow.
                 </p>
             </WobbleCard>
 
