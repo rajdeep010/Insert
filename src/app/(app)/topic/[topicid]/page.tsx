@@ -249,8 +249,10 @@ const EachTopic = () => {
 		!isCollaborator
 	);
 	const collaboratorCount = curr_topic?.topic?.collaborators?.length ?? 0;
+	const resolvedTopicId = String(curr_topic?.topic?.id ?? "");
+	const isResolvedTopic = Boolean(curr_topic && resolvedTopicId === topic_id);
 
-	if (isTopicLoading && !curr_topic) {
+	if (isTopicLoading || !isResolvedTopic) {
 		return (
 			<div className="min-h-screen bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.98))] dark:bg-[linear-gradient(180deg,rgba(2,6,23,1),rgba(2,6,23,0.98))]">
 				<div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
@@ -662,16 +664,12 @@ const EachTopic = () => {
 						</DialogContent>
 					</Dialog>
 
-					{!isTopicLoading && (
-						<TopicProblemsGrid
-							problems={tableProblems}
-							canManageProblems={canManageProblems}
-							onDelete={handleOpenDeleteProblemModal}
-							onEdit={handleOpenEditProblemModal}
-						/>
-					)}
-
-					{isTopicLoading && <TableSkeleton />}
+					<TopicProblemsGrid
+						problems={tableProblems}
+						canManageProblems={canManageProblems}
+						onDelete={handleOpenDeleteProblemModal}
+						onEdit={handleOpenEditProblemModal}
+					/>
 				</div>
 			</div>
 		</div>

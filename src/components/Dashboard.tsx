@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import { topicSchema } from '@/schemas/topicSchema'
 import { useInsertTopics } from '@/features/topic/context/InsertTopicProvider'
+import { getLastModifiedText } from '@/helpers/last-modified'
 import { toast } from './ui/use-toast'
 
 import {
@@ -51,7 +52,10 @@ import {
     Plus,
     Search,
     Lock,
-    Globe2
+    Globe2,
+    CalendarDays,
+    ArrowUpRight,
+    Users
 } from 'lucide-react'
 
 /* Shared style helpers (kept consistent with project page) */
@@ -61,6 +65,21 @@ const surfaceMuted =
     'rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white/50 dark:bg-gray-900/30'
 const hoverable =
     'transition-colors hover:border-black/20 dark:hover:border-white/30'
+
+const formatCreatedDate = (value?: string | Date) => {
+    if (!value) return 'Unknown date'
+
+    const date = typeof value === 'string' ? new Date(value) : value
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return 'Unknown date'
+
+    return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    })
+}
+
+const loadingCards = Array.from({ length: 4 })
 
 const Dashboard = () => {
     const { data: session, status } = useSession()
@@ -90,6 +109,11 @@ const Dashboard = () => {
             ) || [],
         [searchQuery, user_Topics]
     )
+
+    const topicCountLabel = useMemo(() => {
+        if (isTopicLoading) return 'Loading topics'
+        return `${filteredTopics.length} topic${filteredTopics.length === 1 ? '' : 's'}`
+    }, [filteredTopics.length, isTopicLoading])
 
     const handleOpenDeleteTopicModal = (id: string) => {
         setCurrentTopicId(id)
@@ -134,123 +158,181 @@ const Dashboard = () => {
 
     return (
         <div className="flex flex-col gap-8">
-            {/* Header / Controls */}
-            <div className="flex flex-col gap-6">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-                    <div className="flex items-center gap-3">
-                        {!isTopicLoading && <span className="flex items-center gap-2 text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
-                            Topics
-                            <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                                {filteredTopics.length}
-                            </Badge>
-                        </span>}
-                    </div>
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                        {canEdit && (
-                            <Button
-                                onClick={() => setIsTopicModalOpen(true)}
-                                size="sm"
-                                className="gap-2"
-                            >
-                                <Plus className="h-4 w-4" />
-                                Add
-                            </Button>
-                        )}
-                    </div>
-                </div>
+            <section className={surface + ' p-5 sm:p-6'}>
+                <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center gap-2 rounded-full bg-indigo-500/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.18em] text-indigo-700 dark:text-indigo-300">
+                                    Topics
+                                </span>
+                                <Badge variant="secondary" className="rounded-full px-2.5 py-1 text-xs">
+                                    {topicCountLabel}
+                                </Badge>
+                            </div>
 
-                <div className={`${surface} ${hoverable} shadow-none p-2 pr-3 flex items-center gap-2 w-full`}>
-                    <div className="pl-2 pr-1 text-gray-500">
-                        <Search className="h-4 w-4" />
-                    </div>
-                    <Input
-                        type="text"
-                        placeholder="Search topics by title..."
-                        className="border-0 focus-visible:ring-0 bg-transparent"
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                    />
-                </div>
-            </div>
+                            <div className="space-y-2">
+                                <h2 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">
+                                    Topic dashboard
+                                </h2>
+                                <p className="max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+                                    Browse topic collections, jump into problem sets quickly, and keep track of when each topic was created.
+                                </p>
+                            </div>
+                        </div>
 
-            {/* Topics List */}
-            <div className="flex flex-col gap-4 max-h-[65vh] overflow-y-auto pr-1 custom-small-scrollbar">
-                {filteredTopics.length > 0 ? (
-                    filteredTopics.map(
-                        (
-                            {
-                                id,
-                                title,
-                                about,
-                                visibility
-                            },
-                            idx
-                        ) => (
-                            <Link key={id} href={`/topic/${id}`} className="block group">
-                                {/* Larger card with full-click surface */}
-                                <Card
-                                    className={
-                                        surface +
-                                        ' shadow-none p-0 ' +
-                                        hoverable +
-                                        ' cursor-pointer group/inner overflow-hidden'
-                                    }
+                        <div className="flex w-full items-center gap-3 lg:w-auto">
+                            <div className={`${surfaceMuted} flex flex-1 items-center gap-2 px-3 py-2 lg:min-w-[20rem]`}>
+                                <Search className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                                <Input
+                                    type="text"
+                                    placeholder="Search topics by title..."
+                                    className="h-auto border-0 bg-transparent px-0 py-0 shadow-none focus-visible:ring-0"
+                                    value={searchQuery}
+                                    onChange={e => setSearchQuery(e.target.value)}
+                                />
+                            </div>
+
+                            {canEdit && (
+                                <Button
+                                    onClick={() => setIsTopicModalOpen(true)}
+                                    className="h-11 shrink-0 gap-2 rounded-xl px-4"
                                 >
-                                    <CardHeader className="p-6 lg:p-7 pb-5 lg:pb-6">
-                                        <div className="flex items-start justify-between gap-4">
-                                            {/* Left: content */}
-                                            <div className="flex flex-col gap-3 min-w-0">
-                                                <div className="flex flex-wrap items-center gap-3">
-                                                    <CardTitle className="text-xl font-semibold truncate group-hover/inner:text-indigo-600 dark:group-hover/inner:text-indigo-400 transition-colors">
-                                                        {title}
-                                                    </CardTitle>
-                                                    {visibility === 'private' ? (
-                                                        <Badge
-                                                            variant="destructive"
-                                                            className="flex items-center gap-1 text-[10px] px-2 py-0.5"
-                                                        >
-                                                            <Lock className="h-3 w-3" />
-                                                            private
-                                                        </Badge>
-                                                    ) : (
-                                                        <Badge
-                                                            variant="secondary"
-                                                            className="flex items-center gap-1 text-[10px] px-2 py-0.5"
-                                                        >
-                                                            <Globe2 className="h-3 w-3" />
-                                                            public
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                                {about && (
-                                                    <CardDescription className="text-sm leading-relaxed line-clamp-3">
-                                                        {about}
+                                    <Plus className="h-4 w-4" />
+                                    New topic
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+
+                    {!isTopicLoading && filteredTopics.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                            <span className="rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-800">Open any card to manage problems</span>
+                            {canEdit && <span className="rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-800">Delete stays isolated from navigation</span>}
+                        </div>
+                    )}
+                </div>
+            </section>
+
+            <div className="flex flex-col gap-4">
+                {isTopicLoading ? (
+                    <div className="grid gap-4 md:grid-cols-2">
+                        {loadingCards.map((_, index) => (
+                            <Card key={index} className={surface + ' overflow-hidden shadow-none'}>
+                                <CardHeader className="space-y-4 p-6">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="space-y-2">
+                                            <div className="h-6 w-36 animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
+                                            <div className="h-4 w-24 animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
+                                        </div>
+                                        <div className="h-7 w-20 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="h-4 w-full animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
+                                        <div className="h-4 w-4/5 animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
+                                    </div>
+                                    <div className="flex items-center gap-2 pt-2">
+                                        <div className="h-6 w-24 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
+                                        <div className="h-6 w-28 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
+                                    </div>
+                                </CardHeader>
+                            </Card>
+                        ))}
+                    </div>
+                ) : filteredTopics.length > 0 ? (
+                    <div className="grid gap-4 md:grid-cols-2">
+                        {filteredTopics.map(({ id, title, about, visibility, createdAt, collaborators, problems }) => {
+                            const createdLabel = formatCreatedDate(createdAt)
+                            const createdRelative = getLastModifiedText(createdAt, { empty: 'Recently created' })
+                            const collaboratorCount = collaborators?.length ?? 0
+                            const problemCount = problems?.length ?? 0
+
+                            return (
+                                <Link key={id} href={`/topic/${id}`} className="block group">
+                                    <Card
+                                        className={
+                                            surface +
+                                            ' shadow-none p-0 ' +
+                                            hoverable +
+                                            ' h-full cursor-pointer overflow-hidden group/inner'
+                                        }
+                                    >
+                                        <CardHeader className="flex h-full flex-col gap-5 p-6 lg:p-7">
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="min-w-0 space-y-3">
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <CardTitle className="truncate text-xl font-semibold group-hover/inner:text-indigo-600 dark:group-hover/inner:text-indigo-400 transition-colors">
+                                                            {title}
+                                                        </CardTitle>
+                                                        {visibility === 'private' ? (
+                                                            <Badge
+                                                                variant="destructive"
+                                                                className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px]"
+                                                            >
+                                                                <Lock className="h-3 w-3" />
+                                                                private
+                                                            </Badge>
+                                                        ) : (
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px]"
+                                                            >
+                                                                <Globe2 className="h-3 w-3" />
+                                                                public
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+
+                                                    <CardDescription className="line-clamp-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                                                        {about?.trim() ? about : 'No description added for this topic yet.'}
                                                     </CardDescription>
-                                                )}
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    {canEdit && (
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="icon"
+                                                            onClick={(e) => {
+                                                                e.preventDefault()
+                                                                e.stopPropagation()
+                                                                handleOpenDeleteTopicModal(id)
+                                                            }}
+                                                            className="h-8 w-8 shrink-0 rounded-lg"
+                                                            title="Delete topic"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+
+                                                    <div className="rounded-full border border-black/10 bg-black/[0.03] p-2 text-slate-500 transition-colors group-hover/inner:text-indigo-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300 dark:group-hover/inner:text-indigo-300">
+                                                        <ArrowUpRight className="h-4 w-4" />
+                                                    </div>
+                                                </div>
                                             </div>
 
-                                            {/* Right: action (does not navigate) */}
-                                            {canEdit && (
-                                                <Button
-                                                    variant="destructive"
-                                                    size="icon"
-                                                    onClick={(e) => {
-                                                        e.preventDefault()
-                                                        e.stopPropagation()
-                                                        handleOpenDeleteTopicModal(id)
-                                                    }}
-                                                    className="h-8 w-8"
-                                                    title="Delete topic"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </CardHeader>
-                                </Card>
-                            </Link>
-                        )
-                    )
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <Badge variant="secondary" className="rounded-full px-2.5 py-1 text-[11px]">
+                                                    {problemCount} problem{problemCount === 1 ? '' : 's'}
+                                                </Badge>
+                                                <Badge variant="secondary" className="rounded-full px-2.5 py-1 text-[11px]">
+                                                    <Users className="mr-1 h-3.5 w-3.5" />
+                                                    {collaboratorCount} collaborator{collaboratorCount === 1 ? '' : 's'}
+                                                </Badge>
+                                            </div>
+
+                                            <div className="mt-auto flex items-center justify-between gap-3 border-t border-black/5 pt-4 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400">
+                                                <div className="flex min-w-0 items-center gap-2">
+                                                    <CalendarDays className="h-4 w-4 shrink-0" />
+                                                    <span className="truncate">Created {createdLabel}</span>
+                                                </div>
+                                            </div>
+                                        </CardHeader>
+                                    </Card>
+                                </Link>
+                            )
+                        })}
+                    </div>
                 ) : (
                     <Card className={surface + ' shadow-none'}>
                         <CardContent className="py-16 flex flex-col items-center gap-4 text-center">
@@ -259,7 +341,7 @@ const Dashboard = () => {
                             </div>
                             <div>
                                 <h3 className="font-medium">No topics found</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                     {searchQuery
                                         ? 'Try refining your search query.'
                                         : canEdit
