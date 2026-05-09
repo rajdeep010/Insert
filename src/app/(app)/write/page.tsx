@@ -3,13 +3,13 @@ import * as React from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { CalendarCheck2, Clock3, FileText, Lightbulb, Rocket, Search, Send, Loader2 } from "lucide-react";
-import "../../swiper.css";
 import Link from "next/link";
 import BlogWriteSidebar from "@/components/BlogWriteSidebar";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
-import { useBlog } from "@/app/context/BlogProvider";
-import { useInsertProjects } from "@/app/context/InsertProjectProvider";
+import { useBlog } from "@/features/blog/context/BlogProvider";
+import { useInsertProjects } from "@/features/project/context/InsertProjectProvider";
+import { useSession } from "next-auth/react";
 
 /* Consistent surface styles */
 const surface =
@@ -19,8 +19,9 @@ const hoverable = "transition-colors hover:border-black/20 dark:hover:border-whi
 const MAX_LEN = 300;
 
 const Write = () => {
-	const { allBlogs } = useBlog();
+	const { allBlogs, fetchBlogsByUsername } = useBlog();
 	const { sendFeedback } = useInsertProjects();
+	const { data: session } = useSession();
 
 	const [mode, setMode] = React.useState<"message" | "suggestion">("message");
 	const [text, setText] = React.useState("");
@@ -30,6 +31,11 @@ const Write = () => {
 
 	const messageBoxRef = React.useRef<HTMLDivElement>(null);
   	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+	React.useEffect(() => {
+		if (!session?.user?.username) return
+		fetchBlogsByUsername(session.user.username)
+	}, [session?.user?.username]);
 
 	const handleSend = async () => {
 		if (!text.trim()) return;

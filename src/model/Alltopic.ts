@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose"
-import { Question, Topic, Alltopic, Collaborator } from '@/types/types';
+import type { Alltopic, Collaborator, Question, Topic } from '@/types/topic';
 
 
 

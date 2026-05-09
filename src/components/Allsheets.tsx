@@ -1,4 +1,3 @@
-import { useTopics } from '@/app/context/TopicProvider'
 import React from 'react'
 import {
     Avatar,
@@ -6,7 +5,7 @@ import {
     AvatarImage,
 } from "@/components/ui/avatar"
 import Link from 'next/link'
-import { useInsertTopics } from '@/app/context/InsertTopicProvider'
+import { useInsertTopics } from '@/features/topic/context/InsertTopicProvider'
 
 
 

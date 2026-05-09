@@ -33,7 +33,7 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import InsertIcon from "./InsertIcon";
 import AddReleaseBlogModal from "./AddReleaseBlogModal";
-import { useInsertProjects } from "@/app/context/InsertProjectProvider";
+import { useInsertProjects } from "@/features/project/context/InsertProjectProvider";
 import { getLastModifiedText } from "@/helpers/last-modified";
 import { cn } from "@/lib/utils";
 

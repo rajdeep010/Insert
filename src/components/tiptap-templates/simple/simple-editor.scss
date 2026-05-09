@@ -27,7 +27,7 @@ body,
 }
 
 body {
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .tiptap.ProseMirror {
@@ -65,10 +65,14 @@ body {
   scrollbar-color: var(--tt-scrollbar-color) transparent;
 }
 
-.post-wrapper{
-  height: 90vh;
+.post-wrapper {
+  min-height: 70vh;
+  max-height: 82vh;
   overflow-y: auto;
   width: 100%;
+  border: 1px solid hsl(var(--border) / 0.55);
+  background: hsl(var(--card) / 0.72);
+  box-shadow: 0 18px 60px -40px hsl(var(--foreground) / 0.28);
 
   &::-webkit-scrollbar {
     display: block;
@@ -90,27 +94,28 @@ body {
 }
 
 .simple-editor-content {
-  max-width: 90vw;
+  max-width: 100%;
   width: 100%;
   margin: 0 auto;
 }
 
-.simple-post-content{
+.simple-post-content {
   height: 80vh;
 }
 
 .simple-editor-content .tiptap.ProseMirror {
-  // padding: 3rem 3rem;
+  padding: 2.25rem 2rem 2.75rem;
+  max-width: 56rem;
+  margin: 0 auto;
 }
 
 @media screen and (max-width: 480px) {
   .simple-editor-content .tiptap.ProseMirror {
-    padding: 1rem 0rem;
+    padding: 1.25rem 1rem 1.75rem;
   }
 }
 
-
-.blog-save-button{
+.blog-save-button {
   padding: 1rem 0.5rem !important;
   border-radius: 0.1rem;
 }

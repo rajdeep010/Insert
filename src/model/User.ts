@@ -1,4 +1,4 @@
-import { NotificationData } from "@/types/types";
+import type { NotificationData } from "@/types/notifications";
 import mongoose, {Schema, Document} from "mongoose";
 
 export type ProPlan = 'monthly' | 'yearly' | null;
@@ -26,6 +26,8 @@ export interface User extends Document{
     isVerified: boolean;
     verifyCode: string;
     verifyCodeExpiry: Date;
+    lastLoggedIn?: Date | null;
+    lastSeenAt?: Date | null;
     location: string;
     company: string;
     // topic_ids: [string];
@@ -114,6 +116,14 @@ const UserSchema: Schema<User> = new Schema({
         type: Date,
         required: [true, 'Verify Code Expiry is required'],
     }, 
+    lastLoggedIn: {
+        type: Date,
+        default: null,
+    },
+    lastSeenAt: {
+        type: Date,
+        default: null,
+    },
     avatar: {
         type: String,
         default: 'https://github.com/shadcn.png'

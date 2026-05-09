@@ -1,9 +1,9 @@
 import React, { useEffect, useState, ReactNode } from "react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import axios from "axios";
 import Link from "next/link";
-import { BadgeCheck } from "lucide-react";
+import ProBadgeIcon from "@/components/ProBadgeIcon";
+import { usePublicUser } from "@/features/user/context/InsertUserProvider";
 
 interface InsertHoverCardProps {
 	username: string;
@@ -16,24 +16,9 @@ const InsertHoverCard: React.FC<InsertHoverCardProps> = ({
 	type,
 	avatarSize,
 }) => {
-	const [currentUser, setCurrentUser] = useState<any>(null)
-
-	useEffect(() => {
-		const collectUser = async () => {
-			try {
-				if (!username) return
-				const response = await axios.get(`/api/get-user-by-username?username=${username}`)
-				if (response.data?.success) {
-					setCurrentUser(response?.data?.userdata)
-				} else {
-					setCurrentUser(null)
-				}
-			} catch {
-				setCurrentUser(null)
-			}
-		}
-		collectUser()
-	}, [username])
+	const currentUser = usePublicUser(username)
+	const fallbackInitial = currentUser?.username?.[0]?.toUpperCase() ?? username?.[0]?.toUpperCase() ?? "?"
+	const badgeState = currentUser?.proStatus?.badgeState ?? 'none'
 
 
 	return (
@@ -43,21 +28,11 @@ const InsertHoverCard: React.FC<InsertHoverCardProps> = ({
 					type === "username"
 						? <div className={avatarSize === "small" ? "flex items-center gap-1 text-gray-500 hover:underline cursor-pointer" : "flex items-center gap-1 text-blue-500 hover:underline cursor-pointer"}>
 							@{username}
-							{
-								currentUser?.proStatus?.active && (
-									<span
-										className='inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-500'
-										aria-label='Verified'
-										title='Verified'
-									>
-										<BadgeCheck className='text-white' size={14} strokeWidth={3} />
-									</span>
-								)
-							}
+							<ProBadgeIcon state={badgeState} />
 						</div>
 						: <Avatar className={avatarSize === "small" ? 'h-5 w-5' : 'cursor-pointer outline-2 outline-black border-2 border-red-500 dark:border-white'}>
 							<AvatarImage src={currentUser?.avatar || ''} />
-							<AvatarFallback>{currentUser?.username[0]}</AvatarFallback>
+							<AvatarFallback>{fallbackInitial}</AvatarFallback>
 						</Avatar>
 				}
 			</HoverCardTrigger>
@@ -65,24 +40,14 @@ const InsertHoverCard: React.FC<InsertHoverCardProps> = ({
 				<div className="flex justify-between gap-4">
 					<Avatar>
 						<AvatarImage src={currentUser?.avatar || ""} />
-						<AvatarFallback>{currentUser?.username[0]?.toUpperCase()}</AvatarFallback>
+						<AvatarFallback>{fallbackInitial}</AvatarFallback>
 					</Avatar>
 					<div className="flex flex-col gap-2">
 						<div className="flex flex-col gap-1">
 							<h4 className="text-sm font-semibold truncate mb-[-2px]">{currentUser?.name || currentUser?.username}</h4>
 							<Link href={`/u/${currentUser?.username}`} className="flex items-center gap-1 text-xs text-slate-500 truncate hover:text-blue-500 hover:underline">
 								@{currentUser?.username}
-								{
-									currentUser?.proStatus?.active && (
-										<span
-											className='inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-500'
-											aria-label='Verified'
-											title='Verified'
-										>
-											<BadgeCheck className='text-white' size={14} strokeWidth={3} />
-										</span>
-									)
-								}
+								<ProBadgeIcon state={badgeState} />
 							</Link>
 						</div>
 

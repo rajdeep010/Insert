@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
     ExternalLink,
     Calendar,
@@ -17,7 +17,7 @@ import {
     Edit
 } from 'lucide-react'
 import Link from 'next/link'
-import { useInsertProjects } from '@/app/context/InsertProjectProvider'
+import { useInsertProjects } from '@/features/project/context/InsertProjectProvider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -45,6 +45,7 @@ export default function Page() {
     const {
         curr_project,
         isProjectLoading,
+        fetchProjectById,
         syncRelease,
         isSyncingRelease,
         releaseSyncStatus,
@@ -64,12 +65,17 @@ export default function Page() {
     const [isDeleteReleaseBlogModalOpen, setIsDeleteReleaseBlogModalOpen] = useState(false)
     const [isDeletingReleaseBlog, setIsDeletingReleaseBlog] = useState(false)
 
+    useEffect(() => {
+        if (!session?.user?.githubAccessToken || !projectId) return
+        fetchProjectById(projectId)
+    }, [projectId, session?.user?.githubAccessToken, fetchProjectById])
+
     const isLoading = isSyncingRelease[projectId] || false
     const syncStatus = releaseSyncStatus[projectId]
 
     if (!curr_project) return null
 
-    const formatDate = (dateString: string) =>
+    const formatDate = (dateString?: string) =>
         !dateString
             ? ''
             : new Date(dateString).toLocaleDateString('en-US', {
@@ -78,7 +84,7 @@ export default function Page() {
                 day: 'numeric'
             })
 
-    const formatRelativeTime = (dateString: string) => {
+    const formatRelativeTime = (dateString?: string) => {
         if (!dateString) return ''
         const date = new Date(dateString)
         const now = new Date()
@@ -87,6 +93,11 @@ export default function Page() {
         const diffInDays = Math.floor(diffInHours / 24)
         return `${diffInDays}d ago`
     }
+
+    const lastCommitSha =
+        typeof curr_project?.lastMonitoredCommitSha === 'string'
+            ? curr_project.lastMonitoredCommitSha
+            : ''
 
     const handleSyncRelease = async () => {
         await syncRelease(projectId)
@@ -280,11 +291,8 @@ export default function Page() {
                                                 Last Commit
                                             </span>
                                             <span className="text-sm font-medium">
-                                                {curr_project?.lastMonitoredCommitSha
-                                                    ? curr_project.lastMonitoredCommitSha.substring(
-                                                        0,
-                                                        7
-                                                    )
+                                                {lastCommitSha
+                                                    ? lastCommitSha.substring(0, 7)
                                                     : '—'}
                                             </span>
                                         </div>

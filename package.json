@@ -53,6 +53,8 @@
     "@types/react-calendar-heatmap": "^1.6.7",
     "@types/uuid": "^10.0.0",
     "@vercel/analytics": "^1.4.1",
+    "ag-grid-community": "^35.2.1",
+    "ag-grid-react": "^35.2.1",
     "axios": "^1.7.2",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",

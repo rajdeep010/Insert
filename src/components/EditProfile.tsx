@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import Image from 'next/image';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
-import { useInsertUser } from '@/app/context/InsertUserProvider';
+import { useInsertUser } from '@/features/user/context/InsertUserProvider';
 import { Loader2, Camera, User, Building2, MapPin, Link2, AtSign, Info } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa6';
 
@@ -19,8 +19,8 @@ const hoverable =
 
 
 const EditProfile = () => {
-    const { user, updateUser, uploadAvatar } = useInsertUser()
-    const avatarURL = user?.avatar
+    const { currentUser, updateUser, uploadAvatar } = useInsertUser()
+    const avatarURL = currentUser?.avatar
 
     const [formData, setFormData] = useState({
         name: '',
@@ -75,17 +75,17 @@ const EditProfile = () => {
     }
 
     useEffect(() => {
-        if (user) {
+        if (currentUser) {
             setFormData({
-                name: user?.name || '',
-                about: user?.about || '',
-                linkedin: user?.linkedin || '',
-                profile: user?.profile || '',
-                company: user?.company || '',
-                location: user?.location || ''
+                name: currentUser?.name || '',
+                about: currentUser?.about || '',
+                linkedin: currentUser?.linkedin || '',
+                profile: currentUser?.profile || '',
+                company: currentUser?.company || '',
+                location: currentUser?.location || ''
             })
         }
-    }, [user])
+    }, [currentUser])
 
     return (
         <Sheet>

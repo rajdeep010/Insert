@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Socket } from 'socket.io-client';
 import { getSocket } from '../utils/socket';
-import type { WebSocketMessage } from '@/types/types';
+import type { WebSocketMessage } from '@/types/socket';
 
 export const useWebSocket = (projectId: string | null) => {
     const [connected, setConnected] = useState(false);

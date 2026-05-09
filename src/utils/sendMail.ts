@@ -1,21 +1,32 @@
 import nodemailer from 'nodemailer';
 
-const EMAIL_FROM = process.env.NEXT_PUBLIC_EMAIL_FROM;
-const EMAIL_PASS = process.env.NEXT_PUBLIC_EMAIL_PASS;
+const getEmailCredentials = () => {
+    const emailFrom = process.env.EMAIL_FROM || process.env.NEXT_PUBLIC_EMAIL_FROM;
+    const emailPass = process.env.EMAIL_PASS || process.env.NEXT_PUBLIC_EMAIL_PASS;
 
-if (!EMAIL_FROM || !EMAIL_PASS) {
-    throw new Error('Email credentials are missing. Set EMAIL_FROM and EMAIL_PASS in server-only env.');
-}
+    if (!emailFrom || !emailPass) {
+        throw new Error('Email credentials are missing. Set EMAIL_FROM and EMAIL_PASS in server-only env.');
+    }
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-        user: EMAIL_FROM,
-        pass: EMAIL_PASS,
-    },
-});
+    return { emailFrom, emailPass };
+};
+
+const createTransporter = () => {
+    const { emailFrom, emailPass } = getEmailCredentials();
+
+    return {
+        transporter: nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: emailFrom,
+                pass: emailPass,
+            },
+        }),
+        emailFrom,
+    };
+};
 
 type SendEmailOptions = {
     to: string | string[];
@@ -26,8 +37,9 @@ type SendEmailOptions = {
 
 export const sendEmail = async ({ to, subject, html, text }: SendEmailOptions): Promise<string> => {
     try {
+        const { transporter, emailFrom } = createTransporter();
         const info = await transporter.sendMail({
-            from: `"Insert" <${EMAIL_FROM}>`,
+            from: `"Insert" <${emailFrom}>`,
             to,
             subject,
             html

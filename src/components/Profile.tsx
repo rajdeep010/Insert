@@ -10,8 +10,8 @@ import { FaLink, FaLocationDot } from 'react-icons/fa6';
 import { Skeleton } from './ui/skeleton'
 import ProfileSkeleton from './skeletons/ProfileSkeleton'
 import AvatarSkeleton from './skeletons/AvatarSkeleton'
-import { useInsertUser } from '@/app/context/InsertUserProvider'
-import { BadgeCheck } from 'lucide-react'
+import { useInsertUser } from '@/features/user/context/InsertUserProvider'
+import ProBadgeIcon from './ProBadgeIcon'
 
 
 
@@ -19,9 +19,9 @@ const Profile = () => {
     const params = useParams()
     const username = params.username
     const { data: session } = useSession()
-    const { user, isAvatarUploading, isUserLoading } = useInsertUser()
+    const { profileUser, isAvatarUploading, isUserLoading } = useInsertUser()
 
-    const hasPro = !!user?.proStatus?.active
+    const badgeState = profileUser?.proStatus?.badgeState ?? 'none'
 
     return (
         <div className='flex justify-between'>
@@ -32,7 +32,7 @@ const Profile = () => {
                     {isAvatarUploading && <AvatarSkeleton />}
 
                     {!isAvatarUploading && <Image
-                        src={user?.avatar || '/user_png.png'}
+                        src={profileUser?.avatar || '/user_png.png'}
                         width={260}
                         height={260}
                         alt='profile_img'
@@ -52,26 +52,18 @@ const Profile = () => {
 
                 {!isUserLoading && <div className='flex flex-col items-start justify-between mt-4 gap-6 profile-details-gap'>
                     <div className='flex flex-col'>
-                        <p className='flex items-center gap-1 text-md text-slate-500 profile-text-sm'>@{user?.username}
-                            {hasPro && (
-                                <span
-                                    className='inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-500'
-                                    aria-label='Verified'
-                                    title='Verified'
-                                >
-                                    <BadgeCheck className='text-white' size={14} strokeWidth={3} />
-                                </span>
-                            )}
+                        <p className='flex items-center gap-1 text-md text-slate-500 profile-text-sm'>@{profileUser?.username}
+                            <ProBadgeIcon state={badgeState} />
                         </p>
-                        <p className='text-2xl font-bold mb-1 profile-text-md'>{user?.name}</p>
-                        <p className='text-sm '>{user?.about}</p>
+                        <p className='text-2xl font-bold mb-1 profile-text-md'>{profileUser?.name}</p>
+                        <p className='text-sm '>{profileUser?.about}</p>
                     </div>
 
                     <div className='flex flex-col gap-1'>
-                        {user?.company && <div className='flex items-center gap-2 text-sm '> <FaBuilding /> {user?.company} </div>}
-                        {user?.location && <div className='flex items-center gap-2 text-sm '> <FaLocationDot /> {user?.location} </div>}
-                        {user?.profile && <Link href={`https://github.com/${user?.profile}`} className='transition hover:text-blue-500 flex items-center gap-2 text-sm '> <FaGithub /> {user?.profile}</Link>}
-                        {user?.linkedin && <Link href={`https://www.linkedin.com/in/${user?.linkedin}`} className='transition hover:text-blue-500 flex items-center gap-2 text-sm '> <FaLinkedin /> {user?.linkedin}</Link>}
+                        {profileUser?.company && <div className='flex items-center gap-2 text-sm '> <FaBuilding /> {profileUser?.company} </div>}
+                        {profileUser?.location && <div className='flex items-center gap-2 text-sm '> <FaLocationDot /> {profileUser?.location} </div>}
+                        {profileUser?.profile && <Link href={`https://github.com/${profileUser?.profile}`} className='transition hover:text-blue-500 flex items-center gap-2 text-sm '> <FaGithub /> {profileUser?.profile}</Link>}
+                        {profileUser?.linkedin && <Link href={`https://www.linkedin.com/in/${profileUser?.linkedin}`} className='transition hover:text-blue-500 flex items-center gap-2 text-sm '> <FaLinkedin /> {profileUser?.linkedin}</Link>}
                     </div>
                 </div>}
 

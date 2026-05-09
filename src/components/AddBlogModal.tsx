@@ -10,7 +10,7 @@ import { blogSchema } from "@/schemas/blogSchema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useBlog } from "@/app/context/BlogProvider";
+import { useBlog } from "@/features/blog/context/BlogProvider";
 
 
 
@@ -47,6 +47,7 @@ const AddBlogModal = ({defaultVisibility}: any) => {
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Blog Details</DialogTitle>
+					<DialogDescription>Create a new blog and choose whether it starts public or private.</DialogDescription>
 				</DialogHeader>
 				<Form {...blogform}>
 					<form onSubmit={blogform.handleSubmit(blogSubmit)} className='space-y-6'>

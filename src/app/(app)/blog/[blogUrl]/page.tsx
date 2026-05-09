@@ -55,7 +55,7 @@ import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 import "@/components/tiptap-templates/simple/simple-editor.scss";
 import { Placeholder } from "@/components/tiptap-extension/placeholder-extension";
 import BlogWriteSidebar from "@/components/BlogWriteSidebar";
-import { useBlog } from "@/app/context/BlogProvider";
+import { useBlog } from "@/features/blog/context/BlogProvider";
 import { useSession } from "next-auth/react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -222,6 +222,12 @@ const SimpleEditor = () => {
 	const [autoSave, setAutoSave] = React.useState(currentBlog?.autosave || false)
 	const [isSaving, setIsSaving] = React.useState(false)
 
+	React.useEffect(() => {
+		setEditorContent(currentBlog?.blogContent)
+		setEditorTextContent(currentBlog?.blogContentText || "")
+		setAutoSave(currentBlog?.autosave || false)
+	}, [currentBlog])
+
 	const getFirstImageFromBlogContent = (blogContent: string) => {
 		try {
 			const contentObj = typeof blogContent === "string" ? JSON.parse(blogContent) : blogContent;
@@ -343,7 +349,7 @@ const SimpleEditor = () => {
 		await handleBlogUpdate({
 			blogContent: JSON.stringify(editorContent),
 			blogContentText: editorTextContent,
-			blogBannerImage: getFirstImageFromBlogContent(editorContent),
+			blogBannerImage: getFirstImageFromBlogContent(editorContent) ?? undefined,
 		})
 	}
 
@@ -366,7 +372,7 @@ const SimpleEditor = () => {
 					await handleAutoSaveBlog({
 						blogContent: JSON.stringify(debouncedEditorContent),
 						blogContentText: debouncedEditorTextContent,
-						blogBannerImage: getFirstImageFromBlogContent(debouncedEditorContent),
+						blogBannerImage: getFirstImageFromBlogContent(debouncedEditorContent) ?? undefined,
 						autosave: true,
 					});
 					setIsSaving(false);
@@ -461,8 +467,20 @@ const SimpleEditor = () => {
 };
 
 const Write = () => {
-	const { isBlogLoading } = useBlog()
+	const { isBlogLoading, fetchBlogByUrl, fetchBlogsByUsername } = useBlog()
 	const { data: session, status } = useSession();
+	const params = useParams()
+	const blogUrl = params?.blogUrl as string
+
+	React.useEffect(() => {
+		if (!blogUrl) return
+		fetchBlogByUrl(blogUrl)
+	}, [blogUrl, fetchBlogByUrl])
+
+	React.useEffect(() => {
+		if (status !== 'authenticated' || !session?.user?.username) return
+		fetchBlogsByUsername(session.user.username)
+	}, [status, session?.user?.username, fetchBlogsByUsername])
 
 
 	return (

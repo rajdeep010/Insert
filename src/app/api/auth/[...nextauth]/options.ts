@@ -35,6 +35,10 @@ export const authOptions: NextAuthOptions = {
 
                     const isPasswordCorrect = await bcrypt.compare(credentials.password,user.password)
                     if (isPasswordCorrect) {
+                        const now = new Date()
+                        user.lastLoggedIn = now
+                        user.lastSeenAt = now
+                        await user.save()
                         return user
                     } else {
                         throw new Error('Incorrect credentials')

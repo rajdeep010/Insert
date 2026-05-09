@@ -8,7 +8,6 @@ import {
     Calendar,
     Crown,
     Info,
-    ShieldOff,
     Sparkles,
     Zap,
     User2
@@ -27,8 +26,10 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
-import { useInsertUser } from '@/app/context/InsertUserProvider'
-import { useInsertPayment } from '@/app/context/InsertPaymentProvider'
+import { useInsertUser } from '@/features/user/context/InsertUserProvider'
+import { useInsertPayment } from '@/features/payment/context/InsertPaymentProvider'
+import ProBadgeIcon from '@/components/ProBadgeIcon'
+import { getProStatusView } from '@/lib/pro-status'
 import { useSession } from 'next-auth/react'
 import { toast as sonnerToast } from 'sonner'
 
@@ -40,19 +41,18 @@ const shell = 'rounded-2xl border border-black/[0.08] dark:border-white/[0.08] b
 const subtle = 'text-gray-600 dark:text-gray-400'
 const pill = 'px-2.5 py-1 rounded-full text-xs border border-slate-200 dark:border-slate-700 bg-slate-100/60 dark:bg-slate-800/50'
 
-const VerifiedBadge = () => (
-    <span
-        className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-500 ml-1"
-        aria-label="Verified"
-        title="Verified"
-    >
-        <BadgeCheck className="text-white" size={14} strokeWidth={3} />
-    </span>
-)
+const formatDate = (value?: string | Date | null) => {
+    if (!value) return null
+
+    const date = value instanceof Date ? value : new Date(value)
+    if (Number.isNaN(date.getTime())) return null
+
+    return date.toLocaleDateString()
+}
 
 export default function PaymentPage() {
     const { data: session } = useSession()
-    const { user } = useInsertUser()
+    const { currentUser } = useInsertUser()
     const { createOrder, verifyPayment, cancelSubscription, reactivateSubscription, isPaymentLoading } = useInsertPayment()
 
     const RAZORPAY_KEY = process.env.NEXT_PUBLIC_RAZORPAY_API_KEY
@@ -68,14 +68,17 @@ export default function PaymentPage() {
     const subtext = billing === 'monthly' ? 'Billed monthly • Cancel anytime' : `Billed annually • Save ${discountPercent}% (≈3 months free)`
 
     // Read only from user context
-    const hasPro = !!user?.proStatus?.active
-    const currentPlan = user?.proStatus?.plan as BillingPeriod | null
-    const renewAt = user?.proStatus?.expiresAt as string | Date | null
-    const cancelledAt = user?.proStatus?.cancelledAt || null
+    const proStatusView = useMemo(() => getProStatusView(currentUser?.proStatus), [currentUser?.proStatus])
+    const hasPro = proStatusView.active
+    const hasProHistory = proStatusView.hasHistory
+    const isExpired = proStatusView.badgeState === 'expired'
+    const currentPlan = proStatusView.plan as BillingPeriod | null
+    const renewAtLabel = formatDate(proStatusView.expiresAt)
+    const cancelledAtLabel = formatDate(proStatusView.cancelledAt)
 
     const isCurrentActive = hasPro && currentPlan === billing
-    const showReactivate = hasPro && Boolean(cancelledAt)
-    const showCancel = hasPro && !Boolean(cancelledAt)
+    const showReactivate = hasPro && Boolean(proStatusView.cancelledAt)
+    const showCancel = hasPro && !Boolean(proStatusView.cancelledAt)
 
 
     const handleUpgrade = async () => {
@@ -90,23 +93,29 @@ export default function PaymentPage() {
             }
 
             const order = await createOrder({ type: billing.toUpperCase() })
+            if (!order?.id) {
+                sonnerToast.error('Order creation failed', { description: 'Missing payment order id' })
+                return
+            }
+            const orderId = order.id
+
             const options = {
                 key: RAZORPAY_KEY,
                 amount: order?.amount || 1,
                 currency: order?.currency || 'INR',
                 name: 'Insert',
                 description: `Upgrade to Pro (${billing})`,
-                order_id: order?.id,
+                order_id: orderId,
                 prefill: {
-                    name: user?.name || user?.username || '',
-                    email: user?.email || '',
+                    name: currentUser?.name || currentUser?.username || '',
+                    email: currentUser?.email || '',
                 },
                 theme: { color: '#4f47e5' },
                 image: 'https://insertshare.vercel.app/panda-bear.png',
                 handler: async (response: any) => {
                     try {
                         const success = await verifyPayment({
-                            orderId: order?.id,
+                            orderId,
                             paymentId: response.razorpay_payment_id,
                             signature: response.razorpay_signature,
                             gateway: 'razorpay',
@@ -138,7 +147,7 @@ export default function PaymentPage() {
             const rzp = new (window as any).Razorpay(options)
             rzp.open()
         } catch (e: any) {
-            sonnerToast.error('Order creation failed', { description: e?.response?.data?.message || e?.message || 'Failed to create order' })
+            // sonnerToast.error('Order creation failed', { description: e?.response?.data?.message || e?.message || 'Failed to create order' })
         }
     }
 
@@ -161,8 +170,8 @@ export default function PaymentPage() {
                 <CardContent className="p-6 md:p-7">
                     <div className="flex flex-wrap items-center gap-5">
                         <div className="relative">
-                            {user?.avatar ? (
-                                <Image src={user.avatar} alt="avatar" width={72} height={72} className="rounded-full border border-slate-200 dark:border-slate-700" />
+                            {currentUser?.avatar ? (
+                                <Image src={currentUser.avatar} alt="avatar" width={72} height={72} className="rounded-full border border-slate-200 dark:border-slate-700" />
                             ) : (
                                 <div className="h-[72px] w-[72px] rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
                                     <User2 className="h-6 w-6 text-slate-500" />
@@ -172,17 +181,20 @@ export default function PaymentPage() {
 
                         <div className="flex flex-col">
                             <div className="flex items-center text-lg font-semibold">
-                                {user?.name || 'Member'}
-                                {hasPro && <VerifiedBadge />}
+                                {currentUser?.name || 'Member'}
+                                <ProBadgeIcon state={proStatusView.badgeState} />
                             </div>
-                            <div className="text-sm text-slate-500">@{user?.username}</div>
+                            <div className="text-sm text-slate-500">@{currentUser?.username}</div>
 
                             <div className="mt-2 flex flex-wrap items-center gap-2">
-                                {hasPro ? (
+                                {hasProHistory ? (
                                     <>
-                                        <span className={`${pill} bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300`}>Pro — {currentPlan}</span>
-                                        <span className={pill}>Ends {renewAt ? new Date(renewAt).toLocaleDateString() : '—'}</span>
-                                        {cancelledAt && <span className={pill}>Cancelled {new Date(cancelledAt).toLocaleDateString()}</span>}
+                                        <span className={`${pill} ${hasPro ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300' : 'bg-slate-100/80 dark:bg-slate-800/70 text-slate-600 dark:text-slate-300'}`}>
+                                            {hasPro ? `Pro — ${currentPlan}` : 'Pro used'}
+                                        </span>
+                                        {hasPro && renewAtLabel && <span className={pill}>{proStatusView.autoRenew ? 'Renews' : 'Ends'} {renewAtLabel}</span>}
+                                        {isExpired && renewAtLabel && <span className={pill}>Expired {renewAtLabel}</span>}
+                                        {cancelledAtLabel && <span className={pill}>Cancelled {cancelledAtLabel}</span>}
                                     </>
                                 ) : (
                                     <span className={pill}>Free</span>
@@ -217,7 +229,7 @@ export default function PaymentPage() {
                         </ul>
                     </CardContent>
                     <CardFooter className="px-6 pb-6">
-                        <Link href={`/u/${user?.username || ''}`} className="w-full">
+                        <Link href={`/u/${currentUser?.username || ''}`} className="w-full">
                             <Button variant="outline" className="w-full">Continue Free</Button>
                         </Link>
                     </CardFooter>
@@ -279,17 +291,17 @@ export default function PaymentPage() {
             </div>
 
             {/* Manage membership */}
-            {hasPro && (
+            {hasProHistory && (
                 <Card className={`${shell} shadow-none`}>
                     <CardContent className="p-6">
                         <div className="flex flex-col gap-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <Badge className="bg-indigo-600 text-white">Pro</Badge>
+                                    <Badge className={hasPro ? 'bg-indigo-600 text-white' : 'bg-slate-500 text-white'}>{hasPro ? 'Pro' : 'Pro expired'}</Badge>
                                     <span className="text-sm text-slate-600 dark:text-slate-300">
-                                        {currentPlan?.toUpperCase()} • Ends {renewAt ? new Date(renewAt).toLocaleDateString() : '—'}
+                                        {currentPlan?.toUpperCase()} • {hasPro ? `${proStatusView.autoRenew ? 'Renews' : 'Ends'} ${renewAtLabel ?? '—'}` : `Expired ${renewAtLabel ?? '—'}`}
                                     </span>
-                                    {cancelledAt && <span className={pill}>Cancelled {new Date(cancelledAt).toLocaleDateString()}</span>}
+                                    {cancelledAtLabel && <span className={pill}>Cancelled {cancelledAtLabel}</span>}
                                 </div>
 
                                 <button type="button" onClick={() => setPolicyOpen(true)} className="inline-flex items-center justify-center rounded-full p-2 hover:bg-black/5 dark:hover:bg-white/10" aria-label="Policy" title="Policy">
@@ -301,7 +313,7 @@ export default function PaymentPage() {
                                 <div className="flex items-center gap-2 text-sm">
                                     <Calendar className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                                     <span className={subtle}>
-                                        Renewal date: <strong className="ml-1 text-slate-900 dark:text-slate-100">{renewAt ? new Date(renewAt).toLocaleDateString() : '—'}</strong>
+                                        {hasPro ? 'Renewal date:' : 'Expired on:'} <strong className="ml-1 text-slate-900 dark:text-slate-100">{renewAtLabel ?? '—'}</strong>
                                     </span>
                                 </div>
 

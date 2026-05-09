@@ -1,4 +1,8 @@
 'use client'
+import { useBlog } from '@/features/blog/context/BlogProvider'
+import { useInsertProjects } from '@/features/project/context/InsertProjectProvider'
+import { useInsertTopics } from '@/features/topic/context/InsertTopicProvider'
+import { useInsertUser } from '@/features/user/context/InsertUserProvider'
 import Blogs from '@/components/Blogs'
 import Dashboard from '@/components/Dashboard'
 import Heatmap from '@/components/Heatmap'
@@ -7,22 +11,78 @@ import Overview from '@/components/Overview'
 import PaymentPage from '@/components/PaymentPage'
 import Profile from '@/components/Profile'
 import Projects from '@/components/Projects'
+import { BlogCollectionsPage } from '@/features/blog/components/BlogCollectionsPage'
 import { Loader2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import React from 'react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import React, { useEffect } from 'react'
 
 
 export default function UserPage() {
-    const {status} = useSession()
+    const { data: session, status } = useSession()
     const router = useRouter()
+    const params = useParams()
+    const username = params.username as string
     const searchParams = useSearchParams()
     const tab = searchParams.get('tab') || 'overview'
 
-    if(status === "unauthenticated"){
-        router.push('/sign-in')
-    } else if(status === "loading") {
+    const { fetchProfileUser } = useInsertUser()
+    const { fetchTopicsByUsername, fetchHeatmapActivity } = useInsertTopics()
+    const { fetchBlogsByUsername, fetchBlogCollections } = useBlog()
+    const { fetchProjectsByUsername } = useInsertProjects()
+
+    useEffect(() => {
+        if (status === 'unauthenticated') {
+            router.replace('/sign-in')
+        }
+    }, [router, status])
+
+    useEffect(() => {
+        if (status !== 'authenticated' || !username) return
+        fetchProfileUser(username)
+    }, [fetchProfileUser, status, username])
+
+    useEffect(() => {
+        if (status !== 'authenticated' || !username) return
+
+        if (tab === 'overview') {
+            fetchTopicsByUsername(username)
+            fetchHeatmapActivity(username)
+            return
+        }
+
+        if (tab === 'topics') {
+            fetchTopicsByUsername(username)
+            return
+        }
+
+        if (tab === 'blogs') {
+            fetchBlogsByUsername(username)
+            if (session?.user?.username === username) {
+                fetchBlogCollections()
+            }
+            return
+        }
+
+        if (tab === 'collections') {
+            if (session?.user?.username === username) {
+                fetchBlogsByUsername(username)
+                fetchBlogCollections()
+            }
+            return
+        }
+
+        if (tab === 'projects') {
+            fetchProjectsByUsername(username)
+        }
+    }, [fetchBlogsByUsername, fetchBlogCollections, fetchHeatmapActivity, fetchProjectsByUsername, fetchTopicsByUsername, session?.user?.username, status, tab, username])
+
+    if(status === "loading") {
         return <Loader2 className='absolute inset-0 m-auto animate-spin h-8 w-8' />
+    }
+
+    if(status !== "authenticated") {
+        return null
     }
 
     return (
@@ -36,6 +96,7 @@ export default function UserPage() {
                     {tab === 'topics' && <Dashboard />}
                     {tab === 'overview' && <Overview />}
                     {tab === 'blogs' && <Blogs />}
+                    {tab === 'collections' && <BlogCollectionsPage />}
                     {tab === 'projects' && <Projects/>}
                     {tab === 'subscribe' && <PaymentPage/>}
                 </div>

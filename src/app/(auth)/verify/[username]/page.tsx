@@ -31,8 +31,7 @@ export default function VerifyAccount() {
     const onSubmit = async (data: z.infer<typeof verifySchema>) => {
         setIsSubmitting(true)
         try {
-            const response = await axios.post<ApiResponse>(`/api/verify-code`, {
-                username: params.username,
+            const response = await axios.post<ApiResponse>(`/api/users/${params.username}/verification`, {
                 code: data.code,
             })
 
@@ -51,9 +50,7 @@ export default function VerifyAccount() {
     const resendVerifyCode = async () => {
         setIsResending(true)
         try {
-            const response = await axios.get<ApiResponse>('/api/resend-signup-otp', {
-                params: { username: params.username }
-            })
+            const response = await axios.post<ApiResponse>(`/api/users/${params.username}/verification/resend`)
             sonnerToast.success(response.data.message)
         } catch (error) {
             const axiosError = error as AxiosError<ApiResponse>

@@ -62,7 +62,7 @@ export default function SignInForm() {
                     description: 'Welcome from team insert'
                 })
 
-                const userData = await axios.get(`/api/sign-in?email=${data.email}`)
+                const userData = await axios.get(`/api/me`)
                 const username = userData.data.userdata.username
                 router.replace(`/u/${username}`)
             }

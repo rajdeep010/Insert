@@ -46,7 +46,7 @@ export default function SignUpForm() {
                 setIsCheckingUsername(true)
                 setUsernameMessage('')
                 try {
-                    const response = await axios.get(`/api/check-username-unique?username=${debouncedUsername}`)
+                    const response = await axios.get(`/api/users/availability?username=${debouncedUsername}`)
                     setUsernameMessage(response.data.message)
                 } catch (error) {
                     const axiosError = error as AxiosError<ApiResponse>
@@ -65,11 +65,11 @@ export default function SignUpForm() {
     const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
         setIsSubmitting(true)
         try {
-            const response = await axios.post<ApiResponse>('/api/sign-up', data)
+            const response = await axios.post<ApiResponse>('/api/users', data)
 
             if (response.data.success) {
                 sonnerToast.success('Verification code sent to your email')
-                router.replace(`/verify/${debouncedUsername}`)
+                router.replace(`/verify/${data.username}`)
             } else {
                 sonnerToast.error('Signup failed. Please try again.')
             }

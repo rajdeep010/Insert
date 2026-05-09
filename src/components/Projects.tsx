@@ -24,12 +24,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from './ui/separator'
 import { GitHubLogoIcon } from '@radix-ui/react-icons'
-import { useInsertProjects } from '@/app/context/InsertProjectProvider'
+import { useInsertProjects } from '@/features/project/context/InsertProjectProvider'
 import GithubRepoModal from './GithubRepoModal'
 import { languageColors } from '@/types/master-data'
 import ConfirmDeleteProject from './ConfirmDeleteProject'
-import { useInsertUser } from '@/app/context/InsertUserProvider';
+import { useInsertUser } from '@/features/user/context/InsertUserProvider';
 import ProGate from './ProGate';
+import { externalServices } from '@/lib/config/services';
 
 
 
@@ -38,16 +39,16 @@ const surface =
 const hoverable =
     'transition-colors hover:border-black/20 dark:hover:border-white/30'
 
-const NEXT_PROJECT_SERVICE_URL = 'https://insert-projects-service.onrender.com/v1/api'
+const NEXT_PROJECT_SERVICE_URL = externalServices.project.apiBaseUrl
 
 const Projects = () => {
     const { data: session, status } = useSession();
     const params = useParams();
     const username = params.username as string;
 
-    const { user } = useInsertUser();
+    const { currentUser } = useInsertUser();
 
-    const showSubscribeModal = user?.proStatus?.active === false;
+    const showSubscribeModal = currentUser?.proStatus?.active === false;
 
     const { user_projects, removeProject, updateProject, pagination, isAllProjectsLoading, loadMore } = useInsertProjects();
     const [isRepoModalOpen, setIsRepoModalOpen] = useState(false)
@@ -197,7 +198,11 @@ const Projects = () => {
                         description,
                         language
                     }) => {
-                        const formatDate = (dateString: string) => {
+                        const formatDate = (dateString?: string) => {
+                            if (!dateString) {
+                                return 'Unknown date'
+                            }
+
                             return new Date(dateString).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'short',
@@ -288,7 +293,13 @@ const Projects = () => {
                                                         <DropdownMenuGroup>
                                                             <DropdownMenuItem
                                                                 className="text-red-500 focus:text-red-600"
-                                                                onClick={() => handleDeleteProject(id, name)}
+                                                                onClick={() => {
+                                                                    if (!id || !name) {
+                                                                        return
+                                                                    }
+
+                                                                    handleDeleteProject(id, name)
+                                                                }}
                                                             >
                                                                 <Trash2 className="h-4 w-4 mr-2" />
                                                                 Delete Project
@@ -305,7 +316,7 @@ const Projects = () => {
                                             <span>Created {formatDate(createdAt)}</span>
                                             <span className="opacity-40">•</span>
                                             <span>Updated {formatDate(updatedAt)}</span>
-                                            {lastMonitoredCommitSha && (
+                                            {typeof lastMonitoredCommitSha === 'string' && lastMonitoredCommitSha && (
                                                 <>
                                                     <span className="opacity-40">•</span>
                                                     <span>Last commit: {lastMonitoredCommitSha.substring(0, 7)}</span>

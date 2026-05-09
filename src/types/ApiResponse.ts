@@ -1,4 +1,5 @@
-import { HeatmapDateValues, Topic, UserInfo } from './types'
+import type { HeatmapDateValues, Topic } from './topic'
+import type { UserInfo } from './user'
 
 
 export interface ApiResponse{
@@ -9,6 +10,6 @@ export interface ApiResponse{
     topics?: Topic[],
     heatmap?: HeatmapDateValues[]
     curr_topic?: Topic;
-    similar_users?: [UserInfo],
-    notifications?: []
+    users?: UserInfo[];
+    similar_users?: UserInfo[]
 }
