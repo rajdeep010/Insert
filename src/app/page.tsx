@@ -1,12 +1,10 @@
-import '../globals.css'
 import React from 'react'
-import { Navbar } from '@/components/landing/Navbar'
-import { Hero } from '@/components/landing/Hero'
-import { Features } from '@/components/landing/Features'
-import { About } from '@/components/About'
-import { Footer } from '@/components/landing/Footer'
 
-const shell = 'rounded-2xl border border-black/10 dark:border-white/10 bg-white supports-[backdrop-filter]:bg-white/80 dark:bg-gray-900/50 dark:supports-[backdrop-filter]:bg-gray-900/40 backdrop-blur transition-colors'
+import { About } from '@/components/About'
+import { Features } from '@/components/landing/Features'
+import { Footer } from '@/components/landing/Footer'
+import { Hero } from '@/components/landing/Hero'
+import { Navbar } from '@/components/landing/Navbar'
 
 export default function Home() {
   return (

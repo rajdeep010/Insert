@@ -35,7 +35,7 @@ export function Hero() {
                     </div>
 
                     <h1 className="max-w-4xl text-balance text-5xl font-semibold tracking-tight text-black dark:text-white md:text-6xl lg:text-7xl">
-                        A cleaner way to write, organize, and ship developer work.
+                        A cleaner way to <span className="bg-gradient-to-r from-sky-500 via-indigo-500 to-fuchsia-500 bg-clip-text text-transparent">write</span>, organize, and <span className="underline decoration-indigo-400/70 underline-offset-8">ship</span> <span className="italic text-slate-600 dark:text-slate-300">developer</span> work.
                     </h1>
 
                     <p className="mt-5 max-w-2xl text-pretty text-base leading-7 text-gray-700 dark:text-gray-300 md:text-xl md:leading-8">
@@ -49,11 +49,11 @@ export function Hero() {
                                 <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                         </Link>
-                        <Link href="/posts/collections">
+                        {/* <Link href="/posts/collections">
                             <Button variant="outline" className="h-11 rounded-xl border-black/10 bg-white/70 px-5 text-sm font-medium backdrop-blur hover:bg-white dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/15">
                                 Explore collections
                             </Button>
-                        </Link>
+                        </Link> */}
                     </div>
 
                     <div className="mt-8 flex flex-wrap gap-3 text-sm text-gray-600 dark:text-gray-300">
@@ -67,7 +67,7 @@ export function Hero() {
                         </div>
                         <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/65 px-3 py-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10">
                             <BadgeCheck className="h-4 w-4" />
-                            Smarter Pro states
+                            Powerful Pro
                         </div>
                     </div>
                 </div>
@@ -81,32 +81,32 @@ export function Hero() {
                                 <div className="mb-4 flex items-center justify-between">
                                     <div>
                                         <p className="text-[11px] uppercase tracking-[0.22em] text-white/55">Collections</p>
-                                        <p className="mt-1 text-lg font-semibold">Publish a better reading path</p>
+                                        <p className="mt-1 text-lg font-semibold">Publish a better reading </p>
                                     </div>
-                                    <div className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white/80">
+                                    {/* <div className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white/80">
                                         new flow
-                                    </div>
+                                    </div> */}
                                 </div>
 
                                 <div className="space-y-3">
                                     <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                                         <div className="flex items-center justify-between">
-                                            <p className="text-sm font-medium">Placement Prep</p>
+                                            <p className="text-sm font-medium">Blog collections</p>
                                             <span className="rounded-full bg-emerald-400/15 px-2 py-0.5 text-[11px] text-emerald-300">public</span>
                                         </div>
-                                        <p className="mt-2 text-sm text-white/65">Turn related posts into one guided collection instead of a loose set of links.</p>
+                                        <p className="mt-2 text-sm text-white/65">Club related blog posts into one guided collection instead of a loose set of links.</p>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-3">
+                                    {/* <div className="grid grid-cols-2 gap-3">
                                         <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
                                             <p className="text-[11px] uppercase tracking-[0.18em] text-white/45">Posts</p>
-                                            <p className="mt-2 text-2xl font-semibold">12</p>
+                                            <p className="mt-2 text-2xl font-semibold">Blogs</p>
                                         </div>
                                         <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
                                             <p className="text-[11px] uppercase tracking-[0.18em] text-white/45">Visibility</p>
                                             <p className="mt-2 text-2xl font-semibold">Mixed</p>
                                         </div>
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
 
