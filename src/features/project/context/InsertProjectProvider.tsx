@@ -2,7 +2,7 @@
 import { toast } from "@/components/ui/use-toast"
 import type { Project } from "@/types/project"
 import axios from "axios"
-import { createContext, useCallback, useContext, useEffect, useReducer } from "react"
+import { createContext, useCallback, useContext, useEffect, useReducer, useRef } from "react"
 import InsertProjectReducer from "@/features/project/reducers/InsertProjectReducer"
 import { useInsertUser } from "@/features/user/context/InsertUserProvider"
 import { useSession } from "next-auth/react"
@@ -129,6 +129,11 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 	const params = useParams()
 	const project_id = params.id as string;
 	const router = useRouter()
+	const paginationRef = useRef(state.pagination)
+
+	useEffect(() => {
+		paginationRef.current = state.pagination
+	}, [state.pagination])
 
 	const buildHeaders = useCallback(
 		(options?: { includeGithubToken?: boolean }) => {
@@ -179,7 +184,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 		}
 	}, [API_BASE, session?.accessToken, status])
 
-	const fetchAllProjects = async ({ cursor, limit = 5, search }: { cursor?: string | null; limit?: number; search?: string } = {}) => {
+	const fetchAllProjects = useCallback(async ({ cursor, limit = 5, search }: { cursor?: string | null; limit?: number; search?: string } = {}) => {
 		try {
 			dispatch({ type: "SET_IS_ALL_PROJECTS_LOADING", payload: true })
 			const res = await axios.get(`${API_BASE}/api/projects/list-projects`, { headers: { Authorization: `Bearer ${session?.accessToken}` }, params: { cursor, limit, search } })
@@ -187,7 +192,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 			const payload = {
 				projects: items,
 				meta: {
-					currentPage: cursor ? state.pagination.currentPage + 1 : 1,
+					currentPage: cursor ? paginationRef.current.currentPage + 1 : 1,
 					pageSize: limit,
 					totalItems: count,
 					hasMore,
@@ -205,7 +210,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 		} finally {
 			dispatch({ type: "SET_IS_ALL_PROJECTS_LOADING", payload: false })
 		}
-	}
+	}, [API_BASE, session?.accessToken, session?.user])
 
 	const setupWebhook = async (projectId: string) => {
 		try {
@@ -322,7 +327,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 		}
 	}
 
-	const fetchReleaseBlogForProject = async (projectId: string) => {
+	const fetchReleaseBlogForProject = useCallback(async (projectId: string) => {
 		try {
 			dispatch({ type: "SET_IS_RELEASE_BLOG_LOADING", payload: true })
 			const res = await axios.get(`${API_BASE}/api/release-blogs/get-release-blogs/${projectId}`, { headers: buildHeaders() })
@@ -332,7 +337,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 		} finally {
 			dispatch({ type: "SET_IS_RELEASE_BLOG_LOADING", payload: false })
 		}
-	}
+	}, [API_BASE, buildHeaders])
 
 	const fetchRepositoryBranches = async (githubId: string, repoName: string) => {
 		try {
@@ -344,7 +349,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 		}
 	}
 
-	const fetchProjectById = async (projectId: string) => {
+	const fetchProjectById = useCallback(async (projectId: string) => {
 		try {
 			dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
 			const res = await axios.get(`${API_BASE}/api/projects/get-project/${projectId}`, { headers: buildHeaders() })
@@ -355,9 +360,9 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 		} finally {
 			dispatch({ type: "SET_IS_PROJECT_LOADING", payload: false })
 		}
-	}
+	}, [API_BASE, buildHeaders])
 
-	const fetchReleaseBlogById = async (releaseBlogId: string, projectId: string) => {
+	const fetchReleaseBlogById = useCallback(async (releaseBlogId: string, projectId: string) => {
 		try {
 			dispatch({ type: "SET_IS_CURR_RELEASE_BLOG_LOADING", payload: true })
 			const res = await axios.get(`${API_BASE}/api/release-blogs/get-release-blog/${projectId}/${releaseBlogId}`, { headers: buildHeaders() })
@@ -367,9 +372,9 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 		} finally {
 			dispatch({ type: "SET_IS_CURR_RELEASE_BLOG_LOADING", payload: false })
 		}
-	}
+	}, [API_BASE, buildHeaders])
 
-	const changeReleaseBlog = (blog: ReleaseBlog | null) => dispatch({ type: "SET_CURR_RELEASE_BLOG", payload: blog })
+	const changeReleaseBlog = useCallback((blog: ReleaseBlog | null) => dispatch({ type: "SET_CURR_RELEASE_BLOG", payload: blog }), [])
 	const { connected, lastMessage } = useWebSocket(project_id)
 
 	useEffect(() => {
@@ -393,11 +398,11 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 		}
 	}, [lastMessage])
 
-	const clearReleaseSyncStatus = (projectId: string) => dispatch({ type: "CLEAR_RELEASE_SYNC_STATUS", payload: projectId })
-	const loadMore = () => {
+	const clearReleaseSyncStatus = useCallback((projectId: string) => dispatch({ type: "CLEAR_RELEASE_SYNC_STATUS", payload: projectId }), [])
+	const loadMore = useCallback(() => {
 		if (!state.pagination?.hasMore) return;
 		fetchAllProjects({ cursor: state.pagination.nextCursor, limit: 5 });
-	};
+	}, [fetchAllProjects, state.pagination?.hasMore, state.pagination?.nextCursor]);
 
 	return (
 		<InsertProjectContext.Provider value={{ ...state, changeReleaseBlog, fetchProjectsByUsername, fetchProjectById, fetchAllProjects, importReposByGithubUserId, loadMore, addProject, updateProject, removeProject, setGithubRepos, addReleaseBlog, updateReleaseBlog, removeReleaseBlog, syncRelease, fetchReleaseBlogForProject, fetchRepositoryBranches, clearReleaseSyncStatus, fetchReleaseBlogById, sendFeedback }}>
