@@ -124,9 +124,9 @@ export default function ProjectDetailsPage() {
     }, [selectedBlog, blogEditor]);
 
     useEffect(() => {
-        if (status !== "authenticated" || !projectId) return;
+        if (status !== "authenticated" || !session?.user?.githubAccessToken || !projectId) return;
         fetchProjectById(projectId);
-    }, [fetchProjectById, projectId, status]);
+    }, [fetchProjectById, projectId, session?.user?.githubAccessToken, status]);
 
     const handleBlogSelect = (blog: any) => {
         setSelectedBlog(blog);

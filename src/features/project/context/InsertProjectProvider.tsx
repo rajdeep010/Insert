@@ -330,7 +330,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 	const fetchReleaseBlogForProject = useCallback(async (projectId: string) => {
 		try {
 			dispatch({ type: "SET_IS_RELEASE_BLOG_LOADING", payload: true })
-			const res = await axios.get(`${API_BASE}/api/release-blogs/get-release-blogs/${projectId}`, { headers: buildHeaders() })
+			const res = await axios.get(`${API_BASE}/api/release-blogs/get-release-blogs/${projectId}`, { headers: buildHeaders({ includeGithubToken: true }) })
 			dispatch({ type: "SET_RELEASE_BLOGS", payload: { projectId, blogs: res.data } })
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to fetch release blogs", variant: "destructive" })
@@ -352,7 +352,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 	const fetchProjectById = useCallback(async (projectId: string) => {
 		try {
 			dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
-			const res = await axios.get(`${API_BASE}/api/projects/get-project/${projectId}`, { headers: buildHeaders() })
+			const res = await axios.get(`${API_BASE}/api/projects/get-project/${projectId}`, { headers: buildHeaders({ includeGithubToken: true }) })
 			dispatch({ type: "SET_PROJECT", payload: res.data.data })
 		} catch (error: any) {
 			dispatch({ type: "SET_PROJECT", payload: null })
@@ -365,7 +365,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 	const fetchReleaseBlogById = useCallback(async (releaseBlogId: string, projectId: string) => {
 		try {
 			dispatch({ type: "SET_IS_CURR_RELEASE_BLOG_LOADING", payload: true })
-			const res = await axios.get(`${API_BASE}/api/release-blogs/get-release-blog/${projectId}/${releaseBlogId}`, { headers: buildHeaders() })
+			const res = await axios.get(`${API_BASE}/api/release-blogs/get-release-blog/${projectId}/${releaseBlogId}`, { headers: buildHeaders({ includeGithubToken: true }) })
 			dispatch({ type: "SET_CURR_RELEASE_BLOG", payload: res.data.data })
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to fetch release blog", variant: "destructive" })

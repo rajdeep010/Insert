@@ -41,7 +41,7 @@ const hoverable =
     'transition-colors hover:border-black/20 dark:hover:border-white/30'
 
 export default function Page() {
-    const { status } = useSession()
+    const { data: session, status } = useSession()
     const {
         curr_project,
         isProjectLoading,
@@ -66,9 +66,9 @@ export default function Page() {
     const [isDeletingReleaseBlog, setIsDeletingReleaseBlog] = useState(false)
 
     useEffect(() => {
-        if (status !== 'authenticated' || !projectId) return
+        if (status !== 'authenticated' || !session?.user?.githubAccessToken || !projectId) return
         fetchProjectById(projectId)
-    }, [fetchProjectById, projectId, status])
+    }, [fetchProjectById, projectId, session?.user?.githubAccessToken, status])
 
     const isLoading = isSyncingRelease[projectId] || false
     const syncStatus = releaseSyncStatus[projectId]
