@@ -150,7 +150,14 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 			}
 			dispatch({ type: "SET_IS_USER_PROJECTS_LOADING", payload: true })
 			const res = await axios.get(`${API_BASE}/api/projects/user/${username}`, { headers: { Authorization: `Bearer ${session?.accessToken}` } })
-			dispatch({ type: "SET_USER_PROJECTS", payload: res.data })
+			const projects = Array.isArray(res.data?.data?.items)
+				? res.data.data.items
+				: Array.isArray(res.data?.data)
+					? res.data.data
+					: Array.isArray(res.data)
+						? res.data
+						: []
+			dispatch({ type: "SET_USER_PROJECTS", payload: projects })
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to fetch projects", variant: "destructive" })
 		} finally {
