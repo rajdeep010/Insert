@@ -453,10 +453,10 @@ const WriteReleaseBlog = () => {
     const showSubscribeModal = currentUser?.proStatus?.active === false;
 
     React.useEffect(() => {
-        if (status !== "authenticated" || !session?.user?.githubAccessToken || !projectId) return
+        if (status !== "authenticated" || !projectId) return
         fetchProjectById(projectId)
         if (releaseBlogId) fetchReleaseBlogById(releaseBlogId, projectId)
-    }, [status, session?.user?.githubAccessToken, projectId, releaseBlogId, fetchProjectById, fetchReleaseBlogById]);
+    }, [status, projectId, releaseBlogId, fetchProjectById, fetchReleaseBlogById]);
 
     return (
         <>

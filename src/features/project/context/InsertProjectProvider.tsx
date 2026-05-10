@@ -130,6 +130,20 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 	const project_id = params.id as string;
 	const router = useRouter()
 
+	const buildHeaders = useCallback(
+		(options?: { includeGithubToken?: boolean }) => {
+			const headers: Record<string, string> = {}
+			if (session?.accessToken) {
+				headers.Authorization = `Bearer ${session.accessToken}`
+			}
+			if (options?.includeGithubToken && session?.user?.githubAccessToken) {
+				headers['X-GitHub-Token'] = `Bearer ${session.user.githubAccessToken}`
+			}
+			return headers
+		},
+		[session?.accessToken, session?.user?.githubAccessToken]
+	)
+
 	const importReposByGithubUserId = async (githubId: number) => {
 		try {
 			dispatch({ type: "SET_IS_GITHUB_REPOS_LOADING", payload: true })
@@ -311,7 +325,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 	const fetchReleaseBlogForProject = async (projectId: string) => {
 		try {
 			dispatch({ type: "SET_IS_RELEASE_BLOG_LOADING", payload: true })
-			const res = await axios.get(`${API_BASE}/api/release-blogs/get-release-blogs/${projectId}`, { headers: { 'Authorization': `Bearer ${session?.accessToken}`, 'X-GitHub-Token': `Bearer ${session?.user?.githubAccessToken}` } })
+			const res = await axios.get(`${API_BASE}/api/release-blogs/get-release-blogs/${projectId}`, { headers: buildHeaders() })
 			dispatch({ type: "SET_RELEASE_BLOGS", payload: { projectId, blogs: res.data } })
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to fetch release blogs", variant: "destructive" })
@@ -333,11 +347,11 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 	const fetchProjectById = async (projectId: string) => {
 		try {
 			dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
-			const res = await axios.get(`${API_BASE}/api/projects/get-project/${projectId}`, { headers: { 'Authorization': `Bearer ${session?.accessToken}`, 'X-GitHub-Token': `Bearer ${session?.user?.githubAccessToken}` } })
+			const res = await axios.get(`${API_BASE}/api/projects/get-project/${projectId}`, { headers: buildHeaders() })
 			dispatch({ type: "SET_PROJECT", payload: res.data.data })
 		} catch (error: any) {
+			dispatch({ type: "SET_PROJECT", payload: null })
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to fetch project", variant: "destructive" })
-			router.push(`/u/${session?.user?.username}?tab=projects`)
 		} finally {
 			dispatch({ type: "SET_IS_PROJECT_LOADING", payload: false })
 		}
@@ -346,11 +360,10 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 	const fetchReleaseBlogById = async (releaseBlogId: string, projectId: string) => {
 		try {
 			dispatch({ type: "SET_IS_CURR_RELEASE_BLOG_LOADING", payload: true })
-			const res = await axios.get(`${API_BASE}/api/release-blogs/get-release-blog/${projectId}/${releaseBlogId}`, { headers: { 'Authorization': `Bearer ${session?.accessToken}`, 'X-GitHub-Token': `Bearer ${session?.user?.githubAccessToken}` } })
+			const res = await axios.get(`${API_BASE}/api/release-blogs/get-release-blog/${projectId}/${releaseBlogId}`, { headers: buildHeaders() })
 			dispatch({ type: "SET_CURR_RELEASE_BLOG", payload: res.data.data })
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to fetch release blog", variant: "destructive" })
-			router.push(`/u/${session?.user?.username}?tab=projects`)
 		} finally {
 			dispatch({ type: "SET_IS_CURR_RELEASE_BLOG_LOADING", payload: false })
 		}

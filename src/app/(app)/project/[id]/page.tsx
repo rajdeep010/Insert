@@ -41,7 +41,7 @@ const hoverable =
     'transition-colors hover:border-black/20 dark:hover:border-white/30'
 
 export default function Page() {
-    const { data: session } = useSession()
+    const { status } = useSession()
     const {
         curr_project,
         isProjectLoading,
@@ -66,9 +66,9 @@ export default function Page() {
     const [isDeletingReleaseBlog, setIsDeletingReleaseBlog] = useState(false)
 
     useEffect(() => {
-        if (!session?.user?.githubAccessToken || !projectId) return
+        if (status !== 'authenticated' || !projectId) return
         fetchProjectById(projectId)
-    }, [projectId, session?.user?.githubAccessToken, fetchProjectById])
+    }, [fetchProjectById, projectId, status])
 
     const isLoading = isSyncingRelease[projectId] || false
     const syncStatus = releaseSyncStatus[projectId]
@@ -171,7 +171,7 @@ export default function Page() {
                                     <div className="flex items-start gap-6">
                                         <div className="relative">
                                             <Avatar className="h-20 w-20 ring-2 ring-white/40 dark:ring-white/10">
-                                                <AvatarImage src={session?.user?.githubAvatarUrl} />
+                                                <AvatarImage src={typeof curr_project?.avatar === 'string' ? curr_project.avatar : undefined} />
                                                 <AvatarFallback className="font-semibold">
                                                     {curr_project?.username?.slice(0, 2).toUpperCase()}
                                                 </AvatarFallback>

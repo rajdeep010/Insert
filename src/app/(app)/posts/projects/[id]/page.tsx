@@ -66,10 +66,12 @@ export default function ProjectDetailsPage() {
     const { id } = useParams();
     const { data: session, status } = useSession();
     const router = useRouter();
+    const projectId = id as string;
 
     const {
         curr_project,
         isProjectLoading,
+        fetchProjectById,
     } = useInsertProjects();
     const { currentUser } = useInsertUser();
     const showSubscribeModal = currentUser?.proStatus?.active === false;
@@ -120,6 +122,11 @@ export default function ProjectDetailsPage() {
             }
         }
     }, [selectedBlog, blogEditor]);
+
+    useEffect(() => {
+        if (status !== "authenticated" || !projectId) return;
+        fetchProjectById(projectId);
+    }, [fetchProjectById, projectId, status]);
 
     const handleBlogSelect = (blog: any) => {
         setSelectedBlog(blog);

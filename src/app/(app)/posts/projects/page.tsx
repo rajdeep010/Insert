@@ -45,7 +45,7 @@ const hoverable = "transition-colors hover:border-black/20 dark:hover:border-whi
 export default function ProjectsPage() {
     const { all_projects, isAllProjectsLoading, pagination, loadMore, fetchAllProjects } = useInsertProjects();
     const [query, setQuery] = useState("");
-    const { data: session, status } = useSession();
+    const { status } = useSession();
 
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -62,8 +62,9 @@ export default function ProjectsPage() {
     const showSubscribeModal = currentUser?.proStatus?.active === false;
 
     useEffect(() => {
+        if (status !== "authenticated") return;
         fetchAllProjects({ limit: 5 })
-    }, [])
+    }, [fetchAllProjects, status])
 
     return (
         <>
