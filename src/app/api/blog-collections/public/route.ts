@@ -30,7 +30,6 @@ export async function GET(request: Request) {
 		const allBlogIds = Array.from(new Set(collections.flatMap((collection) => collection.blogIds.map((blogId) => String(blogId)))));
 		const collectionBlogs = await BlogModel.find({
 			_id: { $in: allBlogIds },
-			autosave: { $ne: true },
 		}).select("_id creator type status").lean();
 
 		const blogMap = new Map(collectionBlogs.map((blog) => [String(blog._id), blog]));

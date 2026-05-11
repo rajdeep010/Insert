@@ -74,13 +74,11 @@ export async function POST(request: Request) {
 					creator: currentUsername,
 					status: "active",
 					type: "public",
-					autosave: { $ne: true },
 				}
 				: {
 					_id: { $in: parsedBody.data.blogIds },
 					creator: currentUsername,
 					status: "active",
-					autosave: { $ne: true },
 				};
 
 			const ownedBlogs = await BlogModel.find(blogFilter).select("_id");

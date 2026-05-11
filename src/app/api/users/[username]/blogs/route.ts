@@ -37,7 +37,6 @@ export async function GET(
         const blogs = await BlogModel.find({
             creator: parsedParams.data.username,
             status: "active",
-            autosave: { $ne: true },
         })
             .sort({ createdAt: -1 })
             .select(

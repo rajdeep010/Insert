@@ -49,12 +49,10 @@ export async function GET(request: Request, context: RouteContext) {
 			? {
 				_id: { $in: collection.blogIds },
 				creator: currentUsername,
-				autosave: { $ne: true },
 			}
 			: {
 				_id: { $in: collection.blogIds },
 				status: "active",
-				autosave: { $ne: true },
 				type: "public",
 			};
 
@@ -132,7 +130,6 @@ export async function PATCH(request: Request, context: RouteContext) {
 				creator: currentUsername,
 				status: "active",
 				type: "public",
-				autosave: { $ne: true },
 			}).select("_id");
 
 			if (publicBlogs.length !== new Set(existingCollection.blogIds.map((blogId) => String(blogId))).size) {
