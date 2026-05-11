@@ -108,58 +108,95 @@ const Heatmap = () => {
         })
     }
 
+    const totalSubmissions = filteredValues.reduce((sum, value) => sum + value.count, 0)
+    const activeDays = filteredValues.filter((value) => value.count > 0).length
+
     return (
-        <div className="my-6">
-            <div className="flex items-center mb-[20px] text-md">
-                <label htmlFor="year-select" className="mr-2 font-medium">
-                    Select Year:
-                </label>
-                <div className="min-w-[80px]">
-                    <Select value={selectedYear} onValueChange={handleYearChange}>
-                        <SelectTrigger className="border-2 cursor-pointer w-full">
-                            <SelectValue placeholder="Select a year" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectLabel>Years</SelectLabel>
-                                {years.map((year) => (
-                                    <SelectItem key={year} value={String(year)}>
-                                        {year}
-                                    </SelectItem>
-                                ))}
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
+        <section className="my-6 rounded-2xl border border-border bg-card">
+            <div className="flex flex-col gap-4 border-b border-border px-4 py-4 sm:px-6 sm:py-5 lg:flex-row lg:items-center lg:justify-between">
+                <div className="space-y-1">
+                    <h3 className="text-lg font-semibold tracking-tight text-foreground">
+                        Activity heatmap
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                        {totalSubmissions} submissions across {activeDays} active days
+                    </p>
+                </div>
+
+                <div className="flex items-center gap-3 text-sm">
+                    <label htmlFor="year-select" className="font-medium text-muted-foreground">
+                        Year
+                    </label>
+                    <div className="min-w-[104px]">
+                        <Select value={selectedYear} onValueChange={handleYearChange}>
+                            <SelectTrigger id="year-select" className="h-9 w-full rounded-lg">
+                                <SelectValue placeholder="Select a year" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectLabel>Years</SelectLabel>
+                                    {years.map((year) => (
+                                        <SelectItem key={year} value={String(year)}>
+                                            {year}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
             </div>
 
-            <p className="text-sm text-muted-foreground mb-4">
-                Showing: {formatDate(startDate)} – {formatDate(endDate)}
-            </p>
+            <div className="px-4 py-4 sm:px-6 sm:py-5">
+                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm text-muted-foreground">
+                        {formatDate(startDate)} to {formatDate(endDate)}
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>Less</span>
+                        <div className="flex items-center gap-1">
+                            <span className="h-2.5 w-2.5 rounded-[3px] bg-[rgba(148,163,184,0.18)] dark:bg-[rgba(148,163,184,0.2)]" />
+                            <span className="h-2.5 w-2.5 rounded-[3px] bg-[rgba(34,197,94,0.18)]" />
+                            <span className="h-2.5 w-2.5 rounded-[3px] bg-[rgba(34,197,94,0.34)]" />
+                            <span className="h-2.5 w-2.5 rounded-[3px] bg-[rgba(22,163,74,0.56)]" />
+                            <span className="h-2.5 w-2.5 rounded-[3px] bg-[rgba(21,128,61,0.82)]" />
+                        </div>
+                        <span>More</span>
+                    </div>
+                </div>
 
-            <div className="px-2 py-3 lg:px-6 lg:py-4 border-[1px] rounded-sm">
-                <CalendarHeatmap
-                    startDate={startDate}
-                    endDate={endDate}
-                    values={data}
-                    classForValue={(value) => {
-                        if (!value || !value.count) return 'color-empty'
-                        return value.count < 5
-                            ? `color-github-${value.count}`
-                            : `color-github-5`
-                    }}
-                    tooltipDataAttrs={(value: any) => {
-                        const dateStr = formatDate(value.date)
-                        return {
-                            'data-tooltip-id': 'heatmap-tooltip',
-                            'data-tooltip-content': `${value.count ?? 0} submissions on ${dateStr}`
-                        }
-                    }}
-                    showWeekdayLabels={false}
-                />
-                <Tooltip id="heatmap-tooltip" />
+                <div className="overflow-x-auto rounded-xl border border-border bg-background p-3 sm:p-4">
+                    <div className="min-w-[760px] heatmap-shell">
+                        <CalendarHeatmap
+                            startDate={startDate}
+                            endDate={endDate}
+                            values={data}
+                            classForValue={(value) => {
+                                if (!value || !value.count) return 'insert-heatmap-empty'
+                                if (value.count === 1) return 'insert-heatmap-level-1'
+                                if (value.count === 2) return 'insert-heatmap-level-2'
+                                if (value.count <= 4) return 'insert-heatmap-level-3'
+                                return 'insert-heatmap-level-4'
+                            }}
+                            tooltipDataAttrs={(value: any) => {
+                                const dateStr = formatDate(value.date)
+                                return {
+                                    'data-tooltip-id': 'heatmap-tooltip',
+                                    'data-tooltip-content': `${value.count ?? 0} submissions on ${dateStr}`
+                                }
+                            }}
+                            showWeekdayLabels={false}
+                        />
+                    </div>
+                    <Tooltip
+                        id="heatmap-tooltip"
+                        className="insert-heatmap-tooltip"
+                        opacity={1}
+                        offset={10}
+                    />
+                </div>
             </div>
-        </div>
+        </section>
     )
 }
 
