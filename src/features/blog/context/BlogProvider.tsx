@@ -25,6 +25,7 @@ interface BlogProviderProps {
 	isAllBlogPostsLoading: boolean;
 	isDeleting: boolean;
 	deleteBlog: (blog_id: string) => void;
+	updateBlogMetadata: (blogId: string, payload: { blogTitle: string; type: BlogVisibility }) => Promise<BlogEntry | null>;
 	handleBlogUpdate: (content: BlogUpdatePayload) => void;
 	handleAutoSaveBlog: (content: BlogUpdatePayload) => void;
 	addBlog: (title: string, visibility: BlogVisibility) => void;
@@ -78,6 +79,24 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 			toast({ title: "Delete Failed ❌", description: error?.response?.data?.message || error?.message || "Failed to delete blog", variant: "destructive" });
 		} finally {
 			dispatch({ type: "SET_IS_DELETING", payload: false });
+		}
+	}, [toast, username]);
+
+	const updateBlogMetadata = useCallback(async (blogId: string, payload: { blogTitle: string; type: BlogVisibility }) => {
+		if (!username || !blogId) return null;
+		try {
+			const response = await axios.patch(`/api/blogs/${blogId}`, payload);
+			if (!response.data.success) {
+				toast({ title: "Error ⭕", description: response.data.message || "Failed to update blog", variant: "destructive" });
+				return null;
+			}
+
+			dispatch({ type: "UPDATE_BLOG", payload: response.data.blog });
+			toast({ title: "Blog updated ✅", description: "Blog details updated successfully", variant: "default" });
+			return response.data.blog ?? null;
+		} catch (error: any) {
+			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to update blog", variant: "destructive" });
+			return null;
 		}
 	}, [toast, username]);
 
@@ -332,6 +351,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 	const contextValue = useMemo(() => ({
 		...state,
 		deleteBlog,
+		updateBlogMetadata,
 		handleBlogUpdate,
 		addBlog,
 		setIsAddBlogModalOpen,
@@ -348,6 +368,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 	}), [
 		state,
 		deleteBlog,
+		updateBlogMetadata,
 		handleBlogUpdate,
 		addBlog,
 		setIsAddBlogModalOpen,

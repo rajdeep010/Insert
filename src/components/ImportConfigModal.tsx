@@ -146,7 +146,6 @@ const ImportConfigModal: React.FC<ImportConfigModalProps> = ({
                 </DialogHeader>
 
                 <div className="space-y-6">
-                    {/* Repository Preview */}
                     <Card className="border-2 border-blue-200 dark:border-blue-800">
                         <CardHeader className="pb-3">
                             <div className="flex items-start justify-between">

@@ -13,6 +13,7 @@ type BlogAction =
 	| { type: "SET_IS_ADD_BLOG_MODAL_OPEN"; payload: boolean }
 	| { type: "SET_IS_BLOG_ADDING"; payload: boolean }
 	| { type: "ADD_BLOG"; payload: BlogEntry }
+	| { type: "UPDATE_BLOG"; payload: BlogEntry }
 	| { type: "REMOVE_BLOG"; payload: string }
 	| { type: "SET_IS_BLOG_LOADING"; payload: boolean }
 	| { type: "SET_CURRENT_BLOG"; payload: BlogEntry | null }
@@ -52,6 +53,20 @@ export default function BlogReducer(state: BlogState, action: BlogAction): BlogS
 			return { ...state, isBlogAdding: action.payload }
 		case "ADD_BLOG":
 			return { ...state, allBlogs: [action.payload, ...state.allBlogs] }
+		case "UPDATE_BLOG":
+			return {
+				...state,
+				allBlogs: state.allBlogs.map((blog) =>
+					blog._id === action.payload._id ? { ...blog, ...action.payload } : blog
+				),
+				allBlogPosts: state.allBlogPosts.map((blog) =>
+					blog._id === action.payload._id ? { ...blog, ...action.payload } : blog
+				),
+				currentBlog:
+					state.currentBlog?._id === action.payload._id
+						? { ...state.currentBlog, ...action.payload }
+						: state.currentBlog,
+			}
 		case "REMOVE_BLOG":
 			return {
 				...state,

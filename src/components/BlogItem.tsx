@@ -31,6 +31,7 @@ import {
 import { toast } from "./ui/use-toast";
 import { useBlog } from "@/features/blog/context/BlogProvider";
 import type { BlogEntry } from "@/types/blog";
+import EditBlogMetadataDialog from "./EditBlogMetadataDialog";
 
 interface BlogItemProps {
     blog: BlogEntry;
@@ -45,6 +46,7 @@ const BlogItem: React.FC<BlogItemProps> = ({ blog }) => {
         isOpen: false,
         isDeleting: false
     });
+    const [isEditDetailsOpen, setIsEditDetailsOpen] = useState(false);
 
     const { deleteBlog } = useBlog();
 
@@ -117,10 +119,20 @@ const BlogItem: React.FC<BlogItemProps> = ({ blog }) => {
                                     className="flex items-center gap-2 cursor-pointer w-full"
                                 >
                                     <Edit className="h-4 w-4" />
-                                    Edit Blog
+                                    Open Editor
                                 </Link>
                             </DropdownMenuItem>
-                            {/* <DropdownMenuSeparator /> */}
+                            <DropdownMenuItem
+                                className="cursor-pointer hover:dark:bg-gray-800 hover:bg-gray-200"
+                                onClick={(event) => {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    setIsEditDetailsOpen(true);
+                                }}
+                            >
+                                <SquarePen className="h-4 w-4 mr-2" />
+                                Edit Details
+                            </DropdownMenuItem>
                             <DropdownMenuItem
                                 className="text-red-500 focus:text-red-600 cursor-pointer hover:dark:bg-gray-800 hover:bg-gray-200"
                                 onClick={handleDeleteBlog}
@@ -185,6 +197,12 @@ const BlogItem: React.FC<BlogItemProps> = ({ blog }) => {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <EditBlogMetadataDialog
+				blog={blog}
+				open={isEditDetailsOpen}
+				onOpenChange={setIsEditDetailsOpen}
+			/>
         </>
     );
 };

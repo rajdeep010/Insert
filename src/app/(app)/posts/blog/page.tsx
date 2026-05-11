@@ -20,7 +20,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { Input } from "@/components/ui/input";
 import { Loader2, MoreHorizontal, Search } from "lucide-react";
 
-// ...existing code...
 
 /* Surface styles aligned with Projects/Blogs */
 const surface = "rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 transition-colors";
@@ -85,7 +84,7 @@ export default function AllBlogPosts() {
 				</div>
 
 				{!isAllBlogPostsLoading && (
-					<div className="flex flex-col gap-4 max-h-[72vh] overflow-visible custom-small-scrollbar">
+					<div className="flex flex-col gap-4 max-h-[72vh] overflow-y-scroll custom-small-scrollbar pb-16">
 						{filtered?.length === 0 && (
 							<Card className={`${surface} shadow-none`}>
 								<CardContent className="py-14 text-center text-sm text-gray-600 dark:text-gray-400">

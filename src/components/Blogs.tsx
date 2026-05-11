@@ -51,6 +51,7 @@ import {
 } from '@/components/ui/select'
 import type { BlogEntry } from '@/types/blog'
 import type { BlogCollectionEntry } from '@/types/blog-collection'
+import EditBlogMetadataDialog from '@/components/EditBlogMetadataDialog'
 
 /* Shared style helpers (aligned with other pages) */
 const surface =
@@ -90,6 +91,7 @@ const Blogs = () => {
 	const canManageCollections = session?.user?.username === profileUsername
 
 	const [deletingBlogId, setDeletingBlogId] = useState<string | null>(null)
+	const [blogToEdit, setBlogToEdit] = useState<BlogEntry | null>(null)
 	const [isCreateCollectionOpen, setIsCreateCollectionOpen] = useState(false)
 	const [collectionName, setCollectionName] = useState('')
 	const [collectionDescription, setCollectionDescription] = useState('')
@@ -242,9 +244,19 @@ const Blogs = () => {
 									<Link href={`/blog/${blog?.blogUrl}`}>
 										<DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
 											<Edit className="h-4 w-4" />
-											<span>Edit</span>
+											<span>Open editor</span>
 										</DropdownMenuItem>
 									</Link>
+									<DropdownMenuItem
+										onClick={e => {
+											e.preventDefault()
+											setBlogToEdit(blog)
+										}}
+										className="flex items-center gap-2 cursor-pointer"
+									>
+										<Edit className="h-4 w-4" />
+										<span>Edit details</span>
+									</DropdownMenuItem>
 									{canManageCollections && (
 										<DropdownMenuItem
 											onClick={e => {
@@ -595,6 +607,14 @@ const Blogs = () => {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+
+			<EditBlogMetadataDialog
+				blog={blogToEdit}
+				open={Boolean(blogToEdit)}
+				onOpenChange={(open) => {
+					if (!open) setBlogToEdit(null)
+				}}
+			/>
 		</div>
 	)
 }
