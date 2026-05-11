@@ -311,9 +311,9 @@ const Dashboard = () => {
                                             </div>
 
                                             <div className="flex flex-wrap items-center gap-2">
-                                                <Badge variant="secondary" className="rounded-full px-2.5 py-1 text-[11px]">
+                                                {/* <Badge variant="secondary" className="rounded-full px-2.5 py-1 text-[11px]">
                                                     {problemCount} problem{problemCount === 1 ? '' : 's'}
-                                                </Badge>
+                                                </Badge> */}
                                                 <Badge variant="secondary" className="rounded-full px-2.5 py-1 text-[11px]">
                                                     <Users className="mr-1 h-3.5 w-3.5" />
                                                     {collaboratorCount} collaborator{collaboratorCount === 1 ? '' : 's'}

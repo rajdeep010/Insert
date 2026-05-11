@@ -51,6 +51,7 @@ import {
 
 import InsertNavbar from "@/components/InsertNavbar";
 import InsertHoverCard from "@/components/InsertHoverCard";
+import ShareLinkButton from "@/components/ShareLinkButton";
 import { useInsertProjects } from "@/features/project/context/InsertProjectProvider";
 import { getLastModifiedText } from "@/helpers/last-modified";
 
@@ -253,6 +254,12 @@ export default function ProjectDetailsPage() {
                                                     <ArrowLeft className="h-4 w-4" />
                                                     Back
                                                 </Button>
+                                                <ShareLinkButton
+                                                    path={`/posts/projects/${projectId}`}
+                                                    title={project?.name || 'Insert project'}
+                                                    text={`Check out this project on Insert: ${project?.name || 'Untitled project'}`}
+                                                    className="gap-2"
+                                                />
                                                 {project.repoUrl && (
                                                     <Button variant="outline" size="sm" asChild>
                                                         <a href={project.repoUrl} target="_blank" rel="noopener noreferrer" aria-label="Open repository">

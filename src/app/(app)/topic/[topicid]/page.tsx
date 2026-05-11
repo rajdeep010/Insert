@@ -48,6 +48,7 @@ import {
 } from "lucide-react";
 import UserCard from "@/components/UserCard";
 import InsertNavbar from "@/components/InsertNavbar";
+import ShareLinkButton from "@/components/ShareLinkButton";
 import { useNotifications } from "@/features/notification/context/NotificationProvider";
 import InsertHoverCard from "@/components/InsertHoverCard";
 import { useBlog } from "@/features/blog/context/BlogProvider";
@@ -466,6 +467,12 @@ const EachTopic = () => {
 						</div>
 
 						<div className="flex flex-wrap gap-2 lg:justify-end">
+							<ShareLinkButton
+								path={`/topic/${topic_id}`}
+								title={curr_topic.topic.title || 'Insert topic'}
+								text={`Check out this topic on Insert: ${curr_topic.topic.title || 'Untitled topic'}`}
+								className="h-10 rounded-xl border-black/10 bg-transparent px-4 dark:border-white/10 dark:bg-transparent"
+							/>
 							{!isTopicLoading && status === "authenticated" && isOwner && (
 								<Button variant="outline" className="h-10 rounded-xl border-black/10 bg-transparent px-4 dark:border-white/10 dark:bg-transparent" onClick={() => handleCollabModal(topic_id)}>
 									<UserPlus className="mr-2 h-4 w-4" />

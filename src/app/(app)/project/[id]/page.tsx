@@ -23,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import InsertNavbar from '@/components/InsertNavbar'
 import { Button } from '@/components/ui/button'
+import ShareLinkButton from '@/components/ShareLinkButton'
 import { useSession } from 'next-auth/react'
 import { useParams } from 'next/navigation'
 import EditProjectModal from '@/components/EditProjectModal'
@@ -244,6 +245,12 @@ export default function Page() {
                                     </div>
 
                                     <div className="flex gap-3">
+                                        <ShareLinkButton
+                                            path={`/project/${projectId}`}
+                                            title={curr_project?.name || 'Insert project'}
+                                            text={`Check out this project on Insert: ${curr_project?.name || 'Untitled project'}`}
+                                            className="rounded-xl border border-black/10 dark:border-white/15 bg-white/60 px-4 py-2 text-sm font-medium dark:bg-gray-800/40"
+                                        />
                                         <Link
                                             href={curr_project?.repoUrl || '/'}
                                             target="_blank"

@@ -27,6 +27,7 @@ import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
 import InsertNavbar from "@/components/InsertNavbar";
 import InsertHoverCard from "@/components/InsertHoverCard";
+import ShareLinkButton from "@/components/ShareLinkButton";
 import { getLastModifiedText } from "@/helpers/last-modified";
 import { CalendarDays, Clock3, Info, PenSquare } from "lucide-react";
 
@@ -168,22 +169,30 @@ export default function BlogPost({ params }: any) {
                                         <div className="max-w-5xl text-xl font-semibold tracking-tight text-foreground lg:text-3xl lg:leading-tight">
                                             <span>{blog?.blogTitle}</span>
 
-                                            <div className="flex justify-between">
+                                            <div className="flex justify-between gap-3">
                                                 <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                                                     <span>Written by</span>
                                                     {blog?.creator
                                                         ? <InsertHoverCard username={blog.creator} type="username" />
                                                         : <span className="font-medium text-foreground">Unknown author</span>}
                                                 </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowMeta((prev) => !prev)}
-                                                    aria-expanded={showMeta}
-                                                    className="inline-flex w-fit items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-2 text-sm font-medium text-foreground transition hover:bg-muted/60"
-                                                >
-                                                    <Info className="h-4 w-4" />
-                                                    {showMeta ? "Hide info" : "Post info"}
-                                                </button>
+                                                <div className="flex items-center gap-2">
+                                                    <ShareLinkButton
+                                                        path={`/posts/blog/${blogUrl}`}
+                                                        title={blog?.blogTitle || 'Insert blog post'}
+                                                        text={`Check out this blog on Insert: ${blog?.blogTitle || 'Untitled blog'}`}
+                                                        className="rounded-full border-border/70 bg-background px-3 py-2 text-sm font-medium"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowMeta((prev) => !prev)}
+                                                        aria-expanded={showMeta}
+                                                        className="inline-flex w-fit items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-2 text-sm font-medium text-foreground transition hover:bg-muted/60"
+                                                    >
+                                                        <Info className="h-4 w-4" />
+                                                        {showMeta ? "Hide info" : "Post info"}
+                                                    </button>
+                                                </div>
                                             </div>
 
                                         </div>
