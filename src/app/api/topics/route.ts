@@ -1,5 +1,5 @@
 import { uniqueId } from "@/helpers/unique-id";
-import { getAuthenticatedUsername } from "@/lib/api/auth";
+import { requireAuthenticatedUsername } from "@/lib/api/auth";
 import dbConnect from "@/lib/dbConnect";
 import TopicModel from "@/model/Topic";
 import { createTopicSchema } from "@/schemas/topicSchema";
@@ -8,20 +8,22 @@ const TOPIC_LIST_SELECT =
     "_id id title about visibility creator_username collaborators createdAt";
 
 export async function GET(request: Request) {
-    const currentUsername = await getAuthenticatedUsername(request);
+    const authResult = await requireAuthenticatedUsername(request);
+    if (authResult instanceof Response) {
+        return authResult;
+    }
+    const currentUsername = authResult;
 
     await dbConnect();
 
     try {
-        const filter = currentUsername
-            ? {
-                $or: [
-                    { visibility: "public" },
-                    { visibility: "private", creator_username: currentUsername },
-                    { visibility: "private", "collaborators.username": currentUsername },
-                ],
-            }
-            : { visibility: "public" };
+        const filter = {
+            $or: [
+                { visibility: "public" },
+                { visibility: "private", creator_username: currentUsername },
+                { visibility: "private", "collaborators.username": currentUsername },
+            ],
+        };
 
         const topics = await TopicModel.find(filter)
             .sort({ createdAt: -1 })
@@ -47,17 +49,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-    const currentUsername = await getAuthenticatedUsername(request);
-
-    if (!currentUsername) {
-        return Response.json(
-            {
-                success: false,
-                message: "Authentication required",
-            },
-            { status: 401 }
-        );
+    const authResult = await requireAuthenticatedUsername(request);
+    if (authResult instanceof Response) {
+        return authResult;
     }
+    const currentUsername = authResult;
 
     let body: unknown;
 

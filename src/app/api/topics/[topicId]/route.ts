@@ -1,4 +1,4 @@
-import { getAuthenticatedUsername } from "@/lib/api/auth";
+import { requireAuthenticatedUsername } from "@/lib/api/auth";
 import dbConnect from "@/lib/dbConnect";
 import BlogCollectionModel from "@/model/BlogCollection";
 import BlogModel from "@/model/Blog";
@@ -36,7 +36,11 @@ export async function GET(
         );
     }
 
-    const currentUsername = await getAuthenticatedUsername(request);
+    const authResult = await requireAuthenticatedUsername(request);
+    if (authResult instanceof Response) {
+        return authResult;
+    }
+    const currentUsername = authResult;
 
     await dbConnect();
 
@@ -158,17 +162,11 @@ export async function PATCH(
     request: Request,
     context: RouteContext
 ) {
-    const currentUsername = await getAuthenticatedUsername(request);
-
-    if (!currentUsername) {
-        return Response.json(
-            {
-                success: false,
-                message: "Authentication required",
-            },
-            { status: 401 }
-        );
+    const authResult = await requireAuthenticatedUsername(request);
+    if (authResult instanceof Response) {
+        return authResult;
     }
+    const currentUsername = authResult;
 
     const parsedParams = topicIdParamSchema.safeParse(context.params);
 
@@ -266,17 +264,11 @@ export async function DELETE(
     request: Request,
     context: RouteContext
 ) {
-    const currentUsername = await getAuthenticatedUsername(request);
-
-    if (!currentUsername) {
-        return Response.json(
-            {
-                success: false,
-                message: "Authentication required",
-            },
-            { status: 401 }
-        );
+    const authResult = await requireAuthenticatedUsername(request);
+    if (authResult instanceof Response) {
+        return authResult;
     }
+    const currentUsername = authResult;
 
     const parsedParams = topicIdParamSchema.safeParse(context.params);
 

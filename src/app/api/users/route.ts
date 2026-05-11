@@ -1,5 +1,5 @@
 import dbConnect from "@/lib/dbConnect";
-import { getAuthenticatedUsername } from "@/lib/api/auth";
+import { requireAuthenticatedUsername } from "@/lib/api/auth";
 import { registerUser } from "@/lib/api/auth-handlers";
 import { buildPublicUserPayload } from "@/lib/api/user";
 import UserModel from "@/model/User";
@@ -10,6 +10,12 @@ const SEARCH_USER_SELECT =
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 export async function GET(request: Request) {
+    const authResult = await requireAuthenticatedUsername(request);
+    if (authResult instanceof Response) {
+        return authResult;
+    }
+    const currentUsername = authResult;
+
     const { searchParams } = new URL(request.url);
     const usernameQuery = searchParams.get("username")?.trim() ?? "";
 
@@ -25,14 +31,10 @@ export async function GET(request: Request) {
 
     try {
         await dbConnect();
-        const currentUsername = await getAuthenticatedUsername(request);
         const filters: Array<Record<string, unknown>> = [
             { username: { $regex: escapeRegex(usernameQuery), $options: "i" } },
         ];
-
-        if (currentUsername) {
-            filters.push({ username: { $ne: currentUsername } });
-        }
+        filters.push({ username: { $ne: currentUsername } });
 
         const matchedUsers = await UserModel.find({ $and: filters })
             .select(SEARCH_USER_SELECT)

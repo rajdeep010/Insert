@@ -1,32 +1,28 @@
 import dbConnect from "@/lib/dbConnect";
-import { getAuthenticatedUsername } from "@/lib/api/auth";
+import { requireAuthenticatedUsername } from "@/lib/api/auth";
 import { normalizeBlogSlug } from "@/lib/blog-slug";
 import BlogModel from "@/model/Blog";
 import { createBlogSchema } from "@/schemas/blogSchema";
 
-const BLOG_LIST_SELECT =
-    "_id blogTitle blogContentText blogUrl type creator blogBannerImage createdAt lastEdited autosave status";
+const BLOG_LIST_SELECT = "_id blogTitle blogContentText blogUrl type creator blogBannerImage createdAt lastEdited autosave status";
 
 export async function GET(request: Request) {
-    const currentUsername = await getAuthenticatedUsername(request);
+    const authResult = await requireAuthenticatedUsername(request);
+    if (authResult instanceof Response) {
+        return authResult;
+    }
+    const currentUsername = authResult;
 
     await dbConnect();
 
     try {
-        const filter = currentUsername
-            ? {
-                status: "active",
-                autosave: { $ne: true },
-                $or: [
-                    { type: "public" },
-                    { type: "private", creator: currentUsername },
-                ],
-            }
-            : {
-                status: "active",
-                autosave: { $ne: true },
-                type: "public",
-            };
+        const filter = {
+            status: "active",
+            $or: [
+                { type: "public" },
+                { type: "private", creator: currentUsername },
+            ],
+        };
 
         const blogs = await BlogModel.find(filter)
             .sort({ lastEdited: -1 })
@@ -52,17 +48,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-    const currentUsername = await getAuthenticatedUsername(request);
-
-    if (!currentUsername) {
-        return Response.json(
-            {
-                success: false,
-                message: "Authentication required",
-            },
-            { status: 401 }
-        );
+    const authResult = await requireAuthenticatedUsername(request);
+    if (authResult instanceof Response) {
+        return authResult;
     }
+    const currentUsername = authResult;
 
     let body: unknown;
 

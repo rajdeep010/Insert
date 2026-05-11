@@ -1,4 +1,5 @@
 import db from "@/firebaseConfig";
+import { requireAuthenticatedUsername } from "@/lib/api/auth";
 import { usernameParamsSchema } from "@/schemas/userSchema";
 import type { HeatmapDateValues } from "@/types/topic";
 import { get, ref } from "firebase/database";
@@ -10,9 +11,14 @@ type RouteContext = {
 };
 
 export async function GET(
-    _request: Request,
+    request: Request,
     context: RouteContext
 ) {
+    const authResult = await requireAuthenticatedUsername(request);
+    if (authResult instanceof Response) {
+        return authResult;
+    }
+
     const parsedParams = usernameParamsSchema.safeParse(context.params);
 
     if (!parsedParams.success) {

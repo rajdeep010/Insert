@@ -1,24 +1,26 @@
 import dbConnect from "@/lib/dbConnect";
-import { getAuthenticatedUsername } from "@/lib/api/auth";
+import { requireAuthenticatedUsername } from "@/lib/api/auth";
 import BlogCollectionModel from "@/model/BlogCollection";
 import BlogModel from "@/model/Blog";
 
 const COLLECTION_LIST_SELECT = "_id name description ownerUsername visibility linkedTopicId blogIds createdAt updatedAt";
 
 export async function GET(request: Request) {
-	const currentUsername = await getAuthenticatedUsername(request);
+	const authResult = await requireAuthenticatedUsername(request);
+	if (authResult instanceof Response) {
+		return authResult;
+	}
+	const currentUsername = authResult;
 
 	await dbConnect();
 
 	try {
-		const collectionFilter = currentUsername
-			? {
-				$or: [
-					{ visibility: "public" },
-					{ ownerUsername: currentUsername },
-				],
-			}
-			: { visibility: "public" };
+		const collectionFilter = {
+			$or: [
+				{ visibility: "public" },
+				{ ownerUsername: currentUsername },
+			],
+		};
 
 		const collections = await BlogCollectionModel.find(collectionFilter)
 			.sort({ updatedAt: -1, createdAt: -1 })

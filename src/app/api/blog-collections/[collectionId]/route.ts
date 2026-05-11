@@ -1,5 +1,5 @@
 import dbConnect from "@/lib/dbConnect";
-import { getAuthenticatedUsername } from "@/lib/api/auth";
+import { requireAuthenticatedUsername } from "@/lib/api/auth";
 import BlogCollectionModel from "@/model/BlogCollection";
 import BlogModel from "@/model/Blog";
 import TopicModel from "@/model/Topic";
@@ -18,7 +18,11 @@ const COLLECTION_SELECT = "_id name description ownerUsername visibility linkedT
 const COLLECTION_BLOG_SELECT = "_id blogTitle blogContentText blogUrl type creator blogBannerImage createdAt lastEdited status autosave";
 
 export async function GET(request: Request, context: RouteContext) {
-	const currentUsername = await getAuthenticatedUsername(request);
+	const authResult = await requireAuthenticatedUsername(request);
+	if (authResult instanceof Response) {
+		return authResult;
+	}
+	const currentUsername = authResult;
 
 	const parsedParams = collectionIdParamsSchema.safeParse(context.params);
 	if (!parsedParams.success) {
@@ -71,11 +75,11 @@ export async function GET(request: Request, context: RouteContext) {
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
-	const currentUsername = await getAuthenticatedUsername(request);
-
-	if (!currentUsername) {
-		return Response.json({ success: false, message: "Authentication required" }, { status: 401 });
+	const authResult = await requireAuthenticatedUsername(request);
+	if (authResult instanceof Response) {
+		return authResult;
 	}
+	const currentUsername = authResult;
 
 	const parsedParams = collectionIdParamsSchema.safeParse(context.params);
 	if (!parsedParams.success) {
@@ -149,11 +153,11 @@ export async function PATCH(request: Request, context: RouteContext) {
 }
 
 export async function DELETE(request: Request, context: RouteContext) {
-	const currentUsername = await getAuthenticatedUsername(request);
-
-	if (!currentUsername) {
-		return Response.json({ success: false, message: "Authentication required" }, { status: 401 });
+	const authResult = await requireAuthenticatedUsername(request);
+	if (authResult instanceof Response) {
+		return authResult;
 	}
+	const currentUsername = authResult;
 
 	const parsedParams = collectionIdParamsSchema.safeParse(context.params);
 	if (!parsedParams.success) {

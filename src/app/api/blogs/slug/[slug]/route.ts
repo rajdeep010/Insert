@@ -1,5 +1,5 @@
 import dbConnect from "@/lib/dbConnect";
-import { getAuthenticatedUsername } from "@/lib/api/auth";
+import { requireAuthenticatedUsername } from "@/lib/api/auth";
 import { escapeRegex, normalizeBlogSlug } from "@/lib/blog-slug";
 import BlogModel from "@/model/Blog";
 
@@ -26,7 +26,11 @@ export async function GET(
         );
     }
 
-    const currentUsername = await getAuthenticatedUsername(request);
+    const authResult = await requireAuthenticatedUsername(request);
+    if (authResult instanceof Response) {
+        return authResult;
+    }
+    const currentUsername = authResult;
 
     await dbConnect();
 

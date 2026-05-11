@@ -41,3 +41,17 @@ export async function getAuthenticatedUsername(request: Request) {
 
     return username;
 }
+
+export const authenticationRequiredResponse = () =>
+    Response.json(
+        {
+            success: false,
+            message: "Authentication required",
+        },
+        { status: 401 }
+    );
+
+export async function requireAuthenticatedUsername(request: Request) {
+    const username = await getAuthenticatedUsername(request);
+    return username ?? authenticationRequiredResponse();
+}

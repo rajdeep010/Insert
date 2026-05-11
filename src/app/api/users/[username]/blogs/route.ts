@@ -1,4 +1,5 @@
 import dbConnect from "@/lib/dbConnect";
+import { requireAuthenticatedUsername } from "@/lib/api/auth";
 import BlogModel from "@/model/Blog";
 import { usernameParamsSchema } from "@/schemas/userSchema";
 
@@ -9,9 +10,14 @@ type RouteContext = {
 };
 
 export async function GET(
-    _request: Request,
+    request: Request,
     context: RouteContext
 ) {
+    const authResult = await requireAuthenticatedUsername(request);
+    if (authResult instanceof Response) {
+        return authResult;
+    }
+
     const parsedParams = usernameParamsSchema.safeParse(context.params);
 
     if (!parsedParams.success) {
