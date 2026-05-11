@@ -15,6 +15,9 @@ export function Footer() {
                 </div>
 
                 <div className="flex items-center gap-5">
+                    <Link href="/privacy-policy" className="text-xs font-medium hover:text-black dark:hover:text-white">
+                        Privacy Policy
+                    </Link>
                     <Link href="https://www.linkedin.com/in/rajdeep-mallick999/" target="_blank" aria-label="LinkedIn">
                         <Linkedin className="h-5 w-5" />
                     </Link>
