@@ -23,15 +23,6 @@ export function Navbar() {
 
                 <div className="flex items-center gap-3">
                     <Link
-                        href="/release"
-                        className={pathname === "/release"
-                            ? "rounded-full bg-gradient-to-r from-slate-900 to-slate-700 px-3.5 py-1.5 text-sm font-medium text-white shadow-sm dark:from-white dark:to-gray-200 dark:text-black"
-                            : "rounded-full bg-black/[0.04] px-3.5 py-1.5 text-sm font-medium text-black transition-colors hover:bg-black/[0.08] dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
-                        }
-                    >
-                        Releases
-                    </Link>
-                    <Link
                         href={authHref}
                         className="rounded-md border border-black/10 px-3 py-1.5 text-sm font-medium text-black hover:bg-gray-50 dark:border-white/10 dark:text-white dark:hover:bg-white/10"
                     >
