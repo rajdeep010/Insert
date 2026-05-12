@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/ef09bc76-9bf1-4e6d-a132-82dcb1b2a322" alt="Insert hero" width="1340" />
+  <img src="public/insert5.png" alt="Insert hero" width="1340" />
 </p>
 
-<h1 align="center">Insert</h1>
+<h1 align="center">Insert (v5.0)</h1>
 
 <p align="center">
   A workspace for structured coding sheets, technical writing, public blog collections, and release-ready project workflows.
