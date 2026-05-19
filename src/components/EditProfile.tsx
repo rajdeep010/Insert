@@ -2,11 +2,15 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "@/components/ui/use-toast";
 import Image from 'next/image';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { useInsertUser } from '@/features/user/context/InsertUserProvider';
-import { Loader2, Camera, User, Building2, MapPin, Link2, AtSign, Info } from 'lucide-react';
+import { disablePushNotifications, enablePushNotifications } from '@/lib/push-notifications';
+import { Loader2, Camera, User, Building2, MapPin, Settings, Bell, Info } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa6';
 
 
@@ -32,6 +36,8 @@ const EditProfile = () => {
     })
     const [isAvatarUploading, setIsAvatarUploading] = useState(false)
     const [isSavingUser, setSaveUser] = useState(false)
+    const [isNotificationSaving, setIsNotificationSaving] = useState(false)
+    const [pushEnabled, setPushEnabled] = useState(false)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target
@@ -67,10 +73,56 @@ const EditProfile = () => {
         try {
             setSaveUser(true)
             await updateUser(formData)
-        } catch (error) {
+        } catch {
             setSaveUser(false)
         } finally {
             setSaveUser(false)
+        }
+    }
+
+    const handlePushToggle = async (checked: boolean) => {
+        const previousValue = pushEnabled
+
+        setPushEnabled(checked)
+        setIsNotificationSaving(true)
+
+        try {
+            if (checked) {
+                const token = await enablePushNotifications()
+                const wasSaved = await updateUser({
+                    notificationSettings: {
+                        pushEnabled: true,
+                        fcmToken: token,
+                    },
+                })
+
+                if (!wasSaved) {
+                    throw new Error('Could not save notification settings')
+                }
+
+                return
+            }
+
+            await disablePushNotifications()
+            const wasSaved = await updateUser({
+                notificationSettings: {
+                    pushEnabled: false,
+                    fcmToken: null,
+                },
+            })
+
+            if (!wasSaved) {
+                throw new Error('Could not save notification settings')
+            }
+        } catch (error) {
+            setPushEnabled(previousValue)
+            toast({
+                title: 'Notification settings unchanged',
+                description: error instanceof Error ? error.message : 'Could not update notification settings',
+                variant: 'destructive',
+            })
+        } finally {
+            setIsNotificationSaving(false)
         }
     }
 
@@ -84,6 +136,7 @@ const EditProfile = () => {
                 company: currentUser?.company || '',
                 location: currentUser?.location || ''
             })
+            setPushEnabled(Boolean(currentUser?.notificationSettings?.pushEnabled))
         }
     }, [currentUser])
 
@@ -91,20 +144,43 @@ const EditProfile = () => {
         <Sheet>
             <SheetTrigger asChild>
                 <Button variant="outline" className="gap-2">
-                    <User className="h-4 w-4" />
-                    Edit Profile
+                    <Settings className="h-4 w-4" />
+                    Settings
                 </Button>
             </SheetTrigger>
 
             <SheetContent className="sm:max-w-[560px]">
                 <SheetHeader>
                     <SheetDescription>
-                        <VisuallyHidden.Root>Update your profile details and avatar</VisuallyHidden.Root>
+                        <VisuallyHidden.Root>Manage your profile settings, avatar, and notifications</VisuallyHidden.Root>
                     </SheetDescription>
-                    <SheetTitle className="text-xl">Edit profile</SheetTitle>
+                    <SheetTitle className="text-xl">Settings</SheetTitle>
                 </SheetHeader>
 
                 <div className="grid gap-6 py-6">
+                    <div className={`${surface} ${hoverable} p-4`}>
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="space-y-1 pr-4">
+                                <div className="flex items-center gap-2">
+                                    <Bell className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                    <Label htmlFor="push-notifications" className="text-sm font-medium">
+                                        Push notifications
+                                    </Label>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                {isNotificationSaving && <Loader2 className="h-4 w-4 animate-spin text-gray-500" />}
+                                <Switch
+                                    id="push-notifications"
+                                    checked={pushEnabled}
+                                    onCheckedChange={handlePushToggle}
+                                    disabled={isNotificationSaving}
+                                    aria-label="Toggle push notifications"
+                                />
+                            </div>
+                        </div>
+                    </div>
                     {/* Avatar section */}
                     <div className={`${surface} ${hoverable} p-4`}>
                         <div className="flex items-center justify-between gap-6">

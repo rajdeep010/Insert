@@ -14,6 +14,12 @@ export interface ProStatus {
   cancelledAt: Date | null;
 }
 
+export interface NotificationSettings {
+    pushEnabled: boolean;
+    fcmToken: string | null;
+    updatedAt: Date | null;
+}
+
 
 export interface User extends Document{
     name: string;
@@ -35,6 +41,7 @@ export interface User extends Document{
     avatar?: string
 
     proStatus: ProStatus
+    notificationSettings: NotificationSettings
 
     // GitHub fields
     githubAccessToken?: string;
@@ -61,6 +68,15 @@ const ProStatusSchema = new Schema<ProStatus>(
     cancelledAt: { type: Date, default: null },
   },
   { _id: false }
+);
+
+const NotificationSettingsSchema = new Schema<NotificationSettings>(
+    {
+        pushEnabled: { type: Boolean, default: false },
+        fcmToken: { type: String, default: null },
+        updatedAt: { type: Date, default: null },
+    },
+    { _id: false }
 );
 
 const UserSchema: Schema<User> = new Schema({
@@ -130,6 +146,7 @@ const UserSchema: Schema<User> = new Schema({
     },
 
     proStatus: { type: ProStatusSchema, default: () => ({}) },
+    notificationSettings: { type: NotificationSettingsSchema, default: () => ({}) },
 
     // --- GitHub fields ---
     githubAccessToken: { type: String, default: null },

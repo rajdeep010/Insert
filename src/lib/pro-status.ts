@@ -49,8 +49,16 @@ export function normalizeProStatus<T extends ProStatusLike>(status: T) {
 
     const view = getProStatusView(status)
 
+    const normalizedStatus = {
+        plan: status?.plan ?? null,
+        startedAt: toDate(status?.startedAt),
+        expiresAt: toDate(status?.expiresAt),
+        autoRenew: Boolean(status?.autoRenew),
+        cancelledAt: toDate(status?.cancelledAt),
+    }
+
     return {
-        ...status,
+        ...normalizedStatus,
         active: view.active,
         badgeState: view.badgeState,
     }

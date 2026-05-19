@@ -37,6 +37,18 @@ export const updateMeSchema = z
         profile: optionalHandleOrEmpty.optional(),
         location: z.string().trim().max(120, "Location is too long").optional(),
         company: z.string().trim().max(120, "Company is too long").optional(),
+        notificationSettings: z
+            .object({
+                pushEnabled: z.boolean().optional(),
+                fcmToken: z
+                    .string()
+                    .trim()
+                    .max(4096, "FCM token is too long")
+                    .nullable()
+                    .optional(),
+            })
+            .strict()
+            .optional(),
     })
     .strict()
     .refine((data) => Object.keys(data).length > 0, {

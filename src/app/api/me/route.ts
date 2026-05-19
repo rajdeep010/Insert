@@ -5,7 +5,7 @@ import UserModel from "@/model/User";
 import { updateMeSchema } from "@/schemas/meSchema";
 
 const ME_SELECT =
-    "_id name username email isVerified about linkedin profile location company avatar proStatus githubLogin githubId githubScopes githubConnectedAt githubAvatarUrl githubName";
+    "_id name username email isVerified about linkedin profile location company avatar proStatus notificationSettings githubLogin githubId githubScopes githubConnectedAt githubAvatarUrl githubName";
 
 export async function GET(request: Request) {
     const username = await getAuthenticatedUsername(request);
@@ -96,9 +96,22 @@ export async function PATCH(request: Request) {
     await dbConnect();
 
     try {
+        const updateData = {
+            ...parsedBody.data,
+            ...(parsedBody.data.notificationSettings
+                ? {
+                    notificationSettings: {
+                        pushEnabled: parsedBody.data.notificationSettings.pushEnabled ?? false,
+                        fcmToken: parsedBody.data.notificationSettings.fcmToken ?? null,
+                        updatedAt: new Date(),
+                    },
+                }
+                : {}),
+        };
+
         const updatedUser = await UserModel.findOneAndUpdate(
             { username },
-            { $set: parsedBody.data },
+            { $set: updateData },
             { new: true, runValidators: true }
         ).select(ME_SELECT);
 
