@@ -23,8 +23,11 @@ export default function PushNotificationsListener() {
             const messaging = getMessaging(app);
 
             unsubscribe = onMessage(messaging, (payload) => {
-                const title = payload.notification?.title || payload.data?.title || "New notification";
-                const body = payload.notification?.body || payload.data?.body || "You have a new message.";
+
+                console.log("Received foreground message:", payload);
+                
+                const title = payload.notification?.title || payload.data?.title;
+                const body = payload.notification?.body || payload.data?.body;
 
                 toast({
                     title,

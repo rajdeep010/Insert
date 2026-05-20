@@ -1,6 +1,49 @@
 importScripts("https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js");
 
+const recentNotifications = new Set();
+
+const rememberNotification = (key) => {
+    if (!key) return false;
+    if (recentNotifications.has(key)) return true;
+
+    recentNotifications.add(key);
+    setTimeout(() => {
+        recentNotifications.delete(key);
+    }, 5000);
+
+    return false;
+};
+
+const buildNotificationFromPayload = (payload) => {
+    const data = payload?.data ?? {};
+    const notification = payload?.notification ?? {};
+    const messageId = payload?.messageId || data.messageId || notification.tag || "";
+
+    return {
+        messageId,
+        title: notification.title || data.title || "Insert",
+        options: {
+            body: notification.body || data.body || "You have a new notification.",
+            icon: data.icon || notification.icon || "/panda-bear.png",
+            badge: data.badge || "/panda-bear.png",
+            tag: data.tag || messageId || "insert-push",
+            requireInteraction: data.requireInteraction === "true",
+            data,
+        },
+    };
+};
+
+const showPayloadNotification = async (payload) => {
+    const { messageId, title, options } = buildNotificationFromPayload(payload);
+
+    if (rememberNotification(messageId)) {
+        return;
+    }
+
+    await self.registration.showNotification(title, options);
+};
+
 const searchParams = new URL(self.location.href).searchParams;
 
 const firebaseConfig = {
@@ -20,14 +63,29 @@ if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.messagin
     messaging.onBackgroundMessage((payload) => {
         console.log("Background message:", payload);
 
-        const notificationTitle = payload.notification?.title || payload.data?.title || "Insert";
-        const notificationOptions = {
-            body: payload.notification?.body || payload.data?.body || "You have a new notification.",
-            icon: "/panda-bear.png",
-            data: payload.data ?? {},
-        };
+        void showPayloadNotification(payload);
+    });
 
-        self.registration.showNotification(notificationTitle, notificationOptions);
+    self.addEventListener("push", (event) => {
+        if (!event.data) {
+            return;
+        }
+
+        let payload;
+
+        try {
+            payload = event.data.json();
+        } catch {
+            payload = {
+                data: {
+                    title: "Insert",
+                    body: event.data.text(),
+                },
+            };
+        }
+
+        console.log("Raw push event:", payload);
+        event.waitUntil(showPayloadNotification(payload));
     });
 
     self.addEventListener("notificationclick", (event) => {
