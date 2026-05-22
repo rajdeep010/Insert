@@ -20,8 +20,6 @@ import {
 	Loader2,
 	LayoutDashboard,
 	PanelsTopLeft,
-	LayoutPanelLeft,
-	LayoutGrid,
 	BadgeCheck,
 	FolderKanban,
 } from "lucide-react";
@@ -53,9 +51,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import SuggestionNotificationCard from "./SuggestionNotificationCard";
 import InviteNotificationCard from "./InviteNotificationCard";
+import NotificationBellV2 from "@/components/notifications-v2/NotificationBellV2";
 import { useNotifications } from "@/features/notification/context/NotificationProvider";
-import { Separator } from "./ui/separator";
-import Dashboard from "./Dashboard";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import InsertIcon from "./InsertIcon";
 
@@ -214,6 +211,12 @@ const InsertNavbar = () => {
 								</NavigationMenuItem>
 							</>
 						)}
+						{status === "authenticated" && username && (
+							<NavigationMenuItem>
+								<NotificationBellV2 />
+							</NavigationMenuItem>
+						)}
+
 
 						{status === "authenticated" && username && (
 							<DropdownMenu onOpenChange={(open) => open && handleGetNotifier()}>
@@ -351,13 +354,15 @@ const InsertNavbar = () => {
 			</div>
 
 			<div className="lg:hidden flex items-center gap-6">
+				{status === "authenticated" && username && <NotificationBellV2 />}
+
 				{status === "authenticated" && username && (
 					<DropdownMenu onOpenChange={(open) => open && handleGetNotifier()}>
 						<DropdownMenuTrigger
 							className={`flex items-center border-none outline-none ${unreadNotifyCount > 0 && "notify"}`}
 							unread-count={unreadNotifyCount}
 						>
-							<MessageSquare className="h-6 w-6 mx-2" />
+							<MessageSquare className="h-5 w-5 mx-2" />
 						</DropdownMenuTrigger>
 
 						<DropdownMenuContent className="max-w-[300px] max-h-[300px] overflow-y-scroll custom-small-scrollbar">

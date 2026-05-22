@@ -15,6 +15,11 @@ const notificationServiceOrigin = trimTrailingSlash(
 		"https://insert-notification-service.onrender.com"
 )
 
+const notificationServiceV2Origin = trimTrailingSlash(
+	process.env.NEXT_PUBLIC_NOTIFICATION_SERVICE_V2_ORIGIN ??
+		"http://localhost:8080"
+)
+
 const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUD_NAME ?? ""
 const cloudinaryUploadPreset = process.env.NEXT_PUBLIC_CLOUD_PRESET ?? ""
 
@@ -31,6 +36,11 @@ export const externalServices = {
 	},
 	notification: {
 		origin: notificationServiceOrigin,
+	},
+	notificationV2: {
+		origin: notificationServiceV2Origin,
+		apiBaseUrl: notificationServiceV2Origin,
+		websocketUrl: `${notificationServiceV2Origin}/ws`,
 	},
 	cloudinary: {
 		cloudName: cloudinaryCloudName,
