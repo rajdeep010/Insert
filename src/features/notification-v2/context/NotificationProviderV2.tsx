@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useReducer, createContext, useContext } from "react";
+import { useEffect, useReducer, createContext, useContext, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 
 import { useNotificationSocketV2 } from "@/hooks/use-notification-socket-v2";
@@ -38,8 +39,10 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 
 export const NotificationProviderV2 = ({ children }: { children: React.ReactNode }) => {
 	const { data: session, status } = useSession();
+	const pathname = usePathname();
 	const username = session?.user?.username ?? null;
 	const [state, dispatch] = useReducer(NotificationReducerV2, initialNotificationStateV2);
+	const baseTitleRef = useRef("Insert");
 
 	const hydrateNotifications = async () => {
 		if (!username) return;
@@ -84,6 +87,31 @@ export const NotificationProviderV2 = ({ children }: { children: React.ReactNode
 
 		void hydrateNotifications();
 	}, [status, username]);
+
+	useEffect(() => {
+		if (typeof document === "undefined") {
+			return;
+		}
+
+		const currentTitle = document.title.replace(/^\(\d+\)\s*/, "").trim();
+		baseTitleRef.current = currentTitle || "Insert";
+	}, [pathname]);
+
+	useEffect(() => {
+		if (typeof document === "undefined") {
+			return;
+		}
+
+		const nextTitle = state.unreadCount > 0
+			? `(${state.unreadCount}) ${baseTitleRef.current}`
+			: baseTitleRef.current;
+
+		document.title = nextTitle;
+
+		return () => {
+			document.title = baseTitleRef.current;
+		};
+	}, [state.unreadCount, pathname]);
 
 	const refreshNotificationsV2 = async () => {
 		await hydrateNotifications();
