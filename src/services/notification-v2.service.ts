@@ -4,6 +4,7 @@ import { externalServices } from "@/lib/config/services";
 import type {
 	NotificationFeedPageV2,
 	NotificationItemV2Data,
+	NotificationLocalActionStateV2,
 	NotificationSocketPayloadV2,
 } from "@/types/notifications-v2";
 
@@ -15,17 +16,35 @@ const notificationClientV2 = axios.create({
 });
 
 const buildFallbackId = (value: Record<string, unknown>) => {
-	const payload = String(value.payload ?? value.message ?? "notification");
+	const summary = String(value.title ?? value.message ?? value.payload ?? "notification");
 	const createdAt = String(value.createdAt ?? Date.now());
-	return `${createdAt}-${payload}`;
+	return `${createdAt}-${summary}`;
+};
+
+const normalizeLocalActionState = (value: unknown): NotificationLocalActionStateV2 => {
+	if (value === "accepted" || value === "declined") {
+		return value;
+	}
+	return null;
 };
 
 export const normalizeNotificationV2 = (value: Record<string, unknown>): NotificationItemV2Data => ({
-	id: String(value.id ?? value._id ?? buildFallbackId(value)),
+	id: String(value.id ?? value._id ?? value.eventId ?? buildFallbackId(value)),
+	eventId: value.eventId ? String(value.eventId) : undefined,
 	username: String(value.username ?? value.to ?? ""),
 	type: String(value.type ?? value.noti_type ?? "INFO"),
-	status: String(value.status ?? "SENT"),
-	payload: String(value.payload ?? value.message ?? ""),
+	status: value.status ? String(value.status) : undefined,
+	title: String(value.title ?? value.type ?? "Notification"),
+	message: String(value.message ?? value.payload ?? ""),
+	payload: value.payload ? String(value.payload) : null,
+	actionType: value.actionType ? String(value.actionType) : null,
+	actionRequired: Boolean(value.actionRequired),
+	actionCompleted: Boolean(value.actionCompleted),
+	actionUrl: value.actionUrl ? String(value.actionUrl) : null,
+	entityId: value.entityId ? String(value.entityId) : null,
+	entityType: value.entityType ? String(value.entityType) : null,
+	actorUsername: value.actorUsername ? String(value.actorUsername) : null,
+	localActionState: normalizeLocalActionState(value.localActionState),
 	createdAt: String(value.createdAt ?? new Date().toISOString()),
 	read: Boolean(value.read),
 });
@@ -90,5 +109,7 @@ export const normalizeSocketNotificationV2 = (
 	payload: NotificationSocketPayloadV2
 ): NotificationItemV2Data => ({
 	...normalizeNotificationV2(payload as unknown as Record<string, unknown>),
+	actionCompleted: Boolean(payload.actionCompleted),
+	localActionState: null,
 	read: false,
 });

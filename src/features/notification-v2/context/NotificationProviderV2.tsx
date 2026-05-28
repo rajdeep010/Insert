@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 
+import { doesNotificationMatchPathV2 } from "@/lib/notification-v2";
 import { useNotificationSocketV2 } from "@/hooks/use-notification-socket-v2";
 import NotificationReducerV2, {
 	initialNotificationStateV2,
@@ -18,6 +19,7 @@ import {
 } from "@/services/notification-v2.service";
 import type {
 	NotificationCenterStateV2,
+	NotificationLocalActionStateV2,
 	NotificationSocketPayloadV2,
 } from "@/types/notifications-v2";
 
@@ -26,6 +28,7 @@ interface NotificationContextValueV2 extends NotificationCenterStateV2 {
 	loadMoreNotificationsV2: () => Promise<void>;
 	markAsReadV2: (id: string) => Promise<void>;
 	markVisibleAsReadV2: () => Promise<void>;
+	completeLocalActionV2: (id: string, state: NotificationLocalActionStateV2) => void;
 }
 
 const NotificationContextV2 = createContext<NotificationContextValueV2 | null>(null);
@@ -68,8 +71,8 @@ export const NotificationProviderV2 = ({ children }: { children: React.ReactNode
 	const handleSocketNotification = (payload: NotificationSocketPayloadV2) => {
 		const notification = normalizeSocketNotificationV2(payload);
 		dispatch({ type: "PREPEND_REALTIME", payload: notification });
-		toast("New Notification", {
-			description: notification.payload,
+		toast(notification.title, {
+			description: notification.message,
 		});
 	};
 
@@ -112,6 +115,13 @@ export const NotificationProviderV2 = ({ children }: { children: React.ReactNode
 			document.title = baseTitleRef.current;
 		};
 	}, [state.unreadCount, pathname]);
+
+	useEffect(() => {
+		dispatch({
+			type: "SET_CONTEXTUAL_NOTIFICATIONS",
+			payload: state.notifications.filter((notification) => doesNotificationMatchPathV2(notification, pathname)),
+		});
+	}, [pathname, state.notifications]);
 
 	const refreshNotificationsV2 = async () => {
 		await hydrateNotifications();
@@ -168,6 +178,10 @@ export const NotificationProviderV2 = ({ children }: { children: React.ReactNode
 		}
 	};
 
+	const completeLocalActionV2 = (id: string, localState: NotificationLocalActionStateV2) => {
+		dispatch({ type: "COMPLETE_LOCAL_ACTION", payload: { id, state: localState } });
+	};
+
 	return (
 		<NotificationContextV2.Provider
 			value={{
@@ -176,6 +190,7 @@ export const NotificationProviderV2 = ({ children }: { children: React.ReactNode
 				loadMoreNotificationsV2,
 				markAsReadV2,
 				markVisibleAsReadV2,
+				completeLocalActionV2,
 			}}
 		>
 			{children}

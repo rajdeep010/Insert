@@ -3,6 +3,7 @@ import type {
 	NotificationConnectionStateV2,
 	NotificationFeedPageV2,
 	NotificationItemV2Data,
+	NotificationLocalActionStateV2,
 } from "@/types/notifications-v2";
 
 type NotificationActionV2 =
@@ -14,12 +15,15 @@ type NotificationActionV2 =
 	| { type: "SET_INITIAL_FEED"; payload: NotificationFeedPageV2 }
 	| { type: "APPEND_FEED"; payload: NotificationFeedPageV2 }
 	| { type: "SET_UNREAD_COUNT"; payload: number }
+	| { type: "SET_CONTEXTUAL_NOTIFICATIONS"; payload: NotificationItemV2Data[] }
 	| { type: "PREPEND_REALTIME"; payload: NotificationItemV2Data }
 	| { type: "MARK_AS_READ"; payload: string }
-	| { type: "MARK_MANY_AS_READ"; payload: string[] };
+	| { type: "MARK_MANY_AS_READ"; payload: string[] }
+	| { type: "COMPLETE_LOCAL_ACTION"; payload: { id: string; state: NotificationLocalActionStateV2 } };
 
 export const initialNotificationStateV2: NotificationCenterStateV2 = {
 	notifications: [],
+	contextualNotifications: [],
 	unreadCount: 0,
 	connectionState: "idle",
 	isInitialLoading: false,
@@ -92,6 +96,8 @@ export default function NotificationReducerV2(
 			};
 		case "SET_UNREAD_COUNT":
 			return { ...state, unreadCount: Math.max(0, action.payload) };
+		case "SET_CONTEXTUAL_NOTIFICATIONS":
+			return { ...state, contextualNotifications: action.payload };
 		case "PREPEND_REALTIME":
 			return {
 				...state,
@@ -117,6 +123,35 @@ export default function NotificationReducerV2(
 					readIds.has(notification.id) ? { ...notification, read: true } : notification
 				),
 				unreadCount: Math.max(0, state.unreadCount - updatedCount),
+			};
+		}
+		case "COMPLETE_LOCAL_ACTION": {
+			const target = state.notifications.find((notification) => notification.id === action.payload.id);
+			const nextNotifications = state.notifications.map((notification) =>
+				notification.id === action.payload.id
+					? {
+						...notification,
+						actionCompleted: true,
+						localActionState: action.payload.state,
+						read: true,
+					}
+					: notification
+			);
+
+			return {
+				...state,
+				notifications: nextNotifications,
+				contextualNotifications: state.contextualNotifications.map((notification) =>
+					notification.id === action.payload.id
+						? {
+							...notification,
+							actionCompleted: true,
+							localActionState: action.payload.state,
+							read: true,
+						}
+						: notification
+				),
+				unreadCount: target && !target.read ? Math.max(0, state.unreadCount - 1) : state.unreadCount,
 			};
 		}
 		default:

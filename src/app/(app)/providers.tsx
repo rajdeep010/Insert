@@ -2,6 +2,7 @@
 
 import Script from "next/script";
 
+import NotificationContextBannerV2 from "@/components/notifications-v2/NotificationContextBannerV2";
 import { BlogProvider } from "@/features/blog/context/BlogProvider";
 import { NotificationProvider } from "@/features/notification/context/NotificationProvider";
 import { NotificationProviderV2 } from "@/features/notification-v2/context/NotificationProviderV2";
@@ -14,6 +15,7 @@ export default function AppFeatureProviders({ children }: { children: React.Reac
 	return (
 		<NotificationProvider>
 			<NotificationProviderV2>
+				<NotificationContextBannerV2 />
 				<InsertUserProvider>
 					<InsertTopicProvider>
 						<InsertProjectProvider>

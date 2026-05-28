@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { BellRing, Loader2, RefreshCw } from "lucide-react";
 
 import NotificationItemV2 from "@/components/notifications-v2/NotificationItemV2";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SheetHeader } from "@/components/ui/sheet";
 import { useNotificationsV2 } from "@/features/notification-v2/context/NotificationProviderV2";
+import { isNotificationActionableV2 } from "@/lib/notification-v2";
 import { NOTIFICATION_PAGE_SIZE_V2 } from "@/services/notification-v2.service";
 import { cn } from "@/lib/utils";
 import type { NotificationConnectionStateV2 } from "@/types/notifications-v2";
@@ -34,9 +35,18 @@ export default function NotificationCenterV2() {
 		loadMoreNotificationsV2,
 		markAsReadV2,
 		markVisibleAsReadV2,
+		completeLocalActionV2,
 	} = useNotificationsV2();
 	const [markingIds, setMarkingIds] = useState<string[]>([]);
 	const [isMarkingVisible, setIsMarkingVisible] = useState(false);
+	const actionableNotifications = useMemo(
+		() => notifications.filter((notification) => isNotificationActionableV2(notification)),
+		[notifications]
+	);
+	const passiveNotifications = useMemo(
+		() => notifications.filter((notification) => !isNotificationActionableV2(notification)),
+		[notifications]
+	);
 
 	const handleMarkAsRead = async (id: string) => {
 		setMarkingIds((current) => [...current, id]);
@@ -118,19 +128,43 @@ export default function NotificationCenterV2() {
 								<BellRing className="h-5 w-5 text-muted-foreground" />
 							</div>
 							<p className="mt-4 text-sm font-medium">No notifications yet</p>
-							<p className="mt-1 text-sm text-muted-foreground">New Kafka-backed events will appear here when they arrive.</p>
+							<p className="mt-1 text-sm text-muted-foreground">New events will appear here when they arrive.</p>
 						</div>
 					)}
 
-					{!isInitialLoading && !error && notifications.map((notification, index) => (
-						<div key={notification.id}>
-							<NotificationItemV2
-								notification={notification}
-								onMarkAsRead={handleMarkAsRead}
-								isMarking={markingIds.includes(notification.id)}
-							/>
+					{!isInitialLoading && !error && actionableNotifications.length > 0 && (
+						<div className="space-y-2.5">
+							<div className="px-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+								Pending actions{actionableNotifications.length > 1 ? ` • ${actionableNotifications.length}` : ""}
+							</div>
+							{actionableNotifications.map((notification) => (
+								<NotificationItemV2
+									key={notification.id}
+									notification={notification}
+									onMarkAsRead={handleMarkAsRead}
+									onResolveAction={completeLocalActionV2}
+									isMarking={markingIds.includes(notification.id)}
+								/>
+							))}
 						</div>
-					))}
+					)}
+
+					{!isInitialLoading && !error && passiveNotifications.length > 0 && (
+						<div className="space-y-2.5">
+							<div className="px-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+								Latest updates
+							</div>
+							{passiveNotifications.map((notification) => (
+								<NotificationItemV2
+									key={notification.id}
+									notification={notification}
+									onMarkAsRead={handleMarkAsRead}
+									onResolveAction={completeLocalActionV2}
+									isMarking={markingIds.includes(notification.id)}
+								/>
+							))}
+						</div>
+					)}
 
 					{hasMore && !isInitialLoading && (
 						<Button
