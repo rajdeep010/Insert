@@ -2,7 +2,7 @@
   <img src="public/insert5.png" alt="Insert hero" width="1340" />
 </p>
 
-<h1 align="center">Insert (v5.0)</h1>
+<h1 align="center">Insert (v5.1)</h1>
 
 <p align="center">
   A workspace for structured coding sheets, technical writing, public blog collections, and release-ready project workflows.
