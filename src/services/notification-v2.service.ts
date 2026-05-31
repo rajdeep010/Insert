@@ -15,6 +15,11 @@ const notificationClientV2 = axios.create({
 	timeout: 10000,
 });
 
+const collaborationClientV2 = axios.create({
+	baseURL: externalServices.collaboration.apiBaseUrl,
+	timeout: 10000,
+});
+
 const buildFallbackId = (value: Record<string, unknown>) => {
 	const summary = String(value.title ?? value.message ?? value.payload ?? "notification");
 	const createdAt = String(value.createdAt ?? Date.now());
@@ -44,6 +49,7 @@ export const normalizeNotificationV2 = (value: Record<string, unknown>): Notific
 	entityId: value.entityId ? String(value.entityId) : null,
 	entityType: value.entityType ? String(value.entityType) : null,
 	actorUsername: value.actorUsername ? String(value.actorUsername) : null,
+	collaborationRequestId: value.collaborationRequestId ? String(value.collaborationRequestId) : null,
 	localActionState: normalizeLocalActionState(value.localActionState),
 	createdAt: String(value.createdAt ?? new Date().toISOString()),
 	read: Boolean(value.read),
@@ -103,6 +109,28 @@ export const fetchUnreadCountV2 = async (username: string): Promise<number> => {
 
 export const markNotificationAsReadV2 = async (id: string) => {
 	await notificationClientV2.patch(`/notifications/${id}/read`);
+};
+
+export const resolveCollaborationInviteV2 = async ({
+	collaborationRequestId,
+	action,
+	accessToken,
+}: {
+	collaborationRequestId: string;
+	action: Exclude<NotificationLocalActionStateV2, null>;
+	accessToken?: string | null;
+}) => {
+	const endpoint = action === "accepted"
+		? `/collaborations/${collaborationRequestId}/accept`
+		: `/collaborations/${collaborationRequestId}/decline`;
+
+	await collaborationClientV2.post(
+		endpoint,
+		{},
+		{
+			headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+		}
+	);
 };
 
 export const normalizeSocketNotificationV2 = (

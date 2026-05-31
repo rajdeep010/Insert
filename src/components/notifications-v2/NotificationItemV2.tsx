@@ -36,7 +36,10 @@ export default function NotificationItemV2({
 }: {
     notification: NotificationItemV2Data;
     onMarkAsRead: (id: string) => Promise<void>;
-    onResolveAction: (id: string, state: NotificationLocalActionStateV2) => void;
+    onResolveAction: (
+        notification: NotificationItemV2Data,
+        state: Exclude<NotificationLocalActionStateV2, null>
+    ) => Promise<void>;
     isMarking: boolean;
 }) {
     const router = useRouter();

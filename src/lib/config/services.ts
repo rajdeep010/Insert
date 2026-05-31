@@ -20,6 +20,11 @@ const notificationServiceV2Origin = trimTrailingSlash(
 		"http://localhost:8080"
 )
 
+const collaborationServiceOrigin = trimTrailingSlash(
+	process.env.NEXT_PUBLIC_COLLABORATION_SERVICE_ORIGIN ??
+		"http://localhost:8081"
+)
+
 const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUD_NAME ?? ""
 const cloudinaryUploadPreset = process.env.NEXT_PUBLIC_CLOUD_PRESET ?? ""
 
@@ -41,6 +46,10 @@ export const externalServices = {
 		origin: notificationServiceV2Origin,
 		apiBaseUrl: notificationServiceV2Origin,
 		websocketUrl: `${notificationServiceV2Origin}/ws`,
+	},
+	collaboration: {
+		origin: collaborationServiceOrigin,
+		apiBaseUrl: `${collaborationServiceOrigin}/api/v1`,
 	},
 	cloudinary: {
 		cloudName: cloudinaryCloudName,

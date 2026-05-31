@@ -16,9 +16,11 @@ import {
 	fetchUnreadCountV2,
 	markNotificationAsReadV2,
 	normalizeSocketNotificationV2,
+	resolveCollaborationInviteV2,
 } from "@/services/notification-v2.service";
 import type {
 	NotificationCenterStateV2,
+	NotificationItemV2Data,
 	NotificationLocalActionStateV2,
 	NotificationSocketPayloadV2,
 } from "@/types/notifications-v2";
@@ -28,7 +30,10 @@ interface NotificationContextValueV2 extends NotificationCenterStateV2 {
 	loadMoreNotificationsV2: () => Promise<void>;
 	markAsReadV2: (id: string) => Promise<void>;
 	markVisibleAsReadV2: () => Promise<void>;
-	completeLocalActionV2: (id: string, state: NotificationLocalActionStateV2) => void;
+	completeLocalActionV2: (
+		notification: NotificationItemV2Data,
+		state: Exclude<NotificationLocalActionStateV2, null>
+	) => Promise<void>;
 }
 
 const NotificationContextV2 = createContext<NotificationContextValueV2 | null>(null);
@@ -178,8 +183,28 @@ export const NotificationProviderV2 = ({ children }: { children: React.ReactNode
 		}
 	};
 
-	const completeLocalActionV2 = (id: string, localState: NotificationLocalActionStateV2) => {
-		dispatch({ type: "COMPLETE_LOCAL_ACTION", payload: { id, state: localState } });
+	const completeLocalActionV2 = async (
+		notification: NotificationItemV2Data,
+		localState: Exclude<NotificationLocalActionStateV2, null>
+	) => {
+		if (!notification.collaborationRequestId) {
+			toast.error("Missing collaboration request id");
+			return;
+		}
+
+		try {
+			await resolveCollaborationInviteV2({
+				collaborationRequestId: notification.collaborationRequestId,
+				action: localState,
+				accessToken: session?.accessToken ?? null,
+			});
+			dispatch({ type: "COMPLETE_LOCAL_ACTION", payload: { id: notification.id, state: localState } });
+		} catch (error) {
+			toast.error(getErrorMessage(error, localState === "accepted"
+				? "Could not accept collaboration invite"
+				: "Could not decline collaboration invite"));
+			throw error;
+		}
 	};
 
 	return (

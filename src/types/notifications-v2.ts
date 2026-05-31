@@ -24,6 +24,7 @@ export interface NotificationItemV2Data {
 	entityId?: string | null;
 	entityType?: string | null;
 	actorUsername?: string | null;
+	collaborationRequestId?: string | null;
 	localActionState: NotificationLocalActionStateV2;
 	createdAt: string;
 	read: boolean;
@@ -45,6 +46,7 @@ export interface NotificationSocketPayloadV2 {
 	entityId?: string | null;
 	entityType?: string | null;
 	actorUsername?: string | null;
+	collaborationRequestId?: string | null;
 	createdAt: string;
 }
 

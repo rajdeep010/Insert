@@ -48,7 +48,7 @@ export const getNotificationActionKindV2 = (notification: NotificationItemV2Data
 		return "none" as const;
 	}
 
-	if (notification.actionType === "COLLAB_REQUEST") {
+	if (notification.actionType === "COLLAB_REQUEST" || notification.actionType === "COLLAB_INVITE") {
 		return "binary" as const;
 	}
 

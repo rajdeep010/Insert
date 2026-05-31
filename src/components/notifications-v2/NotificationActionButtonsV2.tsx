@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCheck, CircleCheck, X } from "lucide-react";
-import { toast } from "sonner";
+import { CircleCheck, Loader2, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,10 @@ export default function NotificationActionButtonsV2({
 	compact = false,
 }: {
 	notification: NotificationItemV2Data;
-	onResolveAction: (id: string, state: NotificationLocalActionStateV2) => void;
+	onResolveAction: (
+		notification: NotificationItemV2Data,
+		state: Exclude<NotificationLocalActionStateV2, null>
+	) => Promise<void>;
 	compact?: boolean;
 }) {
 	const [pendingState, setPendingState] = useState<NotificationLocalActionStateV2>(null);
@@ -34,13 +36,14 @@ export default function NotificationActionButtonsV2({
 		return null;
 	}
 
-	const handleResolve = (state: NotificationLocalActionStateV2) => {
+	const handleResolve = async (state: NotificationLocalActionStateV2) => {
 		if (!state) return;
 		setPendingState(state);
-		onResolveAction(notification.id, state);
-		toast.success(state === "accepted" ? "Request accepted locally" : "Request declined locally", {
-			description: "Backend action APIs can be wired into this same UI later.",
-		});
+		try {
+			await onResolveAction(notification, state);
+		} catch {
+			setPendingState(null);
+		}
 	};
 
 	const baseButtonClass = compact
@@ -60,8 +63,8 @@ export default function NotificationActionButtonsV2({
 				}}
 				disabled={pendingState !== null}
 			>
-				<CircleCheck className="mr-1 h-3.5 w-3.5" />
-				Accept
+				{pendingState === "accepted" ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <CircleCheck className="mr-1 h-3.5 w-3.5" />}
+				{pendingState === "accepted" ? "Accepting" : "Accept"}
 			</Button>
 			<Button
 				type="button"
@@ -74,8 +77,8 @@ export default function NotificationActionButtonsV2({
 				}}
 				disabled={pendingState !== null}
 			>
-				<X className="mr-1 h-3.5 w-3.5" />
-				Decline
+				{pendingState === "declined" ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <X className="mr-1 h-3.5 w-3.5" />}
+				{pendingState === "declined" ? "Declining" : "Decline"}
 			</Button>
 		</div>
 	);
