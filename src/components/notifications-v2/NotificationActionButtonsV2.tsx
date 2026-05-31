@@ -23,10 +23,15 @@ export default function NotificationActionButtonsV2({
 	const [pendingState, setPendingState] = useState<NotificationLocalActionStateV2>(null);
 	const resolvedLabel = getNotificationActionLabelV2(notification.localActionState)
 		?? (notification.actionCompleted ? "Completed" : null);
+	const resolvedTone = notification.localActionState === "accepted"
+		? "border-emerald-500/20 bg-emerald-500/12 text-emerald-700 dark:text-emerald-200"
+		: notification.localActionState === "declined"
+			? "border-rose-500/20 bg-rose-500/12 text-rose-700 dark:text-rose-200"
+			: "border-border/60 bg-muted/60 text-muted-foreground";
 
 	if (resolvedLabel) {
 		return (
-			<Badge variant="secondary" className="rounded-full px-2.5 py-1 text-[11px] font-medium">
+			<Badge variant="outline" className={`rounded-full border px-2.5 py-1 text-[11px] font-medium shadow-sm ${resolvedTone}`}>
 				{resolvedLabel}
 			</Badge>
 		);

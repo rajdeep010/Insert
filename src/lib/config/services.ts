@@ -25,6 +25,14 @@ const collaborationServiceOrigin = trimTrailingSlash(
 		"http://localhost:8081"
 )
 
+const appOrigin = trimTrailingSlash(
+	process.env.NEXT_PUBLIC_APP_ORIGIN ??
+		process.env.NEXTAUTH_URL ??
+		(process.env.NODE_ENV === "production"
+			? "https://insertshare.vercel.app"
+			: "http://localhost:3001")
+)
+
 const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUD_NAME ?? ""
 const cloudinaryUploadPreset = process.env.NEXT_PUBLIC_CLOUD_PRESET ?? ""
 
@@ -50,6 +58,9 @@ export const externalServices = {
 	collaboration: {
 		origin: collaborationServiceOrigin,
 		apiBaseUrl: `${collaborationServiceOrigin}/api/v1`,
+	},
+	app: {
+		origin: appOrigin,
 	},
 	cloudinary: {
 		cloudName: cloudinaryCloudName,

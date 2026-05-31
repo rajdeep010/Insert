@@ -16,7 +16,7 @@ type NotificationActionV2 =
 	| { type: "APPEND_FEED"; payload: NotificationFeedPageV2 }
 	| { type: "SET_UNREAD_COUNT"; payload: number }
 	| { type: "SET_CONTEXTUAL_NOTIFICATIONS"; payload: NotificationItemV2Data[] }
-	| { type: "PREPEND_REALTIME"; payload: NotificationItemV2Data }
+	| { type: "UPSERT_REALTIME"; payload: { notification: NotificationItemV2Data; wasExisting: boolean } }
 	| { type: "MARK_AS_READ"; payload: string }
 	| { type: "MARK_MANY_AS_READ"; payload: string[] }
 	| { type: "COMPLETE_LOCAL_ACTION"; payload: { id: string; state: NotificationLocalActionStateV2 } };
@@ -62,6 +62,18 @@ const countUnreadReads = (notifications: NotificationItemV2Data[], ids: string[]
 	}, 0);
 };
 
+const updateRealtimeNotification = (
+	current: NotificationItemV2Data[],
+	incoming: NotificationItemV2Data
+) => current.map((notification) =>
+	notification.id === incoming.id
+		? {
+			...notification,
+			...incoming,
+		}
+		: notification
+);
+
 export default function NotificationReducerV2(
 	state: NotificationCenterStateV2,
 	action: NotificationActionV2
@@ -98,12 +110,32 @@ export default function NotificationReducerV2(
 			return { ...state, unreadCount: Math.max(0, action.payload) };
 		case "SET_CONTEXTUAL_NOTIFICATIONS":
 			return { ...state, contextualNotifications: action.payload };
-		case "PREPEND_REALTIME":
+		case "UPSERT_REALTIME": {
+			if (!action.payload.wasExisting) {
+				return {
+					...state,
+					notifications: mergeNotifications(state.notifications, [action.payload.notification], "prepend"),
+					unreadCount: action.payload.notification.read ? state.unreadCount : state.unreadCount + 1,
+				};
+			}
+
+			const existingNotification = state.notifications.find(
+				(notification) => notification.id === action.payload.notification.id
+			);
+			const nextUnreadCount = existingNotification
+				? existingNotification.read === action.payload.notification.read
+					? state.unreadCount
+					: action.payload.notification.read
+						? Math.max(0, state.unreadCount - 1)
+						: state.unreadCount + 1
+				: state.unreadCount;
+
 			return {
 				...state,
-				notifications: mergeNotifications(state.notifications, [action.payload], "prepend"),
-				unreadCount: action.payload.read ? state.unreadCount : state.unreadCount + 1,
+				notifications: updateRealtimeNotification(state.notifications, action.payload.notification),
+				unreadCount: nextUnreadCount,
 			};
+		}
 		case "MARK_AS_READ": {
 			const target = state.notifications.find((notification) => notification.id === action.payload);
 			return {

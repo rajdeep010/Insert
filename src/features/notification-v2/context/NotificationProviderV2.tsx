@@ -51,6 +51,7 @@ export const NotificationProviderV2 = ({ children }: { children: React.ReactNode
 	const username = session?.user?.username ?? null;
 	const [state, dispatch] = useReducer(NotificationReducerV2, initialNotificationStateV2);
 	const baseTitleRef = useRef("Insert");
+	const notificationsRef = useRef<NotificationItemV2Data[]>([]);
 
 	const hydrateNotifications = async () => {
 		if (!username) return;
@@ -75,13 +76,23 @@ export const NotificationProviderV2 = ({ children }: { children: React.ReactNode
 
 	const handleSocketNotification = (payload: NotificationSocketPayloadV2) => {
 		const notification = normalizeSocketNotificationV2(payload);
-		dispatch({ type: "PREPEND_REALTIME", payload: notification });
+		const wasExisting = notificationsRef.current.some((item) => item.id === notification.id);
+		dispatch({ type: "UPSERT_REALTIME", payload: { notification, wasExisting } });
+
+		if (wasExisting) {
+			return;
+		}
+
 		toast(notification.title, {
 			description: notification.message,
 		});
 	};
 
 	const connectionState = useNotificationSocketV2(username, handleSocketNotification);
+
+	useEffect(() => {
+		notificationsRef.current = state.notifications;
+	}, [state.notifications]);
 
 	useEffect(() => {
 		dispatch({ type: "SET_CONNECTION_STATE", payload: connectionState });

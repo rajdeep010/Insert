@@ -467,15 +467,15 @@ const SimpleEditor = () => {
 };
 
 const Write = () => {
-	const { isBlogLoading, fetchBlogByUrl, fetchBlogsByUsername } = useBlog()
+	const { isBlogLoading, fetchBlogByIdentifier, fetchBlogsByUsername } = useBlog()
 	const { data: session, status } = useSession();
 	const params = useParams()
 	const blogUrl = params?.blogUrl as string
 
 	React.useEffect(() => {
 		if (!blogUrl) return
-		fetchBlogByUrl(blogUrl)
-	}, [blogUrl, fetchBlogByUrl])
+		fetchBlogByIdentifier(blogUrl)
+	}, [blogUrl, fetchBlogByIdentifier])
 
 	React.useEffect(() => {
 		if (status !== 'authenticated' || !session?.user?.username) return

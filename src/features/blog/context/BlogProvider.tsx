@@ -31,6 +31,7 @@ interface BlogProviderProps {
 	addBlog: (title: string, visibility: BlogVisibility) => void;
 	setIsAddBlogModalOpen: (isOpen: boolean) => void;
 	fetchBlogByUrl: (slug: string) => void;
+	fetchBlogByIdentifier: (identifier: string) => void;
 	fetchAllBlogPosts: () => void;
 	fetchBlogsByUsername: (username: string) => void;
 	fetchBlogCollections: () => Promise<void>;
@@ -57,6 +58,8 @@ const initialState: BlogState = {
 };
 
 const BlogContext = createContext<BlogProviderProps | null>(null);
+
+const isLikelyBlogId = (value: string) => /^[a-f\d]{24}$/i.test(value);
 
 export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 	const { data: session, status } = useSession();
@@ -110,6 +113,38 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 				router.replace("/write");
 				return;
 			}
+			dispatch({ type: "SET_CURRENT_BLOG", payload: response.data.blog });
+		} catch (error: any) {
+			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to fetch blog", variant: "destructive" });
+			router.replace("/write");
+		} finally {
+			dispatch({ type: "SET_IS_BLOG_LOADING", payload: false });
+		}
+	}, [router, toast]);
+
+	const fetchBlogByIdentifier = useCallback(async (identifier: string) => {
+		if (!identifier) return;
+		dispatch({ type: "SET_IS_BLOG_LOADING", payload: true });
+
+		try {
+			if (isLikelyBlogId(identifier)) {
+				const response = await axios.get(`/api/blogs/${identifier}`);
+				if (response.data.success && response.data.blog) {
+					dispatch({ type: "SET_CURRENT_BLOG", payload: response.data.blog });
+					if (response.data.blog.blogUrl && response.data.blog.blogUrl !== identifier) {
+						router.replace(`/blog/${response.data.blog.blogUrl}`);
+					}
+					return;
+				}
+			}
+
+			const response = await axios.get(`/api/blogs/slug/${identifier}`);
+			if (!response.data.success) {
+				toast({ title: "Error ⭕", description: response.data.message || "Failed to fetch blog", variant: "destructive" });
+				router.replace("/write");
+				return;
+			}
+
 			dispatch({ type: "SET_CURRENT_BLOG", payload: response.data.blog });
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to fetch blog", variant: "destructive" });
@@ -356,6 +391,7 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 		addBlog,
 		setIsAddBlogModalOpen,
 		fetchBlogByUrl,
+			fetchBlogByIdentifier,
 		fetchAllBlogPosts,
 		fetchBlogsByUsername,
 		fetchBlogCollections,

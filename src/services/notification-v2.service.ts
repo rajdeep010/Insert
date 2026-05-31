@@ -1,6 +1,7 @@
 import axios from "axios";
 
 import { externalServices } from "@/lib/config/services";
+import { getNotificationDestinationUrlV2, getNotificationDisplayMessageV2 } from "@/lib/notification-v2";
 import type {
 	NotificationFeedPageV2,
 	NotificationItemV2Data,
@@ -33,27 +34,35 @@ const normalizeLocalActionState = (value: unknown): NotificationLocalActionState
 	return null;
 };
 
-export const normalizeNotificationV2 = (value: Record<string, unknown>): NotificationItemV2Data => ({
-	id: String(value.id ?? value._id ?? value.eventId ?? buildFallbackId(value)),
-	eventId: value.eventId ? String(value.eventId) : undefined,
-	username: String(value.username ?? value.to ?? ""),
-	type: String(value.type ?? value.noti_type ?? "INFO"),
-	status: value.status ? String(value.status) : undefined,
-	title: String(value.title ?? value.type ?? "Notification"),
-	message: String(value.message ?? value.payload ?? ""),
-	payload: value.payload ? String(value.payload) : null,
-	actionType: value.actionType ? String(value.actionType) : null,
-	actionRequired: Boolean(value.actionRequired),
-	actionCompleted: Boolean(value.actionCompleted),
-	actionUrl: value.actionUrl ? String(value.actionUrl) : null,
-	entityId: value.entityId ? String(value.entityId) : null,
-	entityType: value.entityType ? String(value.entityType) : null,
-	actorUsername: value.actorUsername ? String(value.actorUsername) : null,
-	collaborationRequestId: value.collaborationRequestId ? String(value.collaborationRequestId) : null,
-	localActionState: normalizeLocalActionState(value.localActionState),
-	createdAt: String(value.createdAt ?? new Date().toISOString()),
-	read: Boolean(value.read),
-});
+export const normalizeNotificationV2 = (value: Record<string, unknown>): NotificationItemV2Data => {
+	const normalized: NotificationItemV2Data = {
+		id: String(value.id ?? value._id ?? value.eventId ?? buildFallbackId(value)),
+		eventId: value.eventId ? String(value.eventId) : undefined,
+		username: String(value.username ?? value.to ?? ""),
+		type: String(value.type ?? value.noti_type ?? "INFO"),
+		status: value.status ? String(value.status) : undefined,
+		title: String(value.title ?? value.type ?? "Notification"),
+		message: String(value.message ?? value.payload ?? ""),
+		payload: value.payload ? String(value.payload) : null,
+		actionType: value.actionType ? String(value.actionType) : null,
+		actionRequired: Boolean(value.actionRequired),
+		actionCompleted: Boolean(value.actionCompleted),
+		actionUrl: value.actionUrl ? String(value.actionUrl) : null,
+		entityId: value.entityId ? String(value.entityId) : null,
+		entityType: value.entityType ? String(value.entityType) : null,
+		actorUsername: value.actorUsername ? String(value.actorUsername) : null,
+		collaborationRequestId: value.collaborationRequestId ? String(value.collaborationRequestId) : null,
+		localActionState: normalizeLocalActionState(value.localActionState),
+		createdAt: String(value.createdAt ?? new Date().toISOString()),
+		read: Boolean(value.read),
+	};
+
+	return {
+		...normalized,
+		message: getNotificationDisplayMessageV2(normalized),
+		actionUrl: getNotificationDestinationUrlV2(normalized) ?? normalized.actionUrl,
+	};
+};
 
 const extractFeedSource = (payload: any) => {
 	if (payload?.data?.content) return payload.data;
