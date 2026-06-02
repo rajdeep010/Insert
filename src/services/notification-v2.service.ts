@@ -3,6 +3,7 @@ import axios from "axios";
 import { externalServices } from "@/lib/config/services";
 import { getNotificationDestinationUrlV2, getNotificationDisplayMessageV2 } from "@/lib/notification-v2";
 import type {
+	NotificationActionResultV2,
 	NotificationFeedPageV2,
 	NotificationItemV2Data,
 	NotificationLocalActionStateV2,
@@ -34,6 +35,13 @@ const normalizeLocalActionState = (value: unknown): NotificationLocalActionState
 	return null;
 };
 
+const normalizeActionResult = (value: unknown): NotificationActionResultV2 => {
+	if (value === "ACCEPTED" || value === "DECLINED") {
+		return value;
+	}
+	return null;
+};
+
 export const normalizeNotificationV2 = (value: Record<string, unknown>): NotificationItemV2Data => {
 	const normalized: NotificationItemV2Data = {
 		id: String(value.id ?? value._id ?? value.eventId ?? buildFallbackId(value)),
@@ -47,6 +55,7 @@ export const normalizeNotificationV2 = (value: Record<string, unknown>): Notific
 		actionType: value.actionType ? String(value.actionType) : null,
 		actionRequired: Boolean(value.actionRequired),
 		actionCompleted: Boolean(value.actionCompleted),
+		actionResult: normalizeActionResult(value.actionResult),
 		actionUrl: value.actionUrl ? String(value.actionUrl) : null,
 		entityId: value.entityId ? String(value.entityId) : null,
 		entityType: value.entityType ? String(value.entityType) : null,
@@ -120,6 +129,10 @@ export const markNotificationAsReadV2 = async (id: string) => {
 	await notificationClientV2.patch(`/notifications/${id}/read`);
 };
 
+export const dismissNotificationV2 = async (id: string) => {
+	await notificationClientV2.patch(`/notifications/${id}/dismiss`);
+};
+
 export const resolveCollaborationInviteV2 = async ({
 	collaborationRequestId,
 	action,
@@ -147,6 +160,7 @@ export const normalizeSocketNotificationV2 = (
 ): NotificationItemV2Data => ({
 	...normalizeNotificationV2(payload as unknown as Record<string, unknown>),
 	actionCompleted: Boolean(payload.actionCompleted),
+	actionResult: normalizeActionResult(payload.actionResult),
 	localActionState: null,
 	read: false,
 });

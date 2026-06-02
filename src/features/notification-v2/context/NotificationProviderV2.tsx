@@ -11,6 +11,7 @@ import NotificationReducerV2, {
 	initialNotificationStateV2,
 } from "@/features/notification-v2/reducers/NotificationReducerV2";
 import {
+	dismissNotificationV2,
 	NOTIFICATION_PAGE_SIZE_V2,
 	fetchNotificationsPageV2,
 	fetchUnreadCountV2,
@@ -30,6 +31,7 @@ interface NotificationContextValueV2 extends NotificationCenterStateV2 {
 	loadMoreNotificationsV2: () => Promise<void>;
 	markAsReadV2: (id: string) => Promise<void>;
 	markVisibleAsReadV2: () => Promise<void>;
+	dismissNotificationV2: (notification: NotificationItemV2Data) => Promise<void>;
 	completeLocalActionV2: (
 		notification: NotificationItemV2Data,
 		state: Exclude<NotificationLocalActionStateV2, null>
@@ -194,6 +196,24 @@ export const NotificationProviderV2 = ({ children }: { children: React.ReactNode
 		}
 	};
 
+	const dismissNotificationFromUiV2 = async (notification: NotificationItemV2Data) => {
+		const index = state.notifications.findIndex((item) => item.id === notification.id);
+		if (index === -1) return;
+
+		dispatch({ type: "REMOVE_NOTIFICATION", payload: notification.id });
+
+		try {
+			await dismissNotificationV2(notification.id);
+		} catch (error) {
+			dispatch({
+				type: "RESTORE_NOTIFICATION",
+				payload: { notification, index },
+			});
+			toast.error(getErrorMessage(error, "Could not dismiss notification"));
+			throw error;
+		}
+	};
+
 	const completeLocalActionV2 = async (
 		notification: NotificationItemV2Data,
 		localState: Exclude<NotificationLocalActionStateV2, null>
@@ -226,6 +246,7 @@ export const NotificationProviderV2 = ({ children }: { children: React.ReactNode
 				loadMoreNotificationsV2,
 				markAsReadV2,
 				markVisibleAsReadV2,
+				dismissNotificationV2: dismissNotificationFromUiV2,
 				completeLocalActionV2,
 			}}
 		>

@@ -5,7 +5,11 @@ import { CircleCheck, Loader2, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getNotificationActionKindV2, getNotificationActionLabelV2 } from "@/lib/notification-v2";
+import {
+	getNotificationActionKindV2,
+	getNotificationActionLabelV2,
+	getNotificationResolvedActionStateV2,
+} from "@/lib/notification-v2";
 import type { NotificationItemV2Data, NotificationLocalActionStateV2 } from "@/types/notifications-v2";
 
 export default function NotificationActionButtonsV2({
@@ -21,11 +25,11 @@ export default function NotificationActionButtonsV2({
 	compact?: boolean;
 }) {
 	const [pendingState, setPendingState] = useState<NotificationLocalActionStateV2>(null);
-	const resolvedLabel = getNotificationActionLabelV2(notification.localActionState)
-		?? (notification.actionCompleted ? "Completed" : null);
-	const resolvedTone = notification.localActionState === "accepted"
+	const resolvedState = getNotificationResolvedActionStateV2(notification);
+	const resolvedLabel = getNotificationActionLabelV2(resolvedState);
+	const resolvedTone = resolvedState === "accepted"
 		? "border-emerald-500/20 bg-emerald-500/12 text-emerald-700 dark:text-emerald-200"
-		: notification.localActionState === "declined"
+		: resolvedState === "declined"
 			? "border-rose-500/20 bg-rose-500/12 text-rose-700 dark:text-rose-200"
 			: "border-border/60 bg-muted/60 text-muted-foreground";
 
@@ -52,8 +56,8 @@ export default function NotificationActionButtonsV2({
 	};
 
 	const baseButtonClass = compact
-		? "h-8 min-w-[92px] rounded-full px-3 text-xs font-medium"
-		: "h-9 min-w-[108px] rounded-full px-3.5 text-xs font-medium";
+		? "h-8 px-3 text-xs"
+		: "h-9 px-4 text-sm";
 
 
 	return (

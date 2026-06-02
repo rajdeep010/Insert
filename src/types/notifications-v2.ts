@@ -7,6 +7,7 @@ export type NotificationConnectionStateV2 =
 	| "error";
 
 export type NotificationLocalActionStateV2 = "accepted" | "declined" | null;
+export type NotificationActionResultV2 = "ACCEPTED" | "DECLINED" | null;
 
 export interface NotificationItemV2Data {
 	id: string;
@@ -20,6 +21,7 @@ export interface NotificationItemV2Data {
 	actionType?: string | null;
 	actionRequired: boolean;
 	actionCompleted: boolean;
+	actionResult: NotificationActionResultV2;
 	actionUrl?: string | null;
 	entityId?: string | null;
 	entityType?: string | null;
@@ -42,6 +44,7 @@ export interface NotificationSocketPayloadV2 {
 	actionType?: string | null;
 	actionRequired?: boolean;
 	actionCompleted?: boolean;
+	actionResult?: NotificationActionResultV2;
 	actionUrl?: string | null;
 	entityId?: string | null;
 	entityType?: string | null;

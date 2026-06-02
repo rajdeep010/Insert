@@ -1,5 +1,9 @@
 import { externalServices } from "@/lib/config/services";
-import type { NotificationItemV2Data, NotificationLocalActionStateV2 } from "@/types/notifications-v2";
+import type {
+	NotificationActionResultV2,
+	NotificationItemV2Data,
+	NotificationLocalActionStateV2,
+} from "@/types/notifications-v2";
 
 const isAbsoluteUrlV2 = (value: string) => /^https?:\/\//i.test(value);
 
@@ -136,16 +140,29 @@ export const getNotificationActionLabelV2 = (state: NotificationLocalActionState
 	return null;
 };
 
+export const getNotificationResolvedActionStateV2 = (notification: NotificationItemV2Data): NotificationLocalActionStateV2 => {
+	if (notification.actionResult === "ACCEPTED") {
+		return "accepted";
+	}
+
+	if (notification.actionResult === "DECLINED") {
+		return "declined";
+	}
+
+	return notification.localActionState;
+};
+
 export const getNotificationDisplayMessageV2 = (notification: NotificationItemV2Data) => {
 	const actorUsername = notification.actorUsername;
 	const entityLabel = formatNotificationEntityLabelV2(notification.entityType);
+	const resolvedActionState = getNotificationResolvedActionStateV2(notification);
 
 	if (notification.actionType === "COLLAB_REQUEST" || notification.actionType === "COLLAB_INVITE") {
-		if (notification.localActionState === "accepted" && actorUsername) {
+		if (resolvedActionState === "accepted" && actorUsername) {
 			return `You accepted ${actorUsername}'s collaboration invite.`;
 		}
 
-		if (notification.localActionState === "declined" && actorUsername) {
+		if (resolvedActionState === "declined" && actorUsername) {
 			return `You declined ${actorUsername}'s collaboration invite.`;
 		}
 

@@ -19,7 +19,9 @@ type NotificationActionV2 =
 	| { type: "UPSERT_REALTIME"; payload: { notification: NotificationItemV2Data; wasExisting: boolean } }
 	| { type: "MARK_AS_READ"; payload: string }
 	| { type: "MARK_MANY_AS_READ"; payload: string[] }
-	| { type: "COMPLETE_LOCAL_ACTION"; payload: { id: string; state: NotificationLocalActionStateV2 } };
+	| { type: "REMOVE_NOTIFICATION"; payload: string }
+	| { type: "RESTORE_NOTIFICATION"; payload: { notification: NotificationItemV2Data; index: number } }
+	| { type: "COMPLETE_LOCAL_ACTION"; payload: { id: string; state: Exclude<NotificationLocalActionStateV2, null> } };
 
 export const initialNotificationStateV2: NotificationCenterStateV2 = {
 	notifications: [],
@@ -38,7 +40,7 @@ const mergeNotifications = (
 	current: NotificationItemV2Data[],
 	incoming: NotificationItemV2Data[],
 	mode: "prepend" | "append"
-) => {
+): NotificationItemV2Data[] => {
 	const order = mode === "prepend" ? [...incoming, ...current] : [...current, ...incoming];
 	const merged = new Map<string, NotificationItemV2Data>();
 
@@ -62,10 +64,21 @@ const countUnreadReads = (notifications: NotificationItemV2Data[], ids: string[]
 	}, 0);
 };
 
+const insertNotificationAtIndex = (
+	current: NotificationItemV2Data[],
+	notification: NotificationItemV2Data,
+	index: number
+): NotificationItemV2Data[] => {
+	const nextNotifications = current.filter((item) => item.id !== notification.id);
+	const safeIndex = Math.max(0, Math.min(index, nextNotifications.length));
+	nextNotifications.splice(safeIndex, 0, notification);
+	return nextNotifications;
+};
+
 const updateRealtimeNotification = (
 	current: NotificationItemV2Data[],
 	incoming: NotificationItemV2Data
-) => current.map((notification) =>
+): NotificationItemV2Data[] => current.map((notification) =>
 	notification.id === incoming.id
 		? {
 			...notification,
@@ -77,7 +90,7 @@ const updateRealtimeNotification = (
 export default function NotificationReducerV2(
 	state: NotificationCenterStateV2,
 	action: NotificationActionV2
-) {
+): NotificationCenterStateV2 {
 	switch (action.type) {
 		case "RESET":
 			return initialNotificationStateV2;
@@ -157,13 +170,36 @@ export default function NotificationReducerV2(
 				unreadCount: Math.max(0, state.unreadCount - updatedCount),
 			};
 		}
+		case "REMOVE_NOTIFICATION": {
+			const target = state.notifications.find((notification) => notification.id === action.payload);
+			return {
+				...state,
+				notifications: state.notifications.filter((notification) => notification.id !== action.payload),
+				contextualNotifications: state.contextualNotifications.filter((notification) => notification.id !== action.payload),
+				unreadCount: target && !target.read ? Math.max(0, state.unreadCount - 1) : state.unreadCount,
+			};
+		}
+		case "RESTORE_NOTIFICATION": {
+			return {
+				...state,
+				notifications: insertNotificationAtIndex(
+					state.notifications,
+					action.payload.notification,
+					action.payload.index
+				),
+				contextualNotifications: state.contextualNotifications,
+				unreadCount: !action.payload.notification.read ? state.unreadCount + 1 : state.unreadCount,
+			};
+		}
 		case "COMPLETE_LOCAL_ACTION": {
 			const target = state.notifications.find((notification) => notification.id === action.payload.id);
+			const actionResult = action.payload.state === "accepted" ? "ACCEPTED" as const : "DECLINED" as const;
 			const nextNotifications = state.notifications.map((notification) =>
 				notification.id === action.payload.id
 					? {
 						...notification,
 						actionCompleted: true,
+						actionResult,
 						localActionState: action.payload.state,
 						read: true,
 					}
@@ -178,6 +214,7 @@ export default function NotificationReducerV2(
 						? {
 							...notification,
 							actionCompleted: true,
+								actionResult,
 							localActionState: action.payload.state,
 							read: true,
 						}

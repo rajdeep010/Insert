@@ -35,9 +35,11 @@ export default function NotificationCenterV2() {
 		loadMoreNotificationsV2,
 		markAsReadV2,
 		markVisibleAsReadV2,
+		dismissNotificationV2,
 		completeLocalActionV2,
 	} = useNotificationsV2();
 	const [markingIds, setMarkingIds] = useState<string[]>([]);
+	const [dismissingIds, setDismissingIds] = useState<string[]>([]);
 	const [isMarkingVisible, setIsMarkingVisible] = useState(false);
 	const actionableNotifications = useMemo(
 		() => notifications.filter((notification) => isNotificationActionableV2(notification)),
@@ -66,6 +68,15 @@ export default function NotificationCenterV2() {
 		}
 	};
 
+	const handleDismiss = async (notification: typeof notifications[number]) => {
+		setDismissingIds((current) => [...current, notification.id]);
+		try {
+			await dismissNotificationV2(notification);
+		} finally {
+			setDismissingIds((current) => current.filter((value) => value !== notification.id));
+		}
+	};
+
 	return (
 		<div className="flex h-full flex-col">
 			<div className="border-b border-border/60 bg-gradient-to-br from-sky-100 via-background to-background px-5 pb-4 pt-5 dark:from-sky-950/50">
@@ -90,7 +101,7 @@ export default function NotificationCenterV2() {
 							</Button>
 							<Button
 								variant="ghost"
-								className="h-8 rounded-full pr-8 text-xs"
+								className="h-8 rounded-full text-xs"
 								onClick={handleMarkVisibleAsRead}
 								disabled={isMarkingVisible || unreadCount === 0}
 							>
@@ -142,8 +153,10 @@ export default function NotificationCenterV2() {
 									key={notification.id}
 									notification={notification}
 									onMarkAsRead={handleMarkAsRead}
+									onDismiss={handleDismiss}
 									onResolveAction={completeLocalActionV2}
 									isMarking={markingIds.includes(notification.id)}
+									isDismissing={dismissingIds.includes(notification.id)}
 								/>
 							))}
 						</div>
@@ -159,8 +172,10 @@ export default function NotificationCenterV2() {
 									key={notification.id}
 									notification={notification}
 									onMarkAsRead={handleMarkAsRead}
+									onDismiss={handleDismiss}
 									onResolveAction={completeLocalActionV2}
 									isMarking={markingIds.includes(notification.id)}
+									isDismissing={dismissingIds.includes(notification.id)}
 								/>
 							))}
 						</div>

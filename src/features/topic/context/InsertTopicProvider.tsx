@@ -7,7 +7,7 @@ import { questionSchema, topicSchema } from "@/schemas/topicSchema";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { createContext, useCallback, useContext, useMemo, useReducer, useRef } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "react";
 import type { CurrentTopicState, HeatmapDateValues, Topic } from "@/types/topic";
 import { z } from "zod";
 import { ref as databaseRef, get, onValue, set } from "firebase/database";
@@ -68,6 +68,14 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 	const inflightHeatmapByUsernameRef = useRef(new Map<string, Promise<void>>());
 	const lastFetchedTopicsUsernameRef = useRef<string | null>(null);
 	const lastFetchedHeatmapUsernameRef = useRef<string | null>(null);
+	const currTopicRef = useRef(state.curr_topic);
+	const isTopicLoadingRef = useRef(state.isTopicLoading);
+	const failedTopicIdsRef = useRef(new Set<string>());
+
+	useEffect(() => {
+		currTopicRef.current = state.curr_topic;
+		isTopicLoadingRef.current = state.isTopicLoading;
+	}, [state.curr_topic, state.isTopicLoading]);
 
 	const formatDate = useCallback((date: Date): string => {
 		const year = date.getFullYear();
@@ -179,8 +187,12 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 	const fetchTopicById = useCallback(async (topic_id: string, options?: { force?: boolean }) => {
 		if (!topic_id) return null;
 
-		if (!options?.force && state.curr_topic?.topic?.id === topic_id && !state.isTopicLoading) {
-			return state.curr_topic;
+		if (!options?.force && failedTopicIdsRef.current.has(topic_id)) {
+			return null;
+		}
+
+		if (!options?.force && currTopicRef.current?.topic?.id === topic_id && !isTopicLoadingRef.current) {
+			return currTopicRef.current;
 		}
 
 		const inflightRequest = inflightTopicRequestsRef.current.get(topic_id);
@@ -194,17 +206,25 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 				.get(`/api/topics/${topic_id}`)
 				.then((response) => {
 					if (!response.data.success) {
+						failedTopicIdsRef.current.add(topic_id);
 						toast({ title: "Error ⭕", description: response.data.message || "Topic not found", variant: "destructive" });
 						router.replace("/");
 						return null;
 					}
 
 					const payload = { topic: response.data.topic, problems: response.data.problems ?? [] };
+					failedTopicIdsRef.current.delete(topic_id);
 					dispatch({ type: "SET_CURR_TOPIC", payload });
 					return payload;
 				})
 				.catch((error: any) => {
+					if (error?.response?.status === 404) {
+						failedTopicIdsRef.current.add(topic_id);
+					}
 					toast({ title: "Error ⭕", description: error?.response?.data?.message || "Error fetching topic", variant: "destructive" });
+					if (error?.response?.status === 404) {
+						router.replace("/");
+					}
 					return null;
 				})
 				.finally(() => {
@@ -215,11 +235,15 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 			inflightTopicRequestsRef.current.set(topic_id, request);
 			return await request;
 		} catch (error: any) {
+			if (error?.response?.status === 404) {
+				failedTopicIdsRef.current.add(topic_id);
+				router.replace("/");
+			}
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Error fetching topic", variant: "destructive" });
 			dispatch({ type: "SET_LOADING_TOPIC", payload: false });
 			return null;
 		}
-	}, [router, state.curr_topic, state.isTopicLoading]);
+	}, [router]);
 
 	const addProblem = useCallback(async (data: z.infer<typeof questionSchema>, currentTopicId: string) => {
 		if (!sessionUsername) return;
