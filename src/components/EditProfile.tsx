@@ -158,7 +158,7 @@ const EditProfile = () => {
                 </SheetHeader>
 
                 <div className="grid gap-6 py-6">
-                    <div className={`${surface} ${hoverable} p-4`}>
+                    {/* <div className={`${surface} ${hoverable} p-4`}>
                         <div className="flex items-start justify-between gap-4">
                             <div className="space-y-1 pr-4">
                                 <div className="flex items-center gap-2">
@@ -180,7 +180,7 @@ const EditProfile = () => {
                                 />
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                     {/* Avatar section */}
                     <div className={`${surface} ${hoverable} p-4`}>
                         <div className="flex items-center justify-between gap-6">

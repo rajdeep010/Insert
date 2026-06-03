@@ -84,7 +84,7 @@ export default function NotificationItemV2({
     return (
         <div
             className={cn(
-                "group relative rounded-[18px] border px-3.5 py-3 pr-12 transition-colors",
+                "group relative rounded-[18px] border pl-3.5 py-3 pr-2 transition-colors",
                 resolvedTone
                     ? resolvedTone
                     : notification.read
@@ -148,25 +148,28 @@ export default function NotificationItemV2({
                                         )}
                                     </Button>
                                 )}
-                                {isClickable && <ArrowUpRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />}
+                                {/* {isClickable && <ArrowUpRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />} */}
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase text-muted-foreground/80">
-                            <span>{formatTimestamp(notification.createdAt)}</span>
-                            {entityLabel ? <span>{entityLabel}</span> : null}
-                            {notification.actorUsername && actorPath ? (
-                                <button
-                                    type="button"
-                                    className="rounded-full border border-border/70 px-2 py-0.5 text-[10px] font-medium normal-case tracking-normal text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
-                                    onClick={(event) => {
-                                        event.stopPropagation();
-                                        router.push(actorPath);
-                                    }}
-                                >
-                                    @{notification.actorUsername}
-                                </button>
-                            ) : null}
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase text-muted-foreground/80">
+                            <div>
+                                <span>{formatTimestamp(notification.createdAt)}</span>
+                                {entityLabel ? <span>{entityLabel}</span> : null}
+                                {notification.actorUsername && actorPath ? (
+                                    <button
+                                        type="button"
+                                        className="rounded-full border border-border/70 px-2 py-0.5 text-[10px] font-medium normal-case tracking-normal text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            router.push(actorPath);
+                                        }}
+                                    >
+                                        @{notification.actorUsername}
+                                    </button>
+                                ) : null}
+                            </div>
+
                             <NotificationActionButtonsV2
                                 notification={notification}
                                 onResolveAction={onResolveAction}

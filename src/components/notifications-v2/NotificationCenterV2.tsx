@@ -85,7 +85,7 @@ export default function NotificationCenterV2() {
 						<div className="min-w-0">
 							<div className="flex items-center gap-2">
 								<BellRing className="h-4 w-4 text-muted-foreground" />
-								<h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-foreground/90">Notifications</h2>
+								<h2 className=" font-semibold uppercase text-foreground/90">Notifications</h2>
 								<span className={cn("h-2 w-2 rounded-full", connectionDotTone[connectionState])}>
 									<span className="sr-only">Connection status: {connectionState}</span>
 								</span>

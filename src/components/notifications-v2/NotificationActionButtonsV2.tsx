@@ -61,7 +61,7 @@ export default function NotificationActionButtonsV2({
 
 
 	return (
-		<div className="flex flex-wrap items-center gap-2">
+		<div className="flex flex-wrap items-center gap-2 mt-0.5">
 			<Button
 				type="button"
 				size="sm"
