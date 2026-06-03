@@ -292,7 +292,7 @@ const Blogs = () => {
 						<div className="mt-auto flex items-center justify-between gap-3 border-t border-black/5 pt-4 text-xs text-gray-500 dark:border-white/10 dark:text-gray-400">
 							<div className="flex min-w-0 items-center gap-2">
 								<CalendarDays className="h-4 w-4 shrink-0" />
-								<span className="truncate">Created {createdDateLabel}</span>
+								<span className="truncate">{createdDateLabel}</span>
 							</div>
 							<div className="flex items-center gap-3">
 								<span className="inline-flex items-center gap-1">
@@ -346,16 +346,15 @@ const Blogs = () => {
 								</p>
 							</div>
 
-							<div className="flex flex-wrap items-center gap-2">
-								<Button asChild variant="outline" className="h-11 gap-2 rounded-xl px-4">
+							<div className="flex flex-row items-center gap-2">
+								<Button asChild variant="outline" className="h-11 gap-2 px-4">
 									<Link href={`/u/${profileUsername}?tab=collections`}>
 										<FolderKanban className="h-4 w-4" />
-										Manage collections
+										Manage
 									</Link>
 								</Button>
-								<Button className="h-11 gap-2 rounded-xl px-4" onClick={() => setIsCreateCollectionOpen(true)}>
-									<PlusCircle className="h-4 w-4" />
-									New collection
+								<Button variant='secondary' className="h-11 gap-2 px-4" onClick={() => setIsCreateCollectionOpen(true)}>
+									<PlusCircle className="h-2 w-2" /> New
 								</Button>
 							</div>
 						</div>
@@ -416,8 +415,8 @@ const Blogs = () => {
 														<span className="truncate">Created {createdLabel}</span>
 													</div>
 													<div className="flex min-w-0 items-center gap-1 truncate">
-														<Link2 className="h-4 w-4 shrink-0" />
-														<span className="truncate">{linkedTopicLabel}</span>
+														{/* <Link2 className="h-4 w-4 shrink-0" /> */}
+														{/* <span className="truncate">{linkedTopicLabel}</span> */}
 													</div>
 												</div>
 											</CardHeader>

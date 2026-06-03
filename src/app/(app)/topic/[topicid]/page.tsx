@@ -471,28 +471,28 @@ const EachTopic = () => {
 								path={`/topic/${topic_id}`}
 								title={curr_topic.topic.title || 'Insert topic'}
 								text={`Check out this topic on Insert: ${curr_topic.topic.title || 'Untitled topic'}`}
-								className="h-10 rounded-xl border-black/10 bg-transparent px-4 dark:border-white/10 dark:bg-transparent"
+								className="h-10 border-black/10 bg-transparent px-4 dark:border-white/10 dark:bg-transparent"
 							/>
 							{!isTopicLoading && status === "authenticated" && isOwner && (
-								<Button variant="outline" className="h-10 rounded-xl border-black/10 bg-transparent px-4 dark:border-white/10 dark:bg-transparent" onClick={() => handleCollabModal(topic_id)}>
+								<Button variant="outline" className="h-10 border-black/10 bg-transparent px-4 dark:border-white/10 dark:bg-transparent" onClick={() => handleCollabModal(topic_id)}>
 									<UserPlus className="mr-2 h-4 w-4" />
 									Collaborator
 								</Button>
 							)}
 							{!isTopicLoading && canManageProblems && (
-								<Button onClick={() => handleOpenItemModal()} className="h-10 rounded-xl px-4" variant={"default"}>
+								<Button onClick={() => handleOpenItemModal()} className="h-10  px-4" variant={"default"}>
 									<CirclePlus className="mr-2 h-4 w-4" />
 									Add problem
 								</Button>
 							)}
 							{!isTopicLoading && canSuggestProblem && (
-								<Button onClick={() => handleOpenSuggestProblem()} className="h-10 rounded-xl border-black/10 bg-transparent px-4 dark:border-white/10 dark:bg-transparent" variant={"outline"}>
+								<Button onClick={() => handleOpenSuggestProblem()} className="h-10  border-black/10 bg-transparent px-4 dark:border-white/10 dark:bg-transparent" variant={"outline"}>
 									<FileInput className="mr-2 h-4 w-4" />
 									Suggest
 								</Button>
 							)}
 							{!isTopicLoading && status === "authenticated" && isOwner && (
-								<Button variant="destructive" className="h-10 rounded-xl px-4" onClick={() => handleOpenDeleteTopicModal()}>
+								<Button variant="destructive" className="h-10  px-4" onClick={() => handleOpenDeleteTopicModal()}>
 									<Trash2 className="mr-2 h-4 w-4" />
 									Delete
 								</Button>

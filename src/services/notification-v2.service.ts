@@ -22,6 +22,10 @@ const collaborationClientV2 = axios.create({
 	timeout: 10000,
 });
 
+const getAuthConfig = (accessToken?: string | null) => ({
+	headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+});
+
 const buildFallbackId = (value: Record<string, unknown>) => {
 	const summary = String(value.title ?? value.message ?? value.payload ?? "notification");
 	const createdAt = String(value.createdAt ?? Date.now());
@@ -90,18 +94,19 @@ const resolveHasMore = (source: any, currentPage: number, size: number, itemsLen
 };
 
 export const fetchNotificationsPageV2 = async ({
-	username,
 	page,
 	size = NOTIFICATION_PAGE_SIZE_V2,
 	sort = "createdAt,desc",
+	accessToken,
 }: {
-	username: string;
 	page: number;
 	size?: number;
 	sort?: string;
+	accessToken?: string | null;
 }): Promise<NotificationFeedPageV2> => {
 	const response = await notificationClientV2.get("/notifications", {
-		params: { username, page, size, sort },
+		params: { page, size, sort },
+		...getAuthConfig(accessToken),
 	});
 
 	const source = extractFeedSource(response.data);
@@ -117,20 +122,20 @@ export const fetchNotificationsPageV2 = async ({
 	};
 	};
 
-export const fetchUnreadCountV2 = async (username: string): Promise<number> => {
+export const fetchUnreadCountV2 = async (accessToken?: string | null): Promise<number> => {
 	const response = await notificationClientV2.get("/notifications/unread-count", {
-		params: { username },
+		...getAuthConfig(accessToken),
 	});
 
 	return Number(response.data?.data?.count ?? response.data?.count ?? 0);
 };
 
-export const markNotificationAsReadV2 = async (id: string) => {
-	await notificationClientV2.patch(`/notifications/${id}/read`);
+export const markNotificationAsReadV2 = async (id: string, accessToken?: string | null) => {
+	await notificationClientV2.patch(`/notifications/${id}/read`, {}, getAuthConfig(accessToken));
 };
 
-export const dismissNotificationV2 = async (id: string) => {
-	await notificationClientV2.patch(`/notifications/${id}/dismiss`);
+export const dismissNotificationV2 = async (id: string, accessToken?: string | null) => {
+	await notificationClientV2.patch(`/notifications/${id}/dismiss`, {}, getAuthConfig(accessToken));
 };
 
 export const resolveCollaborationInviteV2 = async ({

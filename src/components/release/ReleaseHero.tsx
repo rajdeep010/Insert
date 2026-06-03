@@ -42,13 +42,13 @@ export function ReleaseHero({ latestRelease }: ReleaseHeroProps) {
 
           <div className="mt-7 flex flex-wrap gap-3">
             <Link href="#latest-release">
-              <Button className="h-11 rounded-xl border border-black/10 bg-black px-5 text-sm font-medium text-white hover:bg-black/90 dark:border-white/10 dark:bg-white dark:text-black dark:hover:bg-white/90">
+              <Button className="h-11  border border-black/10 bg-black px-5 text-sm font-medium text-white hover:bg-black/90 dark:border-white/10 dark:bg-white dark:text-black dark:hover:bg-white/90">
                 View latest
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
             <Link href="#release-history">
-              <Button variant="outline" className="h-11 rounded-xl border-black/10 bg-white/70 px-5 text-sm font-medium backdrop-blur hover:bg-white dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/15">
+              <Button variant="outline" className="h-11  border-black/10 bg-white/70 px-5 text-sm font-medium backdrop-blur hover:bg-white dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/15">
                 View history
               </Button>
             </Link>

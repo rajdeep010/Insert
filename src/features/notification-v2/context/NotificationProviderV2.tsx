@@ -1,8 +1,9 @@
 "use client";
 
+import axios from "axios";
 import { useEffect, useReducer, createContext, useContext, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { doesNotificationMatchPathV2 } from "@/lib/notification-v2";
@@ -50,27 +51,46 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 export const NotificationProviderV2 = ({ children }: { children: React.ReactNode }) => {
 	const { data: session, status } = useSession();
 	const pathname = usePathname();
+	const router = useRouter();
 	const username = session?.user?.username ?? null;
+	const accessToken = session?.accessToken ?? null;
 	const [state, dispatch] = useReducer(NotificationReducerV2, initialNotificationStateV2);
 	const baseTitleRef = useRef("Insert");
 	const notificationsRef = useRef<NotificationItemV2Data[]>([]);
 
+	const handleNotificationApiError = (error: unknown, fallback: string) => {
+		const statusCode = axios.isAxiosError(error) ? error.response?.status : undefined;
+
+		if (statusCode === 401) {
+			toast.error("Session expired. Please sign in again.");
+			router.push("/sign-in");
+			return "Authentication required";
+		}
+
+		if (statusCode === 403) {
+			toast.error("Access denied");
+			return "Access denied";
+		}
+
+		return getErrorMessage(error, fallback);
+	};
+
 	const hydrateNotifications = async () => {
-		if (!username) return;
+		if (!username || !accessToken) return;
 
 		dispatch({ type: "SET_ERROR", payload: null });
 		dispatch({ type: "SET_INITIAL_LOADING", payload: true });
 
 		try {
 			const [page, unreadCount] = await Promise.all([
-				fetchNotificationsPageV2({ username, page: 0, size: NOTIFICATION_PAGE_SIZE_V2 }),
-				fetchUnreadCountV2(username),
+				fetchNotificationsPageV2({ page: 0, size: NOTIFICATION_PAGE_SIZE_V2, accessToken }),
+				fetchUnreadCountV2(accessToken),
 			]);
 
 			dispatch({ type: "SET_INITIAL_FEED", payload: page });
 			dispatch({ type: "SET_UNREAD_COUNT", payload: unreadCount });
 		} catch (error) {
-			dispatch({ type: "SET_ERROR", payload: getErrorMessage(error, "Unable to load notifications") });
+			dispatch({ type: "SET_ERROR", payload: handleNotificationApiError(error, "Unable to load notifications") });
 		} finally {
 			dispatch({ type: "SET_INITIAL_LOADING", payload: false });
 		}
@@ -146,18 +166,18 @@ export const NotificationProviderV2 = ({ children }: { children: React.ReactNode
 	};
 
 	const loadMoreNotificationsV2 = async () => {
-		if (!username || state.isLoadingMore || !state.hasMore) return;
+		if (!username || !accessToken || state.isLoadingMore || !state.hasMore) return;
 
 		dispatch({ type: "SET_LOADING_MORE", payload: true });
 		try {
 			const page = await fetchNotificationsPageV2({
-				username,
 				page: state.nextPage,
 				size: NOTIFICATION_PAGE_SIZE_V2,
+				accessToken,
 			});
 			dispatch({ type: "APPEND_FEED", payload: page });
 		} catch (error) {
-			dispatch({ type: "SET_ERROR", payload: getErrorMessage(error, "Unable to load more notifications") });
+			dispatch({ type: "SET_ERROR", payload: handleNotificationApiError(error, "Unable to load more notifications") });
 		} finally {
 			dispatch({ type: "SET_LOADING_MORE", payload: false });
 		}
@@ -165,34 +185,41 @@ export const NotificationProviderV2 = ({ children }: { children: React.ReactNode
 
 	const markAsReadV2 = async (id: string) => {
 		const target = state.notifications.find((notification) => notification.id === id);
-		if (!target || target.read) return;
+		if (!target || target.read || !accessToken) return;
 
 		try {
-			await markNotificationAsReadV2(id);
+			await markNotificationAsReadV2(id, accessToken);
 			dispatch({ type: "MARK_AS_READ", payload: id });
 		} catch (error) {
-			toast.error(getErrorMessage(error, "Could not mark notification as read"));
+			toast.error(handleNotificationApiError(error, "Could not mark notification as read"));
 		}
 	};
 
 	const markVisibleAsReadV2 = async () => {
+		if (!accessToken) return;
+
 		const unreadIds = state.notifications
 			.filter((notification) => !notification.read)
 			.map((notification) => notification.id);
 
 		if (!unreadIds.length) return;
 
-		const results = await Promise.allSettled(unreadIds.map((id) => markNotificationAsReadV2(id)));
+		const results = await Promise.allSettled(unreadIds.map((id) => markNotificationAsReadV2(id, accessToken)));
 		const successfulIds = results.flatMap((result, index) =>
 			result.status === "fulfilled" ? [unreadIds[index]] : []
 		);
+		const firstRejected = results.find((result) => result.status === "rejected");
 
 		if (successfulIds.length) {
 			dispatch({ type: "MARK_MANY_AS_READ", payload: successfulIds });
 		}
 
 		if (successfulIds.length !== unreadIds.length) {
-			toast.error("Some notifications could not be marked as read");
+			if (firstRejected?.status === "rejected") {
+				toast.error(handleNotificationApiError(firstRejected.reason, "Some notifications could not be marked as read"));
+			} else {
+				toast.error("Some notifications could not be marked as read");
+			}
 		}
 	};
 
@@ -203,13 +230,13 @@ export const NotificationProviderV2 = ({ children }: { children: React.ReactNode
 		dispatch({ type: "REMOVE_NOTIFICATION", payload: notification.id });
 
 		try {
-			await dismissNotificationV2(notification.id);
+			await dismissNotificationV2(notification.id, accessToken);
 		} catch (error) {
 			dispatch({
 				type: "RESTORE_NOTIFICATION",
 				payload: { notification, index },
 			});
-			toast.error(getErrorMessage(error, "Could not dismiss notification"));
+			toast.error(handleNotificationApiError(error, "Could not dismiss notification"));
 			throw error;
 		}
 	};

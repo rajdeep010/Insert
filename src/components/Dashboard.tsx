@@ -196,7 +196,7 @@ const Dashboard = () => {
                             {canEdit && (
                                 <Button
                                     onClick={() => setIsTopicModalOpen(true)}
-                                    className="h-11 shrink-0 gap-2 rounded-xl px-4"
+                                    className="h-11 shrink-0 gap-2 px-4"
                                 >
                                     <Plus className="h-4 w-4" />
                                     New topic

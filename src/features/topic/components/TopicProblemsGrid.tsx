@@ -154,7 +154,7 @@ export function TopicProblemsGrid({
 									rel="noreferrer noopener"
 									onClick={(event) => event.stopPropagation()}
 								>
-									<Button type="button" variant="ghost" size="icon" className="h-9 w-9 rounded-xl border border-transparent text-sky-600 hover:border-sky-500/20 hover:bg-sky-500/10 hover:text-sky-700 dark:text-sky-300 dark:hover:text-sky-200">
+									<Button type="button" variant="ghost" size="icon" className="h-9 w-9  border border-transparent text-sky-600 hover:border-sky-500/20 hover:bg-sky-500/10 hover:text-sky-700 dark:text-sky-300 dark:hover:text-sky-200">
 										<ExternalLink className="h-4 w-4" />
 									</Button>
 								</a>
@@ -170,7 +170,7 @@ export function TopicProblemsGrid({
 											type="button"
 											variant="ghost"
 											size="icon"
-											className="h-9 w-9 rounded-xl border border-transparent text-violet-600 hover:border-violet-500/20 hover:bg-violet-500/10 hover:text-violet-700 dark:text-violet-300 dark:hover:text-violet-200"
+											className="h-9 w-9  border border-transparent text-violet-600 hover:border-violet-500/20 hover:bg-violet-500/10 hover:text-violet-700 dark:text-violet-300 dark:hover:text-violet-200"
 											onClick={(event) => {
 												event.stopPropagation()
 												onManageReferences?.(params.data!)
@@ -188,7 +188,7 @@ export function TopicProblemsGrid({
 											type="button"
 											variant="ghost"
 											size="icon"
-											className="h-9 w-9 rounded-xl border border-transparent text-amber-600 hover:border-amber-500/20 hover:bg-amber-500/10 hover:text-amber-700 dark:text-amber-300 dark:hover:text-amber-200"
+											className="h-9 w-9  border border-transparent text-amber-600 hover:border-amber-500/20 hover:bg-amber-500/10 hover:text-amber-700 dark:text-amber-300 dark:hover:text-amber-200"
 											onClick={(event) => {
 												event.stopPropagation()
 												onEdit?.(params.data!)
@@ -206,7 +206,7 @@ export function TopicProblemsGrid({
 											type="button"
 											variant="ghost"
 											size="icon"
-											className="h-9 w-9 rounded-xl border border-transparent text-rose-600 hover:border-rose-500/20 hover:bg-rose-500/10 hover:text-rose-700 dark:text-rose-300 dark:hover:text-rose-200"
+											className="h-9 w-9  border border-transparent text-rose-600 hover:border-rose-500/20 hover:bg-rose-500/10 hover:text-rose-700 dark:text-rose-300 dark:hover:text-rose-200"
 											onClick={(event) => {
 												event.stopPropagation()
 												onDelete?.(params.data!._id)

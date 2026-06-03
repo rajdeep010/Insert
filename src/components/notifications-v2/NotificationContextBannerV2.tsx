@@ -57,7 +57,7 @@ export default function NotificationContextBannerV2() {
 							const isDismissing = dismissingIds.includes(notification.id);
 
 							return (
-								<div key={notification.id} className="group relative flex flex-col gap-2 rounded-xl bg-transparent px-1.5 py-1 pr-8">
+								<div key={notification.id} className="group relative flex flex-col gap-2 bg-transparent px-1.5 py-1 pr-8">
 									<Button
 										type="button"
 										variant="ghost"

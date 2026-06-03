@@ -233,7 +233,7 @@ export function BlogCollectionsPage() {
 						</p>
 					</div>
 
-					<Button className="h-11 gap-2 rounded-xl px-4" onClick={handleOpenCreateDialog}>
+					<Button className="h-11 gap-2  px-4" onClick={handleOpenCreateDialog}>
 						<PlusCircle className="h-4 w-4" />
 						New collection
 					</Button>
@@ -245,15 +245,15 @@ export function BlogCollectionsPage() {
 					<Card className={surface + ' shadow-none'}>
 						<CardContent className="space-y-3 p-5">
 							<div className="h-5 w-40 animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
-							<div className="h-20 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
-							<div className="h-20 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
+							<div className="h-20 animate-pulse  bg-slate-200 dark:bg-slate-800" />
+							<div className="h-20 animate-pulse  bg-slate-200 dark:bg-slate-800" />
 						</CardContent>
 					</Card>
 					<Card className={surface + ' shadow-none'}>
 						<CardContent className="space-y-3 p-5">
 							<div className="h-6 w-48 animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
-							<div className="h-32 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
-							<div className="h-32 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
+							<div className="h-32 animate-pulse  bg-slate-200 dark:bg-slate-800" />
+							<div className="h-32 animate-pulse  bg-slate-200 dark:bg-slate-800" />
 						</CardContent>
 					</Card>
 				</div>
@@ -269,7 +269,7 @@ export function BlogCollectionsPage() {
 								Create your first collection to start grouping blog posts into a reusable bundle.
 							</p>
 						</div>
-						<Button className="h-11 gap-2 rounded-xl px-4" onClick={handleOpenCreateDialog}>
+						<Button className="h-11 gap-2  px-4" onClick={handleOpenCreateDialog}>
 							<PlusCircle className="h-4 w-4" />
 							Create collection
 						</Button>
@@ -344,11 +344,11 @@ export function BlogCollectionsPage() {
 											</CardDescription>
 										</div>
 										<div className="flex flex-wrap items-center gap-2">
-											<Button variant="outline" className="gap-2 rounded-xl" onClick={() => handleOpenEditDialog(selectedCollection)}>
+											<Button variant="outline" className="gap-2 " onClick={() => handleOpenEditDialog(selectedCollection)}>
 												<PencilLine className="h-4 w-4" />
 												Edit details
 											</Button>
-											<Button variant="destructive" className="gap-2 rounded-xl" onClick={() => setCollectionToDelete(selectedCollection)}>
+											<Button variant="destructive" className="gap-2 " onClick={() => setCollectionToDelete(selectedCollection)}>
 												<Trash2 className="h-4 w-4" />
 												Delete
 											</Button>
@@ -385,7 +385,7 @@ export function BlogCollectionsPage() {
 											))}
 										</SelectContent>
 									</Select>
-									<Button className="gap-2 rounded-xl" onClick={handleAddBlog} disabled={isCollectionMutating || !blogToAddId || availableBlogs.length === 0}>
+									<Button className="gap-2 " onClick={handleAddBlog} disabled={isCollectionMutating || !blogToAddId || availableBlogs.length === 0}>
 										{isCollectionMutating ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlusCircle className="h-4 w-4" />}
 										Add blog
 									</Button>
@@ -423,12 +423,12 @@ export function BlogCollectionsPage() {
 														</div>
 													</div>
 													<div className="flex items-center gap-2 self-end md:self-center">
-														<Button asChild variant="outline" size="icon" className="h-9 w-9 rounded-xl">
+														<Button asChild variant="outline" size="icon" className="h-9 w-9 ">
 															<Link href={`/blog/${blog.blogUrl}`} target="_blank">
 																<ExternalLink className="h-4 w-4" />
 															</Link>
 														</Button>
-														<Button variant="destructive" size="icon" className="h-9 w-9 rounded-xl" onClick={() => handleRemoveBlog(blogId)} disabled={isCollectionMutating && removingBlogId === blogId}>
+														<Button variant="destructive" size="icon" className="h-9 w-9 " onClick={() => handleRemoveBlog(blogId)} disabled={isCollectionMutating && removingBlogId === blogId}>
 															{isCollectionMutating && removingBlogId === blogId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Unlink className="h-4 w-4" />}
 														</Button>
 													</div>

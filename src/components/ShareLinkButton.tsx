@@ -35,7 +35,7 @@ export default function ShareLinkButton({
 			if (result.method === 'clipboard') {
 				toast({
 					title: 'Link copied ✅',
-					description: 'Copied to clipboard as a proper link.',
+					description: 'Copied to clipboard',
 					variant: 'default',
 				})
 			}
@@ -59,7 +59,7 @@ export default function ShareLinkButton({
 	return (
 		<Button type="button" variant={variant} size={size} className={className} onClick={handleShare}>
 			<Share2 className="h-4 w-4" />
-			{!iconOnly ? <span className="ml-2">{label}</span> : null}
+			{!iconOnly ? <span className=""/> : null}
 		</Button>
 	)
 }
