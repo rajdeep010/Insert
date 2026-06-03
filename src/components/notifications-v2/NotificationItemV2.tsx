@@ -104,7 +104,7 @@ export default function NotificationItemV2({
                 }
             } : undefined}
         >
-            <Button
+            {/* <Button
                 type="button"
                 variant="ghost"
                 size="icon"
@@ -117,7 +117,7 @@ export default function NotificationItemV2({
                 disabled={isDismissing}
             >
                 {isDismissing ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
-            </Button>
+            </Button> */}
             <div className="flex items-start gap-3">
                 <div className={cn("mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full", indicatorTone)} aria-hidden={notification.read && !resolvedState} />
                 <div className="min-w-0 flex-1">

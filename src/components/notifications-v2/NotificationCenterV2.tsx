@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BellRing, Loader2, RefreshCw } from "lucide-react";
+import { BellRing, CircleCheck, Loader2, RefreshCw } from "lucide-react";
 
 import NotificationItemV2 from "@/components/notifications-v2/NotificationItemV2";
 import { Button } from "@/components/ui/button";
@@ -95,18 +95,19 @@ export default function NotificationCenterV2() {
 								{hasMore ? ` • showing latest ${NOTIFICATION_PAGE_SIZE_V2}` : ""}
 							</p>
 						</div>
-						<div className="flex items-center gap-2">
+						<div className="flex items-center gap-2 mr-4">
 							<Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => refreshNotificationsV2()}>
 								<RefreshCw className="h-4 w-4" />
 							</Button>
 							<Button
 								variant="ghost"
-								className="h-8 rounded-full text-xs"
+								size="icon"
+								className="h-8 w-8 rounded-full"
 								onClick={handleMarkVisibleAsRead}
 								disabled={isMarkingVisible || unreadCount === 0}
 							>
 								{isMarkingVisible ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-								Mark all read
+								<CircleCheck className="h-3.5 w-3.5" />
 							</Button>
 						</div>
 					</div>

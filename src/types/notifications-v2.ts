@@ -30,6 +30,7 @@ export interface NotificationItemV2Data {
 	localActionState: NotificationLocalActionStateV2;
 	createdAt: string;
 	read: boolean;
+	dismissed: boolean;
 }
 
 export interface NotificationSocketPayloadV2 {
@@ -51,6 +52,7 @@ export interface NotificationSocketPayloadV2 {
 	actorUsername?: string | null;
 	collaborationRequestId?: string | null;
 	createdAt: string;
+	dismissed?: boolean;
 }
 
 export interface NotificationFeedPageV2 {

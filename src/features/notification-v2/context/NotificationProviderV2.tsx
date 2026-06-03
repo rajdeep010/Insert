@@ -157,7 +157,9 @@ export const NotificationProviderV2 = ({ children }: { children: React.ReactNode
 	useEffect(() => {
 		dispatch({
 			type: "SET_CONTEXTUAL_NOTIFICATIONS",
-			payload: state.notifications.filter((notification) => doesNotificationMatchPathV2(notification, pathname)),
+			payload: state.notifications.filter(
+				(notification) => !notification.dismissed && doesNotificationMatchPathV2(notification, pathname)
+			),
 		});
 	}, [pathname, state.notifications]);
 
@@ -224,17 +226,17 @@ export const NotificationProviderV2 = ({ children }: { children: React.ReactNode
 	};
 
 	const dismissNotificationFromUiV2 = async (notification: NotificationItemV2Data) => {
-		const index = state.notifications.findIndex((item) => item.id === notification.id);
-		if (index === -1) return;
+		const existingNotification = state.notifications.find((item) => item.id === notification.id);
+		if (!existingNotification) return;
 
-		dispatch({ type: "REMOVE_NOTIFICATION", payload: notification.id });
+		dispatch({ type: "DISMISS_NOTIFICATION", payload: notification.id });
 
 		try {
 			await dismissNotificationV2(notification.id, accessToken);
 		} catch (error) {
 			dispatch({
 				type: "RESTORE_NOTIFICATION",
-				payload: { notification, index },
+				payload: existingNotification,
 			});
 			toast.error(handleNotificationApiError(error, "Could not dismiss notification"));
 			throw error;

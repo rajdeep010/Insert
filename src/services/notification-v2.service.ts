@@ -68,6 +68,7 @@ export const normalizeNotificationV2 = (value: Record<string, unknown>): Notific
 		localActionState: normalizeLocalActionState(value.localActionState),
 		createdAt: String(value.createdAt ?? new Date().toISOString()),
 		read: Boolean(value.read),
+		dismissed: Boolean(value.dismissed),
 	};
 
 	return {
@@ -168,4 +169,5 @@ export const normalizeSocketNotificationV2 = (
 	actionResult: normalizeActionResult(payload.actionResult),
 	localActionState: null,
 	read: false,
+	dismissed: Boolean(payload.dismissed),
 });
