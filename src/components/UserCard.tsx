@@ -20,10 +20,7 @@ const UserCard = ({user, topicid, topic, collaborators}: any) => {
             setIsSubmitting(true)
 
             const data = {
-                from: session?.user?.username,
                 to: user?.username,
-                fromID: session?.user?._id,
-                toID: user?._id,
                 topicId: topicid,
                 topicName: topic?.title
             }

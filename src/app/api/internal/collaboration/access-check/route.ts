@@ -4,7 +4,7 @@ import dbConnect from "@/lib/dbConnect";
 import TopicModel from "@/model/Topic";
 
 const accessCheckSchema = z.object({
-    entityType: z.enum(["TOPIC"]),
+    entityType: z.enum(["TOPIC", "BLOG"]),
     entityId: z.string().trim().min(1, "Entity id is required"),
     username: z.string().trim().min(1, "Username is required"),
     action: z.enum([
