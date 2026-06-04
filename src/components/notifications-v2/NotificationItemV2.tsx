@@ -16,6 +16,7 @@ import {
 } from "@/lib/notification-v2";
 import { cn } from "@/lib/utils";
 import type { NotificationItemV2Data, NotificationLocalActionStateV2 } from "@/types/notifications-v2";
+import { Badge } from "../ui/badge";
 
 const formatTimestamp = (value: string) => {
     const date = new Date(value);
@@ -153,9 +154,9 @@ export default function NotificationItemV2({
                         </div>
 
                         <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase text-muted-foreground/80">
-                            <div>
+                            <div className="flex items-center gap-4">
                                 <span>{formatTimestamp(notification.createdAt)}</span>
-                                {entityLabel ? <span>{entityLabel}</span> : null}
+                                {entityLabel ? <Badge className="text-[10px] rounded-full">{entityLabel}</Badge> : null}
                                 {notification.actorUsername && actorPath ? (
                                     <button
                                         type="button"

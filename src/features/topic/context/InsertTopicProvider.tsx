@@ -391,12 +391,21 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 				toast({ title: "Error ⭕", description: response.data.message || "Failed to edit problem", variant: "destructive" });
 				return;
 			}
-			await fetchTopicById(topic_id, { force: true });
+			if (response.data.problem) {
+				dispatch({
+					type: "UPDATE_PROBLEM_IN_TOPIC",
+					payload: {
+						topic_id,
+						problem_id,
+						problem: response.data.problem,
+					},
+				});
+			}
 			toast({ title: "Edited ✅", description: "Problem edited successfully", variant: "default" });
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Error in editing problem", variant: "destructive" });
 		}
-	}, [fetchTopicById, sessionUsername]);
+	}, [sessionUsername]);
 
 	const contextValue = useMemo(() => ({
 		...state,

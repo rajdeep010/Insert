@@ -1,5 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
+import jwt from "jsonwebtoken";
 import { getToken } from "next-auth/jwt";
 
 const LAST_SEEN_THROTTLE_MS = 5 * 60 * 1000;
@@ -40,6 +41,32 @@ export async function getAuthenticatedUsername(request: Request) {
     }
 
     return username;
+}
+
+export async function getAuthenticatedAccessToken(request: Request) {
+    const token = await getToken({
+        req: request as any,
+        secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    if (!token?.username || !token?._id || !token?.email || !token?.name) {
+        return null;
+    }
+
+    const secret = process.env.NEXTAUTH_SECRET;
+    if (!secret) {
+        return null;
+    }
+
+    return jwt.sign(
+        {
+            _id: token._id,
+            email: token.email,
+            name: token.name,
+            username: token.username,
+        },
+        secret
+    );
 }
 
 export const authenticationRequiredResponse = () =>

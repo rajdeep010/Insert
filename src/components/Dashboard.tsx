@@ -55,7 +55,10 @@ import {
     Globe2,
     CalendarDays,
     ArrowUpRight,
-    Users
+    Users,
+    Crown,
+    Eye,
+    ShieldCheck
 } from 'lucide-react'
 
 /* Shared style helpers (kept consistent with project page) */
@@ -240,11 +243,24 @@ const Dashboard = () => {
                     </div>
                 ) : filteredTopics.length > 0 ? (
                     <div className="grid gap-4 md:grid-cols-2">
-                        {filteredTopics.map(({ id, title, about, visibility, createdAt, collaborators, problems }) => {
+                        {filteredTopics.map(({ id, title, about, visibility, createdAt, collaborators, problems, creator_username }) => {
                             const createdLabel = formatCreatedDate(createdAt)
                             const createdRelative = getLastModifiedText(createdAt, { empty: 'Recently created' })
                             const collaboratorCount = collaborators?.length ?? 0
                             const problemCount = problems?.length ?? 0
+                            const currentCollaborator = collaborators?.find(
+                                (collaborator) => collaborator.username === session?.user?.username
+                            )
+                            const accessMeta = session?.user?.username === creator_username
+                                ? { label: 'Owner', icon: Crown, variant: 'default' as const, helper: 'Full control' }
+                                : currentCollaborator?.role === 'EDITOR'
+                                    ? { label: 'Editor', icon: ShieldCheck, variant: 'secondary' as const, helper: 'Can manage problems' }
+                                    : currentCollaborator?.role === 'VIEWER'
+                                        ? { label: 'Viewer', icon: Eye, variant: 'outline' as const, helper: 'Read-only access' }
+                                        : visibility === 'public'
+                                            ? { label: 'Public', icon: Eye, variant: 'outline' as const, helper: 'Open visibility' }
+                                            : null
+                            const AccessIcon = accessMeta?.icon
 
                             return (
                                 <Link key={id} href={`/topic/${id}`} className="block group">
@@ -266,21 +282,34 @@ const Dashboard = () => {
                                                         {visibility === 'private' ? (
                                                             <Badge
                                                                 variant="destructive"
-                                                                className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px]"
+                                                                className="flex items-center gap-1 rounded-full p-1 text-[10px]"
                                                             >
                                                                 <Lock className="h-3 w-3" />
-                                                                private
+                                                                {/* private */}
                                                             </Badge>
                                                         ) : (
                                                             <Badge
                                                                 variant="secondary"
-                                                                className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px]"
+                                                                className="flex items-center gap-1 rounded-full p-1 text-[10px]"
                                                             >
                                                                 <Globe2 className="h-3 w-3" />
-                                                                public
+                                                                {/* public */}
                                                             </Badge>
                                                         )}
+                                                        {accessMeta && AccessIcon ? (
+                                                            <Badge
+                                                                variant={accessMeta.variant}
+                                                                className="flex items-center gap-1 rounded-full p-1 text-[10px]"
+                                                            >
+                                                                <AccessIcon className="h-3 w-3" />
+                                                                {/* {accessMeta.label} */}
+                                                            </Badge>
+                                                        ) : null}
                                                     </div>
+
+                                                    {/* {accessMeta ? (
+                                                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{accessMeta.helper}</p>
+                                                    ) : null} */}
 
                                                     <CardDescription className="line-clamp-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                                                         {about?.trim() ? about : 'No description added for this topic yet.'}

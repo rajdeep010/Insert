@@ -1,4 +1,5 @@
-import { requireAuthenticatedUsername } from "@/lib/api/auth";
+import { getAuthenticatedAccessToken, requireAuthenticatedUsername } from "@/lib/api/auth";
+import { resolveEntityPermissions } from "@/lib/collaboration/permissions";
 import dbConnect from "@/lib/dbConnect";
 import TopicModel from "@/model/Topic";
 import { topicIdParamSchema } from "@/schemas/topicSchema";
@@ -37,7 +38,7 @@ export async function GET(
     try {
         const topic = await TopicModel.findOne({
             id: parsedTopicParams.data.topicId,
-        }).select("_id id visibility creator_username collaborators");
+        }).select("_id id visibility creator_username");
 
         if (!topic) {
             return Response.json(
@@ -49,15 +50,17 @@ export async function GET(
             );
         }
 
-        const isAuthorized =
-            topic.visibility === "public" ||
-            topic.creator_username === currentUsername ||
-            topic.collaborators?.some(
-                (collaborator: { username: string }) =>
-                    collaborator.username === currentUsername
-            );
+        const accessToken = await getAuthenticatedAccessToken(request);
+        const permissions = await resolveEntityPermissions({
+            entityType: "TOPIC",
+            entityId: parsedTopicParams.data.topicId,
+            visibility: topic.visibility,
+            ownerUsername: topic.creator_username,
+            currentUsername,
+            accessToken,
+        });
 
-        if (!isAuthorized) {
+        if (!permissions.canView) {
             return Response.json(
                 {
                     success: false,
@@ -72,13 +75,13 @@ export async function GET(
             {
                 success: true,
                 message: "Authorized access",
-                hasAccess: true,
+                hasAccess: permissions.canView,
                 visibility: topic.visibility,
-                isOwner: topic.creator_username === currentUsername,
-                isCollaborator: topic.collaborators?.some(
-                    (collaborator: { username: string }) =>
-                        collaborator.username === currentUsername
-                ) ?? false,
+                isOwner: permissions.isOwner,
+                isCollaborator: permissions.isCollaborator,
+                canEdit: permissions.canEdit,
+                canManageCollaborators: permissions.canManageCollaborators,
+                role: permissions.role,
             },
             { status: 200 }
         );

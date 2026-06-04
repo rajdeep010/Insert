@@ -1,5 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
-import { getAuthenticatedUsername } from "@/lib/api/auth";
+import { getAuthenticatedAccessToken, getAuthenticatedUsername } from "@/lib/api/auth";
+import { fetchEntityCollaborators, fetchMyCollaborations } from "@/lib/collaboration/permissions";
 import TopicModel from "@/model/Topic";
 import { usernameParamsSchema } from "@/schemas/userSchema";
 
@@ -8,6 +9,16 @@ type RouteContext = {
         username: string;
     };
 };
+
+const TOPIC_SELECT = "_id id title about visibility creator_username createdAt";
+
+const attachCollaborators = async (topics: Array<Record<string, any>>, accessToken?: string | null) =>
+    Promise.all(
+        topics.map(async (topic) => ({
+            ...topic,
+            collaborators: await fetchEntityCollaborators("TOPIC", String(topic.id ?? ""), accessToken),
+        }))
+    );
 
 export async function GET(
     request: Request,
@@ -43,33 +54,57 @@ export async function GET(
     await dbConnect();
 
     try {
-        const filter =
-            currentUsername === requestedUsername
-                ? { creator_username: requestedUsername }
-                : {
-                    $or: [
-                        {
-                            creator_username: requestedUsername,
-                            visibility: "public",
-                        },
-                        {
-                            creator_username: requestedUsername,
-                            "collaborators.username": currentUsername,
-                        },
-                    ],
-                };
+        const accessToken = await getAuthenticatedAccessToken(request);
 
-        const topics = await TopicModel.find(filter)
-            .sort({ createdAt: -1 })
-            .select(
-                "_id id title about visibility creator_username collaborators createdAt"
+        if (currentUsername === requestedUsername) {
+            const collaborations = await fetchMyCollaborations(accessToken, "TOPIC");
+            const collaboratorTopicIds = collaborations
+                .map((item: { entityId: string }) => item.entityId)
+                .filter(Boolean);
+
+            const [ownedTopics, collaboratedTopics] = await Promise.all([
+                TopicModel.find({ creator_username: requestedUsername })
+                    .sort({ createdAt: -1 })
+                    .select(TOPIC_SELECT)
+                    .lean(),
+                collaboratorTopicIds.length
+                    ? TopicModel.find({ id: { $in: collaboratorTopicIds } }).select(TOPIC_SELECT).lean()
+                    : Promise.resolve([]),
+            ]);
+
+            const dedupedTopics = Array.from(
+                new Map(
+                    [...ownedTopics, ...collaboratedTopics].map((topic) => [String(topic.id), topic])
+                ).values()
+            ).sort((left: any, right: any) => new Date(right.createdAt ?? 0).getTime() - new Date(left.createdAt ?? 0).getTime());
+
+            const topics = await attachCollaborators(dedupedTopics, accessToken);
+
+            return Response.json(
+                {
+                    success: true,
+                    message: topics.length ? "Topics found" : "No topics found",
+                    topics,
+                },
+                { status: 200 }
             );
+        }
+
+        const topics = await TopicModel.find({
+            creator_username: requestedUsername,
+            visibility: "public",
+        })
+            .sort({ createdAt: -1 })
+            .select(TOPIC_SELECT)
+            .lean();
+
+        const topicsWithCollaborators = await attachCollaborators(topics, accessToken);
 
         return Response.json(
             {
                 success: true,
-                message: topics.length ? "Topics found" : "No topics found",
-                topics,
+                message: topicsWithCollaborators.length ? "Topics found" : "No topics found",
+                topics: topicsWithCollaborators,
             },
             { status: 200 }
         );

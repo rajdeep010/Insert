@@ -71,7 +71,7 @@ export const fetchSentInvites = async ({
 	size?: number;
 	accessToken?: string | null;
 }) => {
-	return collaborationClient.get("/collaborations/sent-invites", {
+	return collaborationClient.get("/collaborations/sent", {
 		params: { page, size },
 		...getAuthConfig(accessToken),
 	});

@@ -19,6 +19,7 @@ export interface HeatmapDateValues {
 export interface Collaborator {
     username: string;
     name: string;
+    role?: "OWNER" | "EDITOR" | "VIEWER" | null;
 }
 
 export interface Question {

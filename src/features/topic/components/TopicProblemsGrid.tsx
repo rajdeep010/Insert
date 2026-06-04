@@ -73,6 +73,7 @@ export function TopicProblemsGrid({
 			field: 'qname',
 			minWidth: 280,
 			flex: 2.1,
+			resizable: true,
 			filter: 'agTextColumnFilter',
 			cellRenderer: (params: { value: string }) => (
 				<div className="flex min-w-0 flex-col justify-center">
@@ -84,7 +85,7 @@ export function TopicProblemsGrid({
 			headerName: 'Difficulty',
 			field: 'difficulty',
 			minWidth: 160,
-			maxWidth: 190,
+			resizable: true,
 			filter: 'agTextColumnFilter',
 			comparator: (left: ProblemDifficulty, right: ProblemDifficulty) => {
 				return (difficultyRank[left] ?? 999) - (difficultyRank[right] ?? 999)
@@ -101,6 +102,7 @@ export function TopicProblemsGrid({
 			minWidth: 180,
 			flex: 1,
 			filter: 'agTextColumnFilter',
+			resizable: true,
 			valueGetter: (params) => params.data?.url ?? '',
 			cellRenderer: (params: { value: string }) => (
 				<div className="flex min-w-0 flex-col justify-center">
@@ -111,8 +113,9 @@ export function TopicProblemsGrid({
 		{
 			headerName: 'References',
 			field: 'blogReferences',
-			minWidth: 260,
-			flex: 1.2,
+			minWidth: 150,
+			flex: 1,
+			resizable: true,
 			filter: false,
 			sortable: false,
 			valueGetter: (params) => params.data?.blogReferences?.length ?? 0,
@@ -132,18 +135,17 @@ export function TopicProblemsGrid({
 		{
 			headerName: 'Actions',
 			field: '_id',
-			minWidth: canManageProblems ? 196 : 76,
-			maxWidth: canManageProblems ? 196 : 76,
+			minWidth: canManageProblems ? 200 : 120,
 			filter: false,
 			sortable: false,
 			floatingFilter: false,
-			resizable: false,
+			resizable: true,
 			cellClass: 'topic-problem-actions-cell',
 			cellRenderer: (params: { data?: TopicProblemGridRow }) => {
 				if (!params.data) return null
 
 				return (
-					<div className="flex h-full items-center justify-end gap-1.5">
+					<div className="flex h-full items-center justify-between gap-1.5">
 						<Tooltip>
 							<TooltipTrigger asChild>
 								<a

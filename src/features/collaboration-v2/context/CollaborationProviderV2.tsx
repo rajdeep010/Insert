@@ -41,6 +41,13 @@ interface CollaborationContextValueV2 extends CollaborationStateV2 {
 	updateCollaboratorRoleV2: (collaborator: CollaborationTopicCollaboratorV2, role: Exclude<CollaborationRoleV2, "OWNER">) => Promise<void>;
 	removeCollaboratorV2: (collaborator: CollaborationTopicCollaboratorV2) => Promise<void>;
 	canManageSelectedTopicV2: boolean;
+	hasTopicAccessV2: (topicId: string, creatorUsername?: string | null, visibility?: string | null) => boolean;
+	hasBlogAccessV2: (blogId: string, creatorUsername?: string | null, visibility?: string | null) => boolean;
+	canEditTopicV2: (topicId: string, creatorUsername?: string | null, visibility?: string | null) => boolean;
+	canEditBlogV2: (blogId: string, creatorUsername?: string | null, visibility?: string | null) => boolean;
+	canManageTopicCollaboratorsV2: (topicId: string, creatorUsername?: string | null) => boolean;
+	getTopicPermissionV2: (topicId: string, creatorUsername?: string | null, visibility?: string | null) => { role: CollaborationRoleV2 | null; canView: boolean; canEdit: boolean; canManageCollaborators: boolean };
+	getBlogPermissionV2: (blogId: string, creatorUsername?: string | null, visibility?: string | null) => { role: CollaborationRoleV2 | null; canView: boolean; canEdit: boolean; canManageCollaborators: boolean };
 }
 
 const CollaborationContextV2 = createContext<CollaborationContextValueV2 | null>(null);
@@ -210,7 +217,57 @@ export const CollaborationProviderV2 = ({ children }: { children: React.ReactNod
 		void refreshCollaborationV2();
 	}, [status, username, accessToken]);
 
-	const canManageSelectedTopicV2 = state.currentTopicRole === "OWNER" || state.currentTopicRole === "EDITOR";
+	const resolvePermission = (
+		entityType: "TOPIC" | "BLOG",
+		entityId: string,
+		creatorUsername?: string | null,
+		visibility?: string | null
+	) => {
+		if (username && creatorUsername === username) {
+			return { role: "OWNER" as const, canView: true, canEdit: true, canManageCollaborators: true };
+		}
+
+		const membership = state.myCollaborations.find(
+			(item) => item.entityType === entityType && item.entityId === entityId
+		);
+
+		if (membership?.role === "EDITOR") {
+			return { role: "EDITOR" as const, canView: true, canEdit: true, canManageCollaborators: false };
+		}
+
+		if (membership?.role === "VIEWER") {
+			return { role: "VIEWER" as const, canView: true, canEdit: false, canManageCollaborators: false };
+		}
+
+		if (visibility === "public") {
+			return { role: null, canView: true, canEdit: false, canManageCollaborators: false };
+		}
+
+		return { role: null, canView: false, canEdit: false, canManageCollaborators: false };
+	};
+
+	const getTopicPermissionV2 = (topicId: string, creatorUsername?: string | null, visibility?: string | null) =>
+		resolvePermission("TOPIC", topicId, creatorUsername, visibility);
+
+	const getBlogPermissionV2 = (blogId: string, creatorUsername?: string | null, visibility?: string | null) =>
+		resolvePermission("BLOG", blogId, creatorUsername, visibility);
+
+	const hasTopicAccessV2 = (topicId: string, creatorUsername?: string | null, visibility?: string | null) =>
+		getTopicPermissionV2(topicId, creatorUsername, visibility).canView;
+
+	const hasBlogAccessV2 = (blogId: string, creatorUsername?: string | null, visibility?: string | null) =>
+		getBlogPermissionV2(blogId, creatorUsername, visibility).canView;
+
+	const canEditTopicV2 = (topicId: string, creatorUsername?: string | null, visibility?: string | null) =>
+		getTopicPermissionV2(topicId, creatorUsername, visibility).canEdit;
+
+	const canEditBlogV2 = (blogId: string, creatorUsername?: string | null, visibility?: string | null) =>
+		getBlogPermissionV2(blogId, creatorUsername, visibility).canEdit;
+
+	const canManageTopicCollaboratorsV2 = (topicId: string, creatorUsername?: string | null) =>
+		getTopicPermissionV2(topicId, creatorUsername).canManageCollaborators;
+
+	const canManageSelectedTopicV2 = state.currentTopicRole === "OWNER";
 
 	return (
 		<CollaborationContextV2.Provider
@@ -224,6 +281,13 @@ export const CollaborationProviderV2 = ({ children }: { children: React.ReactNod
 				updateCollaboratorRoleV2: updateCollaboratorRoleFromWorkspaceV2,
 				removeCollaboratorV2: removeCollaboratorFromWorkspaceV2,
 				canManageSelectedTopicV2,
+				hasTopicAccessV2,
+				hasBlogAccessV2,
+				canEditTopicV2,
+				canEditBlogV2,
+				canManageTopicCollaboratorsV2,
+				getTopicPermissionV2,
+				getBlogPermissionV2,
 			}}
 		>
 			{children}

@@ -56,6 +56,7 @@ import "@/components/tiptap-templates/simple/simple-editor.scss";
 import { Placeholder } from "@/components/tiptap-extension/placeholder-extension";
 import BlogWriteSidebar from "@/components/BlogWriteSidebar";
 import { useBlog } from "@/features/blog/context/BlogProvider";
+import { useCollaborationV2 } from "@/features/collaboration-v2/context/CollaborationProviderV2";
 import { useSession } from "next-auth/react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -67,7 +68,7 @@ import {
 import { useDebounceCallback, useDebounceValue } from "usehooks-ts";
 import { useParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2 } from "lucide-react";
+import { Loader2, ShieldAlert } from "lucide-react";
 import {
 	Tabs,
 	TabsContent,
@@ -205,6 +206,7 @@ const MobileToolbarContent = ({
 
 const SimpleEditor = () => {
 	const { data: session, status } = useSession()
+	const { getBlogPermissionV2 } = useCollaborationV2()
 
 
 	const isMobile = useMobile();
@@ -213,6 +215,15 @@ const SimpleEditor = () => {
 	const toolbarRef = React.useRef<HTMLDivElement>(null);
 
 	const { currentBlog, handleBlogUpdate, isBlogLoading, handleAutoSaveBlog } = useBlog();
+	const blogPermission = React.useMemo(
+		() => getBlogPermissionV2(
+			String(currentBlog?._id ?? currentBlog?.id ?? ""),
+			(currentBlog?.creator as string | undefined) ?? null,
+			(currentBlog?.type as string | undefined) ?? null
+		),
+		[currentBlog?._id, currentBlog?.id, currentBlog?.creator, currentBlog?.type, getBlogPermissionV2]
+	)
+	const canEditCurrentBlog = blogPermission.canEdit
 	const [editorContent, setEditorContent] = React.useState<any>(currentBlog?.blogContent)
 	const [editorTextContent, setEditorTextContent] = React.useState<string>(currentBlog?.blogContentText || "");
 
@@ -344,7 +355,7 @@ const SimpleEditor = () => {
 	});
 
 	const handleSaveContent = async () => {
-		if (!editorContent && !currentBlog) return;
+		if (!canEditCurrentBlog || (!editorContent && !currentBlog)) return;
 
 		await handleBlogUpdate({
 			blogContent: JSON.stringify(editorContent),
@@ -381,9 +392,9 @@ const SimpleEditor = () => {
 			}
 		}
 		// console.log("contents: ", currentBlog, 'current blog content: ', currentBlog?.blogContent, 'debounded editor content: ', debouncedEditorContent);
-		if(autoSave && currentBlog && currentBlog?.blogContent !== debouncedEditorContent)	handleAutoSave()
+		if(canEditCurrentBlog && autoSave && currentBlog && currentBlog?.blogContent !== debouncedEditorContent)	handleAutoSave()
 
-	}, [debouncedEditorContent, autoSave])
+	}, [autoSave, canEditCurrentBlog, currentBlog, debouncedEditorContent, debouncedEditorTextContent, handleAutoSaveBlog])
 
 
 	React.useEffect(() => {
@@ -396,7 +407,7 @@ const SimpleEditor = () => {
 		<EditorContext.Provider value={{ editor }}>
 
 			<div className="flex w-full flex-col gap-6 mt-[2rem]">
-				{status === 'authenticated' && session?.user?.username === currentBlog?.creator &&
+				{canEditCurrentBlog &&
 					<Tabs defaultValue="write">
 						<TabsList>
 							<TabsTrigger value="write">Write</TabsTrigger>
@@ -449,8 +460,7 @@ const SimpleEditor = () => {
 						</TabsContent>
 					</Tabs>}
 
-				{
-					status === 'unauthenticated' && <>
+				{!canEditCurrentBlog && <>
 						<div className="content-wrapper shadow-sm dark:shadow-grey-800">
 							<EditorContent
 								editor={previewEditor}
@@ -467,10 +477,19 @@ const SimpleEditor = () => {
 };
 
 const Write = () => {
-	const { isBlogLoading, fetchBlogByIdentifier, fetchBlogsByUsername } = useBlog()
+	const { currentBlog, isBlogLoading, fetchBlogByIdentifier, fetchBlogsByUsername } = useBlog()
+	const { getBlogPermissionV2 } = useCollaborationV2()
 	const { data: session, status } = useSession();
 	const params = useParams()
 	const blogUrl = params?.blogUrl as string
+	const blogPermission = React.useMemo(
+		() => getBlogPermissionV2(
+			String(currentBlog?._id ?? currentBlog?.id ?? ""),
+			(currentBlog?.creator as string | undefined) ?? null,
+			(currentBlog?.type as string | undefined) ?? null
+		),
+		[currentBlog?._id, currentBlog?.id, currentBlog?.creator, currentBlog?.type, getBlogPermissionV2]
+	)
 
 	React.useEffect(() => {
 		if (!blogUrl) return
@@ -486,7 +505,7 @@ const Write = () => {
 	return (
 		<>
 			<div className="absolute top-5 left-5">
-				{status === 'authenticated' && <BlogWriteSidebar />}
+				{status === 'authenticated' && blogPermission.canEdit && <BlogWriteSidebar />}
 			</div>
 
 			<div className="px-6 lg:px-56 pt-8 min-h-screen">
@@ -495,7 +514,15 @@ const Write = () => {
 						? <div className="flex justify-center items-center h-screen">
 							<Loader2 className="h-12 w-12 animate-spin text-gray-500" />
 						</div>
-						: <SimpleEditor />}
+						: currentBlog
+							? <SimpleEditor />
+							: (
+								<div className="mx-auto mt-20 max-w-xl rounded-3xl border border-border/60 bg-background/80 p-8 text-center shadow-[0_24px_80px_-48px_rgba(15,23,42,0.55)] backdrop-blur">
+									<ShieldAlert className="mx-auto h-10 w-10 text-amber-500" />
+									<h1 className="mt-4 text-2xl font-semibold text-foreground">Access denied</h1>
+									<p className="mt-2 text-sm leading-6 text-muted-foreground">This blog is private and your account does not currently have access to open it.</p>
+								</div>
+							)}
 				</div>
 			</div>
 		</>

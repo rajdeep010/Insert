@@ -116,7 +116,9 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 			dispatch({ type: "SET_CURRENT_BLOG", payload: response.data.blog });
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to fetch blog", variant: "destructive" });
-			router.replace("/write");
+			if (error?.response?.status === 404) {
+				router.replace("/write");
+			}
 		} finally {
 			dispatch({ type: "SET_IS_BLOG_LOADING", payload: false });
 		}
@@ -148,7 +150,9 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 			dispatch({ type: "SET_CURRENT_BLOG", payload: response.data.blog });
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to fetch blog", variant: "destructive" });
-			router.replace("/write");
+			if (error?.response?.status === 404) {
+				router.replace("/write");
+			}
 		} finally {
 			dispatch({ type: "SET_IS_BLOG_LOADING", payload: false });
 		}

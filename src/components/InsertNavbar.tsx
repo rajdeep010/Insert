@@ -143,7 +143,7 @@ const InsertNavbar = () => {
 	};
 
 	return (
-		<nav className="flex items-center justify-between gap-6 rounded-lg border border-black/10 bg-white/70 px-4 py-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/50 sm:px-5">
+		<nav className="flex items-center justify-between gap-6 rounded-lg  bg-white/70 px-4 py-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/50 sm:px-5">
 			<Link className="flex items-center gap-3 text-2xl font-sans sm:text-3xl" href="/">
 				<InsertIcon className="rounded-lg border bg-white p-[4px]" />
 				<span>Insert</span>

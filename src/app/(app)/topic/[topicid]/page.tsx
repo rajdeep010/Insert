@@ -49,6 +49,8 @@ import { useDebounceCallback, useDebounceValue } from "usehooks-ts";
 import {
 	ArrowRightLeft,
 	CirclePlus,
+	Crown,
+	Eye,
 	FileInput,
 	FolderKanban,
 	Info,
@@ -56,6 +58,7 @@ import {
 	Loader2,
 	PencilLine,
 	Settings2,
+	ShieldCheck,
 	Trash2,
 	UserPlus,
 	Users,
@@ -98,7 +101,7 @@ const EachTopic = () => {
 	const { data: session, status } = useSession();
 	const { toast } = useToast();
 	const accessToken = session?.accessToken ?? null;
-	const { myCollaborations, topicOptions, refreshCollaborationV2 } = useCollaborationV2();
+	const { myCollaborations, topicOptions, refreshCollaborationV2, getTopicPermissionV2 } = useCollaborationV2();
 
 	const {
 		curr_topic,
@@ -153,6 +156,7 @@ const EachTopic = () => {
 	const [isCollaboratorSheetOpen, setIsCollaboratorSheetOpen] = useState(false);
 	const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false);
 	const [isSavingTopicDetails, setIsSavingTopicDetails] = useState(false);
+	const [hasResolvedTopicRequest, setHasResolvedTopicRequest] = useState(false);
 
 	const debounced = useDebounceCallback(setSearchUsername, 500);
 
@@ -328,12 +332,15 @@ const EachTopic = () => {
 	const displayCollaborators = serviceCollaborators ?? fallbackCollaborators;
 	const currentMembership = accessibleTopics.find((topic) => topic.id === resolvedTopicId) ?? null;
 	const currentCollaborator = displayCollaborators.find((collaborator) => collaborator.username === session?.user?.username) ?? null;
-	const currentAccessRole: CollaborationRoleV2 = session?.user?.username === ownerUsername
-		? "OWNER"
-		: currentMembership?.currentRole ?? currentCollaborator?.role ?? "VIEWER";
-	const canManageProblems = status === "authenticated" && (currentAccessRole === "OWNER" || currentAccessRole === "EDITOR");
-	const canManageCollaborators = canManageProblems;
-	const isOwner = currentAccessRole === "OWNER";
+	const currentPermission = getTopicPermissionV2(
+		resolvedTopicId,
+		ownerUsername,
+		curr_topic?.topic?.visibility ?? null
+	);
+	const currentAccessRole: CollaborationRoleV2 = currentPermission.role ?? currentMembership?.currentRole ?? currentCollaborator?.role ?? "VIEWER";
+	const canManageProblems = status === "authenticated" && currentPermission.canEdit;
+	const canManageCollaborators = status === "authenticated" && currentPermission.canManageCollaborators;
+	const isOwner = currentPermission.role === "OWNER";
 	const isCollaborator = currentAccessRole === "EDITOR" || currentAccessRole === "VIEWER";
 	const collaboratorCount = displayCollaborators.length;
 	const isResolvedTopic = Boolean(curr_topic && resolvedTopicId === topic_id);
@@ -343,7 +350,8 @@ const EachTopic = () => {
 
 	useEffect(() => {
 		if (!topic_id) return;
-		fetchTopicById(topic_id);
+		setHasResolvedTopicRequest(false);
+		void fetchTopicById(topic_id).finally(() => setHasResolvedTopicRequest(true));
 	}, [topic_id, fetchTopicById]);
 
 	useEffect(() => {
@@ -646,6 +654,21 @@ const EachTopic = () => {
 	const resolvedReferenceProblemReferences = (referenceProblemFromState?.blogReferences || []).map(resolveProblemReference);
 
 	if (isTopicLoading || !isResolvedTopic) {
+		if (!isTopicLoading && hasResolvedTopicRequest && !isResolvedTopic) {
+			return (
+				<div className="min-h-screen bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.98))] dark:bg-[linear-gradient(180deg,rgba(2,6,23,1),rgba(2,6,23,0.98))]">
+					<div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+						<InsertNavbar />
+						<section className="mx-auto w-full max-w-xl rounded-[28px] border border-border/60 bg-background/80 px-6 py-10 text-center shadow-[0_24px_80px_-48px_rgba(15,23,42,0.55)] backdrop-blur">
+							<Users className="mx-auto h-10 w-10 text-amber-500" />
+							<h1 className="mt-4 text-2xl font-semibold text-foreground">Access denied</h1>
+							<p className="mt-2 text-sm leading-6 text-muted-foreground">This topic is private and your account does not currently have access to open or edit it.</p>
+						</section>
+					</div>
+				</div>
+			);
+		}
+
 		return (
 			<div className="min-h-screen bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.98))] dark:bg-[linear-gradient(180deg,rgba(2,6,23,1),rgba(2,6,23,0.98))]">
 				<div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
@@ -663,7 +686,7 @@ const EachTopic = () => {
 			<div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
 				<InsertNavbar />
 
-				<section className="rounded-[28px] border border-border/60 bg-background/80 px-5 py-5 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.55)] backdrop-blur sm:px-6 sm:py-6">
+				<section className="rounded-[28px] border border-border/60 bg-background/80 px-5 py-5 backdrop-blur sm:px-6 sm:py-6">
 					<div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
 						<div className="min-w-0 space-y-3">
 							<div className="flex flex-wrap items-center gap-2">
@@ -677,10 +700,9 @@ const EachTopic = () => {
 									{formatRoleLabel(currentAccessRole)}
 								</Badge>
 							</div>
-							<h1 className="truncate text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+							<h1 className="truncate text-2xl font-semibold tracking-tight text-foreground">
 								{curr_topic.topic.title}
 							</h1>
-
 						</div>
 
 						<div className="flex flex-wrap items-center gap-2">
@@ -706,11 +728,13 @@ const EachTopic = () => {
 								</Button>
 							</TopicActionButton>
 
-							<TopicActionButton label="Manage collaborators">
-								<Button variant="outline" size="icon" className="h-9 w-9 rounded-full border-border/60 bg-background/70" onClick={() => setIsCollaboratorSheetOpen(true)}>
-									<Users className="h-4 w-4" />
-								</Button>
-							</TopicActionButton>
+							{canManageCollaborators ? (
+								<TopicActionButton label="Manage collaborators">
+									<Button variant="outline" size="icon" className="h-9 w-9 rounded-full border-border/60 bg-background/70" onClick={() => setIsCollaboratorSheetOpen(true)}>
+										<Users className="h-4 w-4" />
+									</Button>
+								</TopicActionButton>
+							) : null}
 
 							{canManageProblems ? (
 								<TopicActionButton label="Add problem">
@@ -1205,8 +1229,13 @@ const EachTopic = () => {
 				>
 					<div className="space-y-3">
 						{accessibleTopics?.map((topic) => {
-							console.log("Topic:", topic);
 							const active = topic.id === resolvedTopicId;
+							const accessMeta = topic.currentRole === "OWNER"
+								? { label: "Owner", icon: Crown, variant: "default" as const, helper: "You manage this topic" }
+								: topic.currentRole === "EDITOR"
+									? { label: "Editor", icon: ShieldCheck, variant: "secondary" as const, helper: "Shared with edit access" }
+									: { label: "Viewer", icon: Eye, variant: "outline" as const, helper: "Shared with read access" };
+							const AccessIcon = accessMeta.icon;
 
 							return (
 								<button
@@ -1217,10 +1246,17 @@ const EachTopic = () => {
 								>
 									<div className="min-w-0 space-y-1">
 										<p className="truncate text-sm font-medium text-foreground">{topic.title}</p>
+										<p className="text-xs text-muted-foreground">{accessMeta.helper}</p>
 									</div>
-									<Badge variant={getRoleBadgeVariant(topic.currentRole)} className="rounded-full px-2.5 py-1 text-[11px]">
-										{formatRoleLabel(topic.currentRole)}
-									</Badge>
+									<div className="flex items-center gap-2">
+										<Badge variant={accessMeta.variant} className="rounded-full px-2.5 py-1 text-[11px]">
+											<AccessIcon className="mr-1 h-3 w-3" />
+											{accessMeta.label}
+										</Badge>
+										<Badge variant={getRoleBadgeVariant(topic.currentRole)} className="rounded-full px-2.5 py-1 text-[11px]">
+											{formatRoleLabel(topic.currentRole)}
+										</Badge>
+									</div>
 								</button>
 							);
 						})}
