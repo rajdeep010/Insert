@@ -132,14 +132,12 @@ export function TopicProblemsGrid({
 		{
 			headerName: 'Actions',
 			field: '_id',
-			minWidth: canManageProblems ? 224 : 118,
-			maxWidth: canManageProblems ? 224 : 118,
+			minWidth: canManageProblems ? 196 : 76,
+			maxWidth: canManageProblems ? 196 : 76,
 			filter: false,
 			sortable: false,
 			floatingFilter: false,
 			resizable: false,
-			pinned: 'right',
-			lockPinned: true,
 			cellClass: 'topic-problem-actions-cell',
 			cellRenderer: (params: { data?: TopicProblemGridRow }) => {
 				if (!params.data) return null

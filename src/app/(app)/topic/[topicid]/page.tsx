@@ -1,10 +1,20 @@
 "use client";
 import type { UserInfo } from "@/types/user";
 import axios, { AxiosError } from "axios";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
 	Dialog,
 	DialogContent,
@@ -30,18 +40,22 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { questionSchema, suggestionSchema } from "@/schemas/topicSchema";
+import { questionSchema, suggestionSchema, topicSchema } from "@/schemas/topicSchema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiResponse } from "@/types/ApiResponse";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import { useDebounceCallback, useDebounceValue } from "usehooks-ts";
 import {
+	ArrowRightLeft,
 	CirclePlus,
 	FileInput,
 	FolderKanban,
+	Info,
 	Link2,
 	Loader2,
+	PencilLine,
+	Settings2,
 	Trash2,
 	UserPlus,
 	Users,
@@ -49,21 +63,42 @@ import {
 import UserCard from "@/components/UserCard";
 import InsertNavbar from "@/components/InsertNavbar";
 import ShareLinkButton from "@/components/ShareLinkButton";
+import { useCollaborationV2 } from "@/features/collaboration-v2/context/CollaborationProviderV2";
 import { useNotifications } from "@/features/notification/context/NotificationProvider";
 import InsertHoverCard from "@/components/InsertHoverCard";
 import { useBlog } from "@/features/blog/context/BlogProvider";
 import { useInsertTopics } from "@/features/topic/context/InsertTopicProvider";
+import {
+	fetchEntityCollaboratorsV2,
+	removeCollaboratorV2 as removeCollaboratorServiceV2,
+	updateCollaboratorRoleV2 as updateCollaboratorRoleServiceV2,
+} from "@/services/collaboration-v2.service";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { TopicProblemsGrid, type TopicProblemReferenceDisplay } from "@/features/topic/components/TopicProblemsGrid";
+import { TopicActionButton } from "@/features/topic/components/TopicActionButton";
+import { TopicActionSheet } from "@/features/topic/components/TopicActionSheet";
 import type { BlogCollectionEntry, BlogReferenceKind, ProblemBlogReference } from "@/types/blog-collection";
+import type { CollaborationRoleV2, CollaborationTopicCollaboratorV2 } from "@/types/collaboration-v2";
+
+const getRoleBadgeVariant = (role: CollaborationRoleV2 | null) =>
+	role === "OWNER" ? "default" : role === "EDITOR" ? "secondary" : "outline";
+
+const formatRoleLabel = (role: CollaborationRoleV2 | null) => {
+	if (!role) return "Viewer";
+	return role.charAt(0) + role.slice(1).toLowerCase();
+};
 
 const EachTopic = () => {
 	const params = useParams();
+	const router = useRouter();
 	const topic_id = params.topicid as string;
 	const { data: session, status } = useSession();
 	const { toast } = useToast();
+	const accessToken = session?.accessToken ?? null;
+	const { myCollaborations, topicOptions, refreshCollaborationV2 } = useCollaborationV2();
 
 	const {
 		curr_topic,
@@ -72,6 +107,7 @@ const EachTopic = () => {
 		addProblem,
 		deleteProblem,
 		deleteTopic,
+		updateTopicDetails,
 		editProblem
 	} = useInsertTopics();
 	const {
@@ -109,12 +145,19 @@ const EachTopic = () => {
 	const [isSearchingUsername, setIsSearchingUsername] = useState(false);
 	const [searchUsernameMessage, setSearchUsernameMessage] = useState("");
 	const [similarUsers, setSimilarUsers] = useState<UserInfo[]>([]);
+	const [serviceCollaborators, setServiceCollaborators] = useState<CollaborationTopicCollaboratorV2[] | null>(null);
+	const [updatingCollaboratorIds, setUpdatingCollaboratorIds] = useState<string[]>([]);
+	const [removingCollaboratorIds, setRemovingCollaboratorIds] = useState<string[]>([]);
+	const [collaboratorToRemove, setCollaboratorToRemove] = useState<CollaborationTopicCollaboratorV2 | null>(null);
+	const [isTopicSwitcherOpen, setIsTopicSwitcherOpen] = useState(false);
+	const [isCollaboratorSheetOpen, setIsCollaboratorSheetOpen] = useState(false);
+	const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false);
+	const [isSavingTopicDetails, setIsSavingTopicDetails] = useState(false);
 
 	const debounced = useDebounceCallback(setSearchUsername, 500);
 
 	const [isTopicDeleting, setIsTopicDeleting] = useState(false)
 
-	const [isTopicModalOpen, setIsTopicModalOpen] = useState(false);
 	const [isTopicDeleteModalOpen, setIsTopicDeleteModalOpen] = useState(false);
 
 	const handleOpenItemModal = () => setIsItemModalOpen(true);
@@ -187,10 +230,14 @@ const EachTopic = () => {
 		suggestionForm.reset()
 	};
 
-	const [iscollabModalOpen, setIsCollabModalOpen] = useState(false);
-	const handleCollabModal = (id: string) => {
-		setIsCollabModalOpen(true);
-	};
+	const topicDetailsForm = useForm<z.infer<typeof topicSchema>>({
+		resolver: zodResolver(topicSchema),
+		defaultValues: {
+			title: "",
+			about: "",
+			visibility: "private",
+		},
+	});
 
 	useEffect(() => {
 		if (!debouncedUsername) {
@@ -203,7 +250,7 @@ const EachTopic = () => {
 			setSearchUsernameMessage("");
 			try {
 				const res = await axios.get<ApiResponse>(
-					`/api/users/search?query=${encodeURIComponent(debouncedUsername)}${session?.user?.username ? `&exclude=${encodeURIComponent(session.user.username)}` : ""}`
+					`/api/users/search?query=${encodeURIComponent(debouncedUsername)}`
 				);
 				setSearchUsernameMessage(res.data.message);
 				setSimilarUsers(res.data.users || []);
@@ -233,11 +280,128 @@ const EachTopic = () => {
 	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 	const [editingProblem, setEditingProblem] = useState<any | null>(null);
 	const [isUpdatingProblem, setIsUpdatingProblem] = useState(false);
+	const resolvedTopicId = String(curr_topic?.topic?.id ?? "");
+	const ownerUsername = curr_topic?.topic?.creator_username ?? null;
+
+	const accessibleTopics = React.useMemo(() => {
+		const mapped = new Map<string, { id: string; title: string; currentRole: CollaborationRoleV2 }>();
+
+		topicOptions.forEach((topic) => {
+			mapped.set(topic.id, {
+				id: topic.id,
+				title: topic.title,
+				currentRole: "OWNER",
+			});
+		});
+
+		myCollaborations
+			.filter((membership) => membership.entityType === "TOPIC")
+			.forEach((membership) => {
+				if (!mapped.has(membership.entityId)) {
+					mapped.set(membership.entityId, {
+						id: membership.entityId,
+						title: membership.entityTitle,
+						currentRole: membership.role,
+					});
+				}
+			});
+
+		if (resolvedTopicId && curr_topic?.topic?.title && !mapped.has(resolvedTopicId)) {
+			mapped.set(resolvedTopicId, {
+				id: resolvedTopicId,
+				title: curr_topic.topic.title,
+				currentRole: session?.user?.username === ownerUsername ? "OWNER" : "VIEWER",
+			});
+		}
+
+		return Array.from(mapped.values());
+	}, [curr_topic?.topic?.title, myCollaborations, ownerUsername, resolvedTopicId, session?.user?.username, topicOptions]);
+
+	const fallbackCollaborators = (curr_topic?.topic?.collaborators || []).map((each: any) => ({
+		id: String(each?.username ?? ""),
+		username: String(each?.username ?? ""),
+		name: typeof each?.name === "string" ? each.name : null,
+		role: "EDITOR" as const,
+		grantedBy: ownerUsername,
+		isCurrentUser: each?.username === session?.user?.username,
+	}));
+	const displayCollaborators = serviceCollaborators ?? fallbackCollaborators;
+	const currentMembership = accessibleTopics.find((topic) => topic.id === resolvedTopicId) ?? null;
+	const currentCollaborator = displayCollaborators.find((collaborator) => collaborator.username === session?.user?.username) ?? null;
+	const currentAccessRole: CollaborationRoleV2 = session?.user?.username === ownerUsername
+		? "OWNER"
+		: currentMembership?.currentRole ?? currentCollaborator?.role ?? "VIEWER";
+	const canManageProblems = status === "authenticated" && (currentAccessRole === "OWNER" || currentAccessRole === "EDITOR");
+	const canManageCollaborators = canManageProblems;
+	const isOwner = currentAccessRole === "OWNER";
+	const isCollaborator = currentAccessRole === "EDITOR" || currentAccessRole === "VIEWER";
+	const collaboratorCount = displayCollaborators.length;
+	const isResolvedTopic = Boolean(curr_topic && resolvedTopicId === topic_id);
+	const inviteCandidates = similarUsers.filter(
+		(user) => user.username !== ownerUsername && !displayCollaborators.some((collaborator) => collaborator.username === user.username)
+	);
 
 	useEffect(() => {
 		if (!topic_id) return;
 		fetchTopicById(topic_id);
 	}, [topic_id, fetchTopicById]);
+
+	useEffect(() => {
+		if (!curr_topic?.topic) return;
+		topicDetailsForm.reset({
+			title: curr_topic.topic.title ?? "",
+			about: curr_topic.topic.about ?? "",
+			visibility: curr_topic.topic.visibility ?? "private",
+		});
+	}, [curr_topic?.topic, topicDetailsForm]);
+
+	const refreshTopicCollaborators = React.useCallback(async () => {
+		if (!resolvedTopicId || !accessToken) {
+			setServiceCollaborators(null);
+			return;
+		}
+
+		try {
+			const collaborators = await fetchEntityCollaboratorsV2(
+				"TOPIC",
+				resolvedTopicId,
+				accessToken,
+				ownerUsername,
+				session?.user?.username ?? null
+			);
+			setServiceCollaborators(collaborators);
+		} catch {
+			setServiceCollaborators(null);
+		}
+	}, [accessToken, ownerUsername, resolvedTopicId, session?.user?.username]);
+
+	useEffect(() => {
+		let cancelled = false;
+
+		(async () => {
+			try {
+				if (!resolvedTopicId || !accessToken) {
+					if (!cancelled) {
+						setServiceCollaborators(null);
+					}
+					return;
+				}
+
+				const collaborators = await fetchEntityCollaboratorsV2("TOPIC", resolvedTopicId, accessToken, ownerUsername, session?.user?.username ?? null);
+				if (!cancelled) {
+					setServiceCollaborators(collaborators);
+				}
+			} catch {
+				if (!cancelled) {
+					setServiceCollaborators(null);
+				}
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [accessToken, ownerUsername, resolvedTopicId, session?.user?.username]);
 
 	const editForm = useForm<z.infer<typeof questionSchema>>({
 		resolver: zodResolver(questionSchema),
@@ -303,25 +467,94 @@ const EachTopic = () => {
 		blogReferences: (problem.blogReferences || []).map(resolveProblemReference),
 	}));
 
-	const canManageProblems = Boolean(
-		status === "authenticated" &&
-		(session?.user.username === curr_topic?.topic?.creator_username ||
-			curr_topic?.topic?.collaborators.find((each: any) => each.username === session?.user?.username))
-	);
-	const isOwner = session?.user?.username === curr_topic?.topic?.creator_username;
-	const isCollaborator = Boolean(
-		curr_topic?.topic?.collaborators.find((each: any) => each.username === session?.user?.username)
-	);
 	const canSuggestProblem = Boolean(
 		status === "authenticated" &&
 		session?.user?.username &&
 		curr_topic &&
 		session.user.username !== curr_topic.topic.creator_username &&
-		!isCollaborator
+		!canManageProblems
 	);
-	const collaboratorCount = curr_topic?.topic?.collaborators?.length ?? 0;
-	const resolvedTopicId = String(curr_topic?.topic?.id ?? "");
-	const isResolvedTopic = Boolean(curr_topic && resolvedTopicId === topic_id);
+
+	const handleTopicSwitch = (nextTopicId: string) => {
+		if (!nextTopicId || nextTopicId === resolvedTopicId) return;
+		setIsTopicSwitcherOpen(false);
+		router.push(`/topic/${nextTopicId}`);
+	};
+
+	const handleTopicDetailsSubmit = async (data: z.infer<typeof topicSchema>) => {
+		if (!topic_id || !isOwner) return;
+
+		setIsSavingTopicDetails(true);
+		try {
+			const updatedTopic = await updateTopicDetails(topic_id, data);
+			if (!updatedTopic) {
+				return;
+			}
+			toast({
+				title: "Topic updated",
+				description: "Topic details saved successfully.",
+				variant: "default",
+			});
+		} catch (error: any) {
+			toast({
+				title: "Update failed",
+				description: error?.response?.data?.message || error?.message || "Unable to update topic details.",
+				variant: "destructive",
+			});
+		} finally {
+			setIsSavingTopicDetails(false);
+		}
+	};
+
+	const handleRoleUpdate = async (
+		collaborator: CollaborationTopicCollaboratorV2,
+		nextRole: Exclude<CollaborationRoleV2, "OWNER">
+	) => {
+		if (!accessToken || collaborator.role === nextRole) return;
+
+		setUpdatingCollaboratorIds((current) => [...current, collaborator.id]);
+		try {
+			await updateCollaboratorRoleServiceV2(collaborator.id, nextRole, accessToken);
+			await Promise.all([refreshTopicCollaborators(), refreshCollaborationV2()]);
+			toast({
+				title: "Role updated",
+				description: `@${collaborator.username} is now ${formatRoleLabel(nextRole).toLowerCase()}.`,
+				variant: "default",
+			});
+		} catch (error: any) {
+			toast({
+				title: "Role update failed",
+				description: error?.response?.data?.message || error?.message || "Unable to update collaborator role.",
+				variant: "destructive",
+			});
+		} finally {
+			setUpdatingCollaboratorIds((current) => current.filter((value) => value !== collaborator.id));
+		}
+	};
+
+	const handleRemoveCollaborator = async () => {
+		if (!collaboratorToRemove || !accessToken) return;
+
+		setRemovingCollaboratorIds((current) => [...current, collaboratorToRemove.id]);
+		try {
+			await removeCollaboratorServiceV2(collaboratorToRemove.id, accessToken);
+			await Promise.all([refreshTopicCollaborators(), refreshCollaborationV2()]);
+			toast({
+				title: "Collaborator removed",
+				description: `@${collaboratorToRemove.username} no longer has access to this topic.`,
+				variant: "default",
+			});
+			setCollaboratorToRemove(null);
+		} catch (error: any) {
+			toast({
+				title: "Removal failed",
+				description: error?.response?.data?.message || error?.message || "Unable to remove collaborator.",
+				variant: "destructive",
+			});
+		} finally {
+			setRemovingCollaboratorIds((current) => current.filter((value) => value !== collaboratorToRemove.id));
+		}
+	};
 
 	useEffect(() => {
 		if (status !== "authenticated" || !session?.user?.username || !canManageProblems) return;
@@ -430,135 +663,91 @@ const EachTopic = () => {
 			<div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
 				<InsertNavbar />
 
-				<section className="flex flex-col gap-4 py-1">
-					<div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-						<div className="min-w-0 space-y-2">
-							<div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-								<Badge variant="secondary" className="rounded-full bg-slate-100 px-2.5 py-1 capitalize text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+				<section className="rounded-[28px] border border-border/60 bg-background/80 px-5 py-5 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.55)] backdrop-blur sm:px-6 sm:py-6">
+					<div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+						<div className="min-w-0 space-y-3">
+							<div className="flex flex-wrap items-center gap-2">
+								<Badge variant="secondary" className="rounded-full px-2.5 py-1 capitalize">
 									{curr_topic.topic.visibility}
 								</Badge>
-								<Badge variant="secondary" className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+								<Badge variant="secondary" className="rounded-full px-2.5 py-1">
 									{curr_topic.problems.length} problem{curr_topic.problems.length === 1 ? "" : "s"}
 								</Badge>
-								{collaboratorCount > 0 ? (
-									<Badge variant="secondary" className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-										{collaboratorCount} collaborator{collaboratorCount === 1 ? "" : "s"}
-									</Badge>
-								) : null}
+								<Badge variant={getRoleBadgeVariant(currentAccessRole)} className="rounded-full px-2.5 py-1">
+									{formatRoleLabel(currentAccessRole)}
+								</Badge>
 							</div>
-							<h1 className="truncate text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-50 sm:text-3xl">
+							<h1 className="truncate text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
 								{curr_topic.topic.title}
 							</h1>
-							<div className="flex flex-wrap items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
-								<span className="inline-flex items-center gap-1.5">
-									<span>Author</span>
-									<InsertHoverCard username={curr_topic.topic.creator_username as string} type={"username"} />
-								</span>
-								<span className="inline-flex items-center gap-1.5">
+
+						</div>
+
+						<div className="flex flex-wrap items-center gap-2">
+							<TopicActionButton label="Share topic">
+								<ShareLinkButton
+									path={`/topic/${topic_id}`}
+									title={curr_topic.topic.title || "Insert topic"}
+									text={`Check out this topic on Insert: ${curr_topic.topic.title || "Untitled topic"}`}
+									className="h-9 w-9 rounded-full border-border/60 bg-background/70 p-0"
+									iconOnly
+								/>
+							</TopicActionButton>
+
+							<TopicActionButton label="Switch topic">
+								<Button variant="outline" size="icon" className="h-9 w-9 rounded-full border-border/60 bg-background/70" onClick={() => setIsTopicSwitcherOpen(true)}>
+									<ArrowRightLeft className="h-4 w-4" />
+								</Button>
+							</TopicActionButton>
+
+							<TopicActionButton label="Topic details">
+								<Button variant="outline" size="icon" className="h-9 w-9 rounded-full border-border/60 bg-background/70" onClick={() => setIsDetailsSheetOpen(true)}>
+									<Info className="h-4 w-4" />
+								</Button>
+							</TopicActionButton>
+
+							<TopicActionButton label="Manage collaborators">
+								<Button variant="outline" size="icon" className="h-9 w-9 rounded-full border-border/60 bg-background/70" onClick={() => setIsCollaboratorSheetOpen(true)}>
 									<Users className="h-4 w-4" />
-									<span>{isOwner ? "Owner" : isCollaborator ? "Collaborator" : "Viewer"}</span>
-								</span>
-							</div>
-							{curr_topic.topic.about?.trim() ? (
-								<p className="max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-									{curr_topic.topic.about}
-								</p>
+								</Button>
+							</TopicActionButton>
+
+							{canManageProblems ? (
+								<TopicActionButton label="Add problem">
+									<Button variant="default" size="icon" className="h-9 w-9 rounded-full" onClick={() => handleOpenItemModal()}>
+										<CirclePlus className="h-4 w-4" />
+									</Button>
+								</TopicActionButton>
+							) : null}
+
+							{canSuggestProblem ? (
+								<TopicActionButton label="Suggest problem">
+									<Button variant="outline" size="icon" className="h-9 w-9 rounded-full border-border/60 bg-background/70" onClick={() => handleOpenSuggestProblem()}>
+										<FileInput className="h-4 w-4" />
+									</Button>
+								</TopicActionButton>
+							) : null}
+
+							{/* {isOwner ? (
+								<TopicActionButton label="Edit topic details">
+									<Button variant="outline" size="icon" className="h-9 w-9 rounded-full border-border/60 bg-background/70" onClick={() => setIsDetailsSheetOpen(true)}>
+										<PencilLine className="h-4 w-4" />
+									</Button>
+								</TopicActionButton>
+							) : null} */}
+
+							{isOwner ? (
+								<TopicActionButton label="Delete topic">
+									<Button variant="destructive" size="icon" className="h-9 w-9 rounded-full" onClick={() => handleOpenDeleteTopicModal()}>
+										<Trash2 className="h-4 w-4" />
+									</Button>
+								</TopicActionButton>
 							) : null}
 						</div>
-
-						<div className="flex flex-wrap gap-2 lg:justify-end">
-							<ShareLinkButton
-								path={`/topic/${topic_id}`}
-								title={curr_topic.topic.title || 'Insert topic'}
-								text={`Check out this topic on Insert: ${curr_topic.topic.title || 'Untitled topic'}`}
-								className="h-10 border-black/10 bg-transparent px-4 dark:border-white/10 dark:bg-transparent"
-							/>
-							{!isTopicLoading && status === "authenticated" && isOwner && (
-								<Button variant="outline" className="h-10 border-black/10 bg-transparent px-4 dark:border-white/10 dark:bg-transparent" onClick={() => handleCollabModal(topic_id)}>
-									<UserPlus className="mr-2 h-4 w-4" />
-									Collaborator
-								</Button>
-							)}
-							{!isTopicLoading && canManageProblems && (
-								<Button onClick={() => handleOpenItemModal()} className="h-10  px-4" variant={"default"}>
-									<CirclePlus className="mr-2 h-4 w-4" />
-									Add problem
-								</Button>
-							)}
-							{!isTopicLoading && canSuggestProblem && (
-								<Button onClick={() => handleOpenSuggestProblem()} className="h-10  border-black/10 bg-transparent px-4 dark:border-white/10 dark:bg-transparent" variant={"outline"}>
-									<FileInput className="mr-2 h-4 w-4" />
-									Suggest
-								</Button>
-							)}
-							{!isTopicLoading && status === "authenticated" && isOwner && (
-								<Button variant="destructive" className="h-10  px-4" onClick={() => handleOpenDeleteTopicModal()}>
-									<Trash2 className="mr-2 h-4 w-4" />
-									Delete
-								</Button>
-							)}
-
-
-						</div>
 					</div>
-
-					{collaboratorCount > 0 && (
-						<div className="flex items-center gap-3 overflow-x-auto pt-1">
-							<div className="flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-background">
-								<InsertHoverCard username={curr_topic.topic.creator_username as string} type={"avatar"} />
-								{curr_topic.topic.collaborators.map((each: any, idx: number) => (
-									<InsertHoverCard
-										key={`${each?.username}-${idx}`}
-										username={each?.username as string}
-										type={"avatar"}
-									/>
-								))}
-							</div>
-							<p className="text-sm text-slate-500 dark:text-slate-400">Shared with {collaboratorCount} collaborator{collaboratorCount === 1 ? "" : "s"}.</p>
-						</div>
-					)}
 				</section>
 
-				<div>
-					<Dialog open={iscollabModalOpen} onOpenChange={setIsCollabModalOpen}>
-						<DialogContent>
-							<DialogHeader className="mb-4">
-								<DialogTitle>Add collaborator</DialogTitle>
-								<DialogDescription>Start typing the username below...</DialogDescription>
-							</DialogHeader>
-							<Input
-								placeholder="Search username"
-								onChange={(e) => {
-									setSearchUsername(e.target.value);
-									debounced(e.target.value);
-								}}
-							/>
-							{isSearchingUsername && <Loader2 className="animate-spin" />}
-							<p
-								className={`text-sm ${searchUsernameMessage === "Found"
-									? "text-green-500"
-									: "text-red-500"
-									}`}
-							>
-								{searchUsernameMessage}
-							</p>
-
-							<div className="flex flex-col gap-2 p-2 overflow-y-scroll custom-small-scrollbar">
-								{similarUsers?.map((user, idx) => (
-									<>
-										<UserCard
-											key={idx}
-											user={user}
-											topicid={topic_id}
-											topic={curr_topic?.topic}
-											collaborators={curr_topic?.topic?.collaborators}
-										/>
-										<Separator className="my-1" />
-									</>
-								))}
-							</div>
-						</DialogContent>
-					</Dialog>
+				<div className="min-w-0">
 
 					<Dialog open={isItemModalOpen} onOpenChange={setIsItemModalOpen}>
 						<DialogContent>
@@ -1007,6 +1196,276 @@ const EachTopic = () => {
 						onManageReferences={handleOpenReferenceModal}
 					/>
 				</div>
+
+				<TopicActionSheet
+					open={isTopicSwitcherOpen}
+					onOpenChange={setIsTopicSwitcherOpen}
+					title="Switch topic"
+					description="Jump between owned and shared topics without backing out of the workspace."
+				>
+					<div className="space-y-3">
+						{accessibleTopics?.map((topic) => {
+							console.log("Topic:", topic);
+							const active = topic.id === resolvedTopicId;
+
+							return (
+								<button
+									key={topic.id}
+									type="button"
+									onClick={() => handleTopicSwitch(topic.id)}
+									className={`flex w-full items-start justify-between gap-3 rounded-2xl border px-4 py-4 text-left transition-colors ${active ? "border-primary/30 bg-primary/5" : "border-border/60 bg-background/60 hover:bg-accent/50"}`}
+								>
+									<div className="min-w-0 space-y-1">
+										<p className="truncate text-sm font-medium text-foreground">{topic.title}</p>
+									</div>
+									<Badge variant={getRoleBadgeVariant(topic.currentRole)} className="rounded-full px-2.5 py-1 text-[11px]">
+										{formatRoleLabel(topic.currentRole)}
+									</Badge>
+								</button>
+							);
+						})}
+					</div>
+				</TopicActionSheet>
+
+				<TopicActionSheet
+					open={isCollaboratorSheetOpen}
+					onOpenChange={setIsCollaboratorSheetOpen}
+					title="Collaborator access"
+					description={canManageCollaborators ? "Invite, review, and manage collaborator access for this topic." : "Review who has access to this topic."}
+				>
+					<div className="space-y-6">
+						{canManageCollaborators ? (
+							<div className="space-y-3 rounded-2xl border border-border/60 bg-background/60 p-4">
+								<div className="space-y-1">
+									<p className="text-sm font-medium text-foreground">Invite collaborator</p>
+									<p className="text-xs text-muted-foreground">Search for a username and send an invite without leaving this page.</p>
+								</div>
+								<Input
+									placeholder="Search username"
+									onChange={(event) => {
+										setSearchUsername(event.target.value);
+										debounced(event.target.value);
+									}}
+								/>
+								{isSearchingUsername ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+								{searchUsernameMessage ? (
+									<p className={`text-sm ${searchUsernameMessage === "Found" ? "text-green-500" : "text-muted-foreground"}`}>
+										{searchUsernameMessage}
+									</p>
+								) : null}
+								<div className="max-h-64 space-y-2 overflow-y-auto custom-small-scrollbar">
+									{inviteCandidates.map((user) => (
+										<div key={user.username}>
+											<UserCard user={user} topicid={topic_id} topic={curr_topic?.topic} collaborators={displayCollaborators} />
+											<Separator className="my-1" />
+										</div>
+									))}
+									{!inviteCandidates.length && !isSearchingUsername ? (
+										<p className="py-3 text-sm text-muted-foreground">No pending invite candidates for this topic.</p>
+									) : null}
+								</div>
+							</div>
+						) : null}
+
+						<div className="space-y-3">
+							<div className="flex items-center justify-between gap-3">
+								<p className="text-sm font-medium text-foreground">People with access</p>
+								<Badge variant="secondary" className="rounded-full px-2.5 py-1 text-[11px]">
+									{collaboratorCount + 1} total
+								</Badge>
+							</div>
+
+							<div className="rounded-2xl border border-border/60 bg-background/60 px-4 py-3">
+								<div className="flex items-center justify-between gap-3">
+									<div className="min-w-0">
+										<p className="text-sm font-medium text-foreground">@{ownerUsername}</p>
+										<p className="text-xs text-muted-foreground">Topic owner</p>
+									</div>
+									<Badge variant="default" className="rounded-full px-2.5 py-1 text-[11px]">OWNER</Badge>
+								</div>
+							</div>
+
+							{displayCollaborators.length ? (
+								displayCollaborators.map((collaborator) => {
+									const isBusy = updatingCollaboratorIds.includes(collaborator.id) || removingCollaboratorIds.includes(collaborator.id);
+
+									return (
+										<div key={collaborator.id} className="rounded-2xl border border-border/60 bg-background/60 px-4 py-3">
+											<div className="flex flex-col gap-3">
+												<div className="flex items-center justify-between gap-3">
+													<div className="min-w-0">
+														<p className="truncate text-sm font-medium text-foreground">@{collaborator.username}</p>
+														<p className="text-xs text-muted-foreground">
+															{collaborator.name || "Collaborator"}
+															{collaborator.isCurrentUser ? " • You" : ""}
+														</p>
+													</div>
+													<Badge variant={getRoleBadgeVariant(collaborator.role)} className="rounded-full px-2.5 py-1 text-[11px]">
+														{collaborator.role}
+													</Badge>
+												</div>
+
+												{canManageCollaborators && !collaborator.isCurrentUser ? (
+													<div className="flex flex-wrap items-center gap-2">
+														<Select
+															value={collaborator.role === "OWNER" ? "EDITOR" : collaborator.role}
+															onValueChange={(value) => void handleRoleUpdate(collaborator, value as Exclude<CollaborationRoleV2, "OWNER">)}
+															disabled={isBusy}
+														>
+															<SelectTrigger className="h-9 w-[132px] rounded-xl">
+																<SelectValue />
+															</SelectTrigger>
+															<SelectContent>
+																<SelectItem value="EDITOR">EDITOR</SelectItem>
+																<SelectItem value="VIEWER">VIEWER</SelectItem>
+															</SelectContent>
+														</Select>
+
+														<Button
+															variant="outline"
+															className="h-9 rounded-xl border-rose-500/20 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 dark:text-rose-300"
+															onClick={() => setCollaboratorToRemove(collaborator)}
+															disabled={isBusy}
+														>
+															{removingCollaboratorIds.includes(collaborator.id) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+															Remove
+														</Button>
+													</div>
+												) : null}
+											</div>
+										</div>
+									);
+								})
+							) : (
+								<div className="rounded-2xl border border-dashed border-border/60 px-4 py-6 text-center text-sm text-muted-foreground">
+									No collaborators have accepted access yet.
+								</div>
+							)}
+						</div>
+					</div>
+				</TopicActionSheet>
+
+				<TopicActionSheet
+					open={isDetailsSheetOpen}
+					onOpenChange={setIsDetailsSheetOpen}
+					title="Topic details"
+					description="Secondary information and owner controls live here so the main workspace stays focused."
+				>
+					<div className="space-y-6">
+						<div className="rounded-2xl border border-border/60 bg-background/60 p-4">
+							<div className="flex flex-wrap items-center gap-2">
+								<Badge variant="secondary" className="rounded-full px-2.5 py-1 capitalize">{curr_topic.topic.visibility}</Badge>
+								<Badge variant="secondary" className="rounded-full px-2.5 py-1">{curr_topic.problems.length} problems</Badge>
+								<Badge variant="secondary" className="rounded-full px-2.5 py-1">{collaboratorCount} collaborators</Badge>
+							</div>
+							<div className="mt-4 space-y-3">
+								<div>
+									<p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Author</p>
+									<div className="mt-2 inline-flex items-center gap-2 text-sm text-foreground">
+										<InsertHoverCard username={curr_topic.topic.creator_username as string} type={"username"} />
+									</div>
+								</div>
+								<div>
+									<p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">About</p>
+									<p className="mt-2 text-sm leading-6 text-muted-foreground">
+										{curr_topic.topic.about?.trim() || "No description added yet."}
+									</p>
+								</div>
+								<div>
+									<p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Shared with</p>
+									<div className="mt-3 flex flex-wrap gap-2">
+										<Badge variant="outline" className="rounded-full px-2.5 py-1">@{ownerUsername}</Badge>
+										{displayCollaborators.map((collaborator) => (
+											<Badge key={collaborator.id} variant="outline" className="rounded-full px-2.5 py-1">
+												@{collaborator.username}
+											</Badge>
+										))}
+									</div>
+								</div>
+							</div>
+						</div>
+
+						{isOwner ? (
+							<div className="space-y-4 rounded-2xl border border-border/60 bg-background/60 p-4">
+								<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+									<Settings2 className="h-4 w-4" /> Topic settings
+								</div>
+								<Form {...topicDetailsForm}>
+									<form onSubmit={topicDetailsForm.handleSubmit(handleTopicDetailsSubmit)} className="space-y-4">
+										<FormField
+											control={topicDetailsForm.control}
+											name="title"
+											render={({ field }) => (
+												<FormItem>
+													<FormControl>
+														<Input placeholder="Topic title" {...field} />
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+
+										<FormField
+											control={topicDetailsForm.control}
+											name="about"
+											render={({ field }) => (
+												<FormItem>
+													<FormControl>
+														<Textarea rows={5} placeholder="Short description for this topic" {...field} />
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+
+										<FormField
+											control={topicDetailsForm.control}
+											name="visibility"
+											render={({ field }) => (
+												<FormItem>
+													<FormControl>
+														<Select onValueChange={field.onChange} value={field.value}>
+															<SelectTrigger>
+																<SelectValue />
+															</SelectTrigger>
+															<SelectContent>
+																<SelectItem value="private">Private</SelectItem>
+																<SelectItem value="public">Public</SelectItem>
+															</SelectContent>
+														</Select>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+
+										<div className="flex justify-end">
+											<Button type="submit" disabled={isSavingTopicDetails}>
+												{isSavingTopicDetails ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+												Save changes
+											</Button>
+										</div>
+									</form>
+								</Form>
+							</div>
+						) : null}
+					</div>
+				</TopicActionSheet>
+
+				<AlertDialog open={Boolean(collaboratorToRemove)} onOpenChange={(open) => !open ? setCollaboratorToRemove(null) : null}>
+					<AlertDialogContent>
+						<AlertDialogHeader>
+							<AlertDialogTitle>Remove collaborator access?</AlertDialogTitle>
+							<AlertDialogDescription>
+								This removes the user from the current topic. They would need a new invite to regain access.
+							</AlertDialogDescription>
+						</AlertDialogHeader>
+						<AlertDialogFooter>
+							<AlertDialogCancel>Cancel</AlertDialogCancel>
+							<AlertDialogAction onClick={() => void handleRemoveCollaborator()}>Remove</AlertDialogAction>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialog>
 			</div>
 		</div>
 	);

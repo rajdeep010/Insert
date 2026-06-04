@@ -13,9 +13,13 @@ const UserCard = ({user, topicid, topic, collaborators}: any) => {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
     const { data: session } = useSession()
     const { sendCollabInvite } = useNotifications()
+    const isExistingCollaborator = Boolean(
+        collaborators?.some((collaborator: { username?: string }) => collaborator?.username === user?.username)
+    )
 
 
     const handleAdd = async () => {
+        if (isExistingCollaborator) return
         try {
             setIsSubmitting(true)
 
@@ -54,9 +58,11 @@ const UserCard = ({user, topicid, topic, collaborators}: any) => {
                     </div>
                 </div>
 
-                <Button className='py-1' variant="outline" disabled={isSubmitting} onClick={handleAdd}>
+                <Button className='py-1' variant="outline" disabled={isSubmitting || isExistingCollaborator} onClick={handleAdd}>
                     {
-                        isSubmitting ? (
+                        isExistingCollaborator ? (
+                            <>Added</>
+                        ) : isSubmitting ? (
                             <>
                                 <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
                             </>

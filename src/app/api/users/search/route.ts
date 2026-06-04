@@ -23,7 +23,6 @@ export async function GET(request: Request) {
 
 	const { searchParams } = new URL(request.url);
 	const query = searchParams.get("query")?.trim() ?? "";
-	const excludeUsername = searchParams.get("exclude")?.trim() ?? "";
 
 	if (!query) {
 		return Response.json(
@@ -41,11 +40,8 @@ export async function GET(request: Request) {
 
 		const filters: Array<Record<string, unknown>> = [
 			{ username: { $regex: `^${escapeRegex(query)}`, $options: "i" } },
+			{ username: { $ne: currentUsername } },
 		];
-
-		if (excludeUsername) {
-			filters.push({ username: { $ne: excludeUsername } });
-		}
 
 		const matchedUsers = await UserModel.find({ $and: filters })
 			.select(SEARCH_USER_SELECT)

@@ -25,6 +25,7 @@ interface InsertTopicProviderProps {
 	addProblem: (data: z.infer<typeof questionSchema>, currentTopicId: string) => void;
 	deleteProblem: (topic_id: string, problem_id: string) => void;
 	deleteTopic: (topic_id: string) => void;
+	updateTopicDetails: (topic_id: string, data: z.infer<typeof topicSchema>) => Promise<Topic | null | undefined>;
 	updateHeatmapActivity: (date: string) => void;
 	fetchTopicById: (topic_id: string, options?: { force?: boolean }) => Promise<CurrentTopicState | null | undefined>;
 	fetchTopicsByUsername: (username: string) => void;
@@ -47,6 +48,7 @@ const initialState: InsertTopicProviderProps = {
 	addProblem: () => { },
 	deleteProblem: () => { },
 	deleteTopic: () => { },
+	updateTopicDetails: async () => null,
 	updateHeatmapActivity: () => { },
 	fetchTopicById: async () => null,
 	fetchTopicsByUsername: () => { },
@@ -183,6 +185,26 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Something went wrong", variant: "destructive" });
 		}
 	}, [addActivity, sessionUsername]);
+
+	const updateTopicDetails = useCallback(async (topic_id: string, data: z.infer<typeof topicSchema>) => {
+		if (!sessionUsername) return null;
+		try {
+			const response = await axios.patch(`/api/topics/${topic_id}`, data);
+			if (!response.data.success) {
+				toast({ title: "Error ⭕", description: response.data.message || "Failed to update topic", variant: "destructive" });
+				return null;
+			}
+
+			if (response.data.topic) {
+				dispatch({ type: "UPDATE_TOPIC_DETAILS", payload: response.data.topic });
+			}
+
+			return response.data.topic ?? null;
+		} catch (error: any) {
+			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Error updating topic", variant: "destructive" });
+			return null;
+		}
+	}, [sessionUsername]);
 
 	const fetchTopicById = useCallback(async (topic_id: string, options?: { force?: boolean }) => {
 		if (!topic_id) return null;
@@ -382,6 +404,7 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 		addProblem,
 		deleteProblem,
 		deleteTopic,
+		updateTopicDetails,
 		updateHeatmapActivity,
 		fetchTopicById,
 		fetchTopicsByUsername,
@@ -395,6 +418,7 @@ export const InsertTopicProvider = ({ children }: { children: React.ReactNode })
 		addProblem,
 		deleteProblem,
 		deleteTopic,
+		updateTopicDetails,
 		updateHeatmapActivity,
 		fetchTopicById,
 		fetchTopicsByUsername,

@@ -41,6 +41,30 @@ export default function InsertTopicReducer(state: any, action: any) {
 			return { ...state, isTopicLoading: action.payload }
 		case 'SET_CURR_TOPIC':
 			return { ...state, curr_topic: action.payload }
+		case 'UPDATE_TOPIC_DETAILS': {
+			const updatedTopic = action.payload;
+			const updateTopicListItem = (topic: any) =>
+				topic?.id === updatedTopic?.id
+					? {
+						...topic,
+						title: updatedTopic.title,
+						about: updatedTopic.about,
+						visibility: updatedTopic.visibility,
+						creator_username: updatedTopic.creator_username,
+						collaborators: updatedTopic.collaborators,
+						createdAt: updatedTopic.createdAt,
+					}
+					: topic;
+
+			return {
+				...state,
+				user_Topics: state.user_Topics?.map(updateTopicListItem),
+				all_topics: state.all_topics?.map(updateTopicListItem),
+				curr_topic: state.curr_topic?.topic?.id === updatedTopic?.id
+					? { ...state.curr_topic, topic: updatedTopic }
+					: state.curr_topic,
+			};
+		}
 		case "UPDATE_PROBLEM_IN_TOPIC": {
 			const topicId = action.payload?.topic?.id;
 			const updatedUserTopics = state.user_Topics?.map((topic: any) => topic?.id === topicId ? { ...topic, problems: action.payload?.problems } : topic);

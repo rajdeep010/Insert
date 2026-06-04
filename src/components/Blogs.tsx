@@ -52,6 +52,7 @@ import {
 import type { BlogEntry } from '@/types/blog'
 import type { BlogCollectionEntry } from '@/types/blog-collection'
 import EditBlogMetadataDialog from '@/components/EditBlogMetadataDialog'
+import AddBlogModal from '@/components/AddBlogModal'
 
 /* Shared style helpers (aligned with other pages) */
 const surface =
@@ -99,6 +100,7 @@ const Blogs = () => {
 	const [collectionToDelete, setCollectionToDelete] = useState<BlogCollectionEntry | null>(null)
 	const [blogForCollection, setBlogForCollection] = useState<BlogEntry | null>(null)
 	const [selectedCollectionId, setSelectedCollectionId] = useState('')
+	const [defaultVisibility, setDefaultVisibility] = useState<'public' | 'private'>('public')
 	const {
 		allBlogs,
 		blogCollections,
@@ -110,6 +112,7 @@ const Blogs = () => {
 		deleteBlogCollection,
 		addBlogToCollection,
 		fetchBlogCollections,
+		setIsAddBlogModalOpen,
 	} = useBlog()
 
 	useEffect(() => {
@@ -167,6 +170,11 @@ const Blogs = () => {
 		if (!collectionToDelete?._id) return
 		await deleteBlogCollection(collectionToDelete._id)
 		setCollectionToDelete(null)
+	}
+
+	const openAddBlogModal = (visibility: 'public' | 'private') => {
+		setDefaultVisibility(visibility)
+		setIsAddBlogModalOpen(true)
 	}
 
 	const BlogCard = ({ blog }: { blog: BlogEntry }) => {
@@ -318,6 +326,16 @@ const Blogs = () => {
 					<p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
 						You have not created any {label} blogs yet.
 					</p>
+					{canManageCollections && (
+						<Button
+							type="button"
+							className="rounded-full"
+							onClick={() => openAddBlogModal(label === 'private' ? 'private' : 'public')}
+						>
+							<PlusCircle className="mr-2 h-4 w-4" />
+							Create {label} blog
+						</Button>
+					)}
 				</CardContent>
 			</Card>
 		</div>
@@ -325,7 +343,9 @@ const Blogs = () => {
 
 	return (
 		<div className="flex flex-col gap-6">
-			{canManageCollections && (
+			<AddBlogModal defaultVisibility={defaultVisibility} />
+
+			{/* {canManageCollections && (
 				<section className={surface + ' p-5 sm:p-6'}>
 					<div className="flex flex-col gap-5">
 						<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -389,14 +409,6 @@ const Blogs = () => {
 															{collection.description?.trim() || 'No description added yet.'}
 														</CardDescription>
 													</div>
-													{/* <Button
-														variant="destructive"
-														size="icon"
-														className="h-8 w-8 rounded-lg"
-														onClick={() => setCollectionToDelete(collection)}
-													>
-														<Trash2 className="h-4 w-4" />
-													</Button> */}
 												</div>
 
 												<div className="flex flex-wrap items-center gap-2">
@@ -413,10 +425,6 @@ const Blogs = () => {
 													<div className="flex min-w-0 items-center gap-2">
 														<CalendarDays className="h-4 w-4 shrink-0" />
 														<span className="truncate">Created {createdLabel}</span>
-													</div>
-													<div className="flex min-w-0 items-center gap-1 truncate">
-														{/* <Link2 className="h-4 w-4 shrink-0" /> */}
-														{/* <span className="truncate">{linkedTopicLabel}</span> */}
 													</div>
 												</div>
 											</CardHeader>
@@ -441,7 +449,7 @@ const Blogs = () => {
 						)}
 					</div>
 				</section>
-			)}
+			)} */}
 
 			<div className="flex items-center justify-between flex-wrap gap-4">
 				{/* <h2 className="text-2xl font-semibold tracking-tight">Blogs</h2> */}
@@ -451,14 +459,28 @@ const Blogs = () => {
 						{allBlogs.length}
 					</Badge>
 				</span>}
-				<div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-					<span className="flex items-center gap-1">
-						<Globe2 className="h-3 w-3" /> {publicBlogs.length} public
-					</span>
-					<span className="opacity-40">•</span>
-					<span className="flex items-center gap-1">
-						<Lock className="h-3 w-3" /> {privateBlogs.length} private
-					</span>
+				<div className="flex flex-wrap items-center justify-end gap-3">
+					<div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+						<span className="flex items-center gap-1">
+							<Globe2 className="h-3 w-3" /> {publicBlogs.length} public
+						</span>
+						<span className="opacity-40">•</span>
+						<span className="flex items-center gap-1">
+							<Lock className="h-3 w-3" /> {privateBlogs.length} private
+						</span>
+					</div>
+					{canManageCollections && (
+						<div className="flex flex-wrap items-center gap-2">
+							<Button variant="outline" className="h-10 rounded-full px-4" onClick={() => openAddBlogModal('private')}>
+								<Lock className="mr-2 h-4 w-4" />
+								New private
+							</Button>
+							<Button className="h-10 rounded-full px-4" onClick={() => openAddBlogModal('public')}>
+								<PlusCircle className="mr-2 h-4 w-4" />
+								New public
+							</Button>
+						</div>
+					)}
 				</div>
 			</div>
 

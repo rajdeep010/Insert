@@ -310,15 +310,9 @@ const Dashboard = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                {/* <Badge variant="secondary" className="rounded-full px-2.5 py-1 text-[11px]">
-                                                    {problemCount} problem{problemCount === 1 ? '' : 's'}
-                                                </Badge> */}
-                                                <Badge variant="secondary" className="rounded-full px-2.5 py-1 text-[11px]">
-                                                    <Users className="mr-1 h-3.5 w-3.5" />
-                                                    {collaboratorCount} collaborator{collaboratorCount === 1 ? '' : 's'}
-                                                </Badge>
-                                            </div>
+                                            {/* <div className="flex flex-wrap items-center gap-2">
+                                                
+                                            </div> */}
 
                                             <div className="mt-auto flex items-center justify-between gap-3 border-t border-black/5 pt-4 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400">
                                                 <div className="flex min-w-0 items-center gap-2">
