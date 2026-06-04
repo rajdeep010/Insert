@@ -182,7 +182,7 @@ const Heatmap = () => {
                                 const dateStr = formatDate(value.date)
                                 return {
                                     'data-tooltip-id': 'heatmap-tooltip',
-                                    'data-tooltip-content': `${value.count ?? 0} submissions on ${dateStr}`
+                                    'data-tooltip-content': `${value.count ?? 0} actions on ${dateStr}`
                                 }
                             }}
                             showWeekdayLabels={false}
