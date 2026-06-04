@@ -124,7 +124,7 @@ const BlogWriteSidebar = () => {
             className="rounded-full"
             onClick={() => openAddBlogModal(group.key)}
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-1 h-4 w-4" />
             New
           </Button>
         </div>
@@ -168,7 +168,7 @@ const BlogWriteSidebar = () => {
           </Button>
         </SheetTrigger>
 
-        <SheetContent side="left" className="w-full max-w-xl border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.98))] p-0 dark:bg-[linear-gradient(180deg,rgba(2,6,23,0.98),rgba(2,6,23,1))]">
+        <SheetContent side="left" className="max-w-[550px] min-w-[480px] border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.98))] p-0 dark:bg-[linear-gradient(180deg,rgba(2,6,23,0.98),rgba(2,6,23,1))]">
           <div className="flex h-full flex-col">
             <SheetHeader className="border-b border-border/60 px-6 py-6 text-left">
               <div className="flex items-start justify-between gap-4">
