@@ -53,14 +53,14 @@ const Overview = () => {
 			<div className="grid gap-6 sm:grid-cols-2">
 				{hasTopics &&
 					firstTopics.map((topic, idx) => {
-						const currentCollaborator = topic.collaborators?.find(
+						const currentRole = topic.currentAccessRole ?? topic.collaborators?.find(
 							(collaborator) => collaborator.username === session?.user?.username
-						)
-						const accessMeta = session?.user?.username === topic.creator_username
+						)?.role ?? null
+						const accessMeta = session?.user?.username === topic.creator_username || currentRole === 'OWNER'
 							? { label: 'Owner', icon: Crown, variant: 'default' as const }
-							: currentCollaborator?.role === 'EDITOR'
+							: currentRole === 'EDITOR'
 								? { label: 'Editor', icon: ShieldCheck, variant: 'secondary' as const }
-								: currentCollaborator?.role === 'VIEWER'
+								: currentRole === 'VIEWER'
 									? { label: 'Viewer', icon: Eye, variant: 'outline' as const }
 									: topic?.visibility === 'public'
 										? { label: 'Public', icon: Eye, variant: 'outline' as const }

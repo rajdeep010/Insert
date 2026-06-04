@@ -1,6 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
 import { getAuthenticatedAccessToken, getAuthenticatedUsername } from "@/lib/api/auth";
-import { fetchEntityCollaborators, fetchMyCollaborations } from "@/lib/collaboration/permissions";
+import { fetchMyCollaborations } from "@/lib/collaboration/permissions";
 import TopicModel from "@/model/Topic";
 import { usernameParamsSchema } from "@/schemas/userSchema";
 
@@ -11,14 +11,20 @@ type RouteContext = {
 };
 
 const TOPIC_SELECT = "_id id title about visibility creator_username createdAt";
+type TopicAccessRole = "OWNER" | "EDITOR" | "VIEWER" | null;
 
-const attachCollaborators = async (topics: Array<Record<string, any>>, accessToken?: string | null) =>
-    Promise.all(
-        topics.map(async (topic) => ({
-            ...topic,
-            collaborators: await fetchEntityCollaborators("TOPIC", String(topic.id ?? ""), accessToken),
-        }))
-    );
+const attachAccessRole = (
+    topics: Array<Record<string, any>>,
+    currentUsername: string,
+    membershipRoles: Map<string, TopicAccessRole>
+) => topics.map((topic) => ({
+    ...topic,
+    collaborators: [],
+    currentAccessRole:
+        String(topic.creator_username ?? "") === currentUsername
+            ? "OWNER"
+            : membershipRoles.get(String(topic.id ?? "")) ?? (topic.visibility === "public" ? "VIEWER" : null),
+}));
 
 export async function GET(
     request: Request,
@@ -55,9 +61,12 @@ export async function GET(
 
     try {
         const accessToken = await getAuthenticatedAccessToken(request);
+        const collaborations = await fetchMyCollaborations(accessToken, "TOPIC");
+        const membershipRoles = new Map<string, TopicAccessRole>(
+            collaborations.map((item: { entityId: string; role: TopicAccessRole }) => [item.entityId, item.role])
+        );
 
         if (currentUsername === requestedUsername) {
-            const collaborations = await fetchMyCollaborations(accessToken, "TOPIC");
             const collaboratorTopicIds = collaborations
                 .map((item: { entityId: string }) => item.entityId)
                 .filter(Boolean);
@@ -78,7 +87,7 @@ export async function GET(
                 ).values()
             ).sort((left: any, right: any) => new Date(right.createdAt ?? 0).getTime() - new Date(left.createdAt ?? 0).getTime());
 
-            const topics = await attachCollaborators(dedupedTopics, accessToken);
+            const topics = attachAccessRole(dedupedTopics, currentUsername, membershipRoles);
 
             return Response.json(
                 {
@@ -98,7 +107,7 @@ export async function GET(
             .select(TOPIC_SELECT)
             .lean();
 
-        const topicsWithCollaborators = await attachCollaborators(topics, accessToken);
+        const topicsWithCollaborators = attachAccessRole(topics, currentUsername, membershipRoles);
 
         return Response.json(
             {

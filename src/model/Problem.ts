@@ -84,5 +84,7 @@ const ProblemSchema: Schema<Problem> = new Schema({
     timestamps: true
 });
 
+ProblemSchema.index({ topicId: 1, createdAt: -1 });
+
 const ProblemModel = (mongoose.models.Problem as mongoose.Model<Problem>) || mongoose.model<Problem>('Problem', ProblemSchema)
 export default ProblemModel;

@@ -16,6 +16,7 @@ interface TopicCardProps {
         visibility: "public" | "private";
         creator_username: string;
         collaborators: { username: string; name?: string; role?: "OWNER" | "EDITOR" | "VIEWER" | null }[];
+        currentAccessRole?: "OWNER" | "EDITOR" | "VIEWER" | null;
         createdAt: string | Date;
     };
 }
@@ -26,22 +27,22 @@ export default function TopicCard({ topic }: TopicCardProps) {
     const createdDate = typeof createdAt === 'string' ? new Date(createdAt) : createdAt;
     const timeAgo = getLastModifiedText(createdDate);
     const currentUsername = session?.user?.username;
-    const currentCollaborator = collaborators.find((collaborator) => collaborator.username === currentUsername);
-    const accessMeta = currentUsername === creator_username
+    const currentRole = topic.currentAccessRole ?? collaborators.find((collaborator) => collaborator.username === currentUsername)?.role ?? null;
+    const accessMeta = currentUsername === creator_username || currentRole === "OWNER"
         ? {
             label: "Owner",
             tone: "default" as const,
             icon: Crown,
             helper: "You manage this topic",
         }
-        : currentCollaborator?.role === "EDITOR"
+        : currentRole === "EDITOR"
             ? {
                 label: "Editor",
                 tone: "secondary" as const,
                 icon: ShieldCheck,
                 helper: "Shared with edit access",
             }
-            : currentCollaborator?.role === "VIEWER"
+            : currentRole === "VIEWER"
                 ? {
                     label: "Viewer",
                     tone: "outline" as const,

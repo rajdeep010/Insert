@@ -66,6 +66,10 @@ const BlogSchema = new Schema<Blog>({
   timestamps: { createdAt: 'createdAt', updatedAt: 'lastEdited' }
 })
 
+BlogSchema.index({ blogUrl: 1 }, { unique: true });
+BlogSchema.index({ creator: 1, status: 1, createdAt: -1 });
+BlogSchema.index({ creator: 1, status: 1, type: 1, createdAt: -1 });
+
 
 const BlogModel = (mongoose.models.Blog as mongoose.Model<Blog>) || mongoose.model<Blog>('Blog', BlogSchema)
 export default BlogModel

@@ -72,7 +72,6 @@ import InsertHoverCard from "@/components/InsertHoverCard";
 import { useBlog } from "@/features/blog/context/BlogProvider";
 import { useInsertTopics } from "@/features/topic/context/InsertTopicProvider";
 import {
-	fetchEntityCollaboratorsV2,
 	removeCollaboratorV2 as removeCollaboratorServiceV2,
 	updateCollaboratorRoleV2 as updateCollaboratorRoleServiceV2,
 } from "@/services/collaboration-v2.service";
@@ -148,7 +147,6 @@ const EachTopic = () => {
 	const [isSearchingUsername, setIsSearchingUsername] = useState(false);
 	const [searchUsernameMessage, setSearchUsernameMessage] = useState("");
 	const [similarUsers, setSimilarUsers] = useState<UserInfo[]>([]);
-	const [serviceCollaborators, setServiceCollaborators] = useState<CollaborationTopicCollaboratorV2[] | null>(null);
 	const [updatingCollaboratorIds, setUpdatingCollaboratorIds] = useState<string[]>([]);
 	const [removingCollaboratorIds, setRemovingCollaboratorIds] = useState<string[]>([]);
 	const [collaboratorToRemove, setCollaboratorToRemove] = useState<CollaborationTopicCollaboratorV2 | null>(null);
@@ -325,11 +323,11 @@ const EachTopic = () => {
 		id: String(each?.username ?? ""),
 		username: String(each?.username ?? ""),
 		name: typeof each?.name === "string" ? each.name : null,
-		role: "EDITOR" as const,
+		role: each?.role === "OWNER" || each?.role === "EDITOR" || each?.role === "VIEWER" ? each.role : "VIEWER",
 		grantedBy: ownerUsername,
 		isCurrentUser: each?.username === session?.user?.username,
 	}));
-	const displayCollaborators = serviceCollaborators ?? fallbackCollaborators;
+	const displayCollaborators = fallbackCollaborators;
 	const currentMembership = accessibleTopics.find((topic) => topic.id === resolvedTopicId) ?? null;
 	const currentCollaborator = displayCollaborators.find((collaborator) => collaborator.username === session?.user?.username) ?? null;
 	const currentPermission = getTopicPermissionV2(
@@ -362,54 +360,6 @@ const EachTopic = () => {
 			visibility: curr_topic.topic.visibility ?? "private",
 		});
 	}, [curr_topic?.topic, topicDetailsForm]);
-
-	const refreshTopicCollaborators = React.useCallback(async () => {
-		if (!resolvedTopicId || !accessToken) {
-			setServiceCollaborators(null);
-			return;
-		}
-
-		try {
-			const collaborators = await fetchEntityCollaboratorsV2(
-				"TOPIC",
-				resolvedTopicId,
-				accessToken,
-				ownerUsername,
-				session?.user?.username ?? null
-			);
-			setServiceCollaborators(collaborators);
-		} catch {
-			setServiceCollaborators(null);
-		}
-	}, [accessToken, ownerUsername, resolvedTopicId, session?.user?.username]);
-
-	useEffect(() => {
-		let cancelled = false;
-
-		(async () => {
-			try {
-				if (!resolvedTopicId || !accessToken) {
-					if (!cancelled) {
-						setServiceCollaborators(null);
-					}
-					return;
-				}
-
-				const collaborators = await fetchEntityCollaboratorsV2("TOPIC", resolvedTopicId, accessToken, ownerUsername, session?.user?.username ?? null);
-				if (!cancelled) {
-					setServiceCollaborators(collaborators);
-				}
-			} catch {
-				if (!cancelled) {
-					setServiceCollaborators(null);
-				}
-			}
-		})();
-
-		return () => {
-			cancelled = true;
-		};
-	}, [accessToken, ownerUsername, resolvedTopicId, session?.user?.username]);
 
 	const editForm = useForm<z.infer<typeof questionSchema>>({
 		resolver: zodResolver(questionSchema),
@@ -523,7 +473,10 @@ const EachTopic = () => {
 		setUpdatingCollaboratorIds((current) => [...current, collaborator.id]);
 		try {
 			await updateCollaboratorRoleServiceV2(collaborator.id, nextRole, accessToken);
-			await Promise.all([refreshTopicCollaborators(), refreshCollaborationV2()]);
+			await Promise.all([
+				fetchTopicById(topic_id, { force: true }),
+				refreshCollaborationV2(),
+			]);
 			toast({
 				title: "Role updated",
 				description: `@${collaborator.username} is now ${formatRoleLabel(nextRole).toLowerCase()}.`,
@@ -546,7 +499,10 @@ const EachTopic = () => {
 		setRemovingCollaboratorIds((current) => [...current, collaboratorToRemove.id]);
 		try {
 			await removeCollaboratorServiceV2(collaboratorToRemove.id, accessToken);
-			await Promise.all([refreshTopicCollaborators(), refreshCollaborationV2()]);
+			await Promise.all([
+				fetchTopicById(topic_id, { force: true }),
+				refreshCollaborationV2(),
+			]);
 			toast({
 				title: "Collaborator removed",
 				description: `@${collaboratorToRemove.username} no longer has access to this topic.`,

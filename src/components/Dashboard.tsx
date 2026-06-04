@@ -243,19 +243,19 @@ const Dashboard = () => {
                     </div>
                 ) : filteredTopics.length > 0 ? (
                     <div className="grid gap-4 md:grid-cols-2">
-                        {filteredTopics.map(({ id, title, about, visibility, createdAt, collaborators, problems, creator_username }) => {
+                        {filteredTopics.map(({ id, title, about, visibility, createdAt, collaborators, problems, creator_username, currentAccessRole }) => {
                             const createdLabel = formatCreatedDate(createdAt)
                             const createdRelative = getLastModifiedText(createdAt, { empty: 'Recently created' })
                             const collaboratorCount = collaborators?.length ?? 0
                             const problemCount = problems?.length ?? 0
-                            const currentCollaborator = collaborators?.find(
+                            const currentRole = currentAccessRole ?? collaborators?.find(
                                 (collaborator) => collaborator.username === session?.user?.username
-                            )
-                            const accessMeta = session?.user?.username === creator_username
+                            )?.role ?? null
+                            const accessMeta = session?.user?.username === creator_username || currentRole === 'OWNER'
                                 ? { label: 'Owner', icon: Crown, variant: 'default' as const, helper: 'Full control' }
-                                : currentCollaborator?.role === 'EDITOR'
+                                : currentRole === 'EDITOR'
                                     ? { label: 'Editor', icon: ShieldCheck, variant: 'secondary' as const, helper: 'Can manage problems' }
-                                    : currentCollaborator?.role === 'VIEWER'
+                                    : currentRole === 'VIEWER'
                                         ? { label: 'Viewer', icon: Eye, variant: 'outline' as const, helper: 'Read-only access' }
                                         : visibility === 'public'
                                             ? { label: 'Public', icon: Eye, variant: 'outline' as const, helper: 'Open visibility' }

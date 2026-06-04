@@ -130,7 +130,8 @@ export const normalizeTopicOptionV2 = (
 	collaboratorCount: Array.isArray(value.collaborators) ? value.collaborators.length : 0,
 	visibility: value.visibility ? String(value.visibility) : null,
 	currentRole:
-		String(value.creator_username ?? value.creatorUsername ?? "") === currentUsername ? "OWNER" : "EDITOR",
+		normalizeRole(value.currentAccessRole) ??
+		(String(value.creator_username ?? value.creatorUsername ?? "") === currentUsername ? "OWNER" : "VIEWER"),
 	canManage: String(value.creator_username ?? value.creatorUsername ?? "") === currentUsername,
 });
 

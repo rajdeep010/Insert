@@ -1,20 +1,26 @@
 import { uniqueId } from "@/helpers/unique-id";
 import { getAuthenticatedAccessToken, requireAuthenticatedUsername } from "@/lib/api/auth";
-import { fetchEntityCollaborators, fetchMyCollaborations } from "@/lib/collaboration/permissions";
+import { fetchMyCollaborations } from "@/lib/collaboration/permissions";
 import dbConnect from "@/lib/dbConnect";
 import TopicModel from "@/model/Topic";
 import { createTopicSchema } from "@/schemas/topicSchema";
 
 const TOPIC_LIST_SELECT =
     "_id id title about visibility creator_username createdAt";
+type TopicAccessRole = "OWNER" | "EDITOR" | "VIEWER" | null;
 
-const attachCollaborators = async (topics: Array<Record<string, any>>, accessToken?: string | null) =>
-    Promise.all(
-        topics.map(async (topic) => ({
-            ...topic,
-            collaborators: await fetchEntityCollaborators("TOPIC", String(topic.id ?? ""), accessToken),
-        }))
-    );
+const attachAccessRole = (
+    topics: Array<Record<string, any>>,
+    currentUsername: string,
+    membershipRoles: Map<string, TopicAccessRole>
+) => topics.map((topic) => ({
+    ...topic,
+    collaborators: [],
+    currentAccessRole:
+        String(topic.creator_username ?? "") === currentUsername
+            ? "OWNER"
+            : membershipRoles.get(String(topic.id ?? "")) ?? (topic.visibility === "public" ? "VIEWER" : null),
+}));
 
 export async function GET(request: Request) {
     const authResult = await requireAuthenticatedUsername(request);
@@ -31,6 +37,9 @@ export async function GET(request: Request) {
         const collaboratorTopicIds = collaborations
             .map((item: { entityId: string }) => item.entityId)
             .filter(Boolean);
+        const membershipRoles = new Map<string, TopicAccessRole>(
+            collaborations.map((item: { entityId: string; role: TopicAccessRole }) => [item.entityId, item.role])
+        );
 
         const filter = {
             $or: [
@@ -47,7 +56,7 @@ export async function GET(request: Request) {
             .select(TOPIC_LIST_SELECT)
             .lean();
 
-        const topicsWithCollaborators = await attachCollaborators(topics, accessToken);
+        const topicsWithCollaborators = attachAccessRole(topics, currentUsername, membershipRoles);
 
         return Response.json(
             {

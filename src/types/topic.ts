@@ -40,6 +40,7 @@ export interface Topic {
     creator_name?: string;
     creator_username: string;
     collaborators: Collaborator[];
+    currentAccessRole?: "OWNER" | "EDITOR" | "VIEWER" | null;
     createdAt: Date;
 }
 
