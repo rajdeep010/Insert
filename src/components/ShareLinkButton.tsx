@@ -59,7 +59,7 @@ export default function ShareLinkButton({
 	return (
 		<Button type="button" variant={variant} size={size} className={className} onClick={handleShare}>
 			<Share2 className="h-4 w-4" />
-			{!iconOnly ? <span className=""/> : null}
+			{!iconOnly ? <span>{label}</span> : null}
 		</Button>
 	)
 }

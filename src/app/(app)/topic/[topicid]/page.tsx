@@ -45,7 +45,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiResponse } from "@/types/ApiResponse";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
-import { useDebounceCallback, useDebounceValue } from "usehooks-ts";
+import { useDebounceValue } from "usehooks-ts";
 import {
 	ArrowRightLeft,
 	CirclePlus,
@@ -57,13 +57,13 @@ import {
 	Link2,
 	Loader2,
 	PencilLine,
+	Search,
 	Settings2,
 	ShieldCheck,
 	Trash2,
 	UserPlus,
 	Users,
 } from "lucide-react";
-import UserCard from "@/components/UserCard";
 import InsertNavbar from "@/components/InsertNavbar";
 import ShareLinkButton from "@/components/ShareLinkButton";
 import { useCollaborationV2 } from "@/features/collaboration-v2/context/CollaborationProviderV2";
@@ -72,11 +72,12 @@ import InsertHoverCard from "@/components/InsertHoverCard";
 import { useBlog } from "@/features/blog/context/BlogProvider";
 import { useInsertTopics } from "@/features/topic/context/InsertTopicProvider";
 import {
+	inviteCollaboratorV2 as inviteCollaboratorServiceV2,
 	removeCollaboratorV2 as removeCollaboratorServiceV2,
 	updateCollaboratorRoleV2 as updateCollaboratorRoleServiceV2,
 } from "@/services/collaboration-v2.service";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { TopicProblemsGrid, type TopicProblemReferenceDisplay } from "@/features/topic/components/TopicProblemsGrid";
@@ -143,7 +144,11 @@ const EachTopic = () => {
 	const [isDeletingProblem, setIsDeletingProblem] = useState(false)
 
 	// collaborator search
-	const [debouncedUsername, setSearchUsername] = useDebounceValue<string>('', 500)
+	const [inviteUsername, setInviteUsername] = useState("");
+	const [debouncedUsername] = useDebounceValue<string>(inviteUsername, 500)
+	const [inviteRole, setInviteRole] = useState<"EDITOR" | "VIEWER">("EDITOR");
+	const [isInviting, setIsInviting] = useState(false);
+	const [pendingInviteUsername, setPendingInviteUsername] = useState<string | null>(null);
 	const [isSearchingUsername, setIsSearchingUsername] = useState(false);
 	const [searchUsernameMessage, setSearchUsernameMessage] = useState("");
 	const [similarUsers, setSimilarUsers] = useState<UserInfo[]>([]);
@@ -155,8 +160,6 @@ const EachTopic = () => {
 	const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false);
 	const [isSavingTopicDetails, setIsSavingTopicDetails] = useState(false);
 	const [hasResolvedTopicRequest, setHasResolvedTopicRequest] = useState(false);
-
-	const debounced = useDebounceCallback(setSearchUsername, 500);
 
 	const [isTopicDeleting, setIsTopicDeleting] = useState(false)
 
@@ -242,7 +245,7 @@ const EachTopic = () => {
 	});
 
 	useEffect(() => {
-		if (!debouncedUsername) {
+		if (!debouncedUsername.trim()) {
 			setSearchUsernameMessage("");
 			setSimilarUsers([]);
 			return;
@@ -320,7 +323,7 @@ const EachTopic = () => {
 	}, [curr_topic?.topic?.title, myCollaborations, ownerUsername, resolvedTopicId, session?.user?.username, topicOptions]);
 
 	const fallbackCollaborators = (curr_topic?.topic?.collaborators || []).map((each: any) => ({
-		id: String(each?.username ?? ""),
+		id: String(each?.id ?? each?._id ?? each?.username ?? ""),
 		username: String(each?.username ?? ""),
 		name: typeof each?.name === "string" ? each.name : null,
 		role: each?.role === "OWNER" || each?.role === "EDITOR" || each?.role === "VIEWER" ? each.role : "VIEWER",
@@ -345,6 +348,49 @@ const EachTopic = () => {
 	const inviteCandidates = similarUsers.filter(
 		(user) => user.username !== ownerUsername && !displayCollaborators.some((collaborator) => collaborator.username === user.username)
 	);
+
+	const handleInviteCollaborator = async (usernameOverride?: string) => {
+		const targetUsername = (usernameOverride ?? inviteUsername).trim();
+		if (!accessToken || !resolvedTopicId || !targetUsername) return;
+
+		setPendingInviteUsername(targetUsername);
+		setIsInviting(true);
+		try {
+			await inviteCollaboratorServiceV2(
+				{
+					entityType: "TOPIC",
+					entityId: resolvedTopicId,
+					receiverUsername: targetUsername,
+					role: inviteRole,
+				},
+				accessToken
+			);
+
+			await Promise.all([
+				fetchTopicById(topic_id, { force: true }),
+				refreshCollaborationV2(),
+			]);
+
+			setInviteUsername("");
+			setInviteRole("EDITOR");
+			setSearchUsernameMessage("");
+			setSimilarUsers([]);
+			toast({
+				title: "Invite sent",
+				description: "Topic collaboration invite sent successfully.",
+				variant: "default",
+			});
+		} catch (error: any) {
+			toast({
+				title: "Invite failed",
+				description: error?.response?.data?.message || error?.message || "Unable to invite collaborator.",
+				variant: "destructive",
+			});
+		} finally {
+			setIsInviting(false);
+			setPendingInviteUsername(null);
+		}
+	};
 
 	useEffect(() => {
 		if (!topic_id) return;
@@ -1223,37 +1269,76 @@ const EachTopic = () => {
 					open={isCollaboratorSheetOpen}
 					onOpenChange={setIsCollaboratorSheetOpen}
 					title="Collaborator access"
-					description={canManageCollaborators ? "Invite, review, and manage collaborator access for this topic." : "Review who has access to this topic."}
 				>
-					<div className="space-y-6">
+					<div className="space-y-4">
 						{canManageCollaborators ? (
-							<div className="space-y-3 rounded-2xl border border-border/60 bg-background/60 p-4">
-								<div className="space-y-1">
-									<p className="text-sm font-medium text-foreground">Invite collaborator</p>
-									<p className="text-xs text-muted-foreground">Search for a username and send an invite without leaving this page.</p>
+							<div className="space-y-3 rounded-3xl border border-border/60 bg-background/60 p-4">
+								<div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_168px]">
+									<div className="relative">
+										<Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+										<Input
+											placeholder="Search username"
+											value={inviteUsername}
+											onChange={(event) => setInviteUsername(event.target.value)}
+											className="h-11 rounded-2xl border-border/60 bg-background/80 pl-9"
+										/>
+										{isSearchingUsername ? <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" /> : null}
+									</div>
+									<Select value={inviteRole} onValueChange={(value: "EDITOR" | "VIEWER") => setInviteRole(value)}>
+										<SelectTrigger className="h-11 rounded-2xl border-border/60 bg-background/80">
+											<SelectValue placeholder="Access role" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="EDITOR">Editor</SelectItem>
+											<SelectItem value="VIEWER">Viewer</SelectItem>
+										</SelectContent>
+									</Select>
 								</div>
-								<Input
-									placeholder="Search username"
-									onChange={(event) => {
-										setSearchUsername(event.target.value);
-										debounced(event.target.value);
-									}}
-								/>
-								{isSearchingUsername ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-								{searchUsernameMessage ? (
-									<p className={`text-sm ${searchUsernameMessage === "Found" ? "text-green-500" : "text-muted-foreground"}`}>
-										{searchUsernameMessage}
-									</p>
-								) : null}
+								{/* <div className="flex items-center justify-between gap-3">
+									{searchUsernameMessage && inviteUsername.trim() ? (
+										<p className={`text-sm ${searchUsernameMessage === "Found" ? "text-emerald-600" : "text-muted-foreground"}`}>
+											{searchUsernameMessage}
+										</p>
+									) : <span />}
+									<Button type="button" className="rounded-full" onClick={() => handleInviteCollaborator()} disabled={isInviting || !inviteUsername.trim()}>
+										{isInviting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
+										Invite collaborator
+									</Button>
+								</div> */}
 								<div className="max-h-64 space-y-2 overflow-y-auto custom-small-scrollbar">
-									{inviteCandidates.map((user) => (
-										<div key={user.username}>
-											<UserCard user={user} topicid={topic_id} topic={curr_topic?.topic} collaborators={displayCollaborators} />
-											<Separator className="my-1" />
-										</div>
-									))}
+									{inviteCandidates.map((user) => {
+										const username = user.username ?? "";
+										const isBusy = isInviting && pendingInviteUsername === username;
+
+										return (
+											<div key={username} className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/80 px-3 py-3">
+												<div className="flex min-w-0 items-center gap-3">
+													<Avatar className="h-9 w-9 border border-border/60">
+														<AvatarImage src={user.avatar ?? undefined} alt={user.username ?? "User avatar"} />
+														<AvatarFallback>{username.charAt(0).toUpperCase() || "U"}</AvatarFallback>
+													</Avatar>
+													<div className="min-w-0 space-y-0.5">
+														<p className="truncate text-sm font-medium text-foreground">{user.name || username}</p>
+														<p className="truncate text-xs text-muted-foreground">@{username}{user.company ? ` • ${user.company}` : ""}</p>
+													</div>
+												</div>
+												<Button
+													type="button"
+													variant="outline"
+													className="rounded-full"
+													disabled={isInviting}
+													onClick={() => handleInviteCollaborator(username)}
+												>
+													{isBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
+													Invite
+												</Button>
+											</div>
+										);
+									})}
 									{!inviteCandidates.length && !isSearchingUsername ? (
-										<p className="py-3 text-sm text-muted-foreground">No pending invite candidates for this topic.</p>
+										<p className="rounded-2xl border border-dashed border-border/60 px-4 py-5 text-center text-sm text-muted-foreground">
+											{inviteUsername.trim() ? "No matching users." : "Start typing to invite someone."}
+										</p>
 									) : null}
 								</div>
 							</div>

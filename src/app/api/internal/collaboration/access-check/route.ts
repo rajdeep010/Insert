@@ -1,7 +1,9 @@
 import { z } from "zod";
+import mongoose from "mongoose";
 
 import dbConnect from "@/lib/dbConnect";
 import TopicModel from "@/model/Topic";
+import BlogModel from "@/model/Blog";
 
 const accessCheckSchema = z.object({
     entityType: z.enum(["TOPIC", "BLOG"]),
@@ -22,6 +24,30 @@ const unauthorizedResponse = () =>
         },
         { status: 401 }
     );
+
+const isObjectId = (value: string) => mongoose.Types.ObjectId.isValid(value);
+
+const buildTopicLookup = (entityId: string) => {
+    if (isObjectId(entityId)) {
+        return {
+            $or: [{ id: entityId }, { _id: entityId }],
+        };
+    }
+
+    return { id: entityId };
+};
+
+const buildBlogLookup = (entityId: string) => {
+    if (isObjectId(entityId)) {
+        return {
+            $or: [{ _id: entityId }, { blogUrl: entityId }],
+        };
+    }
+
+    return {
+        $or: [{ blogUrl: entityId }],
+    };
+};
 
 export async function POST(request: Request) {
     const internalApiKey = request.headers.get("x-internal-api-key");
@@ -59,15 +85,43 @@ export async function POST(request: Request) {
     await dbConnect();
 
     try {
-        const topic = await TopicModel.findOne({
-            id: parsedBody.data.entityId,
-        }).select("creator_username");
+        const { action, entityId, entityType, username } = parsedBody.data;
 
-        if (!topic) {
-            return Response.json({ allowed: false }, { status: 200 });
+        const entity = entityType === "BLOG"
+            ? await BlogModel.findOne(buildBlogLookup(entityId)).select("creator type blogUrl")
+            : await TopicModel.findOne(buildTopicLookup(entityId)).select("creator_username visibility id");
+
+        if (!entity) {
+            return Response.json(
+                {
+                    allowed: false,
+                    message: `${entityType} not found`,
+                },
+                { status: 200 }
+            );
         }
 
-        const allowed = topic.creator_username === parsedBody.data.username;
+        const ownerUsername = entityType === "BLOG"
+            ? String((entity as { creator?: string | null }).creator ?? "")
+            : String((entity as { creator_username?: string | null }).creator_username ?? "");
+        const visibility = entityType === "BLOG"
+            ? String((entity as { type?: string | null }).type ?? "private")
+            : String((entity as { visibility?: string | null }).visibility ?? "private");
+
+        let allowed = false;
+
+        switch (action) {
+            case "VIEW":
+                allowed = ownerUsername === username || visibility === "public";
+                break;
+            case "EDIT":
+            case "DELETE":
+            case "MANAGE_COLLABORATORS":
+                allowed = ownerUsername === username;
+                break;
+            default:
+                allowed = false;
+        }
 
         return Response.json(
             {

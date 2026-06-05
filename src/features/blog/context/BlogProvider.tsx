@@ -31,7 +31,7 @@ interface BlogProviderProps {
 	addBlog: (title: string, visibility: BlogVisibility) => void;
 	setIsAddBlogModalOpen: (isOpen: boolean) => void;
 	fetchBlogByUrl: (slug: string) => void;
-	fetchBlogByIdentifier: (identifier: string) => void;
+	fetchBlogByIdentifier: (identifier: string, options?: { silent?: boolean }) => void;
 	fetchAllBlogPosts: () => void;
 	fetchBlogsByUsername: (username: string) => void;
 	fetchBlogCollections: () => Promise<void>;
@@ -124,9 +124,12 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 		}
 	}, [router, toast]);
 
-	const fetchBlogByIdentifier = useCallback(async (identifier: string) => {
+	const fetchBlogByIdentifier = useCallback(async (identifier: string, options?: { silent?: boolean }) => {
 		if (!identifier) return;
-		dispatch({ type: "SET_IS_BLOG_LOADING", payload: true });
+		const shouldShowLoading = !options?.silent;
+		if (shouldShowLoading) {
+			dispatch({ type: "SET_IS_BLOG_LOADING", payload: true });
+		}
 
 		try {
 			if (isLikelyBlogId(identifier)) {
@@ -154,7 +157,9 @@ export const BlogProvider = ({ children }: { children: React.ReactNode }) => {
 				router.replace("/write");
 			}
 		} finally {
-			dispatch({ type: "SET_IS_BLOG_LOADING", payload: false });
+			if (shouldShowLoading) {
+				dispatch({ type: "SET_IS_BLOG_LOADING", payload: false });
+			}
 		}
 	}, [router, toast]);
 

@@ -1,6 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
 import { getAuthenticatedAccessToken, requireAuthenticatedUsername } from "@/lib/api/auth";
-import { resolveEntityPermissions } from "@/lib/collaboration/permissions";
+import { fetchEntityCollaborators, resolveEntityPermissions } from "@/lib/collaboration/permissions";
 import BlogModel from "@/model/Blog";
 import {
     blogIdParamsSchema,
@@ -70,11 +70,20 @@ export async function GET(
             );
         }
 
+        const collaborators = await fetchEntityCollaborators(
+            "BLOG",
+            String(blog._id),
+            accessToken
+        );
+
         return Response.json(
             {
                 success: true,
                 message: "Blog fetched successfully",
-                blog,
+                blog: {
+                    ...blog.toObject(),
+                    collaborators,
+                },
             },
             { status: 200 }
         );
