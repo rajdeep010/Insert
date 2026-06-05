@@ -299,27 +299,38 @@ const EachTopic = () => {
 			});
 		});
 
-		myCollaborations
-			.filter((membership) => membership.entityType === "TOPIC")
-			.forEach((membership) => {
-				if (!mapped.has(membership.entityId)) {
-					mapped.set(membership.entityId, {
-						id: membership.entityId,
-						title: membership.entityTitle,
-						currentRole: membership.role,
-					});
-				}
-			});
+		return Array.from(topicOptions.values());
 
-		if (resolvedTopicId && curr_topic?.topic?.title && !mapped.has(resolvedTopicId)) {
-			mapped.set(resolvedTopicId, {
-				id: resolvedTopicId,
-				title: curr_topic.topic.title,
-				currentRole: session?.user?.username === ownerUsername ? "OWNER" : "VIEWER",
-			});
-		}
+		// console.log("this is the topic options: ", topicOptions);
 
-		return Array.from(mapped.values());
+		// myCollaborations
+		// 	.filter((membership) => membership.entityType === "TOPIC")
+		// 	.forEach((membership) => {
+		// 		if (!mapped.has(membership.entityId)) {
+		// 			mapped.set(membership.entityId, {
+		// 				id: membership.entityId,
+		// 				title: membership.entityTitle,
+		// 				currentRole: membership.role,
+		// 			});
+		// 		}
+		// 	});
+
+		// console.log("this is the my collaborations: ", myCollaborations);
+
+		// if (resolvedTopicId && curr_topic?.topic?.title && !mapped.has(resolvedTopicId)) {
+
+		// 	const owner = curr_topic.topic.creator_username;
+		// 	console.log('current topic id: ', curr_topic?.topic);
+		// 	mapped.set(resolvedTopicId, {
+		// 		id: resolvedTopicId,
+		// 		title: curr_topic.topic.title,
+		// 		currentRole: session?.user?.username === owner ? "OWNER" : "VIEWER",
+		// 	});
+		// }
+
+		// console.log("this is the accessible topics: ", Array.from(mapped.values()));
+
+		// return Array.from(mapped.values());
 	}, [curr_topic?.topic?.title, myCollaborations, ownerUsername, resolvedTopicId, session?.user?.username, topicOptions]);
 
 	const fallbackCollaborators = (curr_topic?.topic?.collaborators || []).map((each: any) => ({
@@ -1251,13 +1262,13 @@ const EachTopic = () => {
 										<p className="text-xs text-muted-foreground">{accessMeta.helper}</p>
 									</div>
 									<div className="flex items-center gap-2">
-										<Badge variant={accessMeta.variant} className="rounded-full px-2.5 py-1 text-[11px]">
+										<Badge variant={accessMeta.variant} className="rounded-md px-2.5 py-1 text-[11px]">
 											<AccessIcon className="mr-1 h-3 w-3" />
 											{accessMeta.label}
 										</Badge>
-										<Badge variant={getRoleBadgeVariant(topic.currentRole)} className="rounded-full px-2.5 py-1 text-[11px]">
+										{/* <Badge variant={getRoleBadgeVariant(topic.currentRole)} className="rounded-full px-2.5 py-1 text-[11px]">
 											{formatRoleLabel(topic.currentRole)}
-										</Badge>
+										</Badge> */}
 									</div>
 								</button>
 							);
