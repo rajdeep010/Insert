@@ -17,12 +17,12 @@ const notificationServiceOrigin = trimTrailingSlash(
 
 const notificationServiceV2Origin = trimTrailingSlash(
 	process.env.NEXT_PUBLIC_NOTIFICATION_SERVICE_V2_ORIGIN ??
-		"http://localhost:8080"
+		"insert-notification-service.railway.internal"
 )
 
 const collaborationServiceOrigin = trimTrailingSlash(
 	process.env.NEXT_PUBLIC_COLLABORATION_SERVICE_ORIGIN ??
-		"http://localhost:8081"
+		"insert-collaboration-service.railway.internal"
 )
 
 const appOrigin = trimTrailingSlash(
