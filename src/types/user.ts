@@ -8,6 +8,11 @@ export interface UserProStatus {
     cancelledAt?: string | Date | null;
 }
 
+export interface UserNotificationSettings {
+    pushEnabled?: boolean | null;
+    fcmToken?: string | null;
+}
+
 export interface UserInfo {
     _id?: string | null;
     name?: string | null;
@@ -21,6 +26,7 @@ export interface UserInfo {
     location?: string | null;
     avatar?: string | null;
     proStatus?: UserProStatus | null;
+    notificationSettings?: UserNotificationSettings | null;
 }
 
 export interface UserState {

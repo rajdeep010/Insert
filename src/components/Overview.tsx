@@ -6,6 +6,7 @@ import { Badge } from './ui/badge'
 import OverviewSkeleton from './skeletons/OverviewSkeleton'
 import { useInsertTopics } from '@/features/topic/context/InsertTopicProvider'
 import { useInsertUser } from '@/features/user/context/InsertUserProvider'
+import { Crown, Eye, ShieldCheck } from 'lucide-react'
 
 /* Shared style helpers (consistent with other pages) */
 const surface =
@@ -51,7 +52,22 @@ const Overview = () => {
 
 			<div className="grid gap-6 sm:grid-cols-2">
 				{hasTopics &&
-					firstTopics.map((topic, idx) => (
+					firstTopics.map((topic, idx) => {
+						const currentRole = topic.currentAccessRole ?? topic.collaborators?.find(
+							(collaborator) => collaborator.username === session?.user?.username
+						)?.role ?? null
+						const accessMeta = session?.user?.username === topic.creator_username || currentRole === 'OWNER'
+							? { label: 'Owner', icon: Crown, variant: 'default' as const }
+							: currentRole === 'EDITOR'
+								? { label: 'Editor', icon: ShieldCheck, variant: 'secondary' as const }
+								: currentRole === 'VIEWER'
+									? { label: 'Viewer', icon: Eye, variant: 'outline' as const }
+									: topic?.visibility === 'public'
+										? { label: 'Public', icon: Eye, variant: 'outline' as const }
+										: null
+						const AccessIcon = accessMeta?.icon
+
+						return (
 						<Card
 							key={idx}
 							className={`${surface} shadow-none p-0 ${hoverable} group overflow-hidden`}
@@ -83,6 +99,15 @@ const Overview = () => {
 													public
 												</Badge>
 											)}
+											{accessMeta && AccessIcon ? (
+												<Badge
+													variant={accessMeta.variant}
+													className="flex items-center gap-1 text-[10px] px-2 py-0.5 uppercase tracking-wide"
+												>
+													<AccessIcon className="h-3 w-3" />
+													{accessMeta.label}
+												</Badge>
+											) : null}
 										</div>
 										{topic?.about && (
 											<CardDescription className="text-sm leading-relaxed text-gray-600 dark:text-gray-400 line-clamp-3">
@@ -105,7 +130,8 @@ const Overview = () => {
 								</div>
 							</CardHeader>
 						</Card>
-					))}
+						)
+					})}
 
 				{!isTopicsLoading && !hasTopics && canEdit && (
 					<Card className={`${surface} shadow-none`}>

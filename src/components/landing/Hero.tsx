@@ -44,16 +44,11 @@ export function Hero() {
 
                     <div className="mt-8 flex flex-wrap items-center gap-3">
                         <Link href="/sign-up">
-                            <Button className="h-11 rounded-xl border border-black/10 bg-black px-5 text-sm font-medium text-white hover:bg-black/90 dark:border-white/10 dark:bg-white dark:text-black dark:hover:bg-white/90">
+                            <Button className="h-11 border border-black/10 bg-black px-5 text-sm font-medium text-white hover:bg-black/90 dark:border-white/10 dark:bg-white dark:text-black dark:hover:bg-white/90">
                                 Get started
                                 <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                         </Link>
-                        {/* <Link href="/posts/collections">
-                            <Button variant="outline" className="h-11 rounded-xl border-black/10 bg-white/70 px-5 text-sm font-medium backdrop-blur hover:bg-white dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/15">
-                                Explore collections
-                            </Button>
-                        </Link> */}
                     </div>
 
                     <div className="mt-8 flex flex-wrap gap-3 text-sm text-gray-600 dark:text-gray-300">
@@ -127,11 +122,11 @@ export function Hero() {
                                         <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500 dark:bg-white/10 dark:text-white/60">improved</span>
                                     </div>
                                     <div className="space-y-2.5 text-sm text-gray-600 dark:text-gray-300">
-                                        <div className="flex items-center justify-between rounded-xl border border-black/5 px-3 py-2 dark:border-white/10">
+                                        <div className="flex items-center justify-between border border-black/5 px-3 py-2 dark:border-white/10">
                                             <span>Active Pro</span>
                                             <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-white"><BadgeCheck className="h-3.5 w-3.5" /></span>
                                         </div>
-                                        <div className="flex items-center justify-between rounded-xl border border-black/5 px-3 py-2 dark:border-white/10">
+                                        <div className="flex items-center justify-between border border-black/5 px-3 py-2 dark:border-white/10">
                                             <span>Expired Pro</span>
                                             <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-400 text-white"><BadgeCheck className="h-3.5 w-3.5" /></span>
                                         </div>

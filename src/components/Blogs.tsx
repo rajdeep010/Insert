@@ -52,6 +52,7 @@ import {
 import type { BlogEntry } from '@/types/blog'
 import type { BlogCollectionEntry } from '@/types/blog-collection'
 import EditBlogMetadataDialog from '@/components/EditBlogMetadataDialog'
+import AddBlogModal from '@/components/AddBlogModal'
 
 /* Shared style helpers (aligned with other pages) */
 const surface =
@@ -99,6 +100,7 @@ const Blogs = () => {
 	const [collectionToDelete, setCollectionToDelete] = useState<BlogCollectionEntry | null>(null)
 	const [blogForCollection, setBlogForCollection] = useState<BlogEntry | null>(null)
 	const [selectedCollectionId, setSelectedCollectionId] = useState('')
+	const [defaultVisibility, setDefaultVisibility] = useState<'public' | 'private'>('public')
 	const {
 		allBlogs,
 		blogCollections,
@@ -110,6 +112,7 @@ const Blogs = () => {
 		deleteBlogCollection,
 		addBlogToCollection,
 		fetchBlogCollections,
+		setIsAddBlogModalOpen,
 	} = useBlog()
 
 	useEffect(() => {
@@ -167,6 +170,11 @@ const Blogs = () => {
 		if (!collectionToDelete?._id) return
 		await deleteBlogCollection(collectionToDelete._id)
 		setCollectionToDelete(null)
+	}
+
+	const openAddBlogModal = (visibility: 'public' | 'private') => {
+		setDefaultVisibility(visibility)
+		setIsAddBlogModalOpen(true)
 	}
 
 	const BlogCard = ({ blog }: { blog: BlogEntry }) => {
@@ -292,7 +300,7 @@ const Blogs = () => {
 						<div className="mt-auto flex items-center justify-between gap-3 border-t border-black/5 pt-4 text-xs text-gray-500 dark:border-white/10 dark:text-gray-400">
 							<div className="flex min-w-0 items-center gap-2">
 								<CalendarDays className="h-4 w-4 shrink-0" />
-								<span className="truncate">Created {createdDateLabel}</span>
+								<span className="truncate">{createdDateLabel}</span>
 							</div>
 						</div>
 					</CardContent>
@@ -312,6 +320,16 @@ const Blogs = () => {
 					<p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
 						You have not created any {label} blogs yet.
 					</p>
+					{canManageCollections && (
+						<Button
+							type="button"
+							className="rounded-full"
+							onClick={() => openAddBlogModal(label === 'private' ? 'private' : 'public')}
+						>
+							<PlusCircle className="mr-2 h-4 w-4" />
+							Create {label} blog
+						</Button>
+					)}
 				</CardContent>
 			</Card>
 		</div>
@@ -319,7 +337,113 @@ const Blogs = () => {
 
 	return (
 		<div className="flex flex-col gap-6">
-			{/*  */}
+			<AddBlogModal defaultVisibility={defaultVisibility} />
+
+			{/* {canManageCollections && (
+				<section className={surface + ' p-5 sm:p-6'}>
+					<div className="flex flex-col gap-5">
+						<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+							<div className="space-y-2">
+								<div className="flex items-center gap-2">
+									<span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-300">
+										Collections
+									</span>
+									<Badge variant="secondary" className="rounded-full px-2.5 py-1 text-xs">
+										{blogCollections.length}
+									</Badge>
+								</div>
+								<h3 className="text-xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">
+									Keep reusable blog bundles
+								</h3>
+								<p className="max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+									Create reusable blog collections that you can later attach to sheet problems as solutions, notes, or references.
+								</p>
+							</div>
+
+							<div className="flex flex-row items-center gap-2">
+								<Button asChild variant="outline" className="h-11 gap-2 px-4">
+									<Link href={`/u/${profileUsername}?tab=collections`}>
+										<FolderKanban className="h-4 w-4" />
+										Manage
+									</Link>
+								</Button>
+								<Button variant='secondary' className="h-11 gap-2 px-4" onClick={() => setIsCreateCollectionOpen(true)}>
+									<PlusCircle className="h-2 w-2" /> New
+								</Button>
+							</div>
+						</div>
+
+						{isBlogCollectionsLoading ? (
+							<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+								{Array.from({ length: 3 }).map((_, index) => (
+									<Card key={index} className={surfaceMuted + ' shadow-none'}>
+										<CardContent className="space-y-3 p-5">
+											<div className="h-5 w-40 animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
+											<div className="h-4 w-full animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
+											<div className="h-4 w-2/3 animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
+										</CardContent>
+									</Card>
+								))}
+							</div>
+						) : blogCollections.length > 0 ? (
+							<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+								{blogCollections.map((collection) => {
+									const createdLabel = formatCreatedDate(collection.createdAt)
+									const linkedTopicLabel = collection.linkedTopicId ? `Linked to ${collection.linkedTopicId}` : 'Standalone collection'
+
+									return (
+										<Card key={collection._id} className={surfaceMuted + ' shadow-none'}>
+											<CardHeader className="space-y-4 p-5">
+												<div className="flex items-start justify-between gap-3">
+													<div className="min-w-0 space-y-2">
+														<CardTitle className="truncate text-lg font-semibold text-slate-950 dark:text-slate-50">
+															{collection.name}
+														</CardTitle>
+														<CardDescription className="line-clamp-2 text-sm leading-relaxed">
+															{collection.description?.trim() || 'No description added yet.'}
+														</CardDescription>
+													</div>
+												</div>
+
+												<div className="flex flex-wrap items-center gap-2">
+													<Badge variant="secondary" className="rounded-full px-2.5 py-1 text-[11px]">
+														<Files className="mr-1 h-3.5 w-3.5" />
+														{collection.blogIds.length} blog{collection.blogIds.length === 1 ? '' : 's'}
+													</Badge>
+													<Badge variant={collection.visibility === 'public' ? 'secondary' : 'destructive'} className="rounded-full px-2.5 py-1 text-[11px] capitalize">
+														{collection.visibility}
+													</Badge>
+												</div>
+
+												<div className="flex items-center justify-between gap-3 border-t border-black/5 pt-4 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400">
+													<div className="flex min-w-0 items-center gap-2">
+														<CalendarDays className="h-4 w-4 shrink-0" />
+														<span className="truncate">Created {createdLabel}</span>
+													</div>
+												</div>
+											</CardHeader>
+										</Card>
+									)
+								})}
+							</div>
+						) : (
+							<Card className={surfaceMuted + ' shadow-none'}>
+								<CardContent className="py-12 flex flex-col items-center gap-4 text-center">
+									<div className="h-12 w-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
+										<FolderKanban className="h-6 w-6 text-emerald-500" />
+									</div>
+									<div>
+										<h3 className="font-medium">No collections yet</h3>
+										<p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-md">
+											Start a blog collection to group reusable answers, notes, and solution writeups for topic problems.
+										</p>
+									</div>
+								</CardContent>
+							</Card>
+						)}
+					</div>
+				</section>
+			)} */}
 
 			<div className="flex items-center justify-between flex-wrap gap-4">
 				{/* <h2 className="text-2xl font-semibold tracking-tight">Blogs</h2> */}
@@ -329,14 +453,28 @@ const Blogs = () => {
 						{allBlogs.length}
 					</Badge>
 				</span>}
-				<div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-					<span className="flex items-center gap-1">
-						<Globe2 className="h-3 w-3" /> {publicBlogs.length} public
-					</span>
-					<span className="opacity-40">•</span>
-					<span className="flex items-center gap-1">
-						<Lock className="h-3 w-3" /> {privateBlogs.length} private
-					</span>
+				<div className="flex flex-wrap items-center justify-end gap-3">
+					<div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+						<span className="flex items-center gap-1">
+							<Globe2 className="h-3 w-3" /> {publicBlogs.length} public
+						</span>
+						<span className="opacity-40">•</span>
+						<span className="flex items-center gap-1">
+							<Lock className="h-3 w-3" /> {privateBlogs.length} private
+						</span>
+					</div>
+					{canManageCollections && (
+						<div className="flex flex-wrap items-center gap-2">
+							<Button variant="outline" className="h-10 rounded-full px-4" onClick={() => openAddBlogModal('private')}>
+								<Lock className="mr-2 h-4 w-4" />
+								New private
+							</Button>
+							<Button className="h-10 rounded-full px-4" onClick={() => openAddBlogModal('public')}>
+								<PlusCircle className="mr-2 h-4 w-4" />
+								New public
+							</Button>
+						</div>
+					)}
 				</div>
 			</div>
 

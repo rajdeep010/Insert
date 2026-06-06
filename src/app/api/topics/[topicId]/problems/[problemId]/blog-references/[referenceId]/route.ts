@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
 
-import { getAuthenticatedUsername } from "@/lib/api/auth";
+import { getAuthenticatedAccessToken, getAuthenticatedUsername } from "@/lib/api/auth";
+import { resolveEntityPermissions } from "@/lib/collaboration/permissions";
 import dbConnect from "@/lib/dbConnect";
 import BlogCollectionModel from "@/model/BlogCollection";
 import BlogModel from "@/model/Blog";
@@ -54,6 +55,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 			topicId: parsedParams.topicId,
 			problemId: parsedParams.problemId,
 			currentUsername,
+			request,
 		});
 
 		if (!result.success) {
@@ -126,6 +128,7 @@ export async function DELETE(request: Request, context: RouteContext) {
 			topicId: parsedParams.topicId,
 			problemId: parsedParams.problemId,
 			currentUsername,
+			request,
 		});
 
 		if (!result.success) {
@@ -167,22 +170,30 @@ async function getAuthorizedProblem({
 	topicId,
 	problemId,
 	currentUsername,
+	request,
 }: {
 	topicId: string;
 	problemId: string;
 	currentUsername: string;
+	request: Request;
 }) {
-	const topic = await TopicModel.findOne({ id: topicId }).select("_id creator_username collaborators");
+	const topic = await TopicModel.findOne({ id: topicId }).select("_id creator_username visibility");
 
 	if (!topic) {
 		return { success: false as const, status: 404, message: "Topic not found" };
 	}
 
-	const isAllowed =
-		topic.creator_username === currentUsername ||
-		topic.collaborators?.some((collaborator: { username: string }) => collaborator.username === currentUsername);
+	const accessToken = await getAuthenticatedAccessToken(request);
+	const permissions = await resolveEntityPermissions({
+		entityType: "TOPIC",
+		entityId: topicId,
+		visibility: topic.visibility,
+		ownerUsername: topic.creator_username,
+		currentUsername,
+		accessToken,
+	});
 
-	if (!isAllowed) {
+	if (!permissions.canEdit) {
 		return { success: false as const, status: 403, message: "You are not allowed to update this problem" };
 	}
 

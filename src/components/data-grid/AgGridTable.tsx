@@ -173,7 +173,7 @@ export function AgGridTable<T extends object>({
 				<div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
 					<span>Page size</span>
 					<Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
-						<SelectTrigger className="h-9 w-[92px] rounded-xl border-border bg-background">
+						<SelectTrigger className="h-9 w-[92px] border-border bg-background">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
@@ -193,7 +193,6 @@ export function AgGridTable<T extends object>({
 						type="button"
 						variant="outline"
 						size="sm"
-						className="rounded-xl"
 						onClick={() => goToPage(currentPage - 1)}
 						disabled={currentPage <= 1}
 					>
@@ -206,7 +205,7 @@ export function AgGridTable<T extends object>({
 							type="button"
 							variant={page === currentPage ? 'default' : 'outline'}
 							size="sm"
-							className={cn('min-w-10 rounded-xl', page === currentPage && 'shadow-[0_10px_30px_-16px_rgba(14,165,233,0.85)]')}
+							className={cn('min-w-10', page === currentPage && 'shadow-[0_10px_30px_-16px_rgba(14,165,233,0.85)]')}
 							onClick={() => goToPage(page)}
 						>
 							{page}
@@ -217,7 +216,6 @@ export function AgGridTable<T extends object>({
 						type="button"
 						variant="outline"
 						size="sm"
-						className="rounded-xl"
 						onClick={() => goToPage(currentPage + 1)}
 						disabled={currentPage >= totalPages}
 					>

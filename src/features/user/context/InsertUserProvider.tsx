@@ -17,7 +17,7 @@ interface InsertUserProviderProps {
 	isCurrentUserLoading: boolean
 	isUserLoading: boolean
 	isAvatarUploading: boolean
-	updateUser: (formData: Partial<UserInfo>) => void
+	updateUser: (formData: Partial<UserInfo>) => Promise<boolean>
 	fetchCurrentUser: () => void
 	fetchProfileUser: (username: string) => Promise<UserInfo | null>
 	fetchPublicUser: (username: string, options?: { force?: boolean }) => Promise<UserInfo | null>
@@ -148,19 +148,23 @@ export const InsertUserProvider = ({ children }: { children: React.ReactNode }) 
 
 	const updateUser = useCallback(async (formData: Partial<UserInfo>) => {
 		try {
-			if (status !== 'authenticated') return
+			if (status !== 'authenticated') return false
 			dispatch({ type: "SET_IS_CURRENT_USER_LOADING", payload: true })
 			const response = await axios.patch(`/api/me`, formData)
 			if (response.data.success) {
 				toast({ title: 'Updated ✅', description: 'User info updated successfully', variant: 'default' })
 				dispatch({ type: "SET_CURRENT_USER", payload: response.data.userdata })
 				syncCurrentUserIntoProfile(response.data.userdata)
+				return true
 			}
 		} catch {
 			toast({ title: 'Error ⭕', description: 'Something went wrong', variant: 'destructive' })
+			return false
 		} finally {
 			dispatch({ type: "SET_IS_CURRENT_USER_LOADING", payload: false })
 		}
+
+		return false
 	}, [status, syncCurrentUserIntoProfile])
 
 	const updateUserAfterPayment = useCallback(async (payload: UserPaymentUpdate) => {

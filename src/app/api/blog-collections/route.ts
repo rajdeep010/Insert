@@ -1,5 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
-import { getAuthenticatedUsername } from "@/lib/api/auth";
+import { getAuthenticatedAccessToken, getAuthenticatedUsername } from "@/lib/api/auth";
+import { resolveEntityPermissions } from "@/lib/collaboration/permissions";
 import BlogCollectionModel from "@/model/BlogCollection";
 import BlogModel from "@/model/Blog";
 import TopicModel from "@/model/Topic";
@@ -52,17 +53,23 @@ export async function POST(request: Request) {
 
 	try {
 		if (parsedBody.data.linkedTopicId) {
-			const linkedTopic = await TopicModel.findOne({ id: parsedBody.data.linkedTopicId }).select("_id creator_username collaborators");
+			const linkedTopic = await TopicModel.findOne({ id: parsedBody.data.linkedTopicId }).select("_id creator_username visibility");
 
 			if (!linkedTopic) {
 				return Response.json({ success: false, message: "Linked topic not found" }, { status: 404 });
 			}
 
-			const canAccessTopic =
-				linkedTopic.creator_username === currentUsername ||
-				linkedTopic.collaborators?.some((collaborator: { username: string }) => collaborator.username === currentUsername);
+			const accessToken = await getAuthenticatedAccessToken(request);
+			const topicPermissions = await resolveEntityPermissions({
+				entityType: "TOPIC",
+				entityId: parsedBody.data.linkedTopicId,
+				visibility: linkedTopic.visibility,
+				ownerUsername: linkedTopic.creator_username,
+				currentUsername,
+				accessToken,
+			});
 
-			if (!canAccessTopic) {
+			if (!topicPermissions.canEdit) {
 				return Response.json({ success: false, message: "You are not allowed to link this topic" }, { status: 403 });
 			}
 		}

@@ -1,4 +1,5 @@
-import { getAuthenticatedUsername } from "@/lib/api/auth";
+import { getAuthenticatedAccessToken, getAuthenticatedUsername } from "@/lib/api/auth";
+import { resolveEntityPermissions } from "@/lib/collaboration/permissions";
 import dbConnect from "@/lib/dbConnect";
 import ProblemModel from "@/model/Problem";
 import TopicModel from "@/model/Topic";
@@ -104,14 +105,17 @@ export async function PATCH(
             );
         }
 
-        const isAllowed =
-            topic.creator_username === currentUsername ||
-            topic.collaborators?.some(
-                (collaborator: { username: string }) =>
-                    collaborator.username === currentUsername
-            );
+        const accessToken = await getAuthenticatedAccessToken(request);
+        const permissions = await resolveEntityPermissions({
+            entityType: "TOPIC",
+            entityId: parsedTopicParams.data.topicId,
+            visibility: topic.visibility,
+            ownerUsername: topic.creator_username,
+            currentUsername,
+            accessToken,
+        });
 
-        if (!isAllowed) {
+        if (!permissions.canEdit) {
             return Response.json(
                 {
                     success: false,
@@ -224,14 +228,17 @@ export async function DELETE(
             );
         }
 
-        const isAllowed =
-            topic.creator_username === currentUsername ||
-            topic.collaborators?.some(
-                (collaborator: { username: string }) =>
-                    collaborator.username === currentUsername
-            );
+        const accessToken = await getAuthenticatedAccessToken(request);
+        const permissions = await resolveEntityPermissions({
+            entityType: "TOPIC",
+            entityId: parsedTopicParams.data.topicId,
+            visibility: topic.visibility,
+            ownerUsername: topic.creator_username,
+            currentUsername,
+            accessToken,
+        });
 
-        if (!isAllowed) {
+        if (!permissions.canEdit) {
             return Response.json(
                 {
                     success: false,

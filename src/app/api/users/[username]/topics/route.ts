@@ -1,5 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
-import { getAuthenticatedUsername } from "@/lib/api/auth";
+import { getAuthenticatedAccessToken, getAuthenticatedUsername } from "@/lib/api/auth";
+import { fetchMyCollaborations } from "@/lib/collaboration/permissions";
 import TopicModel from "@/model/Topic";
 import { usernameParamsSchema } from "@/schemas/userSchema";
 
@@ -8,6 +9,22 @@ type RouteContext = {
         username: string;
     };
 };
+
+const TOPIC_SELECT = "_id id title about visibility creator_username createdAt";
+type TopicAccessRole = "OWNER" | "EDITOR" | "VIEWER" | null;
+
+const attachAccessRole = (
+    topics: Array<Record<string, any>>,
+    currentUsername: string,
+    membershipRoles: Map<string, TopicAccessRole>
+) => topics.map((topic) => ({
+    ...topic,
+    collaborators: [],
+    currentAccessRole:
+        String(topic.creator_username ?? "") === currentUsername
+            ? "OWNER"
+            : membershipRoles.get(String(topic.id ?? "")) ?? (topic.visibility === "public" ? "VIEWER" : null),
+}));
 
 export async function GET(
     request: Request,
@@ -43,33 +60,60 @@ export async function GET(
     await dbConnect();
 
     try {
-        const filter =
-            currentUsername === requestedUsername
-                ? { creator_username: requestedUsername }
-                : {
-                    $or: [
-                        {
-                            creator_username: requestedUsername,
-                            visibility: "public",
-                        },
-                        {
-                            creator_username: requestedUsername,
-                            "collaborators.username": currentUsername,
-                        },
-                    ],
-                };
+        const accessToken = await getAuthenticatedAccessToken(request);
+        const collaborations = await fetchMyCollaborations(accessToken, "TOPIC");
+        const membershipRoles = new Map<string, TopicAccessRole>(
+            collaborations.map((item: { entityId: string; role: TopicAccessRole }) => [item.entityId, item.role])
+        );
 
-        const topics = await TopicModel.find(filter)
-            .sort({ createdAt: -1 })
-            .select(
-                "_id id title about visibility creator_username collaborators createdAt"
+        if (currentUsername === requestedUsername) {
+            const collaboratorTopicIds = collaborations
+                .map((item: { entityId: string }) => item.entityId)
+                .filter(Boolean);
+
+            const [ownedTopics, collaboratedTopics] = await Promise.all([
+                TopicModel.find({ creator_username: requestedUsername })
+                    .sort({ createdAt: -1 })
+                    .select(TOPIC_SELECT)
+                    .lean(),
+                collaboratorTopicIds.length
+                    ? TopicModel.find({ id: { $in: collaboratorTopicIds } }).select(TOPIC_SELECT).lean()
+                    : Promise.resolve([]),
+            ]);
+
+            const dedupedTopics = Array.from(
+                new Map(
+                    [...ownedTopics, ...collaboratedTopics].map((topic) => [String(topic.id), topic])
+                ).values()
+            ).sort((left: any, right: any) => new Date(right.createdAt ?? 0).getTime() - new Date(left.createdAt ?? 0).getTime());
+
+            const topics = attachAccessRole(dedupedTopics, currentUsername, membershipRoles);
+
+            return Response.json(
+                {
+                    success: true,
+                    message: topics.length ? "Topics found" : "No topics found",
+                    topics,
+                },
+                { status: 200 }
             );
+        }
+
+        const topics = await TopicModel.find({
+            creator_username: requestedUsername,
+            visibility: "public",
+        })
+            .sort({ createdAt: -1 })
+            .select(TOPIC_SELECT)
+            .lean();
+
+        const topicsWithCollaborators = attachAccessRole(topics, currentUsername, membershipRoles);
 
         return Response.json(
             {
                 success: true,
-                message: topics.length ? "Topics found" : "No topics found",
-                topics,
+                message: topicsWithCollaborators.length ? "Topics found" : "No topics found",
+                topics: topicsWithCollaborators,
             },
             { status: 200 }
         );

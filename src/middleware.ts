@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 export { default } from 'next-auth/middleware'
 
 export async function middleware(request: NextRequest) {
+    if (request.nextUrl.pathname.startsWith("/api/internal/")) {
+        return NextResponse.next();
+    }
+
     const token = await getToken({ req: request })
     const url = request.nextUrl
 

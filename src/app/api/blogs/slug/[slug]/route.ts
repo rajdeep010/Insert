@@ -1,5 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
-import { requireAuthenticatedUsername } from "@/lib/api/auth";
+import { getAuthenticatedAccessToken, requireAuthenticatedUsername } from "@/lib/api/auth";
+import { fetchEntityCollaborators, resolveEntityPermissions } from "@/lib/collaboration/permissions";
 import { escapeRegex, normalizeBlogSlug } from "@/lib/blog-slug";
 import BlogModel from "@/model/Blog";
 
@@ -52,21 +53,40 @@ export async function GET(
             );
         }
 
-        if (blog.type === "private" && blog.creator !== currentUsername) {
+        const accessToken = await getAuthenticatedAccessToken(request);
+        const permissions = await resolveEntityPermissions({
+            entityType: "BLOG",
+            entityId: String(blog._id),
+            visibility: blog.type,
+            ownerUsername: blog.creator,
+            currentUsername,
+            accessToken,
+        });
+
+        if (!permissions.canView) {
             return Response.json(
                 {
                     success: false,
-                    message: "Blog not found",
+                    message: "Access denied",
                 },
-                { status: 404 }
+                { status: 403 }
             );
         }
+
+        const collaborators = await fetchEntityCollaborators(
+            "BLOG",
+            String(blog._id),
+            accessToken
+        );
 
         return Response.json(
             {
                 success: true,
                 message: "Blog fetched successfully",
-                blog,
+                blog: {
+                    ...blog.toObject(),
+                    collaborators,
+                },
             },
             { status: 200 }
         );

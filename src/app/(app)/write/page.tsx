@@ -58,7 +58,7 @@ const Write = () => {
 				<div className="w-4/5 px-6 lg:w-2/5 flex flex-col gap-12">
 					{/* Message / Suggestion */}
 					<div className="flex flex-col gap-4">
-						<p className="text-2xl text-center font-semibold">Welcome, Rajdeep Mallick</p>
+						{/* <p className="text-2xl text-center font-semibold">Welcome, Rajdeep Mallick</p> */}
 
 						<div ref={messageBoxRef} className={`${surface} ${hoverable} p-4 lg:p-5 shadow-none`}>
 							<div className="flex items-center justify-between gap-3 mb-3">
@@ -129,7 +129,7 @@ const Write = () => {
 					</div>
 
 					{/* Recently visited */}
-					<div className="flex flex-col gap-2">
+					{/* <div className="flex flex-col gap-2">
 						<div className="flex items-center gap-2">
 							<Clock3 className="h-4 w-4 opacity-30" />
 							<span className="text-sm opacity-60">Recently visited</span>
@@ -158,7 +158,7 @@ const Write = () => {
 								<CarouselNext />
 							</Carousel>
 						</div>
-					</div>
+					</div> */}
 
 					{/* Upcoming Events */}
 					<div className="flex flex-col gap-4">

@@ -21,6 +21,11 @@ type UserLike = {
         cancelledAt?: Date | string | null;
         badgeState?: 'none' | 'expired' | 'active' | null;
     } | null;
+    notificationSettings?: {
+        pushEnabled?: boolean | null;
+        fcmToken?: string | null;
+        updatedAt?: Date | string | null;
+    } | null;
     githubLogin?: string | null;
     githubId?: string | number | null;
     githubScopes?: string[];
@@ -45,6 +50,9 @@ export function buildMePayload(user: UserLike) {
         company: user.company ?? null,
         avatar: user.avatar ?? null,
         proStatus,
+        notificationSettings: {
+            pushEnabled: user.notificationSettings?.pushEnabled ?? false,
+        },
         github: {
             connected: Boolean(user.githubId),
             login: user.githubLogin ?? null,

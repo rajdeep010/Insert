@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
 
-import { getAuthenticatedUsername } from "@/lib/api/auth";
+import { getAuthenticatedAccessToken, getAuthenticatedUsername } from "@/lib/api/auth";
+import { resolveEntityPermissions } from "@/lib/collaboration/permissions";
 import dbConnect from "@/lib/dbConnect";
 import BlogCollectionModel from "@/model/BlogCollection";
 import BlogModel from "@/model/Blog";
@@ -51,17 +52,23 @@ export async function POST(request: Request, context: RouteContext) {
 	await dbConnect();
 
 	try {
-		const topic = await TopicModel.findOne({ id: parsedTopicParams.data.topicId }).select("_id creator_username collaborators");
+		const topic = await TopicModel.findOne({ id: parsedTopicParams.data.topicId }).select("_id creator_username visibility");
 
 		if (!topic) {
 			return Response.json({ success: false, message: "Topic not found" }, { status: 404 });
 		}
 
-		const isAllowed =
-			topic.creator_username === currentUsername ||
-			topic.collaborators?.some((collaborator: { username: string }) => collaborator.username === currentUsername);
+		const accessToken = await getAuthenticatedAccessToken(request);
+		const permissions = await resolveEntityPermissions({
+			entityType: "TOPIC",
+			entityId: parsedTopicParams.data.topicId,
+			visibility: topic.visibility,
+			ownerUsername: topic.creator_username,
+			currentUsername,
+			accessToken,
+		});
 
-		if (!isAllowed) {
+		if (!permissions.canEdit) {
 			return Response.json({ success: false, message: "You are not allowed to update this problem" }, { status: 403 });
 		}
 

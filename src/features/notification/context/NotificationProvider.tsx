@@ -2,11 +2,13 @@
 import type { NotificationData } from "@/types/notifications";
 import axios from "axios";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useReducer } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { notifyFormatter } from "@/helpers/notify-format";
 import NotificationReducer from "@/features/notification/reducers/NotificationReducer";
 import { externalServices } from "@/lib/config/services";
+import { inviteCollaborator } from "@/services/collaboration.service";
 
 const INSERT_NOTIFY_SERVICE = externalServices.notification.origin
 
@@ -30,6 +32,7 @@ const NotificationContext = createContext<NotificationProviderProps | null>(null
 
 export const NotificationProvider = ({ children }: { children: React.ReactNode }) => {
 	const { data: session, status } = useSession()
+	const router = useRouter()
 	const username = session?.user?.username || null
 	const [state, dispatch] = useReducer(NotificationReducer, initialState)
 
@@ -55,24 +58,27 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 	const sendCollabInvite = async (toWhom: string, notification: any) => {
 		try {
 			if (!toWhom || !notification) return
-			const payload = notifyFormatter("COLLAB_REQUEST", {
-				topicName: notification.topicName,
-				topicId: notification.topicId,
-				fromUsername: session?.user?.username,
-				toUsername: notification.to,
-				fromUserId: notification?.fromID,
-				toUserId: notification?.toID,
+			if (!session?.accessToken) {
+				toast({ title: 'Authentication required', description: 'Please sign in again to send invites.', variant: 'destructive' })
+				router.push('/sign-in')
+				return
+			}
+
+			const response = await inviteCollaborator({
+				entityType: "TOPIC",
+				entityId: String(notification.topicId ?? ""),
+				receiverUsername: String(notification.to ?? toWhom),
+				role: "EDITOR",
+				accessToken: session.accessToken,
 			})
-			const response = await axios.post(`${INSERT_NOTIFY_SERVICE}/api/notify/add-notification`, payload, {
-				headers: { Authorization: `Bearer ${session?.accessToken}` },
-			})
-			if (!response.data.success) {
-				toast({ title: 'Oops!', description: response.data.message, variant: 'default' })
+
+			if (!response.data?.success && response.data?.success !== undefined) {
+				toast({ title: 'Oops!', description: response.data.message ?? 'Invite could not be sent', variant: 'default' })
 				return
 			}
 			toast({ title: 'Sent ✅', description: `Collab invite sent to ${toWhom}`, variant: 'default' })
 		} catch (error: any) {
-			toast({ title: 'Oops', description: error.message || 'Collab request not sent', variant: 'destructive' })
+			toast({ title: 'Oops', description: error?.response?.data?.message || error.message || 'Collab request not sent', variant: 'destructive' })
 		}
 	}
 

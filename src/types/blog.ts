@@ -20,6 +20,12 @@ export interface BlogEntry {
 	likes?: string[]
 	comments?: BlogComment[]
 	creator?: string
+	collaborators?: Array<{
+		id: string
+		username: string
+		name?: string | null
+		role?: 'OWNER' | 'EDITOR' | 'VIEWER' | null
+	}>
 	autosave?: boolean
 	blogBannerImage?: string
 	createdAt?: string | Date

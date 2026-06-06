@@ -1,4 +1,5 @@
-import { requireAuthenticatedUsername } from "@/lib/api/auth";
+import { getAuthenticatedAccessToken, requireAuthenticatedUsername } from "@/lib/api/auth";
+import { fetchEntityCollaborators, resolveEntityPermissions } from "@/lib/collaboration/permissions";
 import dbConnect from "@/lib/dbConnect";
 import BlogCollectionModel from "@/model/BlogCollection";
 import BlogModel from "@/model/Blog";
@@ -16,7 +17,7 @@ type RouteContext = {
 };
 
 const TOPIC_SELECT =
-    "_id id title about visibility creator_username collaborators createdAt";
+    "_id id title about visibility creator_username createdAt";
 const BLOG_REFERENCE_SELECT = "_id blogTitle blogUrl";
 const BLOG_COLLECTION_REFERENCE_SELECT = "_id name";
 
@@ -45,9 +46,9 @@ export async function GET(
     await dbConnect();
 
     try {
-        const topic = await TopicModel.findOne({
+        const topic = (await TopicModel.findOne({
             id: parsedParams.data.topicId,
-        }).select(TOPIC_SELECT);
+        }).select(TOPIC_SELECT).lean()) as Record<string, any> | null;
 
         if (!topic) {
             return Response.json(
@@ -59,23 +60,31 @@ export async function GET(
             );
         }
 
-        const isAuthorized =
-            topic.visibility === "public" ||
-            topic.creator_username === currentUsername ||
-            topic.collaborators?.some(
-                (collaborator: { username: string }) =>
-                    collaborator.username === currentUsername
-            );
+        const accessToken = await getAuthenticatedAccessToken(request);
+        const permissions = await resolveEntityPermissions({
+            entityType: "TOPIC",
+            entityId: parsedParams.data.topicId,
+            visibility: topic.visibility,
+            ownerUsername: topic.creator_username,
+            currentUsername,
+            accessToken,
+        });
 
-        if (!isAuthorized) {
+        if (!permissions.canView) {
             return Response.json(
                 {
                     success: false,
-                    message: "Topic not found",
+                    message: "Access denied",
                 },
-                { status: 404 }
+                { status: 403 }
             );
         }
+
+        const collaborators = await fetchEntityCollaborators(
+            "TOPIC",
+            parsedParams.data.topicId,
+            accessToken
+        );
 
         const problems = await ProblemModel.find({
             topicId: topic._id,
@@ -142,7 +151,10 @@ export async function GET(
             {
                 success: true,
                 message: "Topic fetched successfully",
-                topic,
+                topic: {
+                    ...topic,
+                    collaborators,
+                },
                 problems: enrichedProblems,
             },
             { status: 200 }

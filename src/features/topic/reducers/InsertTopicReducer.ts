@@ -41,10 +41,48 @@ export default function InsertTopicReducer(state: any, action: any) {
 			return { ...state, isTopicLoading: action.payload }
 		case 'SET_CURR_TOPIC':
 			return { ...state, curr_topic: action.payload }
+		case 'UPDATE_TOPIC_DETAILS': {
+			const updatedTopic = action.payload;
+			const updateTopicListItem = (topic: any) =>
+				topic?.id === updatedTopic?.id
+					? {
+						...topic,
+						title: updatedTopic.title,
+						about: updatedTopic.about,
+						visibility: updatedTopic.visibility,
+						creator_username: updatedTopic.creator_username,
+						collaborators: updatedTopic.collaborators,
+						createdAt: updatedTopic.createdAt,
+					}
+					: topic;
+
+			return {
+				...state,
+				user_Topics: state.user_Topics?.map(updateTopicListItem),
+				all_topics: state.all_topics?.map(updateTopicListItem),
+				curr_topic: state.curr_topic?.topic?.id === updatedTopic?.id
+					? { ...state.curr_topic, topic: updatedTopic }
+					: state.curr_topic,
+			};
+		}
 		case "UPDATE_PROBLEM_IN_TOPIC": {
-			const topicId = action.payload?.topic?.id;
-			const updatedUserTopics = state.user_Topics?.map((topic: any) => topic?.id === topicId ? { ...topic, problems: action.payload?.problems } : topic);
-			const updatedCurrTopic = state.curr_topic?.topic?.id === topicId ? { ...state.curr_topic, problems: action.payload?.problems } : state.curr_topic;
+			const { topic_id, problem_id, problem } = action.payload;
+			const updateProblem = (existingProblem: any) => {
+				const existingId = String(existingProblem?._id ?? existingProblem?.id ?? "");
+				return existingId === String(problem_id) ? { ...existingProblem, ...problem } : existingProblem;
+			};
+
+			const updatedUserTopics = state.user_Topics?.map((topic: any) =>
+				topic?.id === topic_id
+					? { ...topic, problems: topic.problems?.map(updateProblem) ?? [] }
+					: topic
+			);
+			const updatedCurrTopic = state.curr_topic?.topic?.id === topic_id
+				? {
+					...state.curr_topic,
+					problems: state.curr_topic.problems?.map(updateProblem) ?? [],
+				}
+				: state.curr_topic;
 			return { ...state, user_Topics: updatedUserTopics, curr_topic: updatedCurrTopic };
 		}
 		default:
