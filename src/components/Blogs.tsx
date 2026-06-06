@@ -302,12 +302,6 @@ const Blogs = () => {
 								<CalendarDays className="h-4 w-4 shrink-0" />
 								<span className="truncate">{createdDateLabel}</span>
 							</div>
-							<div className="flex items-center gap-3">
-								<span className="inline-flex items-center gap-1">
-									<Clock3 className="h-4 w-4" />
-									{readTimeLabel}
-								</span>
-							</div>
 						</div>
 					</CardContent>
 				</Card>

@@ -17,7 +17,7 @@ export function Hero() {
                 <div className="max-w-3xl">
                     <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-1 text-xs font-medium text-black shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10 dark:text-white">
                         <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-                        Insert 5.0 · collections, pro states, and release workflows
+                        Insert 5.1 · collections, pro states, and release workflows
                     </div>
 
                     <div className="mb-5 flex items-center gap-3">
