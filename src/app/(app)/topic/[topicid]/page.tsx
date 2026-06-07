@@ -757,13 +757,13 @@ const EachTopic = () => {
 								</TopicActionButton>
 							) : null}
 
-							{canSuggestProblem ? (
+							{/* {canSuggestProblem ? (
 								<TopicActionButton label="Suggest problem">
 									<Button variant="outline" size="icon" className="h-9 w-9 rounded-full border-border/60 bg-background/70" onClick={() => handleOpenSuggestProblem()}>
 										<FileInput className="h-4 w-4" />
 									</Button>
 								</TopicActionButton>
-							) : null}
+							) : null} */}
 
 							{/* {isOwner ? (
 								<TopicActionButton label="Edit topic details">
@@ -1336,11 +1336,11 @@ const EachTopic = () => {
 												<Button
 													type="button"
 													variant="outline"
-													className="rounded-full"
+													className="rounded-md"
 													disabled={isInviting}
 													onClick={() => handleInviteCollaborator(username)}
 												>
-													{isBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
+													{isBusy ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
 													Invite
 												</Button>
 											</div>

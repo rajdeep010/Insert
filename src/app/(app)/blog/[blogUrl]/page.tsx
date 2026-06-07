@@ -968,11 +968,11 @@ const Write = () => {
 																<Btn
 																	type="button"
 																	variant="outline"
-																	className="rounded-full"
+																	className="rounded-md"
 																	disabled={isInviting}
 																	onClick={() => handleInviteCollaborator(username)}
 																>
-																	{isBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
+																	{isBusy ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
 																	Invite
 																</Btn>
 															</div>
