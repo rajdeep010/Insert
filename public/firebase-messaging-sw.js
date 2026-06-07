@@ -61,7 +61,7 @@ if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.messagin
     const messaging = firebase.messaging();
 
     messaging.onBackgroundMessage((payload) => {
-        console.log("Background message:", payload);
+        // console.log("Background message:", payload);
 
         void showPayloadNotification(payload);
     });
@@ -84,7 +84,7 @@ if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.messagin
             };
         }
 
-        console.log("Raw push event:", payload);
+        // console.log("Raw push event:", payload);
         event.waitUntil(showPayloadNotification(payload));
     });
 

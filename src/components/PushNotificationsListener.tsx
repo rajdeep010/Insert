@@ -22,7 +22,7 @@ export default function PushNotificationsListener() {
             const messaging = getMessaging(app);
 
             unsubscribe = onMessage(messaging, (payload) => {
-                console.log("Received foreground message:", payload);
+                // console.log("Received foreground message:", payload);
             });
         };
 

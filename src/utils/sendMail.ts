@@ -45,7 +45,7 @@ export const sendEmail = async ({ to, subject, html, text }: SendEmailOptions): 
             html
         });
 
-        console.log('✅ Email sent:', info.messageId);
+        // console.log('✅ Email sent:', info.messageId);
         return info.messageId;
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);

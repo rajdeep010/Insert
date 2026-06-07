@@ -29,12 +29,12 @@ export const createNotificationSocketClientV2 = ({
 		heartbeatIncoming: 10000,
 		heartbeatOutgoing: 10000,
 		debug: (message) => {
-			console.info("[notification-v2:stomp]", message);
+			// // console.info("[notification-v2:stomp]", message);
 		},
 	});
 
 	client.onConnect = () => {
-		console.info("[notification-v2] connected");
+		// console.info("[notification-v2] connected");
 		onConnectionStateChange?.("connected");
 
 		if (subscription) {
@@ -42,44 +42,44 @@ export const createNotificationSocketClientV2 = ({
 		}
 
 		const destination = `/topic/notifications/${username}`;
-		console.info("[notification-v2] subscribing", destination);
+		// console.info("[notification-v2] subscribing", destination);
 		subscription = client.subscribe(destination, (message: IMessage) => {
 			try {
 				const payload = JSON.parse(message.body) as NotificationSocketPayloadV2;
 				onMessage(payload);
 			} catch (error) {
-				console.error("[notification-v2] message parse failed", error);
+				// console.error("[notification-v2] message parse failed", error);
 				onError?.(error instanceof Error ? error : new Error("Notification payload parsing failed"));
 			}
 		});
 	};
 
 	client.onDisconnect = () => {
-		console.info("[notification-v2] disconnected");
+		// console.info("[notification-v2] disconnected");
 		onConnectionStateChange?.("disconnected");
 	};
 
 	client.onStompError = (frame) => {
-		console.error("[notification-v2] broker error", frame.headers["message"], frame.body);
+		// console.error("[notification-v2] broker error", frame.headers["message"], frame.body);
 		onConnectionStateChange?.("error");
 		onError?.(new Error(frame.headers["message"] ?? "Notification socket broker error"));
 	};
 
 	client.onWebSocketClose = () => {
 		if (didManualDisconnect) {
-			console.info("[notification-v2] socket closed after cleanup");
+			// console.info("[notification-v2] socket closed after cleanup");
 			onConnectionStateChange?.("disconnected");
 			return;
 		}
 
-		console.warn("[notification-v2] socket closed, reconnecting");
+		// console.warn("[notification-v2] socket closed, reconnecting");
 		onConnectionStateChange?.("reconnecting");
 	};
 
 	return {
 		connect: () => {
 			didManualDisconnect = false;
-			console.info("[notification-v2] connecting", externalServices.notificationV2.websocketUrl);
+			// console.info("[notification-v2] connecting", externalServices.notificationV2.websocketUrl);
 			onConnectionStateChange?.("connecting");
 			client.activate();
 		},
