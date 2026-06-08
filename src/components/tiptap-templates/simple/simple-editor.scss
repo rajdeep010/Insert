@@ -97,6 +97,8 @@ body {
   max-width: 100%;
   width: 100%;
   margin: 0 auto;
+  width: 65rem;
+  max-width: 65rem;
 }
 
 .simple-post-content {
@@ -104,8 +106,8 @@ body {
 }
 
 .simple-editor-content .tiptap.ProseMirror {
-  // padding: 2.25rem 2rem 2.75rem;
-  max-width: 60rem;
+  padding: 2rem 2.5rem;
+  max-width: 80rem;
   margin: 0 auto;
 }
 

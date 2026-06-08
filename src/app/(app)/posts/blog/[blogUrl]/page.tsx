@@ -153,15 +153,15 @@ export default function BlogPost({ params }: any) {
             <div className="flex flex-col gap-6 pt-8 lg:pt-12 justify-center px-8 lg:px-56">
                 <InsertNavbar />
             </div>
-            <div className="m-auto min-h-screen px-6 pb-12 lg:px-56">
-                <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+            <div className="m-auto min-h-screen px-6 pb-12">
+                <div className="flex w-full max-w-7xl min-w-5xl flex-col gap-6">
                     {blogLoader
                         ? <div className="flex justify-center items-center h-screen">
                             <Loader2 className="h-12 w-12 animate-spin text-gray-500" />
                         </div>
                         : <EditorContext.Provider value={{ editor: previewEditor }}>
-                            <div className="flex w-full min-w-0 flex-col gap-4">
-                                <div className="flex min-w-0 flex-col gap-2">
+                            <div className="flex w-full min-w-5xl flex-col gap-4">
+                                <div className="flex min-w-5xl flex-col gap-2">
                                     <header className="flex flex-col gap-4 border-b border-border/60 pb-6">
                                         <span className="inline-flex w-fit items-center rounded-full border border-border/70 bg-background px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                                             Blog post
