@@ -1,95 +1,172 @@
 "use client";
-
 import React from "react";
-import { WobbleCard } from "./ui/wobble-card";
 import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 
 export function About() {
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-7xl mx-auto w-full my-16 px-4">
-            <WobbleCard
-                containerClassName="col-span-1 lg:col-span-2 h-full bg-gradient-to-br from-red-600 to-orange-600 min-h-[500px] lg:min-h-[300px]"
-                className=""
-            >
-                <div className="max-w-xs">
-                    <h2 className="text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
-                        Create structured coding sheets
+        <section className="relative mx-auto flex min-h-[92vh] w-full items-center overflow-hidden bg-background px-6 py-20">
+
+            <div
+                className="pointer-events-none absolute inset-0 z-0 opacity-40"
+                style={{
+                    backgroundImage: [
+                        "linear-gradient(hsl(var(--border) / 0.5) 1px, transparent 1px)",
+                        "linear-gradient(90deg, hsl(var(--border) / 0.5) 1px, transparent 1px)",
+                    ].join(", "),
+                    backgroundSize: "48px 48px",
+                }}
+            />
+
+            {/* Section label */}
+            <div className="mb-10 flex items-center gap-3">
+                <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50">
+                    What you can build
+                </span>
+                <span className="h-px w-12 bg-border/40" />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:px-20 px-10">
+
+                {/* Card 1 — Topics / Sheets (wide) */}
+                <div className="relative col-span-1 lg:col-span-2 overflow-hidden rounded-2xl border border-violet-500/15 bg-violet-500/5 dark:border-violet-500/10 dark:bg-violet-500/[0.04] p-7 min-h-[280px]">
+                    <span className="mb-3 inline-block font-mono text-[10px] uppercase tracking-widest text-violet-600 dark:text-violet-400/70">
+                        Topics
+                    </span>
+                    <h2 className="max-w-xs text-xl lg:text-2xl font-medium tracking-[-0.03em] text-foreground leading-snug">
+                        Structured coding sheets, built for developers
                     </h2>
-                    <p className="mt-4 text-left text-sm lg:text-base/4 text-rose-50/90">
+                    <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
                         Build and refine problem sets with versioned drafts and workspace controls. Publish or export when ready.
                     </p>
+                    <Image
+                        src="https://res.cloudinary.com/dgxeg3sju/image/upload/v1753474718/05969d69-43c7-4200-beca-173029a48450.png"
+                        width={440}
+                        height={440}
+                        alt="Sheets preview"
+                        className="absolute -right-4 lg:-right-[6%] -bottom-8 object-contain rounded-xl"
+                    />
                 </div>
-                <Image
-                    src="https://res.cloudinary.com/dgxeg3sju/image/upload/v1753474718/05969d69-43c7-4200-beca-173029a48450.png"
-                    width={500}
-                    height={500}
-                    alt="Sheets collaboration preview"
-                    className="absolute -right-4 lg:-right-[10%] filter -bottom-10 object-contain rounded-2xl"
-                />
-            </WobbleCard>
 
-            <WobbleCard containerClassName="col-span-1 min-h-[300px] bg-gradient-to-br from-blue-800 to-indigo-800">
-                <h2 className="max-w-80  text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
-                    Curate blog collections that stay easy to share
-                </h2>
-                <p className="mt-4 max-w-[26rem] text-left text-sm lg:text-base/4 text-neutral-200">
-                    Group multiple posts into a single collection, control visibility, and publish a cleaner public reading flow instead of sharing loose blog links one by one.
-                </p>
-            </WobbleCard>
-
-            <WobbleCard containerClassName="col-span-1 lg:col-span-3 bg-gradient-to-br from-teal-800 to-teal-600  min-h-[500px] lg:min-h-[600px] xl:min-h-[300px]">
-                <div className="max-w-lg">
-                    <h2 className="max-w-lg md:max-w-lg  text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
-                        Write technical blogs and documentation with Insert
+                {/* Card 2 — Blogs */}
+                <div className="relative col-span-1 overflow-hidden rounded-2xl border border-sky-500/15 bg-sky-500/5 dark:border-sky-500/10 dark:bg-sky-500/[0.04] p-7 min-h-[280px]">
+                    <span className="mb-3 inline-block font-mono text-[10px] uppercase tracking-widest text-sky-600 dark:text-sky-400/70">
+                        Blogs
+                    </span>
+                    <h2 className="max-w-[200px] text-xl lg:text-2xl font-medium tracking-[-0.03em] text-foreground leading-snug">
+                        Curate blog collections that stay easy to share
                     </h2>
-                    <p className="mt-4 max-w-[46rem] text-left text-sm lg:text-base/4 text-neutral-200">
-                        Draft technical articles and project docs with a clean, focused editor, then organize related posts into collections for tutorials, release trails, or learning paths.
+                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                        Group posts into a single collection, control visibility, and publish a clean reading flow — no loose links.
                     </p>
                 </div>
-                <Image
-                    src="https://res.cloudinary.com/dgxeg3sju/image/upload/v1753474830/4440e28b-4269-42b1-9536-179d06eb8f80.png"
-                    width={500}
-                    height={500}
-                    alt="linear demo image"
-                    className="absolute -right-10 lg:-right-[5%] -bottom-10 object-contain rounded-2xl"
-                />
-            </WobbleCard>
 
-            <WobbleCard containerClassName="col-span-1 min-h-[300px] bg-gradient-to-br from-amber-600 to-orange-600">
-                <h2 className="max-w-80 text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
-                    Seamless Pro when you need more scale
-                </h2>
-                <p className="mt-4 max-w-[26rem] text-left text-sm lg:text-base/4 text-yellow-50">
-                    Upgrade in seconds and Pro features unlock instantly: project dashboards, unlimited sheets, organized publishing workflows, and automated release notes — all consistent with your workflow.
-                </p>
-            </WobbleCard>
+                {/* Card 3 — Collaboration banner (v6.0, full-width) */}
+                <div className="col-span-1 lg:col-span-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.04] dark:border-emerald-500/15 dark:bg-emerald-500/[0.04] p-7">
+                    <div className="flex flex-wrap items-center justify-between gap-8">
+                        <div className="max-w-lg">
+                            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/8 px-3 py-1">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                <span className="font-mono text-[10px] uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                                    New in v6.0
+                                </span>
+                            </div>
+                            <h2 className="text-xl lg:text-2xl font-medium tracking-[-0.03em] text-foreground leading-snug">
+                                Collaborate in realtime — across every topic and blog
+                            </h2>
+                            <p className="mt-3 text-sm leading-relaxed text-muted-foreground max-w-md">
+                                Invite collaborators, assign editor or viewer roles, accept or decline requests, and stay updated with instant in-app notifications. No context switching.
+                            </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2.5 shrink-0">
+                            {[
+                                { label: "Role-based access", color: "border-emerald-500/25 bg-emerald-500/8 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400" },
+                                { label: "Realtime notifications", color: "border-amber-500/25 bg-amber-500/8 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400" },
+                                { label: "Workspace switcher", color: "border-sky-500/25 bg-sky-500/8 text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-400" },
+                                { label: "Collab requests", color: "border-violet-500/25 bg-violet-500/8 text-violet-700 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-400" },
+                            ].map((chip) => (
+                                <span
+                                    key={chip.label}
+                                    className={`inline-flex items-center rounded-lg border px-3.5 py-2 text-xs font-medium ${chip.color}`}
+                                >
+                                    {chip.label}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                </div>
 
-            <WobbleCard
-                containerClassName="col-span-1 lg:col-span-2 h-full bg-gradient-to-br from-indigo-800 to-violet-800 min-h-[480px] lg:min-h-[300px]"
-                className=""
-            >
-                <div className="max-w-sm">
-                    <div className="mb-2 inline-flex items-center gap-2">
-                        <span className="inline-flex items-center rounded-full bg-indigo-600/90 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white">
+                {/* Card 4 — Technical writing (wide) */}
+                <div className="relative col-span-1 lg:col-span-2 overflow-hidden rounded-2xl border border-teal-500/15 bg-teal-500/5 dark:border-teal-500/10 dark:bg-teal-500/[0.04] p-7 min-h-[280px]">
+                    <span className="mb-3 inline-block font-mono text-[10px] uppercase tracking-widest text-teal-600 dark:text-teal-400/70">
+                        Writing
+                    </span>
+                    <h2 className="max-w-xs text-xl lg:text-2xl font-medium tracking-[-0.03em] text-foreground leading-snug">
+                        Write technical blogs and docs with a focused editor
+                    </h2>
+                    <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
+                        Draft articles and project docs, then organize related posts into collections for tutorials, release trails, or learning paths.
+                    </p>
+                    <Image
+                        src="https://res.cloudinary.com/dgxeg3sju/image/upload/v1753474830/4440e28b-4269-42b1-9536-179d06eb8f80.png"
+                        width={440}
+                        height={440}
+                        alt="Blog editor preview"
+                        className="absolute -right-10 lg:-right-[4%] -bottom-10 object-contain rounded-xl"
+                    />
+                </div>
+
+                {/* Card 5 — Pro */}
+                <div className="relative col-span-1 overflow-hidden rounded-2xl border border-indigo-500/15 bg-indigo-500/5 dark:border-indigo-500/10 dark:bg-indigo-500/[0.04] p-7 min-h-[280px]">
+                    <div className="mb-3 inline-flex items-center gap-2">
+                        <span className="rounded-md border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-indigo-600 dark:border-indigo-500/25 dark:bg-indigo-500/10 dark:text-indigo-400">
                             Pro
                         </span>
-                        <span className="text-xs text-indigo-100/80">Projects</span>
                     </div>
-                    <h2 className="text-left text-balance text-base md:text-xl lg:text-3xl font-semibold tracking-[-0.015em] text-white">
-                        Project dashboard for automated release notes
+                    <h2 className="max-w-[200px] text-xl lg:text-2xl font-medium tracking-[-0.03em] text-foreground leading-snug">
+                        More scale when you need it
                     </h2>
-                    <p className="mt-4 text-left text-sm lg:text-base/4 text-indigo-100/90">
-                        Connect a GitHub repository once. Insert analyzes commit messages, groups changes by keywords, and prepares a draft release note for review — all in one workspace.
+                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                        Unlock project dashboards, unlimited sheets, organized publishing workflows, and automated release notes — instantly on upgrade.
                     </p>
+                    <a
+                        href="/pricing"
+                        className="mt-6 inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                    >
+                        See Pro features <ArrowRight className="h-3 w-3" />
+                    </a>
                 </div>
-                <Image
-                    src="/insert_project.png"
-                    width={560}
-                    height={560}
-                    alt="Insert project dashboard"
-                    className="absolute -right-10 lg:-right-[20%] -bottom-[40%] object-contain rounded-2xl"
-                />
-            </WobbleCard>
-        </div>
+
+                {/* Card 6 — Release notes (full-width) */}
+                <div className="relative col-span-1 lg:col-span-3 overflow-hidden rounded-2xl border border-rose-500/15 bg-rose-500/[0.03] dark:border-rose-500/10 dark:bg-rose-500/[0.04] p-7 min-h-[200px]">
+                    <div className="flex flex-wrap items-start justify-between gap-8">
+                        <div className="max-w-md">
+                            <div className="mb-3 flex items-center gap-2">
+                                <span className="rounded-md border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-indigo-600 dark:border-indigo-500/25 dark:text-indigo-400">
+                                    Pro
+                                </span>
+                                <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/40">
+                                    Projects
+                                </span>
+                            </div>
+                            <h2 className="text-xl lg:text-2xl font-medium tracking-[-0.03em] text-foreground leading-snug">
+                                Automated release notes from GitHub commits
+                            </h2>
+                            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                                Connect a repository once. Insert analyzes commit messages, groups changes by keywords, and prepares a draft release note for review — all in one workspace.
+                            </p>
+                        </div>
+                        <Image
+                            src="/insert_project.png"
+                            width={420}
+                            height={280}
+                            alt="Insert project dashboard"
+                            className="object-contain rounded-xl self-end opacity-90"
+                        />
+                    </div>
+                </div>
+
+            </div>
+        </section>
     );
 }

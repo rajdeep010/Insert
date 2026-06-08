@@ -1,150 +1,183 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, BookMarked, GitBranch, Sparkles } from "lucide-react";
+import { ArrowRight, Bell, GitMerge, Users } from "lucide-react";
 import { Button } from "../ui/button";
-import { Spotlight } from "../ui/spotlight-new";
-import { BackgroundBeams } from "../ui/background-beams";
 import InsertIcon from "../InsertIcon";
 
 export function Hero() {
     return (
-        <section className="relative mx-auto flex min-h-[88vh] w-full items-center overflow-hidden px-6 pt-24">
-            <Spotlight />
-            <div className="pointer-events-none absolute inset-x-0 top-24 z-10 mx-auto h-72 max-w-5xl rounded-full bg-gradient-to-r from-sky-400/15 via-indigo-400/20 to-fuchsia-400/15 blur-3xl" />
+        <section className="relative mx-auto flex min-h-[92vh] w-full items-center overflow-hidden bg-background px-6 pt-20">
 
-            <div className="relative z-20 mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-[1.08fr_0.92fr]">
-                <div className="max-w-3xl">
-                    <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-1 text-xs font-medium text-black shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10 dark:text-white">
-                        <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-                        Insert 5.1 · collections, pro states, and release workflows
-                    </div>
+            {/* Grid */}
+            <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                    backgroundImage: [
+                        "linear-gradient(hsl(var(--border) / 0.5) 0.5px, transparent 0.5px)",
+                        "linear-gradient(90deg, hsl(var(--border) / 0.5) 0.5px, transparent 0.5px)",
+                    ].join(", "),
+                    backgroundSize: "48px 48px",
+                }}
+            />
 
-                    <div className="mb-5 flex items-center gap-3">
+            {/* Glow */}
+            <div className="pointer-events-none absolute left-1/2 top-0 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-indigo-500/8 blur-[120px]" />
+
+            <div className="grid lg:grid-cols-[65%_1fr] grid-cols-1 gap-5 relative z-10 w-full lg:px-20 px-10">
+
+                {/* left section */}
+                <div className="relative z-10 mx-auto w-full max-w-6xl">
+
+                    {/* Release pill */}
+                    <Link
+                        href="/releases/v6-0"
+                        className="mb-10 inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-3 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        <span className="font-mono text-emerald-600 dark:text-emerald-400">v6.0</span>
+                        <span className="opacity-40">·</span>
+                        Collaboration & Realtime Notifications
+                        <ArrowRight className="h-3 w-3" />
+                    </Link>
+
+                    {/* App identity + headline as one block */}
+                    <div className="flex items-center gap-4 mb-6">
                         <InsertIcon
-                            height={60}
-                            width={60}
-                            className="rounded-2xl border-2 border-gray-900 p-1.5 shadow-sm dark:border-gray-700 dark:bg-white"
+                            height={64}
+                            width={64}
+                            className="rounded-xl border border-border bg-muted p-2 shrink-0 bg-white"
                         />
-                        <div className="rounded-2xl border border-black/10 bg-white/65 px-3 py-2 text-left shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10">
-                            <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
-                                Developer workspace
-                            </p>
-                            <p className="text-sm font-semibold text-black dark:text-white">Writing, collections, and shipping</p>
-                        </div>
+                        <h1 className="text-[clamp(2.5rem,7vw,5rem)] font-bold leading-none tracking-[-0.02em] text-foreground">
+                            Insert
+                        </h1>
                     </div>
 
-                    <h1 className="max-w-4xl text-balance text-5xl font-semibold tracking-tight text-black dark:text-white md:text-6xl lg:text-7xl">
-                        A cleaner way to <span className="bg-gradient-to-r from-sky-500 via-indigo-500 to-fuchsia-500 bg-clip-text text-transparent">write</span>, organize, and <span className="underline decoration-indigo-400/70 underline-offset-8">ship</span> <span className="italic text-slate-600 dark:text-slate-300">developer</span> work.
-                    </h1>
-
-                    <p className="mt-5 max-w-2xl text-pretty text-base leading-7 text-gray-700 dark:text-gray-300 md:text-xl md:leading-8">
-                        Build structured sheets, publish technical writing, bundle blogs into public collections, and turn project activity into release-ready notes without splitting your workflow across tools.
+                    {/* Subheadline */}
+                    <p className="max-w-2xl text-[clamp(1.25rem,2.5vw,1.75rem)] font-medium leading-snug tracking-[-0.02em] text-foreground/80">
+                        A developer workspace for writing,<br className="hidden sm:block" />
+                        collaborating, and shipping — all in one place.
                     </p>
 
+                    {/* Body */}
+                    <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground">
+                        Structured sheets, technical blogs, team collaboration with role-based access, and release-ready notes without splitting your workflow across tools.
+                    </p>
+
+                    {/* CTAs */}
                     <div className="mt-8 flex flex-wrap items-center gap-3">
                         <Link href="/sign-up">
-                            <Button className="h-11 border border-black/10 bg-black px-5 text-sm font-medium text-white hover:bg-black/90 dark:border-white/10 dark:bg-white dark:text-black dark:hover:bg-white/90">
-                                Get started
-                                <ArrowRight className="ml-2 h-4 w-4" />
+                            <Button className="h-10 rounded-lg px-5 text-sm font-medium">
+                                Get started free
+                                <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                            </Button>
+                        </Link>
+                        <Link href="/releases">
+                            <Button variant="outline" className="h-10 rounded-lg px-5 text-sm font-medium text-muted-foreground hover:text-foreground">
+                                See what's new
                             </Button>
                         </Link>
                     </div>
 
-                    <div className="mt-8 flex flex-wrap gap-3 text-sm text-gray-600 dark:text-gray-300">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/65 px-3 py-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10">
-                            <BookMarked className="h-4 w-4" />
-                            Public collections
-                        </div>
-                        <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/65 px-3 py-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10">
-                            <GitBranch className="h-4 w-4" />
-                            Release automation
-                        </div>
-                        <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/65 px-3 py-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10">
-                            <BadgeCheck className="h-4 w-4" />
-                            Powerful Pro
-                        </div>
+                    {/* Stats */}
+                    <div className="mt-14 flex flex-wrap gap-10 border-t border-border pt-8">
+                        {[
+                            { label: "Topics & Blogs", value: "Unified writing" },
+                            { label: "Team access", value: "Role-based" },
+                            { label: "Notifications", value: "Realtime" },
+                            { label: "Release notes", value: "Automated" },
+                        ].map((s) => (
+                            <div key={s.label}>
+                                <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/50">
+                                    {s.label}
+                                </p>
+                                <p className="mt-1 text-sm font-medium text-foreground">
+                                    {s.value}
+                                </p>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
-                <div className="relative mx-auto w-full max-w-2xl">
-                    <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-white/60 via-white/10 to-transparent blur-2xl dark:from-white/10 dark:via-white/5" />
+                {/* right section */}
+                <div className="flex flex-col gap-3">
 
-                    <div className="relative overflow-hidden rounded-[2rem] border border-black/10 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0b1220]/75 dark:shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
-                        <div className="grid gap-4 sm:grid-cols-[1.1fr_0.9fr]">
-                            <div className="rounded-[1.5rem] border border-black/10 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-5 text-white dark:border-white/10">
-                                <div className="mb-4 flex items-center justify-between">
-                                    <div>
-                                        <p className="text-[11px] uppercase tracking-[0.22em] text-white/55">Collections</p>
-                                        <p className="mt-1 text-lg font-semibold">Publish a better reading </p>
-                                    </div>
-                                    {/* <div className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white/80">
-                                        new flow
-                                    </div> */}
+                    {/* Collaboration card */}
+                    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+                        <div className="mb-4 flex items-center justify-between">
+                            <div className="flex items-center gap-2.5">
+                                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/10 dark:bg-indigo-500/15">
+                                    <Users className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
                                 </div>
-
-                                <div className="space-y-3">
-                                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                                        <div className="flex items-center justify-between">
-                                            <p className="text-sm font-medium">Blog collections</p>
-                                            <span className="rounded-full bg-emerald-400/15 px-2 py-0.5 text-[11px] text-emerald-300">public</span>
-                                        </div>
-                                        <p className="mt-2 text-sm text-white/65">Club related blog posts into one guided collection instead of a loose set of links.</p>
-                                    </div>
-
-                                    {/* <div className="grid grid-cols-2 gap-3">
-                                        <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-                                            <p className="text-[11px] uppercase tracking-[0.18em] text-white/45">Posts</p>
-                                            <p className="mt-2 text-2xl font-semibold">Blogs</p>
-                                        </div>
-                                        <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-                                            <p className="text-[11px] uppercase tracking-[0.18em] text-white/45">Visibility</p>
-                                            <p className="mt-2 text-2xl font-semibold">Mixed</p>
-                                        </div>
-                                    </div> */}
-                                </div>
+                                <span className="text-sm font-medium text-card-foreground">Collaboration</span>
                             </div>
-
-                            <div className="flex flex-col gap-4">
-                                <div className="rounded-[1.5rem] border border-black/10 bg-white/85 p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
-                                    <div className="flex items-center gap-2 text-sm font-medium text-black dark:text-white">
-                                        <Sparkles className="h-4 w-4 text-indigo-500" />
-                                        Release ready
-                                    </div>
-                                    <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
-                                        Commits, writing, and public-facing collections stay connected in one system.
-                                    </p>
-                                </div>
-
-                                <div className="rounded-[1.5rem] border border-black/10 bg-white/85 p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
-                                    <div className="mb-3 flex items-center justify-between">
-                                        <p className="text-sm font-medium text-black dark:text-white">Badge states</p>
-                                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500 dark:bg-white/10 dark:text-white/60">improved</span>
-                                    </div>
-                                    <div className="space-y-2.5 text-sm text-gray-600 dark:text-gray-300">
-                                        <div className="flex items-center justify-between border border-black/5 px-3 py-2 dark:border-white/10">
-                                            <span>Active Pro</span>
-                                            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-white"><BadgeCheck className="h-3.5 w-3.5" /></span>
-                                        </div>
-                                        <div className="flex items-center justify-between border border-black/5 px-3 py-2 dark:border-white/10">
-                                            <span>Expired Pro</span>
-                                            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-400 text-white"><BadgeCheck className="h-3.5 w-3.5" /></span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="rounded-[1.5rem] border border-black/10 bg-gradient-to-r from-black to-slate-800 p-4 text-white shadow-sm dark:border-white/10">
-                                    <p className="text-[11px] uppercase tracking-[0.22em] text-white/50">Why teams use Insert</p>
-                                    <p className="mt-2 text-sm leading-6 text-white/80">
-                                        Less context switching. Cleaner publishing. Faster release communication.
-                                    </p>
-                                </div>
-                            </div>
+                            <span className="rounded-full bg-indigo-500/10 px-2 py-0.5 font-mono text-[10px] text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">
+                                new
+                            </span>
+                        </div>
+                        <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+                            Invite editors and viewers to your Topics and Blogs. Manage roles and permissions without sharing ownership.
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                            {["Invite", "Editor access", "Viewer access", "Role updates"].map((t) => (
+                                <span
+                                    key={t}
+                                    className="rounded-md border border-border bg-muted px-2.5 py-1 text-[11px] text-muted-foreground"
+                                >
+                                    {t}
+                                </span>
+                            ))}
                         </div>
                     </div>
+
+                    {/* Notifications card */}
+                    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+                        <div className="mb-4 flex items-center justify-between">
+                            <div className="flex items-center gap-2.5">
+                                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500/10 dark:bg-sky-500/15">
+                                    <Bell className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+                                </div>
+                                <span className="text-sm font-medium text-card-foreground">Realtime Notifications</span>
+                            </div>
+                            <span className="rounded-full bg-sky-500/10 px-2 py-0.5 font-mono text-[10px] text-sky-600 dark:bg-sky-500/15 dark:text-sky-400">
+                                live
+                            </span>
+                        </div>
+                        <p className="text-sm leading-relaxed text-muted-foreground">
+                            In-app notifications with popup delivery, dismiss, and action support — accept or decline collaboration requests right from the notification.
+                        </p>
+                    </div>
+
+                    {/* Workspace switcher card */}
+                    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+                        <div className="mb-3 flex items-center gap-2.5">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15">
+                                <GitMerge className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                            </div>
+                            <span className="text-sm font-medium text-card-foreground">Workspace Switching</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {["Topic switcher", "Blog switcher"].map((label, i) => (
+                                <div
+                                    key={label}
+                                    className={`flex-1 rounded-xl border px-3 py-2.5 text-center text-xs font-medium transition-colors ${i === 0
+                                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-400"
+                                        : "border-red-500/30 bg-red-500/10 text-red-700 dark:border-red-500/25 dark:bg-red-500/10 dark:text-red-400"
+                                        }`}
+                                >
+                                    {label}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
                 </div>
             </div>
-            <BackgroundBeams />
+
+
+
+
+
         </section>
     );
 }

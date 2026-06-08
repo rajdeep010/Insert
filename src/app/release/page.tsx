@@ -1,69 +1,84 @@
-import React from 'react'
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import InsertNavbar from "@/components/InsertNavbar";
 
-import { Footer } from '@/components/landing/Footer'
-import { Navbar } from '@/components/landing/Navbar'
-import { ReleaseCard } from '@/components/release/ReleaseCard'
-import { ReleaseHero } from '@/components/release/ReleaseHero'
-import { latestRelease, releaseEntries } from '@/components/release/releases'
+const releases = [
+	{
+		version: "v6.0",
+		title: "Collaboration & Realtime Notifications",
+		date: "June 2026",
+		slug: "v6",
+		isLatest: true,
+	},
+	{
+		version: "v5.0",
+		title: "Workflow Automation & Editor Enhancements",
+		date: "March 2026",
+		slug: "v5",
+		isLatest: false,
+	},
+];
 
-export default function ReleasePage() {
-  const previousReleases = releaseEntries.slice(1)
+export default function ReleasesPage() {
+	return (
+		<div className="min-h-screen bg-background text-foreground py-2" style={{ fontFamily: "'DM Sans', 'Geist', system-ui, sans-serif", background: "#0a0a0b", }}	>
+			<div className="mx-auto lg:mx-20 my-10 border-b border-border/50">
+				<InsertNavbar />
+			</div>
 
-  return (
-    <div className="relative min-h-screen overflow-x-hidden">
-      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-indigo-50 via-white to-white dark:from-indigo-950 dark:via-gray-900 dark:to-gray-900" />
-      <div className="fixed inset-0 -z-10 opacity-40 [mask-image:radial-gradient(ellipse_at_center,black,transparent)] [background-image:linear-gradient(to_right,rgba(99,102,241,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.08)_1px,transparent_1px)] [background-size:20px_20px] [background-position:center] dark:opacity-35 dark:[background-image:linear-gradient(to_right,rgba(99,102,241,0.12)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.12)_1px,transparent_1px)]" />
-      <div className="pointer-events-none fixed left-1/2 top-[-12rem] -z-10 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-gradient-to-tr from-indigo-400/35 via-fuchsia-400/25 to-transparent blur-3xl dark:from-indigo-600/30 dark:via-fuchsia-600/25" />
+			<main className="relative z-10 mx-auto max-w-3xl px-6 pb-24">
+				{/* Header */}
+				<div className="mb-16">
+					<div className="mb-4 flex items-center gap-3">
+						<span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+							Product updates
+						</span>
+						<span className="h-px w-12 bg-border" />
+					</div>
+					<h1 className="text-4xl font-medium tracking-tight text-foreground md:text-5xl">
+						Insert <span className="text-muted-foreground">Releases</span>
+					</h1>
+					{/* <p className="mt-4 text-lg text-muted-foreground">
+						A history of updates, improvements, and new features.
+					</p> */}
+				</div>
 
-      <Navbar />
+				{/* Releases List */}
+				<div className="flex flex-col gap-6">
+					{releases.map((release) => (
+						<Link
+							key={release.version}
+							href={`/release/${release.slug}`}
+							className="group flex flex-col rounded-2xl border border-border/50 bg-background/50 p-6 transition-all hover:border-foreground/20 hover:bg-background/80"
+						>
+							<div className="mb-2 flex items-center justify-between">
+								<div className="flex items-center gap-3">
+									<span className="font-mono text-sm font-semibold text-foreground">
+										{release.version}
+									</span>
+									{release.isLatest && (
+										<span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+											Latest
+										</span>
+									)}
+								</div>
+								<span className="font-mono text-xs text-muted-foreground">
+									{release.date}
+								</span>
+							</div>
 
-      <main className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 pb-16 pt-24 md:px-6 lg:px-8 lg:pt-28">
-        <ReleaseHero latestRelease={latestRelease} />
-
-        <section id="latest-release" className="space-y-6">
-          <div className="flex flex-col gap-3 border-b border-black/10 pb-5 dark:border-white/10 md:flex-row md:items-end md:justify-between">
-            <div className="max-w-3xl">
-              <p className="text-xs font-medium uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
-                Latest
-              </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-black dark:text-white md:text-4xl">
-                {latestRelease.version}
-              </h2>
-            </div>
-
-            <p className="max-w-2xl text-sm leading-7 text-gray-600 dark:text-gray-400 md:text-base md:text-right">
-              {latestRelease.label}
-            </p>
-          </div>
-
-          <ReleaseCard release={latestRelease} latest />
-        </section>
-
-        <section id="release-history" className="space-y-6">
-          <div className="flex flex-col gap-3 border-b border-black/10 pb-5 dark:border-white/10 md:flex-row md:items-end md:justify-between">
-            <div className="max-w-3xl">
-              <p className="text-xs font-medium uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
-                Release history
-              </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-black dark:text-white md:text-4xl">
-                Previous versions
-              </h2>
-            </div>
-
-            <p className="max-w-2xl text-sm leading-7 text-gray-600 dark:text-gray-400 md:text-base md:text-right">
-              Major product changes from earlier releases.
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            {previousReleases.map((release) => (
-              <ReleaseCard key={release.version} release={release} />
-            ))}
-          </div>
-        </section>
-      </main>
-
-      <Footer />
-    </div>
-  )
+							<div className="flex items-center justify-between gap-4">
+								<h2 className="text-lg font-medium text-foreground transition-colors group-hover:text-primary">
+									{release.title}
+								</h2>
+								<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-background transition-transform group-hover:translate-x-1">
+									<ArrowRight className="h-4 w-4" />
+								</div>
+							</div>
+						</Link>
+					))}
+				</div>
+			</main>
+		</div>
+	);
 }
