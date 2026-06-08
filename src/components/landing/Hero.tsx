@@ -74,7 +74,7 @@ export function Hero() {
                         </Link>
                         <Link href="/releases">
                             <Button variant="outline" className="h-10 rounded-lg px-5 text-sm font-medium text-muted-foreground hover:text-foreground">
-                                See what's new
+                                See what&apos;s new
                             </Button>
                         </Link>
                     </div>

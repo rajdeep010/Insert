@@ -422,7 +422,7 @@ export default function ReleaseV6() {
 
                 <div style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", paddingBottom: 20, marginBottom: 48 }}>
 
-                    <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#52525b", textTransform: "uppercase", letterSpacing: "0.08em" }}>What's included</p>
+                    <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#52525b", textTransform: "uppercase", letterSpacing: "0.08em" }}>What&apos;s included</p>
 
                 </div>
 
