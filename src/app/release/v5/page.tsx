@@ -7,17 +7,17 @@ const screenshots = [
     {
         title: "Workflow Automation",
         description: "Define custom triggers and actions for your release notes.",
-        image: "https://res.cloudinary.com/dgxeg3sju/image/upload/v1780849703/fb26e6fe-28c0-457b-b894-3d2ff511cd43.png", // Replace with V5 specific image
+        image: "/insert_project.png",
     },
     {
-        title: "Enhanced Code Editor",
-        description: "Support for multi-language syntax highlighting in code sheets.",
-        image: "https://res.cloudinary.com/dgxeg3sju/image/upload/v1780920862/2c389123-efa6-41c2-9af7-607392b856b7.png",
+        title: "Pro Access with subscription plans",
+        description: "Subscribe to our Pro plan for exclusive features and priority support.",
+        image: "/release.png",
     },
     {
         title: "GitHub Integration",
         description: "Automatic commit fetching and grouping.",
-        image: "https://res.cloudinary.com/dgxeg3sju/image/upload/v1780920946/701f5a1d-95f7-4f58-9e27-489e490de60b.png",
+        image: "/insert_project.png",
     },
 ];
 
