@@ -72,7 +72,7 @@ export function Hero() {
                                 <ArrowRight className="ml-2 h-3.5 w-3.5" />
                             </Button>
                         </Link>
-                        <Link href="/releases">
+                        <Link href="/release">
                             <Button variant="outline" className="h-10 rounded-lg px-5 text-sm font-medium text-muted-foreground hover:text-foreground">
                                 See what&apos;s new
                             </Button>
