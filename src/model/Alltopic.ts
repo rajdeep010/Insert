@@ -44,6 +44,8 @@ const AlltopicSchema: Schema<Alltopic> = new Schema({
     topics: { type: [TopicSchema], default: [] },
 })
 
+// Add indexes for performance
+AlltopicSchema.index({ username: 1 }, { unique: true });
 
 
 const AlltopicModel = mongoose.models.Alltopic || mongoose.model<Alltopic>('Alltopic', AlltopicSchema)

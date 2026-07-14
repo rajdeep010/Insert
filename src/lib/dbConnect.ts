@@ -18,7 +18,19 @@ async function dbConnect() {
     }
 
     try {
-        const db = await mongoose.connect(mongoUri);
+        const db = await mongoose.connect(mongoUri, {
+            // Connection pooling settings for better performance
+            maxPoolSize: 10,
+            minPoolSize: 5,
+            // Socket timeout
+            socketTimeoutMS: 45000,
+            // Server selection timeout
+            serverSelectionTimeoutMS: 5000,
+            // Retry writes for better reliability
+            retryWrites: true,
+            // Family preference (0 = both, 4 = IPv4, 6 = IPv6)
+            family: 4,
+        });
         connection.isConnected = db.connections[0].readyState;
     } catch (error) {
         connection.isConnected = 0;

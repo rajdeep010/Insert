@@ -159,5 +159,15 @@ const UserSchema: Schema<User> = new Schema({
     githubEmail: { type: String, default: 'https://github.com/shadcn.png' }
 })
 
+// Add indexes for performance
+UserSchema.index({ username: 1 }, { unique: true });
+UserSchema.index({ email: 1 }, { unique: true });
+UserSchema.index({ verifyCode: 1 });
+UserSchema.index({ isVerified: 1, createdAt: -1 });
+UserSchema.index({ username: "text", name: "text", about: "text" });
+UserSchema.index({ proStatus: 1 });
+UserSchema.index({ lastLoggedIn: -1 });
+UserSchema.index({ lastSeenAt: -1 });
+
 const UserModel = (mongoose.models.User as mongoose.Model<User>) ||  mongoose.model<User>('User', UserSchema)
 export default UserModel

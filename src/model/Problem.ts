@@ -85,6 +85,12 @@ const ProblemSchema: Schema<Problem> = new Schema({
 });
 
 ProblemSchema.index({ topicId: 1, createdAt: -1 });
+// Additional performance indexes
+ProblemSchema.index({ topicId: 1 });
+ProblemSchema.index({ url: 1 });
+ProblemSchema.index({ qname: "text", url: "text" });
+ProblemSchema.index({ difficulty: 1, topicId: 1 });
+ProblemSchema.index({ topicId: 1, difficulty: 1, createdAt: -1 });
 
 const ProblemModel = (mongoose.models.Problem as mongoose.Model<Problem>) || mongoose.model<Problem>('Problem', ProblemSchema)
 export default ProblemModel;

@@ -26,6 +26,13 @@ const BlogCollectionSchema: Schema<BlogCollection> = new Schema(
 	}
 );
 
+// Add performance indexes
+BlogCollectionSchema.index({ ownerUsername: 1, visibility: 1, updatedAt: -1 });
+BlogCollectionSchema.index({ ownerUsername: 1, createdAt: -1 });
+BlogCollectionSchema.index({ visibility: 1, updatedAt: -1 });
+BlogCollectionSchema.index({ linkedTopicId: 1, ownerUsername: 1 });
+BlogCollectionSchema.index({ name: "text", description: "text" });
+
 const BlogCollectionModel =
 	(mongoose.models.BlogCollection as mongoose.Model<BlogCollection>) ||
 	mongoose.model<BlogCollection>("BlogCollection", BlogCollectionSchema);

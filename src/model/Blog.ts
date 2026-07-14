@@ -69,6 +69,14 @@ const BlogSchema = new Schema<Blog>({
 BlogSchema.index({ blogUrl: 1 }, { unique: true });
 BlogSchema.index({ creator: 1, status: 1, createdAt: -1 });
 BlogSchema.index({ creator: 1, status: 1, type: 1, createdAt: -1 });
+// Additional performance indexes
+BlogSchema.index({ status: 1, type: 1, createdAt: -1 });
+BlogSchema.index({ status: 1, createdAt: -1 });
+BlogSchema.index({ creator: 1, status: 1 });
+BlogSchema.index({ lastEdited: -1 });
+BlogSchema.index({ type: 1, createdAt: -1 });
+// Text search index
+BlogSchema.index({ blogTitle: "text", blogContentText: "text" });
 
 
 const BlogModel = (mongoose.models.Blog as mongoose.Model<Blog>) || mongoose.model<Blog>('Blog', BlogSchema)
