@@ -47,7 +47,7 @@ export async function GET(
     try {
         const user = await UserModel.findOne({
             username: parsedParams.data.username,
-        }).select(PUBLIC_USER_SELECT);
+        }).select(PUBLIC_USER_SELECT).lean();
 
         if (!user) {
             return Response.json(
@@ -67,7 +67,8 @@ export async function GET(
             },
             { status: 200 }
         );
-    } catch {
+    } catch (error) {
+        console.error('Error fetching user:', error);
         return Response.json(
             {
                 success: false,

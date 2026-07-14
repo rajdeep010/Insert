@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     await dbConnect();
 
     try {
-        const user = await UserModel.findOne({ username }).select(ME_SELECT);
+        const user = await UserModel.findOne({ username }).select(ME_SELECT).lean();
 
         if (!user) {
             return Response.json(
@@ -43,7 +43,8 @@ export async function GET(request: Request) {
             },
             { status: 200 }
         );
-    } catch {
+    } catch (error) {
+        console.error('Error fetching profile:', error);
         return Response.json(
             {
                 success: false,

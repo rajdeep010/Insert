@@ -31,14 +31,33 @@ export async function GET(request: Request) {
 
     try {
         await dbConnect();
-        const filters: Array<Record<string, unknown>> = [
-            { username: { $regex: escapeRegex(usernameQuery), $options: "i" } },
-        ];
-        filters.push({ username: { $ne: currentUsername } });
-
-        const matchedUsers = await UserModel.find({ $and: filters })
-            .select(SEARCH_USER_SELECT)
-            .limit(10);
+        
+        let matchedUsers;
+        try {
+            // Use text search first (faster with text index)
+            matchedUsers = await UserModel.find(
+                { 
+                    $text: { $search: usernameQuery },
+                    username: { $ne: currentUsername }
+                },
+                { score: { $meta: "textScore" } }
+            )
+                .select(SEARCH_USER_SELECT)
+                .sort({ score: { $meta: "textScore" } })
+                .limit(10)
+                .lean();
+        } catch {
+            // Fallback to prefix match with regex
+            matchedUsers = await UserModel.find({
+                $and: [
+                    { username: { $regex: escapeRegex(usernameQuery), $options: "i" } },
+                    { username: { $ne: currentUsername } },
+                ],
+            })
+                .select(SEARCH_USER_SELECT)
+                .limit(10)
+                .lean();
+        }
 
         const users = matchedUsers.map(buildPublicUserPayload);
 
@@ -51,7 +70,8 @@ export async function GET(request: Request) {
             },
             { status: 200 }
         );
-    } catch {
+    } catch (error) {
+        console.error('Error finding users:', error);
         return Response.json(
             {
                 success: false,

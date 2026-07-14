@@ -38,15 +38,31 @@ export async function GET(request: Request) {
 	try {
 		await dbConnect();
 
-		const filters: Array<Record<string, unknown>> = [
-			{ username: { $regex: `^${escapeRegex(query)}`, $options: "i" } },
-			{ username: { $ne: currentUsername } },
-		];
-
-		const matchedUsers = await UserModel.find({ $and: filters })
-			.select(SEARCH_USER_SELECT)
-			.sort({ username: 1 })
-			.limit(10);
+		// Use text search with regex as fallback
+		let matchedUsers;
+		try {
+			// Try text search first (faster with text index)
+			matchedUsers = await UserModel.find(
+				{ $text: { $search: query }, username: { $ne: currentUsername } },
+				{ score: { $meta: "textScore" } }
+			)
+				.select(SEARCH_USER_SELECT)
+				.sort({ score: { $meta: "textScore" } })
+				.limit(10)
+				.lean();
+		} catch {
+			// Fallback to prefix match if text search fails
+			matchedUsers = await UserModel.find({
+				$and: [
+					{ username: { $regex: `^${escapeRegex(query)}`, $options: "i" } },
+					{ username: { $ne: currentUsername } },
+				],
+			})
+				.select(SEARCH_USER_SELECT)
+				.sort({ username: 1 })
+				.limit(10)
+				.lean();
+		}
 
 		const users = matchedUsers.map(buildPublicUserPayload);
 

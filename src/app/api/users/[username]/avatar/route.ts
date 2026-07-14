@@ -36,7 +36,7 @@ export async function GET(
     try {
         const user = await UserModel.findOne({
             username: parsedParams.data.username,
-        }).select("username avatar");
+        }).select("username avatar").lean();
 
         if (!user) {
             return Response.json(

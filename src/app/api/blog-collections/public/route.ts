@@ -15,6 +15,12 @@ export async function GET(request: Request) {
 	await dbConnect();
 
 	try {
+		// Get pagination parameters
+		const url = new URL(request.url);
+		const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+		const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20', 10)));
+		const skip = (page - 1) * limit;
+
 		const collectionFilter = {
 			$or: [
 				{ visibility: "public" },
@@ -22,15 +28,23 @@ export async function GET(request: Request) {
 			],
 		};
 
-		const collections = await BlogCollectionModel.find(collectionFilter)
-			.sort({ updatedAt: -1, createdAt: -1 })
-			.select(COLLECTION_LIST_SELECT)
-			.lean();
+		const [collections, total] = await Promise.all([
+			BlogCollectionModel.find(collectionFilter)
+				.sort({ updatedAt: -1, createdAt: -1 })
+				.skip(skip)
+				.limit(limit)
+				.select(COLLECTION_LIST_SELECT)
+				.lean(),
+			BlogCollectionModel.countDocuments(collectionFilter),
+		]);
 
 		const allBlogIds = Array.from(new Set(collections.flatMap((collection) => collection.blogIds.map((blogId) => String(blogId)))));
-		const collectionBlogs = await BlogModel.find({
-			_id: { $in: allBlogIds },
-		}).select("_id creator type status").lean();
+		
+		const collectionBlogs = allBlogIds.length > 0
+			? await BlogModel.find({
+				_id: { $in: allBlogIds },
+			}).select("_id creator type status").lean()
+			: [];
 
 		const blogMap = new Map(collectionBlogs.map((blog) => [String(blog._id), blog]));
 		const hydratedCollections = collections
@@ -58,8 +72,25 @@ export async function GET(request: Request) {
 				return collection.blogIds.length === 0 || collection.visibleBlogCount > 0;
 			});
 
-		return Response.json({ success: true, message: "Collections fetched successfully", collections: hydratedCollections }, { status: 200 });
-	} catch {
+		const totalPages = Math.ceil(total / limit);
+
+		return Response.json(
+			{
+				success: true,
+				message: "Collections fetched successfully",
+				collections: hydratedCollections,
+				pagination: {
+					page,
+					limit,
+					total,
+					pages: totalPages,
+					hasNextPage: page < totalPages,
+				},
+			},
+			{ status: 200 }
+		);
+	} catch (error) {
+		console.error('Error fetching collections:', error);
 		return Response.json({ success: false, message: "Error fetching collections" }, { status: 500 });
 	}
 }

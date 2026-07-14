@@ -88,8 +88,8 @@ export async function POST(request: Request) {
         const { action, entityId, entityType, username } = parsedBody.data;
 
         const entity = entityType === "BLOG"
-            ? await BlogModel.findOne(buildBlogLookup(entityId)).select("creator type blogUrl")
-            : await TopicModel.findOne(buildTopicLookup(entityId)).select("creator_username visibility id");
+            ? await BlogModel.findOne(buildBlogLookup(entityId)).select("creator type blogUrl").lean()
+            : await TopicModel.findOne(buildTopicLookup(entityId)).select("creator_username visibility id").lean();
 
         if (!entity) {
             return Response.json(

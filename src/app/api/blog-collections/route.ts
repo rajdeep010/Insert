@@ -6,6 +6,12 @@ import BlogModel from "@/model/Blog";
 import TopicModel from "@/model/Topic";
 import { createBlogCollectionSchema } from "@/schemas/blogCollectionSchema";
 
+type LinkedTopicRecord = {
+	_id: unknown;
+	creator_username: string;
+	visibility: string;
+};
+
 const COLLECTION_LIST_SELECT = "_id name description ownerUsername visibility linkedTopicId blogIds createdAt updatedAt";
 
 export async function GET(request: Request) {
@@ -18,12 +24,41 @@ export async function GET(request: Request) {
 	await dbConnect();
 
 	try {
-		const collections = await BlogCollectionModel.find({ ownerUsername: currentUsername })
-			.sort({ updatedAt: -1, createdAt: -1 })
-			.select(COLLECTION_LIST_SELECT);
+		// Get pagination parameters
+		const url = new URL(request.url);
+		const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+		const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20', 10)));
+		const skip = (page - 1) * limit;
 
-		return Response.json({ success: true, message: "Collections fetched successfully", collections }, { status: 200 });
-	} catch {
+		const [collections, total] = await Promise.all([
+			BlogCollectionModel.find({ ownerUsername: currentUsername })
+				.sort({ updatedAt: -1, createdAt: -1 })
+				.skip(skip)
+				.limit(limit)
+				.select(COLLECTION_LIST_SELECT)
+				.lean(),
+			BlogCollectionModel.countDocuments({ ownerUsername: currentUsername }),
+		]);
+
+		const totalPages = Math.ceil(total / limit);
+
+		return Response.json(
+			{
+				success: true,
+				message: "Collections fetched successfully",
+				collections,
+				pagination: {
+					page,
+					limit,
+					total,
+					pages: totalPages,
+					hasNextPage: page < totalPages,
+				},
+			},
+			{ status: 200 }
+		);
+	} catch (error) {
+		console.error('Error fetching collections:', error);
 		return Response.json({ success: false, message: "Error fetching collections" }, { status: 500 });
 	}
 }
@@ -53,7 +88,9 @@ export async function POST(request: Request) {
 
 	try {
 		if (parsedBody.data.linkedTopicId) {
-			const linkedTopic = await TopicModel.findOne({ id: parsedBody.data.linkedTopicId }).select("_id creator_username visibility");
+			const linkedTopic = await TopicModel.findOne({ id: parsedBody.data.linkedTopicId })
+				.select("_id creator_username visibility")
+				.lean<LinkedTopicRecord | null>();
 
 			if (!linkedTopic) {
 				return Response.json({ success: false, message: "Linked topic not found" }, { status: 404 });

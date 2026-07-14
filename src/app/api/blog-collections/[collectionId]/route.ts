@@ -9,6 +9,12 @@ import {
 	updateBlogCollectionSchema,
 } from "@/schemas/blogCollectionSchema";
 
+type LinkedTopicRecord = {
+	_id: unknown;
+	creator_username: string;
+	visibility: string;
+};
+
 type RouteContext = {
 	params: {
 		collectionId: string;
@@ -110,7 +116,9 @@ export async function PATCH(request: Request, context: RouteContext) {
 		}
 
 		if (parsedBody.data.linkedTopicId) {
-			const linkedTopic = await TopicModel.findOne({ id: parsedBody.data.linkedTopicId }).select("_id creator_username visibility");
+			const linkedTopic = await TopicModel.findOne({ id: parsedBody.data.linkedTopicId })
+				.select("_id creator_username visibility")
+				.lean<LinkedTopicRecord | null>();
 			if (!linkedTopic) {
 				return Response.json({ success: false, message: "Linked topic not found" }, { status: 404 });
 			}

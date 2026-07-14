@@ -23,6 +23,12 @@ type RouteContext = {
 	};
 };
 
+type TopicPermissionRecord = {
+	_id: Types.ObjectId;
+	creator_username: string;
+	visibility: string;
+};
+
 export async function POST(request: Request, context: RouteContext) {
 	const currentUsername = await getAuthenticatedUsername(request);
 
@@ -52,7 +58,9 @@ export async function POST(request: Request, context: RouteContext) {
 	await dbConnect();
 
 	try {
-		const topic = await TopicModel.findOne({ id: parsedTopicParams.data.topicId }).select("_id creator_username visibility");
+		const topic = await TopicModel.findOne({ id: parsedTopicParams.data.topicId })
+			.select("_id creator_username visibility")
+			.lean<TopicPermissionRecord | null>();
 
 		if (!topic) {
 			return Response.json({ success: false, message: "Topic not found" }, { status: 404 });

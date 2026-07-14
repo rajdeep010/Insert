@@ -24,6 +24,12 @@ type RouteContext = {
 	};
 };
 
+type TopicPermissionRecord = {
+	_id: Types.ObjectId;
+	creator_username: string;
+	visibility: string;
+};
+
 export async function PATCH(request: Request, context: RouteContext) {
 	const currentUsername = await getAuthenticatedUsername(request);
 
@@ -68,7 +74,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 		}
 
 		if (parsedBody.data.blogId) {
-			const blog = await BlogModel.findOne({ _id: parsedBody.data.blogId, creator: currentUsername, status: "active" }).select("_id");
+			const blog = await BlogModel.findOne({ _id: parsedBody.data.blogId, creator: currentUsername, status: "active" }).select("_id").lean();
 			if (!blog) {
 				return Response.json({ success: false, message: "Blog not found" }, { status: 404 });
 			}
@@ -77,7 +83,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 		if (Object.prototype.hasOwnProperty.call(parsedBody.data, "collectionId")) {
 			if (parsedBody.data.collectionId) {
-				const collection = await BlogCollectionModel.findOne({ _id: parsedBody.data.collectionId, ownerUsername: currentUsername }).select("_id blogIds");
+				const collection = await BlogCollectionModel.findOne({ _id: parsedBody.data.collectionId, ownerUsername: currentUsername }).select("_id blogIds").lean();
 				if (!collection) {
 					return Response.json({ success: false, message: "Collection not found" }, { status: 404 });
 				}
@@ -177,7 +183,9 @@ async function getAuthorizedProblem({
 	currentUsername: string;
 	request: Request;
 }) {
-	const topic = await TopicModel.findOne({ id: topicId }).select("_id creator_username visibility");
+	const topic = await TopicModel.findOne({ id: topicId })
+		.select("_id creator_username visibility")
+		.lean<TopicPermissionRecord | null>();
 
 	if (!topic) {
 		return { success: false as const, status: 404, message: "Topic not found" };

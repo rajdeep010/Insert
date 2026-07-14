@@ -16,6 +16,12 @@ export async function GET(request: Request) {
     await dbConnect();
 
     try {
+        // Get pagination parameters
+        const url = new URL(request.url);
+        const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+        const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20', 10)));
+        const skip = (page - 1) * limit;
+
         const filter = {
             status: "active",
             $or: [
@@ -24,19 +30,36 @@ export async function GET(request: Request) {
             ],
         };
 
-        const blogs = await BlogModel.find(filter)
-            .sort({ lastEdited: -1 })
-            .select(BLOG_LIST_SELECT);
+        // Fetch blogs with limit and lean
+        const [blogs, total] = await Promise.all([
+            BlogModel.find(filter)
+                .sort({ lastEdited: -1 })
+                .skip(skip)
+                .limit(limit)
+                .select(BLOG_LIST_SELECT)
+                .lean(),
+            BlogModel.countDocuments(filter),
+        ]);
+
+        const totalPages = Math.ceil(total / limit);
 
         return Response.json(
             {
                 success: true,
                 message: "Blogs fetched successfully",
                 blogs,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    pages: totalPages,
+                    hasNextPage: page < totalPages,
+                },
             },
             { status: 200 }
         );
-    } catch {
+    } catch (error) {
+        console.error('Error fetching blogs:', error);
         return Response.json(
             {
                 success: false,

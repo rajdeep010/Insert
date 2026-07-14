@@ -33,13 +33,32 @@ export async function GET(request: Request) {
     await dbConnect();
 
     try {
-        const collaborations = await fetchMyCollaborations(accessToken, "TOPIC");
-        const collaboratorTopicIds = collaborations
-            .map((item: { entityId: string }) => item.entityId)
-            .filter(Boolean);
-        const membershipRoles = new Map<string, TopicAccessRole>(
-            collaborations.map((item: { entityId: string; role: TopicAccessRole }) => [item.entityId, item.role])
-        );
+        // Get pagination parameters
+        const url = new URL(request.url);
+        const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+        const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20', 10)));
+        const skip = (page - 1) * limit;
+
+        // Fetch collaborations with timeout
+        let collaboratorTopicIds: string[] = [];
+        let membershipRoles = new Map<string, TopicAccessRole>();
+        
+        try {
+            const collaborations = await Promise.race([
+                fetchMyCollaborations(accessToken, "TOPIC"),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Collaboration fetch timeout')), 5000))
+            ]) as Array<{ entityId: string; role: TopicAccessRole }>;
+            
+            collaboratorTopicIds = collaborations
+                .map((item: { entityId: string }) => item.entityId)
+                .filter(Boolean);
+            membershipRoles = new Map<string, TopicAccessRole>(
+                collaborations.map((item: { entityId: string; role: TopicAccessRole }) => [item.entityId, item.role])
+            );
+        } catch (error) {
+            console.warn('Failed to fetch collaborations:', error);
+            // Continue without collaborations
+        }
 
         const filter = {
             $or: [
@@ -51,22 +70,36 @@ export async function GET(request: Request) {
             ],
         };
 
-        const topics = await TopicModel.find(filter)
-            .sort({ createdAt: -1 })
-            .select(TOPIC_LIST_SELECT)
-            .lean();
+        const [topics, total] = await Promise.all([
+            TopicModel.find(filter)
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .select(TOPIC_LIST_SELECT)
+                .lean(),
+            TopicModel.countDocuments(filter),
+        ]);
 
         const topicsWithCollaborators = attachAccessRole(topics, currentUsername, membershipRoles);
+        const totalPages = Math.ceil(total / limit);
 
         return Response.json(
             {
                 success: true,
                 message: "Topics fetched successfully",
                 topics: topicsWithCollaborators,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    pages: totalPages,
+                    hasNextPage: page < totalPages,
+                },
             },
             { status: 200 }
         );
-    } catch {
+    } catch (error) {
+        console.error('Error fetching topics:', error);
         return Response.json(
             {
                 success: false,

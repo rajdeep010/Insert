@@ -60,24 +60,48 @@ export async function GET(
     await dbConnect();
 
     try {
-        const accessToken = await getAuthenticatedAccessToken(request);
-        const collaborations = await fetchMyCollaborations(accessToken, "TOPIC");
-        const membershipRoles = new Map<string, TopicAccessRole>(
-            collaborations.map((item: { entityId: string; role: TopicAccessRole }) => [item.entityId, item.role])
-        );
+        // Get pagination parameters
+        const url = new URL(request.url);
+        const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+        const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20', 10)));
+        const skip = (page - 1) * limit;
 
-        if (currentUsername === requestedUsername) {
-            const collaboratorTopicIds = collaborations
+        const accessToken = await getAuthenticatedAccessToken(request);
+        let collaboratorTopicIds: string[] = [];
+        let membershipRoles = new Map<string, TopicAccessRole>();
+        
+        // Fetch collaborations with timeout
+        try {
+            const collaborations = await Promise.race([
+                fetchMyCollaborations(accessToken, "TOPIC"),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Collaboration fetch timeout')), 5000))
+            ]) as Array<{ entityId: string; role: TopicAccessRole }>;
+            
+            membershipRoles = new Map<string, TopicAccessRole>(
+                collaborations.map((item: { entityId: string; role: TopicAccessRole }) => [item.entityId, item.role])
+            );
+            collaboratorTopicIds = collaborations
                 .map((item: { entityId: string }) => item.entityId)
                 .filter(Boolean);
+        } catch (error) {
+            console.warn('Failed to fetch collaborations:', error);
+        }
 
+        if (currentUsername === requestedUsername) {
             const [ownedTopics, collaboratedTopics] = await Promise.all([
                 TopicModel.find({ creator_username: requestedUsername })
                     .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit)
                     .select(TOPIC_SELECT)
                     .lean(),
                 collaboratorTopicIds.length
-                    ? TopicModel.find({ id: { $in: collaboratorTopicIds } }).select(TOPIC_SELECT).lean()
+                    ? TopicModel.find({ id: { $in: collaboratorTopicIds } })
+                        .sort({ createdAt: -1 })
+                        .skip(skip)
+                        .limit(limit)
+                        .select(TOPIC_SELECT)
+                        .lean()
                     : Promise.resolve([]),
             ]);
 
@@ -94,26 +118,43 @@ export async function GET(
                     success: true,
                     message: topics.length ? "Topics found" : "No topics found",
                     topics,
+                    pagination: { page, limit },
                 },
                 { status: 200 }
             );
         }
 
-        const topics = await TopicModel.find({
-            creator_username: requestedUsername,
-            visibility: "public",
-        })
-            .sort({ createdAt: -1 })
-            .select(TOPIC_SELECT)
-            .lean();
+        const [publicTopics, total] = await Promise.all([
+            TopicModel.find({
+                creator_username: requestedUsername,
+                visibility: "public",
+            })
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .select(TOPIC_SELECT)
+                .lean(),
+            TopicModel.countDocuments({
+                creator_username: requestedUsername,
+                visibility: "public",
+            }),
+        ]);
 
-        const topicsWithCollaborators = attachAccessRole(topics, currentUsername, membershipRoles);
+        const topicsWithCollaborators = attachAccessRole(publicTopics, currentUsername, membershipRoles);
+        const totalPages = Math.ceil(total / limit);
 
         return Response.json(
             {
                 success: true,
                 message: topicsWithCollaborators.length ? "Topics found" : "No topics found",
                 topics: topicsWithCollaborators,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    pages: totalPages,
+                    hasNextPage: page < totalPages,
+                },
             },
             { status: 200 }
         );
