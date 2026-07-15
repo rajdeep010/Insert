@@ -82,13 +82,25 @@ export const NotificationProviderV2 = ({ children }: { children: React.ReactNode
 		dispatch({ type: "SET_INITIAL_LOADING", payload: true });
 
 		try {
-			const [page, unreadCount] = await Promise.all([
+			const [pageResult, unreadCountResult] = await Promise.allSettled([
 				fetchNotificationsPageV2({ page: 0, size: NOTIFICATION_PAGE_SIZE_V2, accessToken }),
 				fetchUnreadCountV2(accessToken),
 			]);
 
-			dispatch({ type: "SET_INITIAL_FEED", payload: page });
-			dispatch({ type: "SET_UNREAD_COUNT", payload: unreadCount });
+			if (pageResult.status === "fulfilled") {
+				dispatch({ type: "SET_INITIAL_FEED", payload: pageResult.value });
+			} else {
+				dispatch({
+					type: "SET_ERROR",
+					payload: handleNotificationApiError(pageResult.reason, "Unable to load notifications"),
+				});
+			}
+
+			if (unreadCountResult.status === "fulfilled") {
+				dispatch({ type: "SET_UNREAD_COUNT", payload: unreadCountResult.value });
+			} else {
+				console.error("Failed to fetch unread notification count", unreadCountResult.reason);
+			}
 		} catch (error) {
 			dispatch({ type: "SET_ERROR", payload: handleNotificationApiError(error, "Unable to load notifications") });
 		} finally {

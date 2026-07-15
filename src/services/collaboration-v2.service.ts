@@ -14,7 +14,6 @@ import type {
 
 const collaborationClientV2 = axios.create({
 	baseURL: externalServices.collaboration.apiBaseUrl,
-	timeout: 10000,
 });
 
 const getAuthConfig = (accessToken?: string | null) => ({

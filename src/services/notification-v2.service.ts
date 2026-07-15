@@ -14,12 +14,10 @@ export const NOTIFICATION_PAGE_SIZE_V2 = 10;
 
 const notificationClientV2 = axios.create({
 	baseURL: externalServices.notificationV2.apiBaseUrl,
-	timeout: 10000,
 });
 
 const collaborationClientV2 = axios.create({
 	baseURL: externalServices.collaboration.apiBaseUrl,
-	timeout: 10000,
 });
 
 const getAuthConfig = (accessToken?: string | null) => ({

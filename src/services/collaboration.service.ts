@@ -7,7 +7,6 @@ export type CollaborationRole = "EDITOR" | "VIEWER" | "OWNER";
 
 const collaborationClient = axios.create({
 	baseURL: externalServices.collaboration.apiBaseUrl,
-	timeout: 10000,
 });
 
 const getAuthConfig = (accessToken?: string | null) => ({
