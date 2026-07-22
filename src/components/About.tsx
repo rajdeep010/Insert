@@ -5,8 +5,9 @@ import { ArrowRight } from "lucide-react";
 
 export function About() {
     return (
-        <section className="relative mx-auto flex min-h-[92vh] w-full items-center overflow-hidden bg-background px-6 py-20">
+        <section id="about" className="relative mx-auto px-6 py-16 md:py-24 bg-background">
 
+            {/* Structural Background Alignment Grid */}
             <div
                 className="pointer-events-none absolute inset-0 z-0 opacity-40"
                 style={{
@@ -18,14 +19,21 @@ export function About() {
                 }}
             />
 
-            {/* Section label */}
-            <div className="mb-10 flex items-center gap-3">
-                <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50">
-                    What you can build
-                </span>
-                <span className="h-px w-12 bg-border/40" />
+            {/* Header section matching Hero/About flow */}
+            <div className="mb-8 lg:mb-8 mx-10 lg:mx-20">
+                <div className="flex items-center gap-1 mb-2">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/60">
+                        Get to know Insert
+                    </span>
+                    <span className="h-px w-12 bg-border/40" />
+                </div>
+                <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-5xl tracking-[-0.02em]">
+                    About
+                </h2>
+                {/* <p className="mt-4 max-w-2xl text-sm md:text-base leading-relaxed text-muted-foreground">
+                    Structured coding sheets, technical writing, public collections, project tooling, and automated release notes all live in one workflow. Core utilities remain beautifully native, while higher-scale workflows stay Pro-first.
+                </p> */}
             </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:px-20 px-10">
 
                 {/* Card 1 — Topics / Sheets (wide) */}

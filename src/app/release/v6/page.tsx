@@ -225,12 +225,9 @@ export default function ReleaseV6() {
     return (
 
         <div
-            className="bg-background"
             style={{
 
                 fontFamily: "'DM Sans', 'Geist', system-ui, sans-serif",
-
-                background: "#0a0a0b",
 
                 color: "#e4e4e7",
 

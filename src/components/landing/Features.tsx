@@ -306,7 +306,7 @@ export function Features() {
             </div>
 
             {/* --- PRO SUBSCRIPTION BLOCK (Realigned to Pro Theme) --- */}
-            <div className="relative mt-16 border border-indigo-500/15 bg-indigo-500/[0.01] rounded-2xl p-6 lg:p-10 mx-10 lg:mx-20">
+            <div id="pricing" className="relative mt-16 border border-indigo-500/15 bg-indigo-500/[0.01] rounded-2xl p-6 lg:p-10 mx-10 lg:mx-20">
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
                     <div className="lg:col-span-3">
                         <span className="inline-flex items-center rounded-md border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
