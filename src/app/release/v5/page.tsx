@@ -80,7 +80,7 @@ export default function ReleaseV5() {
     const [activeShot, setActiveShot] = useState(0);
 
     return (
-        <div className="bg-background" style={{ fontFamily: "'DM Sans', 'Geist', system-ui, sans-serif", background: "#0a0a0b", color: "#e4e4e7", minHeight: "100vh" }}>
+        <div  style={{ fontFamily: "'DM Sans', 'Geist', system-ui, sans-serif", color: "#e4e4e7", minHeight: "100vh" }}>
             {/* Header */}
             <div style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "0 40px" }}>
                 <div style={{ maxWidth: 960, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 56 }}>
@@ -94,14 +94,14 @@ export default function ReleaseV5() {
             {/* Hero */}
             <div style={{ maxWidth: 960, margin: "0 auto", padding: "72px 40px 48px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28, flexWrap: "wrap" }}>
-                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, color: "#a855f7", background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.2)", padding: "3px 10px", borderRadius: 6 }}>major release</span>
+                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, color: "#a855f7", border: "1px solid rgba(168,85,247,0.2)", padding: "3px 10px", borderRadius: 6 }}>major release</span>
                     <span style={{ color: "#3f3f46", fontSize: 13 }}>·</span>
                     <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, color: "#71717a" }}>March 2026</span>
                 </div>
 
                 <div style={{ display: "flex", alignItems: "baseline", gap: 20, marginBottom: 20, flexWrap: "wrap" }}>
                     <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 48, fontWeight: 500, color: "#27272a", letterSpacing: "-0.03em", lineHeight: 1 }}>v5.0</span>
-                    <h1 style={{ fontSize: "clamp(28px, 5vw, 44px)", fontWeight: 500, letterSpacing: "-0.03em", color: "#fafafa", lineHeight: 1.1 }}>
+                    <h1 style={{ fontSize: "clamp(28px, 5vw, 44px)", fontWeight: 500, letterSpacing: "-0.03em", lineHeight: 1.1 }}>
                         Workflow Automation &<br />Editor Enhancements
                     </h1>
                 </div>

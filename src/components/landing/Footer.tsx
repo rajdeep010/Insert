@@ -70,7 +70,7 @@ export function Footer() {
                                     aria-label="LinkedIn"
                                     className="transition-colors hover:text-foreground"
                                 >
-                                    <Linkedin className="h-4.5 w-4.5" />
+                                    <Linkedin className="h-5 w-5" />
                                 </Link>
                                 <Link
                                     href="https://github.com/rajdeep010"
@@ -78,7 +78,7 @@ export function Footer() {
                                     aria-label="GitHub"
                                     className="transition-colors hover:text-foreground"
                                 >
-                                    <GitHubLogoIcon className="h-4.5 w-4.5" />
+                                    <GitHubLogoIcon className="h-5 w-5" />
                                 </Link>
                                 <Link
                                     href="https://www.instagram.com/rajdeepmallick010/"
@@ -86,7 +86,7 @@ export function Footer() {
                                     aria-label="Instagram"
                                     className="transition-colors hover:text-foreground"
                                 >
-                                    <InstagramLogoIcon className="h-4.5 w-4.5" />
+                                    <InstagramLogoIcon className="h-5 w-5" />
                                 </Link>
                             </div>
                         </div>
