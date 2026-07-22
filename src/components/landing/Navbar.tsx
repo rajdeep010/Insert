@@ -48,7 +48,7 @@ export function Navbar() {
             <div
                 className={cn(
                     "mx-auto flex max-w-7xl items-center justify-between transition-all duration-300",
-                    "rounded-2xl border-[2px] px-6 py-3 shadow-[0_0_20px_rgba(0,0,0,0.18)]"
+                    "rounded-2xl border border-border/30 px-6 py-3 shadow-[0_0_20px_rgba(0,0,0,0.18)]"
                 )}
             >
                 <Link
