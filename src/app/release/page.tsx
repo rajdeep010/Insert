@@ -223,8 +223,6 @@ export default function ReleasePage() {
 
 				</motion.div>
 
-				{/* What's Next */}
-
 				<motion.section
 					initial={{ opacity: 0, y: 30 }}
 					whileInView={{ opacity: 1, y: 0 }}
@@ -243,7 +241,7 @@ export default function ReleasePage() {
 							</Badge>
 
 							<h2 className="max-w-2xl text-4xl font-bold tracking-tight md:text-5xl">
-								We're just getting started.
+								We&apos;re just getting started.
 							</h2>
 
 							<p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
