@@ -101,7 +101,7 @@ export default function ReleaseV5() {
 
                 <div style={{ display: "flex", alignItems: "baseline", gap: 20, marginBottom: 20, flexWrap: "wrap" }}>
                     <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 48, fontWeight: 500, color: "#27272a", letterSpacing: "-0.03em", lineHeight: 1 }}>v5.0</span>
-                    <h1 style={{ fontSize: "clamp(28px, 5vw, 44px)", fontWeight: 500, letterSpacing: "-0.03em", color: "#fafafa", lineHeight: 1.1 }}>
+                    <h1 style={{ fontSize: "clamp(28px, 5vw, 44px)", fontWeight: 500, letterSpacing: "-0.03em", lineHeight: 1.1 }}>
                         Workflow Automation &<br />Editor Enhancements
                     </h1>
                 </div>

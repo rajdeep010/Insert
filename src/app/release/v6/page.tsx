@@ -285,7 +285,7 @@ export default function ReleaseV6() {
 
                     <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 48, fontWeight: 500, color: "#27272a", letterSpacing: "-0.03em", lineHeight: 1 }}>v6.0</span>
 
-                    <h1 style={{ fontSize: "clamp(28px, 5vw, 44px)", fontWeight: 500, letterSpacing: "-0.03em", color: "#fafafa", lineHeight: 1.1 }}>
+                    <h1 style={{ fontSize: "clamp(28px, 5vw, 44px)", fontWeight: 500, letterSpacing: "-0.03em", lineHeight: 1.1 }}>
 
                         Collaboration &<br />Realtime Notifications
 
