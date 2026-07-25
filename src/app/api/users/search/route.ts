@@ -39,7 +39,7 @@ export async function GET(request: Request) {
 		await dbConnect();
 
 		// Use text search with regex as fallback
-		let matchedUsers;
+		let matchedUsers: any[] = [];
 		try {
 			// Try text search first (faster with text index)
 			matchedUsers = await UserModel.find(
@@ -50,18 +50,25 @@ export async function GET(request: Request) {
 				.sort({ score: { $meta: "textScore" } })
 				.limit(10)
 				.lean();
-		} catch {
-			// Fallback to prefix match if text search fails
+		} catch(error) {
+			console.error("Text search failed:", error);
+			matchedUsers = [];
+		}
+
+		if (matchedUsers.length === 0) {
 			matchedUsers = await UserModel.find({
-				$and: [
-					{ username: { $regex: `^${escapeRegex(query)}`, $options: "i" } },
-					{ username: { $ne: currentUsername } },
-				],
+				username: {
+					$regex: `^${escapeRegex(query)}`,
+					$options: "i",
+					$ne: currentUsername,
+				},
 			})
 				.select(SEARCH_USER_SELECT)
 				.sort({ username: 1 })
 				.limit(10)
 				.lean();
+
+			console.log("Regex Search Results:", matchedUsers.length);
 		}
 
 		const users = matchedUsers.map(buildPublicUserPayload);
