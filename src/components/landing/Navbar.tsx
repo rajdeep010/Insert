@@ -36,7 +36,7 @@ export function Navbar() {
     const isSignUp = pathname === "/sign-up";
 
     const authHref = isSignUp ? "/sign-in" : "/sign-up";
-    const authLabel = isSignUp ? "Sign In" : "Login";
+    const authLabel = isSignUp ? "Login" : "Sign Up";
 
     return (
         <motion.header
