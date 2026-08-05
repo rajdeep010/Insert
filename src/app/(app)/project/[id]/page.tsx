@@ -1,52 +1,67 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+
+import React, { useEffect, useRef, useState } from 'react'
 import {
-    ExternalLink,
-    Calendar,
+    AlertCircle,
     BookOpen,
+    Calendar,
+    CheckCircle,
     Clock,
+    Edit,
+    ExternalLink,
+    FilePlus2,
     GitCommit,
     Loader2,
+    FileText,
     Rocket,
-    CheckCircle,
-    XCircle,
-    AlertCircle,
     Settings,
-    FilePlus2,
     Trash2,
-    Edit
+    XCircle,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useInsertProjects } from '@/features/project/context/InsertProjectProvider'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import InsertNavbar from '@/components/InsertNavbar'
-import { Button } from '@/components/ui/button'
-import ShareLinkButton from '@/components/ShareLinkButton'
 import { useSession } from 'next-auth/react'
 import { useParams } from 'next/navigation'
+
+import { useInsertProjects } from '@/features/project/context/InsertProjectProvider'
+import { languageColors } from '@/types/master-data'
+import { getLastModifiedText } from '@/helpers/last-modified'
+
+import InsertNavbar from '@/components/InsertNavbar'
+import ShareLinkButton from '@/components/ShareLinkButton'
 import EditProjectModal from '@/components/EditProjectModal'
 import EditReleaseBlogModal from '@/components/EditReleaseBlog'
 import DeleteReleaseBlogModal from '@/components/DeleteReleaseBlogModal'
-import { languageColors } from '@/types/master-data'
-import { getLastModifiedText } from '@/helpers/last-modified'
 import AddReleaseBlogModal from '@/components/AddReleaseBlogModal'
+import ReleaseDraftTemplateModal from '@/components/ReleaseDraftTemplateModal'
+import { toast } from '@/components/ui/use-toast'
+import { toReleaseDraftTemplate } from '@/features/project/utils/releaseDraftTemplate'
 
-/* Shared style helpers */
-const surface =
-    'relative rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 transition-colors'
-const surfaceMuted =
-    'relative rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white/50 dark:bg-gray-900/30'
-const hoverable =
-    'transition-colors hover:border-black/20 dark:hover:border-white/30'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+
+const shellCard =
+    'rounded-2xl border border-slate-200/80 bg-white/70 backdrop-blur-xl dark:border-slate-800/90 dark:bg-slate-950/55'
+const metricCard =
+    'rounded-xl border border-slate-200/75 bg-white/70 px-4 py-3 dark:border-slate-800/80 dark:bg-slate-950/45'
+const blogCard =
+    'rounded-2xl border border-slate-200/80 bg-white/75 transition-colors hover:border-indigo-400/40 dark:border-slate-800/80 dark:bg-slate-950/55 dark:hover:border-indigo-400/45'
+
+const blogTone = [
+    'border-indigo-200/80 bg-indigo-500/[0.04] dark:border-indigo-500/20 dark:bg-indigo-500/[0.08] hover:border-indigo-400/50',
+    'border-cyan-200/80 bg-cyan-500/[0.04] dark:border-cyan-500/20 dark:bg-cyan-500/[0.08] hover:border-cyan-400/50',
+    'border-emerald-200/80 bg-emerald-500/[0.04] dark:border-emerald-500/20 dark:bg-emerald-500/[0.08] hover:border-emerald-400/50',
+    'border-amber-200/80 bg-amber-500/[0.04] dark:border-amber-500/20 dark:bg-amber-500/[0.08] hover:border-amber-400/50',
+]
 
 export default function Page() {
-    const { data: session, status } = useSession()
+    const { status } = useSession()
     const {
         curr_project,
         isProjectLoading,
         fetchProjectById,
+        updateProject,
         syncRelease,
         isSyncingRelease,
         releaseSyncStatus,
@@ -65,16 +80,22 @@ export default function Page() {
     const [isUpdatingReleaseBlog, setIsUpdatingReleaseBlog] = useState(false)
     const [isDeleteReleaseBlogModalOpen, setIsDeleteReleaseBlogModalOpen] = useState(false)
     const [isDeletingReleaseBlog, setIsDeletingReleaseBlog] = useState(false)
+    const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
+    const [isSavingTemplate, setIsSavingTemplate] = useState(false)
+    const lastRequestedProjectRef = useRef<string | null>(null)
 
     useEffect(() => {
-        if (status !== 'authenticated' || !session?.user?.githubAccessToken || !projectId) return
-        fetchProjectById(projectId)
-    }, [fetchProjectById, projectId, session?.user?.githubAccessToken, status])
+        if (status !== 'authenticated' || !projectId) return
+        if (curr_project?.id === projectId) return
+        if (lastRequestedProjectRef.current === projectId && isProjectLoading) return
 
+        lastRequestedProjectRef.current = projectId
+        fetchProjectById(projectId)
+    }, [curr_project?.id, fetchProjectById, isProjectLoading, projectId, status])
+
+    const project = curr_project?.id === projectId ? curr_project : null
     const isLoading = isSyncingRelease[projectId] || false
     const syncStatus = releaseSyncStatus[projectId]
-
-    if (!curr_project) return null
 
     const formatDate = (dateString?: string) =>
         !dateString
@@ -82,7 +103,7 @@ export default function Page() {
             : new Date(dateString).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'short',
-                day: 'numeric'
+                day: 'numeric',
             })
 
     const formatRelativeTime = (dateString?: string) => {
@@ -96,17 +117,13 @@ export default function Page() {
     }
 
     const lastCommitSha =
-        typeof curr_project?.lastMonitoredCommitSha === 'string'
-            ? curr_project.lastMonitoredCommitSha
-            : ''
+        typeof project?.lastMonitoredCommitSha === 'string' ? project.lastMonitoredCommitSha : ''
 
     const handleSyncRelease = async () => {
         await syncRelease(projectId)
     }
 
     const handleClearStatus = () => clearReleaseSyncStatus(projectId)
-
-    const handleEditProject = () => setIsEditModalOpen(true)
 
     const handleCloseEditModal = () => {
         setIsEditModalOpen(false)
@@ -117,6 +134,7 @@ export default function Page() {
         setSelectedReleaseBlog(blog)
         setIsEditReleaseBlogModalOpen(true)
     }
+
     const handleCloseEditReleaseBlogModal = () => {
         setIsEditReleaseBlogModalOpen(false)
         setSelectedReleaseBlog(null)
@@ -127,391 +145,344 @@ export default function Page() {
         setSelectedReleaseBlog(blog)
         setIsDeleteReleaseBlogModalOpen(true)
     }
+
     const handleCloseDeleteReleaseBlogModal = () => {
         setIsDeleteReleaseBlogModalOpen(false)
         setSelectedReleaseBlog(null)
         setIsDeletingReleaseBlog(false)
     }
 
-    const blogCardBase =
-        surfaceMuted +
-        ' p-0 border rounded-xl overflow-hidden group ' +
-        'before:absolute before:inset-0 before:opacity-0 hover:before:opacity-100 before:transition before:rounded-xl ' +
-        'before:bg-[radial-gradient(circle_at_30%_20%,rgba(99,102,241,0.10),transparent_70%)]'
+    const getStatusBadgeVariant = (value: string) =>
+        value === 'READY' ? 'default' : value === 'ERROR' ? 'destructive' : 'secondary'
 
-    const getStatusBadgeVariant = (s: string) =>
-        s === 'READY' ? 'default' : s === 'ERROR' ? 'destructive' : 'secondary'
+    const handleSaveDraftTemplate = async (template: string) => {
+        if (!project) return
+
+        try {
+            setIsSavingTemplate(true)
+            const nextTemplate = template.trim()
+            const updatedProject = {
+                ...project,
+                releaseDraftTemplate: nextTemplate,
+                updatedAt: new Date().toISOString(),
+            }
+            await updateProject(updatedProject)
+            toast({
+                title: 'Template saved',
+                description: 'Release draft template has been updated.',
+            })
+            setIsTemplateModalOpen(false)
+        } catch {
+            toast({
+                title: 'Save failed',
+                description: 'Could not update the release draft template.',
+                variant: 'destructive',
+            })
+        } finally {
+            setIsSavingTemplate(false)
+        }
+    }
+
+    if (status === 'authenticated' && !project) {
+        return (
+            <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 dark:bg-[#020817] dark:text-slate-50">
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 opacity-60 dark:opacity-100 [background-image:linear-gradient(to_right,rgba(100,116,139,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(100,116,139,0.08)_1px,transparent_1px)] [background-size:48px_48px]"
+                />
+                <div className="relative mx-auto w-full max-w-[1560px] px-4 py-5 sm:px-8 lg:px-12 lg:py-8">
+                    <InsertNavbar />
+                    <div className="flex min-h-[58vh] items-center justify-center">
+                        {isProjectLoading ? (
+                            <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+                        ) : (
+                            <Card className={shellCard + ' w-full max-w-xl'}>
+                                <CardContent className="p-8 text-center">
+                                    <p className="text-lg font-semibold">Project not available</p>
+                                    <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                                        This project may have been removed or you may not have access.
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
+                </div>
+            </main>
+        )
+    }
+
+    if (!project) return null
 
     return (
-        <div className="flex flex-col gap-6 py-8 lg:py-12 px-6 lg:px-40">
-            <InsertNavbar />
+        <>
+            <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 dark:bg-[#020817] dark:text-slate-50">
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 opacity-60 dark:opacity-100 [background-image:linear-gradient(to_right,rgba(100,116,139,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(100,116,139,0.08)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:linear-gradient(to_bottom,black,transparent_95%)]"
+                />
+                <div aria-hidden="true" className="pointer-events-none absolute left-[8%] top-0 h-72 w-72 rounded-full bg-indigo-500/10 blur-[120px]" />
+                <div aria-hidden="true" className="pointer-events-none absolute right-[8%] top-52 h-72 w-72 rounded-full bg-cyan-500/10 blur-[120px]" />
 
-            {isProjectLoading && (
-                <div className="flex justify-center pt-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
-                </div>
-            )}
+                <div className="relative mx-auto w-full max-w-[1560px] px-4 py-2 sm:px-8 lg:px-12 lg:py-2">
+                    <InsertNavbar />
 
-            {!isProjectLoading && (
-                <div className="flex flex-col gap-10">
-                    {/* Project Header */}
-                    <div className="relative">
-                        <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-tr from-indigo-500/50 via-blue-500/40 to-purple-500/40 opacity-70" />
-                        <Card
-                            className={
-                                surface +
-                                ' shadow-none overflow-hidden rounded-2xl relative'
-                            }
-                        >
-                            <div className="pointer-events-none absolute inset-0">
-                                <div className="absolute -right-8 -top-10 h-44 w-44 rounded-full bg-indigo-400/10 blur-3xl" />
-                                <div className="absolute left-0 bottom-0 h-32 w-40 rounded-full bg-purple-400/10 blur-3xl" />
-                            </div>
-                            <CardHeader className="relative p-7 pb-5">
-                                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
-                                    <div className="flex items-start gap-6">
-                                        <div className="relative">
-                                            <Avatar className="h-20 w-20 ring-2 ring-white/40 dark:ring-white/10">
-                                                <AvatarImage src={typeof curr_project?.avatar === 'string' ? curr_project.avatar : undefined} />
-                                                <AvatarFallback className="font-semibold">
-                                                    {curr_project?.username?.slice(0, 2).toUpperCase()}
-                                                </AvatarFallback>
-                                            </Avatar>
+                    <section className="mt-5 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(330px,0.52fr)] lg:items-end lg:py-12">
+                        <div>
+                            <h1 className="max-w-4xl text-2xl font-semibold tracking-[-0.04em] sm:text-5xl lg:text-5xl">
+                                {project.name}
+                            </h1>
+                            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
+                                <span className="font-medium text-slate-900 dark:text-slate-100">@{project.username}</span>
+                                <span>•</span>
+                                <span>Updated {formatRelativeTime(project.updatedAt)}</span>
+                                {project.language && (
+                                    <>
+                                        <span>•</span>
+                                        <span className="inline-flex items-center gap-1.5">
                                             <span
-                                                className={`absolute -bottom-[-2px] -right-[-2px] h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-semibold
-                          ${webSocketConnected ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}
-                                            >
-
-                                            </span>
-                                        </div>
-
-                                        <div className="space-y-4">
-                                            <div className="flex flex-wrap items-center gap-3">
-                                                <CardTitle className="text-3xl font-bold tracking-tight">
-                                                    {curr_project?.name}
-                                                </CardTitle>
-                                                <Badge
-                                                    variant={
-                                                        curr_project?.visibility === 'private'
-                                                            ? 'destructive'
-                                                            : 'secondary'
-                                                    }
-                                                    className="uppercase tracking-wide text-[10px] px-2 py-1"
-                                                >
-                                                    {curr_project?.visibility}
-                                                </Badge>
-                                                <Badge
-                                                    variant={
-                                                        webSocketConnected ? 'default' : 'destructive'
-                                                    }
-                                                    className="flex items-center gap-1 text-[11px] font-medium px-2 py-1"
-                                                >
-                                                    <span
-                                                        className={`h-2 w-2 rounded-full ${webSocketConnected
-                                                            ? 'bg-green-400 animate-pulse'
-                                                            : 'bg-red-400'
-                                                            }`}
-                                                    />
-                                                    {webSocketConnected ? 'Connected' : 'Offline'}
-                                                </Badge>
-                                            </div>
-
-                                            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                                <span className="font-medium">
-                                                    @{curr_project?.username}
-                                                </span>
-                                                <span className="opacity-40">•</span>
-                                                <span>Updated {formatRelativeTime(curr_project?.updatedAt)}</span>
-                                                {curr_project?.language && (
-                                                    <>
-                                                        <span className="opacity-40 hidden sm:inline">
-                                                            •
-                                                        </span>
-                                                        <span className="flex items-center gap-1">
-                                                            <span
-                                                                className="h-2.5 w-2.5 rounded-full"
-                                                                style={{
-                                                                    backgroundColor:
-                                                                        languageColors[curr_project?.language] ||
-                                                                        '#64748b'
-                                                                }}
-                                                            />
-                                                            {curr_project?.language}
-                                                        </span>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-3">
-                                        <ShareLinkButton
-                                            path={`/project/${projectId}`}
-                                            title={curr_project?.name || 'Insert project'}
-                                            text={`Check out this project on Insert: ${curr_project?.name || 'Untitled project'}`}
-                                            className="rounded-xl border border-black/10 dark:border-white/15 bg-white/60 px-4 py-2 text-sm font-medium dark:bg-gray-800/40"
-                                        />
-                                        <Link
-                                            href={curr_project?.repoUrl || '/'}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="group"
-                                        >
-                                            <span className="inline-flex items-center gap-2 rounded-xl border border-black/10 dark:border-white/15 bg-white/60 dark:bg-gray-800/40 backdrop-blur px-4 py-2 text-sm font-medium hover:border-black/25 dark:hover:border-white/30 transition">
-                                                <ExternalLink className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                                                Open Repo
-                                            </span>
-                                        </Link>
-                                    </div>
-                                </div>
-
-                                {curr_project?.description ? (
-                                    <CardDescription className="mt-5 text-sm leading-relaxed max-w-3xl">
-                                        {curr_project.description}
-                                    </CardDescription>
-                                ) : (
-                                    <CardDescription className="mt-5 italic text-gray-500 dark:text-gray-400">
-                                        No description available.
-                                    </CardDescription>
+                                                className="h-2.5 w-2.5 rounded-full"
+                                                style={{ backgroundColor: languageColors[project.language] || '#64748b' }}
+                                            />
+                                            {project.language}
+                                        </span>
+                                    </>
                                 )}
+                                <Badge
+                                    variant={project.visibility === 'private' ? 'destructive' : 'secondary'}
+                                    className="uppercase tracking-wide text-[10px]"
+                                >
+                                    {project.visibility}
+                                </Badge>
+                                <Badge variant={webSocketConnected ? 'default' : 'destructive'} className="text-[11px]">
+                                    {webSocketConnected ? 'Connected' : 'Offline'}
+                                </Badge>
+                            </div>
+                            <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-400">
+                                {project.description?.trim() || 'No description available for this project yet.'}
+                            </p>
+                        </div>
 
-                                <div className="mt-7 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <div className={surfaceMuted + ' px-4 py-3 flex gap-3'}>
-                                        <div className="h-9 w-9 flex items-center justify-center rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-                                            <Calendar className="h-4 w-4" />
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                                Created
-                                            </span>
-                                            <span className="text-sm font-medium">
-                                                {formatDate(curr_project?.createdAt)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className={surfaceMuted + ' px-4 py-3 flex gap-3'}>
-                                        <div className="h-9 w-9 flex items-center justify-center rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                                            <GitCommit className="h-4 w-4" />
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                                Last Commit
-                                            </span>
-                                            <span className="text-sm font-medium">
-                                                {lastCommitSha
-                                                    ? lastCommitSha.substring(0, 7)
-                                                    : '—'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className={surfaceMuted + ' px-4 py-3 flex gap-3'}>
-                                        <div className="h-9 w-9 flex items-center justify-center rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                                            <Rocket className="h-4 w-4" />
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                                Release Blogs
-                                            </span>
-                                            <span className="text-sm font-medium">
-                                                {curr_project?.releaseBlogs?.length || 0}
-                                            </span>
-                                        </div>
+                        <div className={shellCard + ' p-4'}>
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="h-14 w-14 border border-slate-200 dark:border-slate-800">
+                                        <AvatarImage src={typeof project.avatar === 'string' ? project.avatar : undefined} />
+                                        <AvatarFallback className="font-semibold">
+                                            {project.username?.slice(0, 2).toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="text-sm font-semibold">{project.defaultBranch}</p>
+                                        <p className="text-xs text-slate-600 dark:text-slate-400">Default branch</p>
                                     </div>
                                 </div>
-                            </CardHeader>
-                        </Card>
-                    </div>
 
-                    {/* Sync Status */}
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <ShareLinkButton
+                                        path={`/project/${projectId}`}
+                                        title={project.name || 'Insert project'}
+                                        text={`Check out this project on Insert: ${project.name || 'Untitled project'}`}
+                                        className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm dark:border-slate-800 dark:bg-slate-950"
+                                    />
+                                    <Link href={project.repoUrl || '/'} target="_blank" rel="noopener noreferrer">
+                                        <span className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm dark:border-slate-800 dark:bg-slate-950">
+                                            <ExternalLink className="h-4 w-4" />
+                                            Open Repo
+                                        </span>
+                                    </Link>
+                                </div>
+                            </div>
+
+                            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                                <div className={metricCard}>
+                                    <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">Created</p>
+                                    <p className="mt-1 text-sm font-medium">{formatDate(project.createdAt)}</p>
+                                </div>
+                                <div className={metricCard}>
+                                    <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">Last Commit</p>
+                                    <p className="mt-1 text-sm font-medium">{lastCommitSha ? lastCommitSha.substring(0, 7) : '—'}</p>
+                                </div>
+                                <div className={metricCard}>
+                                    <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">Release Blogs</p>
+                                    <p className="mt-1 text-sm font-medium">{project.releaseBlogs?.length || 0}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
                     {syncStatus && (
-                        <Card
-                            className={
-                                surface +
-                                ' shadow-none border-dashed rounded-xl px-4 py-3'
-                            }
-                        >
-                            <CardHeader className="pb-2 px-2">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        {syncStatus.status === 'BUILDING' && (
-                                            <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />
-                                        )}
-                                        {syncStatus.status === 'READY' && (
-                                            <CheckCircle className="h-4 w-4 text-green-500" />
-                                        )}
-                                        {syncStatus.status === 'ERROR' && (
-                                            <XCircle className="h-4 w-4 text-red-500" />
-                                        )}
-                                        <CardTitle className="text-base">
-                                            Release Sync Status
-                                        </CardTitle>
+                        <section className="py-6">
+                            <Card className={shellCard}>
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-2">
+                                            {syncStatus.status === 'BUILDING' && (
+                                                <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />
+                                            )}
+                                            {syncStatus.status === 'READY' && (
+                                                <CheckCircle className="h-4 w-4 text-emerald-500" />
+                                            )}
+                                            {syncStatus.status === 'ERROR' && (
+                                                <XCircle className="h-4 w-4 text-rose-500" />
+                                            )}
+                                            <CardTitle className="text-base">Release Sync Status</CardTitle>
+                                        </div>
+                                        <Button variant="ghost" size="sm" onClick={handleClearStatus}>
+                                            Clear
+                                        </Button>
                                     </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={handleClearStatus}
-                                    >
-                                        Clear
-                                    </Button>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="px-2 pt-0">
-                                <div className="flex flex-wrap items-center gap-3 text-sm">
-                                    <Badge variant={getStatusBadgeVariant(syncStatus.status)}>
-                                        {syncStatus.status}
-                                    </Badge>
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                                        {new Date(syncStatus.timestamp).toLocaleTimeString()}
-                                    </span>
-                                    <span className="text-gray-700 dark:text-gray-300">
-                                        {syncStatus.message}
-                                    </span>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="flex flex-wrap items-center gap-3 text-sm">
+                                        <Badge variant={getStatusBadgeVariant(syncStatus.status)}>{syncStatus.status}</Badge>
+                                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                                            {new Date(syncStatus.timestamp).toLocaleTimeString()}
+                                        </span>
+                                        <span className="text-slate-700 dark:text-slate-300">{syncStatus.message}</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </section>
                     )}
 
-                    {/* Main Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                        {/* Release Blogs */}
-                        <div className="lg:col-span-2 space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div className="text-xl font-semibold flex items-center gap-2">
-                                    <BookOpen className="h-5 w-5" />
-                                    Release Blogs
-                                    <Badge variant="outline" className="text-xs px-2 py-0.5">
-                                        {curr_project?.releaseBlogs?.length || 0}
-                                    </Badge>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <Button
-                                        onClick={handleSyncRelease}
-                                        disabled={isLoading}
-                                        size="sm"
-                                        className="gap-2"
-                                    >
-                                        {isLoading ? (
-                                            <>
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                                Syncing
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Rocket className="h-4 w-4" />
-                                                Sync
-                                            </>
-                                        )}
-                                    </Button>
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        className="gap-2"
-                                        onClick={() => setIsAddReleaseBlogModalOpen(true)}
-                                    >
-                                        <FilePlus2 className="h-4 w-4" />
-                                        Add
-                                    </Button>
-                                </div>
-                            </div>
+                    <section className="grid gap-6 pb-10 lg:grid-cols-[minmax(0,1fr)_340px]">
+                        <div className="space-y-4">
+                            <Card className={shellCard}>
+                                <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+                                    <div className="flex items-center gap-2 text-xl font-semibold tracking-tight">
+                                        <BookOpen className="h-5 w-5" />
+                                        Release Blogs
+                                        {/* <Badge variant="outline" className="text-xs px-2 py-0.5">
+                                            {project.releaseBlogs?.length || 0}
+                                        </Badge> */}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="gap-2"
+                                            onClick={() => setIsTemplateModalOpen(true)}
+                                        >
+                                            <FileText className="h-4 w-4" />
+                                            {project.releaseDraftTemplate ? 'Update Template' : 'Add Template'}
+                                        </Button>
+                                        <Button onClick={handleSyncRelease} disabled={isLoading} size="sm" className="gap-2">
+                                            {isLoading ? (
+                                                <>
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                    Syncing
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Rocket className="h-4 w-4" />
+                                                    Sync
+                                                </>
+                                            )}
+                                        </Button>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="gap-2"
+                                            onClick={() => setIsAddReleaseBlogModalOpen(true)}
+                                        >
+                                            <FilePlus2 className="h-4 w-4" />
+                                            Add
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
 
-                            {curr_project?.releaseBlogs &&
-                                curr_project?.releaseBlogs?.length > 0 ? (
-                                <div className="space-y-4 overflow-y-auto custom-small-scrollbar max-h-[50vh] pr-1">
-                                    {curr_project?.releaseBlogs?.map((blog: any, idx: number) => {
+                            {project.releaseBlogs && project.releaseBlogs.length > 0 ? (
+                                <div className="custom-small-scrollbar max-h-[58vh] space-y-3 overflow-y-auto pr-1">
+                                    {project.releaseBlogs.map((blog: any, idx: number) => {
                                         const statusVariant = getStatusBadgeVariant(blog.status)
                                         return (
-                                            <Link key={idx} className={`${blogCardBase} cursor-pointer`} href={`/project/${projectId}/edit/${blog._id}`}>
-                                                <CardHeader className="px-5 pb-4 pt-5 relative">
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex flex-wrap items-center gap-3">
-                                                                <CardTitle className="text-lg font-semibold truncate">
-                                                                    {blog?.releaseTitle ||
-                                                                        blog?.blogTitle ||
-                                                                        'Untitled Release'}
-                                                                </CardTitle>
-                                                                {blog?.status && (
-                                                                    <Badge
-                                                                        variant={statusVariant}
-                                                                        className="text-[10px] px-2 py-0.5 flex items-center gap-1"
-                                                                    >
-                                                                        {blog.status === 'BUILDING' && (
-                                                                            <Loader2 className="h-3 w-3 animate-spin" />
-                                                                        )}
-                                                                        {blog.status === 'READY' && (
-                                                                            <CheckCircle className="h-3 w-3" />
-                                                                        )}
-                                                                        {blog.status === 'ERROR' && (
-                                                                            <AlertCircle className="h-3 w-3" />
-                                                                        )}
-                                                                        {blog.status}
-                                                                    </Badge>
-                                                                )}
-                                                            </div>
-
-                                                            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mt-3">
-                                                                <div className="flex items-center gap-1">
-                                                                    <Clock className="h-3 w-3" />
-                                                                    {getLastModifiedText(
-                                                                        blog?.createdAt || blog?.publishedAt
+                                            <Link key={idx} className="block" href={`/project/${projectId}/edit/${blog._id}`}>
+                                                <Card className={blogCard}>
+                                                    <CardHeader className="px-5 pb-4 pt-5">
+                                                        <div className="flex items-start justify-between gap-4">
+                                                            <div className="min-w-0 flex-1">
+                                                                <div className="flex flex-wrap items-center gap-2">
+                                                                    <CardTitle className="truncate text-lg font-semibold">
+                                                                        {blog?.releaseTitle || blog?.blogTitle || 'Untitled Release'}
+                                                                    </CardTitle>
+                                                                    {blog?.status && (
+                                                                        <Badge
+                                                                            variant={statusVariant}
+                                                                            className="flex items-center gap-1 px-2 py-0.5 text-[10px]"
+                                                                        >
+                                                                            {blog.status === 'BUILDING' && (
+                                                                                <Loader2 className="h-3 w-3 animate-spin" />
+                                                                            )}
+                                                                            {blog.status === 'READY' && (
+                                                                                <CheckCircle className="h-3 w-3" />
+                                                                            )}
+                                                                            {blog.status === 'ERROR' && (
+                                                                                <AlertCircle className="h-3 w-3" />
+                                                                            )}
+                                                                            {blog.status}
+                                                                        </Badge>
                                                                     )}
                                                                 </div>
-                                                                {blog?.commitId && (
-                                                                    <div className="flex items-center gap-1">
-                                                                        <GitCommit className="h-3 w-3" />
-                                                                        <code className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-[10px]">
-                                                                            {blog.commitId.substring(0, 7)}
-                                                                        </code>
-                                                                    </div>
+
+                                                                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                                                                    <span className="inline-flex items-center gap-1.5 rounded border border-slate-200 px-2 py-1 dark:border-slate-800">
+                                                                        <Clock className="h-3 w-3" />
+                                                                        {getLastModifiedText(blog?.createdAt || blog?.publishedAt)}
+                                                                    </span>
+                                                                    {blog?.commitId && (
+                                                                        <span className="inline-flex items-center gap-1.5 rounded border border-slate-200 px-2 py-1 dark:border-slate-800">
+                                                                            <GitCommit className="h-3 w-3" />
+                                                                            <code className="text-[10px]">{blog.commitId.substring(0, 7)}</code>
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+
+                                                                {blog?.blogContentText && (
+                                                                    <CardDescription className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                                                                        {blog.blogContentText}
+                                                                    </CardDescription>
                                                                 )}
                                                             </div>
 
-                                                            {blog?.blogContentText && (
-                                                                <CardDescription className="mt-3 text-sm leading-relaxed line-clamp-3">
-                                                                    {blog.blogContentText}
-                                                                </CardDescription>
-                                                            )}
+                                                            <div className="flex items-start gap-2">
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="icon"
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault()
+                                                                        handleEditReleaseBlog(blog)
+                                                                    }}
+                                                                    className="h-8 w-8"
+                                                                >
+                                                                    <Edit className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    variant="destructive"
+                                                                    size="icon"
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault()
+                                                                        handleDeleteReleaseBlog(blog)
+                                                                    }}
+                                                                    className="h-8 w-8"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
                                                         </div>
-
-                                                        <div className="flex items-start gap-2">
-                                                            <Button
-                                                                variant="outline"
-                                                                size="icon"
-                                                                onClick={(e) => {
-                                                                    e.preventDefault()
-                                                                    handleEditReleaseBlog(blog)
-                                                                }}
-                                                                className="h-8 w-8"
-                                                            >
-                                                                <Edit className="h-4 w-4" />
-                                                            </Button>
-                                                            <Button
-                                                                variant="destructive"
-                                                                size="icon"
-                                                                onClick={(e) => {
-                                                                    e.preventDefault()
-                                                                    handleDeleteReleaseBlog(blog)
-                                                                }}
-                                                                className="h-8 w-8"
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                </CardHeader>
+                                                    </CardHeader>
+                                                </Card>
                                             </Link>
                                         )
                                     })}
                                 </div>
                             ) : (
-                                <Card className={surface + ' shadow-none p-0'}>
-                                    <CardContent className="flex items-center justify-center h-48">
-                                        <div className="text-center space-y-3">
-                                            <BookOpen className="h-10 w-10 text-gray-400 mx-auto" />
-                                            <h3 className="text-base font-semibold">
-                                                No release blogs yet
-                                            </h3>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                                <Card className={shellCard}>
+                                    <CardContent className="flex h-48 items-center justify-center">
+                                        <div className="space-y-2 text-center">
+                                            <BookOpen className="mx-auto h-8 w-8 text-slate-400" />
+                                            <h3 className="text-base font-semibold">No release blogs yet</h3>
+                                            <p className="text-sm text-slate-600 dark:text-slate-400">
                                                 Use Sync or Add to create the first release blog.
                                             </p>
                                         </div>
@@ -520,115 +491,118 @@ export default function Page() {
                             )}
                         </div>
 
-                        {/* Sidebar */}
-                        <div className="space-y-6">
-                            <Card className={surface + ' shadow-none'}>
+                        <div className="space-y-4">
+                            <Card className={shellCard + ' border-violet-200/80 bg-violet-500/[0.05] dark:border-violet-500/20 dark:bg-violet-500/[0.08]'}>
+                                <CardHeader>
+                                    <CardTitle className="text-base">Release Draft Template</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3 text-sm">
+                                    <p className="text-slate-600 dark:text-slate-400 mt-[-15px]">
+                                        Configure the default draft content used when adding a new release blog.
+                                    </p>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full justify-center"
+                                        onClick={() => setIsTemplateModalOpen(true)}
+                                    >
+                                        <FileText className="mr-2 h-4 w-4" />
+                                        {(project.releaseDraftTemplate || '').trim() ? 'Update Template' : 'Add Template'}
+                                    </Button>
+                                </CardContent>
+                            </Card>
+
+                            <Card className={shellCard + ' border-sky-200/80 bg-sky-500/[0.05] dark:border-sky-500/20 dark:bg-sky-500/[0.08]'}>
                                 <CardHeader>
                                     <CardTitle className="text-base">Project Info</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-5 text-sm">
                                     <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                                         <div>
-                                            <span className="text-gray-500 dark:text-gray-400 block text-xs mb-1">
-                                                Owner
-                                            </span>
-                                            <p className="font-medium break-all">
-                                                {curr_project?.username}
-                                            </p>
+                                            <span className="mb-1 block text-xs text-slate-500 dark:text-slate-400">Owner</span>
+                                            <p className="break-all font-medium">{project.username}</p>
                                         </div>
                                         <div>
-                                            <span className="text-gray-500 dark:text-gray-400 block text-xs mb-1">
-                                                Keyword
-                                            </span>
-                                            <p className="font-medium capitalize">
-                                                {curr_project?.releaseTriggerKeyword}
-                                            </p>
+                                            <span className="mb-1 block text-xs text-slate-500 dark:text-slate-400">Keyword</span>
+                                            <p className="font-medium capitalize">{project.releaseTriggerKeyword}</p>
                                         </div>
                                         <div>
-                                            <span className="text-gray-500 dark:text-gray-400 block text-xs mb-1">
-                                                Language
-                                            </span>
-                                            {curr_project?.language && (
-                                                <div className="flex gap-2 items-center">
+                                            <span className="mb-1 block text-xs text-slate-500 dark:text-slate-400">Language</span>
+                                            {project.language && (
+                                                <div className="flex items-center gap-2">
                                                     <span
-                                                        className="w-2.5 h-2.5 rounded-full"
-                                                        style={{
-                                                            backgroundColor:
-                                                                languageColors[curr_project?.language] ||
-                                                                '#586069'
-                                                        }}
+                                                        className="h-2.5 w-2.5 rounded-full"
+                                                        style={{ backgroundColor: languageColors[project.language] || '#586069' }}
                                                     />
-                                                    <span>{curr_project?.language}</span>
+                                                    <span>{project.language}</span>
                                                 </div>
                                             )}
                                         </div>
                                         <div>
-                                            <span className="text-gray-500 dark:text-gray-400 block text-xs mb-1">
-                                                Branch
-                                            </span>
-                                            <p className="font-medium">
-                                                {curr_project?.defaultBranch}
-                                            </p>
+                                            <span className="mb-1 block text-xs text-slate-500 dark:text-slate-400">Branch</span>
+                                            <p className="font-medium">{project.defaultBranch}</p>
                                         </div>
                                     </div>
                                 </CardContent>
                             </Card>
 
-                            <Card className={surface + ' shadow-none'}>
+                            <Card className={shellCard + ' border-emerald-200/80 bg-emerald-500/[0.05] dark:border-emerald-500/20 dark:bg-emerald-500/[0.08]'}>
                                 <CardHeader>
                                     <CardTitle className="text-base">Actions</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
-                                    <Link href={curr_project?.repoUrl || '/'} target="_blank">
-                                        <Button
-                                            className="w-full justify-center"
-                                            variant="outline"
-                                        >
-                                            <ExternalLink className="h-4 w-4 mr-2" />
+                                    <Link href={project.repoUrl || '/'} target="_blank">
+                                        <Button className="w-full justify-center" variant="outline">
+                                            <ExternalLink className="mr-2 h-4 w-4" />
                                             View Repo
                                         </Button>
                                     </Link>
                                     <Button
                                         className="w-full justify-center"
                                         variant="default"
-                                        onClick={handleEditProject}
+                                        onClick={() => setIsEditModalOpen(true)}
                                         disabled={isProjectLoading}
                                     >
-                                        <Settings className="h-4 w-4 mr-2" />
+                                        <Settings className="mr-2 h-4 w-4" />
                                         Edit Project
                                     </Button>
                                 </CardContent>
                             </Card>
                         </div>
-                    </div>
-
-                    {/* Modals */}
-                    <EditProjectModal
-                        isOpen={isEditModalOpen}
-                        onClose={handleCloseEditModal}
-                        project={curr_project}
-                        isUpdating={isUpdatingProject}
-                    />
-                    <EditReleaseBlogModal
-                        isOpen={isEditReleaseBlogModalOpen}
-                        onClose={handleCloseEditReleaseBlogModal}
-                        releaseBlog={selectedReleaseBlog}
-                        projectId={projectId}
-                        isUpdating={isUpdatingReleaseBlog}
-                    />
-                    <DeleteReleaseBlogModal
-                        isOpen={isDeleteReleaseBlogModalOpen}
-                        onClose={handleCloseDeleteReleaseBlogModal}
-                        releaseBlog={selectedReleaseBlog}
-                        projectId={projectId}
-                        isDeleting={isDeletingReleaseBlog}
-                    />
-                    <AddReleaseBlogModal
-                        defaultVisibility={isAddReleaseBlogModalOpen}
-                        onClose={() => setIsAddReleaseBlogModalOpen(false)}
-                    />
+                    </section>
                 </div>
-            )}
-        </div>
+            </main>
+
+            <EditProjectModal
+                isOpen={isEditModalOpen}
+                onClose={handleCloseEditModal}
+                project={project}
+                isUpdating={isUpdatingProject}
+            />
+            <EditReleaseBlogModal
+                isOpen={isEditReleaseBlogModalOpen}
+                onClose={handleCloseEditReleaseBlogModal}
+                releaseBlog={selectedReleaseBlog}
+                projectId={projectId}
+                isUpdating={isUpdatingReleaseBlog}
+            />
+            <DeleteReleaseBlogModal
+                isOpen={isDeleteReleaseBlogModalOpen}
+                onClose={handleCloseDeleteReleaseBlogModal}
+                releaseBlog={selectedReleaseBlog}
+                projectId={projectId}
+                isDeleting={isDeletingReleaseBlog}
+            />
+            <AddReleaseBlogModal
+                defaultVisibility={isAddReleaseBlogModalOpen}
+                onClose={() => setIsAddReleaseBlogModalOpen(false)}
+            />
+            <ReleaseDraftTemplateModal
+                open={isTemplateModalOpen}
+                currentTemplate={project.releaseDraftTemplate as string | undefined}
+                isSaving={isSavingTemplate}
+                onClose={() => setIsTemplateModalOpen(false)}
+                onSave={handleSaveDraftTemplate}
+            />
+        </>
     )
 }

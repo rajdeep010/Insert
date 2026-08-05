@@ -10,6 +10,7 @@ import { useParams, useRouter } from "next/navigation"
 import { useWebSocket } from "@/hooks/use-web-socket"
 import { toast as sonnerToast } from 'sonner'
 import { externalServices } from "@/lib/config/services"
+import { buildReleaseDraftContent } from "@/features/project/utils/releaseDraftTemplate"
 import type {
 	GitHubRepo,
 	ProjectPagination,
@@ -270,7 +271,19 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 
 	const addReleaseBlog = async (projectId: string, blog: ReleaseBlogDraft) => {
 		try {
-			const res = await axios.post(`${API_BASE}/api/release-blogs/create-release-blog/${projectId}`, { releaseTitle: blog.title, visibility: blog.visibility, status: "DRAFT", blogContent: JSON.stringify({ type: "doc", content: [{ type: "heading", attrs: { textAlign: null, level: 1 }, content: [{ type: "text", text: String(blog.title ?? "") }] }, { type: "paragraph", attrs: { textAlign: null } }] }) }, { headers: { 'Authorization': `Bearer ${session?.accessToken}`, 'X-GitHub-Token': `Bearer ${session?.user?.githubAccessToken}` } })
+			const resolvedTemplate =
+				typeof state.curr_project?.releaseDraftTemplate === 'string'
+					? state.curr_project.releaseDraftTemplate
+					: ''
+			const releaseTitle = String(blog.title ?? '')
+			const blogContent = buildReleaseDraftContent(releaseTitle, resolvedTemplate)
+
+			const res = await axios.post(`${API_BASE}/api/release-blogs/create-release-blog/${projectId}`, {
+				releaseTitle,
+				visibility: blog.visibility,
+				status: "DRAFT",
+				blogContent: JSON.stringify(blogContent),
+			}, { headers: { 'Authorization': `Bearer ${session?.accessToken}`, 'X-GitHub-Token': `Bearer ${session?.user?.githubAccessToken}` } })
 			dispatch({ type: "ADD_RELEASE_BLOG", payload: { projectId, blog: res.data.data } })
 			toast({ title: "Success ✅", description: "Release blog added successfully", variant: "default" })
 		} catch (error: any) {

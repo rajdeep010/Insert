@@ -1,277 +1,238 @@
 "use client";
+
 import { useEffect, useMemo, useState } from "react";
-import { useInsertProjects } from "@/features/project/context/InsertProjectProvider";
-import InsertNavbar from "@/components/InsertNavbar";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { getLastModifiedText } from "@/helpers/last-modified";
-import { Button } from "@/components/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-    Loader2,
-    MoreHorizontal,
-    GitBranch,
+    ArrowRight,
     ExternalLink,
     Eye,
     EyeOff,
+    FolderGit2,
+    GitBranch,
     GitCommit,
+    Loader2,
     Search,
+    Sparkles,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import InsertHoverCard from "@/components/InsertHoverCard";
-import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { languageColors } from "@/types/master-data";
-import { useInsertUser } from "@/features/user/context/InsertUserProvider";
-import ProGate from "@/components/ProGate";
-import { useSession } from "next-auth/react";
 
-const surface =
-    "relative rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 transition-colors";
-const hoverable = "transition-colors hover:border-black/20 dark:hover:border-white/30";
+import InsertNavbar from "@/components/InsertNavbar";
+import InsertHoverCard from "@/components/InsertHoverCard";
+import ProGate from "@/components/ProGate";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { getLastModifiedText } from "@/helpers/last-modified";
+import { languageColors } from "@/types/master-data";
+import { useInsertProjects } from "@/features/project/context/InsertProjectProvider";
+import { useInsertUser } from "@/features/user/context/InsertUserProvider";
+
+const accents = [
+    {
+        line: "group-hover:border-indigo-400/45",
+        glow: "bg-indigo-500/10",
+        label: "text-indigo-600 dark:text-indigo-300",
+    },
+    {
+        line: "group-hover:border-cyan-400/45",
+        glow: "bg-cyan-500/10",
+        label: "text-cyan-700 dark:text-cyan-300",
+    },
+    {
+        line: "group-hover:border-emerald-400/45",
+        glow: "bg-emerald-500/10",
+        label: "text-emerald-700 dark:text-emerald-300",
+    },
+    {
+        line: "group-hover:border-amber-400/45",
+        glow: "bg-amber-500/10",
+        label: "text-amber-700 dark:text-amber-300",
+    },
+];
 
 export default function ProjectsPage() {
     const { all_projects, isAllProjectsLoading, pagination, loadMore, fetchAllProjects } = useInsertProjects();
-    const [query, setQuery] = useState("");
+    const { currentUser } = useInsertUser();
     const { status } = useSession();
+    const [query, setQuery] = useState("");
 
     const filtered = useMemo(() => {
-        const q = query.trim().toLowerCase();
-        if (!q) return all_projects || [];
-        return (all_projects || []).filter((p: any) => {
-            const name = (p?.name || "").toLowerCase();
-            const username = (p?.username || "").toLowerCase();
-            const repo = (p?.repoName || "").toLowerCase();
-            return name.includes(q) || username.includes(q) || repo.includes(q);
-        });
+        const normalizedQuery = query.trim().toLowerCase();
+        if (!normalizedQuery) return all_projects || [];
+
+        return (all_projects || []).filter((project: any) =>
+            [project?.name, project?.username, project?.repoName, project?.description, project?.language]
+                .filter(Boolean)
+                .some((value) => String(value).toLowerCase().includes(normalizedQuery)),
+        );
     }, [all_projects, query]);
 
-    const { currentUser } = useInsertUser();
-    const showSubscribeModal = currentUser?.proStatus?.active === false;
-
     useEffect(() => {
-        if (status !== "authenticated") return;
-        fetchAllProjects({ limit: 5 })
-    }, [fetchAllProjects, status])
+        if (status === "authenticated") fetchAllProjects({ limit: 5 });
+    }, [fetchAllProjects, status]);
 
     return (
         <>
-            <ProGate show={showSubscribeModal} />
-            
-            <div className="flex flex-col gap-6 py-8 lg:py-12 justify-center px-8 lg:px-56">
-                {isAllProjectsLoading && (
-                    <div className="flex justify-center items-center h-[60vh]">
-                        <Loader2 className="h-12 w-12 animate-spin text-gray-500" />
-                    </div>
-                )}
+            <ProGate show={currentUser?.proStatus?.active === false} />
 
-                {!isAllProjectsLoading && (
-                    <div>
-                        <InsertNavbar />
-                    </div>
-                )}
+            <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 dark:bg-[#020817] dark:text-slate-50">
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 opacity-60 dark:opacity-100 [background-image:linear-gradient(to_right,rgba(100,116,139,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(100,116,139,0.08)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:linear-gradient(to_bottom,black,transparent_92%)]"
+                />
+                <div aria-hidden="true" className="pointer-events-none absolute left-[12%] top-0 h-80 w-80 rounded-full bg-indigo-500/10 blur-[120px]" />
+                <div aria-hidden="true" className="pointer-events-none absolute right-[8%] top-64 h-72 w-72 rounded-full bg-cyan-500/10 blur-[120px]" />
 
-                {!isAllProjectsLoading && <div className="flex items-center justify-between flex-wrap gap-4">
-                    <span className="text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
-                        Post: Projects
-                    </span>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {filtered?.length ?? 0} shown{query ? ` of ${all_projects?.length ?? 0}` : ""}
-                    </div>
-                </div>}
+                <div className="relative mx-auto w-full max-w-[1560px] px-4 py-5 sm:px-8 lg:px-12 lg:py-8">
+                    <InsertNavbar />
 
-                {!isAllProjectsLoading && <div className={`${surface} ${hoverable} shadow-none p-2 pr-3 flex items-center gap-2`}>
-                    <div className="pl-2 pr-1 text-gray-500">
-                        <Search className="h-4 w-4" />
-                    </div>
-                    <Input
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search by project name, owner, or repo..."
-                        className="border-0 focus-visible:ring-0 bg-transparent"
-                    />
-                </div>}
-
-                {!isAllProjectsLoading && (
-                    <div className="flex flex-col gap-4 max-h-[72vh] overflow-visible custom-small-scrollbar">
-                        {filtered?.length === 0 && (
-                            <Card className={`${surface} shadow-none`}>
-                                <CardContent className="py-14 text-center text-sm text-gray-600 dark:text-gray-400">
-                                    No results for “{query}”. Try a different search.
-                                </CardContent>
-                            </Card>
-                        )}
-
-                        {filtered?.map((project: any, idx: number) => (
-                            <div key={project?.id} className="group">
-                                <Card className={`${surface} ${hoverable} shadow-none`}>
-                                    <div className="flex justify-between px-3 lg:px-6 py-6">
-                                        {/* Left: meta + content */}
-                                        <CardContent className="flex flex-col gap-3 pr-6 w-full p-0">
-                                            <CardHeader className="flex flex-col gap-3 px-0 py-0">
-                                                {/* User Info */}
-                                                <div className="flex items-center gap-2">
-                                                    <InsertHoverCard
-                                                        username={project?.username}
-                                                        type="avatar"
-                                                        avatarSize="small"
-                                                    />
-                                                    <div className="text-sm text-gray-600 hover:text-blue-500 hover:underline">
-                                                        <InsertHoverCard
-                                                            username={project?.username}
-                                                            type="username"
-                                                            avatarSize="small"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* Title and Badges */}
-                                                <div className="flex items-center gap-3 flex-wrap">
-                                                    <Link href={`/posts/projects/${project?.id}`}>
-                                                        <CardTitle className="text-2xl font-semibold hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                                                            {project?.name}
-                                                        </CardTitle>
-                                                    </Link>
-
-                                                    {/* Visibility Badge */}
-                                                    {project?.visibility === "private" ? (
-                                                        <Badge variant="destructive" className="flex items-center gap-1">
-                                                            <EyeOff className="w-4 h-4" />
-                                                            Private
-                                                        </Badge>
-                                                    ) : (
-                                                        <Badge variant="secondary" className="flex items-center gap-1">
-                                                            <Eye className="w-4 h-4" />
-                                                            Public
-                                                        </Badge>
-                                                    )}
-
-                                                    {/* Language Badge */}
-                                                    {project?.language && (
-                                                        <Badge variant="outline" className="text-sm flex items-center gap-2">
-                                                            <span
-                                                                className="w-3 h-3 rounded-full"
-                                                                style={{ backgroundColor: languageColors[project?.language] || "#586069" }}
-                                                            />
-                                                            {project?.language}
-                                                        </Badge>
-                                                    )}
-
-                                                    {/* Monitoring Badge */}
-                                                    {project?.monitorCommits && (
-                                                        <Badge variant="outline" className="text-sm flex items-center gap-1">
-                                                            <GitCommit className="w-4 h-4" />
-                                                            Monitored
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            </CardHeader>
-
-                                            {/* Description */}
-                                            <CardDescription className="text-[15px] text-muted-foreground line-clamp-2">
-                                                {project?.description && project?.description.length > 0
-                                                    ? project?.description.slice(0, 240) + (project?.description.length > 240 ? "…" : "")
-                                                    : "No description available..."}
-                                            </CardDescription>
-
-                                            {/* Repository Info */}
-                                            <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                                                <div className="flex items-center gap-1">
-                                                    <GitBranch className="w-4 h-4" />
-                                                    <span>{project?.defaultBranch}</span>
-                                                </div>
-                                                <span className="opacity-40">•</span>
-                                                <span className="font-mono text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                                                    {project?.repoName}
-                                                </span>
-                                            </div>
-
-                                            {/* Bottom Row - Timestamp and Actions */}
-                                            <div className="flex justify-between items-center mt-2">
-                                                <div className="text-xs text-gray-600 dark:text-gray-400">
-                                                    Created {getLastModifiedText(project?.createdAt)}
-                                                </div>
-
-                                                {/* Actions */}
-                                                <div className="flex items-center gap-2">
-                                                    {/* Repository Link */}
-                                                    {project?.repoUrl && (
-                                                        <Link
-                                                            href={project?.repoUrl}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md transition-colors"
-                                                        >
-                                                            <ExternalLink className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                                                        </Link>
-                                                    )}
-
-                                                    {/* Dropdown Menu */}
-                                                    <div className="hover:bg-gray-200 dark:hover:bg-gray-800 p-2 rounded-md">
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <MoreHorizontal className="h-4 w-4 cursor-pointer" />
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent className="w-56" align="end">
-                                                                <DropdownMenuGroup>
-                                                                    <DropdownMenuItem>
-                                                                        <Link href={`/posts/projects/${project?.id}`} className="flex w-full">
-                                                                            View Project
-                                                                        </Link>
-                                                                    </DropdownMenuItem>
-                                                                </DropdownMenuGroup>
-                                                                <DropdownMenuGroup>
-                                                                    <DropdownMenuItem disabled>Hide Project</DropdownMenuItem>
-                                                                </DropdownMenuGroup>
-                                                                <DropdownMenuGroup>
-                                                                    <DropdownMenuItem className="text-red-500" disabled>
-                                                                        Report Project
-                                                                    </DropdownMenuItem>
-                                                                </DropdownMenuGroup>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </div>
-                                </Card>
-
-                                {/* Optional divider to keep rhythm on long lists */}
-                                {idx < filtered.length - 1 && <Separator className="opacity-60" />}
+                    <section className="grid gap-8 border-b border-slate-200/80 py-14 dark:border-slate-800/80 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.62fr)] lg:items-end lg:py-20">
+                        <div>
+                            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/[0.07] px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-300">
+                                <Sparkles className="h-3 w-3" />
+                                Community showcase
                             </div>
-                        ))}
+                            <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.04em] sm:text-6xl lg:text-7xl">
+                                Projects built in public,
+                                <span className="block text-slate-500 dark:text-slate-400">ready to explore.</span>
+                            </h1>
+                            <p className="mt-6 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-400 sm:text-lg">
+                                Browse release-ready work from the Insert community. See the stack, follow the repository, and discover how each project is evolving.
+                            </p>
+                        </div>
 
-                        {pagination?.hasMore && (
-                            <Button disabled={isAllProjectsLoading} onClick={loadMore}>
-                                {isAllProjectsLoading ? "Loading..." : "Load more"}
-                            </Button>
-                        )}
+                        <div className="rounded-2xl border border-slate-200 bg-white/65 p-2 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/55">
+                            <label htmlFor="project-search" className="flex items-center gap-3 rounded-xl border border-transparent px-3 focus-within:border-indigo-500/40 focus-within:bg-white dark:focus-within:bg-slate-950">
+                                <Search className="h-4 w-4 shrink-0 text-slate-400" />
+                                <Input
+                                    id="project-search"
+                                    value={query}
+                                    onChange={(event) => setQuery(event.target.value)}
+                                    placeholder="Search projects, owners, stacks..."
+                                    className="h-12 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+                                />
+                                <span className="hidden rounded-md border border-slate-200 px-2 py-1 font-mono text-[10px] text-slate-400 dark:border-slate-700 sm:block">
+                                    {filtered.length} found
+                                </span>
+                            </label>
+                        </div>
+                    </section>
 
-                        {/* Empty State when nothing at all */}
-                        {(all_projects?.length ?? 0) === 0 && (
-                            <Card className={`${surface} shadow-none`}>
-                                <CardContent className="py-12 text-center">
-                                    <div className="text-gray-500 text-lg mb-2">No projects found</div>
-                                    <div className="text-gray-400 text-sm">Start by creating your first project!</div>
-                                </CardContent>
-                            </Card>
-                        )}
-                    </div>
-                )}
-            </div>
+                    {isAllProjectsLoading && (all_projects?.length ?? 0) === 0 ? (
+                        <div className="flex min-h-[40vh] items-center justify-center">
+                            <Loader2 className="h-7 w-7 animate-spin text-slate-400" />
+                        </div>
+                    ) : (
+                        <section className="py-8 lg:py-10">
+                            <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+                                <div>
+                                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-300">Project directory</p>
+                                    <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Explore the latest builds</h2>
+                                </div>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                    {query ? `${filtered.length} of ${all_projects?.length ?? 0} projects` : `${filtered.length} public projects`}
+                                </p>
+                            </div>
+
+                            {filtered.length > 0 ? (
+                                <div className="grid auto-rows-fr gap-3 md:grid-cols-2 xl:grid-cols-3">
+                                    {filtered.map((project: any, index: number) => {
+                                        const accent = accents[index % accents.length];
+                                        return (
+                                            <article
+                                                key={project?.id}
+                                                className={`group relative min-h-[320px] overflow-hidden rounded-2xl border border-slate-200 bg-white/65 p-6 shadow-sm backdrop-blur-xl transition duration-300 hover:-translate-y-0.5 hover:bg-white dark:border-slate-800 dark:bg-slate-950/55 dark:hover:bg-slate-950/85 ${accent.line} ${index === 0 ? "md:col-span-2 xl:col-span-2" : ""}`}
+                                            >
+                                                <div aria-hidden="true" className={`absolute -right-20 -top-20 h-52 w-52 rounded-full blur-3xl transition-transform duration-500 group-hover:scale-125 ${accent.glow}`} />
+
+                                                <div className="relative flex h-full flex-col">
+                                                    <div className="flex items-start justify-between gap-4">
+                                                        <div className="flex min-w-0 items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                                                            <InsertHoverCard username={project?.username} type="avatar" avatarSize="small" />
+                                                            <InsertHoverCard username={project?.username} type="username" avatarSize="small" />
+                                                        </div>
+                                                        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100/80 px-2.5 py-1 text-[10px] uppercase tracking-wider text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                                                            {project?.visibility === "private" ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                                                            {project?.visibility || "public"}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="mt-10">
+                                                        <p className={`mb-3 font-mono text-[10px] uppercase tracking-[0.2em] ${accent.label}`}>
+                                                            {index === 0 ? "Featured build" : `Project ${String(index + 1).padStart(2, "0")}`}
+                                                        </p>
+                                                        <Link href={`/posts/projects/${project?.id}`} className="inline-flex max-w-full items-center gap-2">
+                                                            <h3 className="truncate text-2xl font-semibold tracking-tight transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-300 sm:text-3xl">
+                                                                {project?.name}
+                                                            </h3>
+                                                            <ArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1" />
+                                                        </Link>
+                                                        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">
+                                                            {project?.description?.trim() || "An open project from the Insert community. Explore the repository and follow its release journey."}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="mt-auto flex flex-wrap items-center gap-2 pt-8 text-xs text-slate-500 dark:text-slate-400">
+                                                        {project?.language && (
+                                                            <span className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-2.5 py-1.5 dark:border-slate-800">
+                                                                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: languageColors[project.language] || "#64748b" }} />
+                                                                {project.language}
+                                                            </span>
+                                                        )}
+                                                        {project?.defaultBranch && (
+                                                            <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 dark:border-slate-800">
+                                                                <GitBranch className="h-3.5 w-3.5" /> {project.defaultBranch}
+                                                            </span>
+                                                        )}
+                                                        {project?.monitorCommits && (
+                                                            <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 dark:border-slate-800">
+                                                                <GitCommit className="h-3.5 w-3.5" /> monitored
+                                                            </span>
+                                                        )}
+                                                        <span className="ml-auto pt-1 font-mono text-[10px] uppercase tracking-wider">
+                                                            {getLastModifiedText(project?.createdAt)}
+                                                        </span>
+                                                        {project?.repoUrl && (
+                                                            <Link
+                                                                href={project.repoUrl}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                aria-label={`Open ${project.name} repository`}
+                                                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 transition hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-900"
+                                                            >
+                                                                <ExternalLink className="h-3.5 w-3.5" />
+                                                            </Link>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </article>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/45 px-6 text-center dark:border-slate-700 dark:bg-slate-950/35">
+                                    <span className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+                                        <FolderGit2 className="h-5 w-5 text-slate-400" />
+                                    </span>
+                                    <h3 className="text-lg font-semibold">No projects found</h3>
+                                    <p className="mt-2 max-w-sm text-sm text-slate-500 dark:text-slate-400">
+                                        {query ? `Nothing matches “${query}”. Try another project, owner, or technology.` : "The project directory is waiting for its first build."}
+                                    </p>
+                                    {query && <Button variant="outline" className="mt-5" onClick={() => setQuery("")}>Clear search</Button>}
+                                </div>
+                            )}
+
+                            {pagination?.hasMore && !query && (
+                                <div className="mt-8 flex justify-center">
+                                    <Button variant="outline" className="h-11 rounded-xl px-6" disabled={isAllProjectsLoading} onClick={loadMore}>
+                                        {isAllProjectsLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                        {isAllProjectsLoading ? "Loading projects" : "Load more projects"}
+                                    </Button>
+                                </div>
+                            )}
+                        </section>
+                    )}
+                </div>
+            </main>
         </>
     );
 }
