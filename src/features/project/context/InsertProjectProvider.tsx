@@ -53,6 +53,7 @@ interface InsertProjectProviderProps {
 	updateReleaseBlog: (projectId: string, releaseBlogId: string, blog: Partial<ReleaseBlog>) => void
 	removeReleaseBlog: (projectId: string, blogId: string) => void
 	syncRelease: (projectId: string) => Promise<void>
+	updateReleaseDraftTemplate: (projectId: string, releaseDraftTemplate: string) => Promise<void>
 	fetchReleaseBlogForProject: (projectId: string) => Promise<void>
 	fetchRepositoryBranches: (githubId: string, repoName: string) => Promise<string[]>
 	clearReleaseSyncStatus: (projectId: string) => void
@@ -75,6 +76,7 @@ const initialState: ProjectState & Pick<InsertProjectProviderProps,
 	| "updateReleaseBlog"
 	| "removeReleaseBlog"
 	| "syncRelease"
+	| "updateReleaseDraftTemplate"
 	| "fetchReleaseBlogForProject"
 	| "fetchRepositoryBranches"
 	| "clearReleaseSyncStatus"
@@ -111,6 +113,7 @@ const initialState: ProjectState & Pick<InsertProjectProviderProps,
 	updateReleaseBlog: (_: string, __: string, ___: Partial<ReleaseBlog>) => { },
 	removeReleaseBlog: (_: string, __: string) => { },
 	syncRelease: async (_: string) => { },
+	updateReleaseDraftTemplate: async (_: string, __: string) => { },
 	fetchReleaseBlogForProject: async (_: string) => { },
 	fetchRepositoryBranches: async (_: string, __: string) => [],
 	clearReleaseSyncStatus: (_: string) => { },
@@ -123,7 +126,7 @@ const initialState: ProjectState & Pick<InsertProjectProviderProps,
 const InsertProjectContext = createContext<InsertProjectProviderProps | null>(null)
 
 export const InsertProjectProvider = ({ children }: { children: React.ReactNode }) => {
-	const API_BASE = externalServices.project.baseUrl
+	const API_BASE = "http://localhost:4000/v1"
 	const [state, dispatch] = useReducer(InsertProjectReducer, initialState)
 	const { data: session, status } = useSession()
 	useInsertUser()
@@ -340,6 +343,39 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 		}
 	}
 
+	const updateReleaseDraftTemplate = useCallback(async (projectId: string, releaseDraftTemplate: string) => {
+		try {
+			dispatch({ type: "SET_IS_PROJECT_LOADING", payload: true })
+			const payload = {
+				releaseDraftTemplate: String(releaseDraftTemplate ?? ''),
+			}
+			const headers: Record<string, string> = {
+				Authorization: `Bearer ${session?.accessToken}`,
+				'Content-Type': 'application/json',
+			}
+			if (session?.user?.githubAccessToken) {
+				headers['X-Github-Token'] = session.user.githubAccessToken
+			}
+
+			const res = await axios.patch(
+				`${API_BASE}/api/projects/${projectId}/release-draft-template`,
+				payload,
+				{ headers }
+			)
+
+			dispatch({ type: "UPDATE_PROJECT", payload: { id: projectId, releaseDraftTemplate: res?.data?.data?.releaseDraftTemplate ?? payload.releaseDraftTemplate } })
+		} catch (error: any) {
+			toast({
+				title: "Error ⭕",
+				description: error?.response?.data?.message || "Failed to update release draft template",
+				variant: "destructive",
+			})
+			throw error
+		} finally {
+			dispatch({ type: "SET_IS_PROJECT_LOADING", payload: false })
+		}
+	}, [API_BASE, session?.accessToken, session?.user?.githubAccessToken])
+
 	const fetchReleaseBlogForProject = useCallback(async (projectId: string) => {
 		try {
 			dispatch({ type: "SET_IS_RELEASE_BLOG_LOADING", payload: true })
@@ -418,7 +454,7 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 	}, [fetchAllProjects, state.pagination?.hasMore, state.pagination?.nextCursor]);
 
 	return (
-		<InsertProjectContext.Provider value={{ ...state, changeReleaseBlog, fetchProjectsByUsername, fetchProjectById, fetchAllProjects, importReposByGithubUserId, loadMore, addProject, updateProject, removeProject, setGithubRepos, addReleaseBlog, updateReleaseBlog, removeReleaseBlog, syncRelease, fetchReleaseBlogForProject, fetchRepositoryBranches, clearReleaseSyncStatus, fetchReleaseBlogById, sendFeedback }}>
+		<InsertProjectContext.Provider value={{ ...state, changeReleaseBlog, fetchProjectsByUsername, fetchProjectById, fetchAllProjects, importReposByGithubUserId, loadMore, addProject, updateProject, removeProject, setGithubRepos, addReleaseBlog, updateReleaseBlog, removeReleaseBlog, syncRelease, updateReleaseDraftTemplate, fetchReleaseBlogForProject, fetchRepositoryBranches, clearReleaseSyncStatus, fetchReleaseBlogById, sendFeedback }}>
 			{children}
 		</InsertProjectContext.Provider>
 	)

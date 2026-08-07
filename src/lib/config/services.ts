@@ -40,7 +40,7 @@ export const externalServices = {
 	project: {
 		origin: projectServiceOrigin,
 		baseUrl: `${projectServiceOrigin}/v1`,
-		apiBaseUrl: `${projectServiceOrigin}/v1/api`,
+		apiBaseUrl: `${projectServiceOrigin}`,
 		websocketUrl: projectServiceOrigin,
 	},
 	payment: {

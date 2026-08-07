@@ -1,7 +1,7 @@
 import { uniqueId } from "@/helpers/unique-id";
 import { getAuthenticatedAccessToken, requireAuthenticatedUsername } from "@/lib/api/auth";
-import { fetchMyCollaborations } from "@/lib/collaboration/permissions";
 import dbConnect from "@/lib/dbConnect";
+import { fetchCollaborationsWithTimeout } from "@/lib/collaboration/fetch-collaborations-with-timeout";
 import TopicModel from "@/model/Topic";
 import { createTopicSchema } from "@/schemas/topicSchema";
 
@@ -39,26 +39,13 @@ export async function GET(request: Request) {
         const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20', 10)));
         const skip = (page - 1) * limit;
 
-        // Fetch collaborations with timeout
-        let collaboratorTopicIds: string[] = [];
-        let membershipRoles = new Map<string, TopicAccessRole>();
-        
-        try {
-            const collaborations = await Promise.race([
-                fetchMyCollaborations(accessToken, "TOPIC"),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Collaboration fetch timeout')), 5000))
-            ]) as Array<{ entityId: string; role: TopicAccessRole }>;
-            
-            collaboratorTopicIds = collaborations
-                .map((item: { entityId: string }) => item.entityId)
-                .filter(Boolean);
-            membershipRoles = new Map<string, TopicAccessRole>(
-                collaborations.map((item: { entityId: string; role: TopicAccessRole }) => [item.entityId, item.role])
-            );
-        } catch (error) {
-            console.warn('Failed to fetch collaborations:', error);
-            // Continue without collaborations
-        }
+        const collaborationsPromise = fetchCollaborationsWithTimeout(accessToken, "TOPIC", 1200);
+
+        const collaborations = await collaborationsPromise;
+        const collaboratorTopicIds = collaborations.map((item) => item.entityId).filter(Boolean);
+        const membershipRoles = new Map<string, TopicAccessRole>(
+            collaborations.map((item) => [item.entityId, item.role])
+        );
 
         const filter = {
             $or: [

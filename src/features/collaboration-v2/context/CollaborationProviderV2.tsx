@@ -3,7 +3,7 @@
 import axios from "axios";
 import { createContext, useContext, useEffect, useReducer } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import CollaborationReducerV2, {
@@ -65,6 +65,7 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 export const CollaborationProviderV2 = ({ children }: { children: React.ReactNode }) => {
 	const { data: session, status } = useSession();
 	const router = useRouter();
+	const pathname = usePathname();
 	const accessToken = session?.accessToken ?? null;
 	const username = session?.user?.username ?? null;
 	const [state, dispatch] = useReducer(CollaborationReducerV2, initialCollaborationStateV2);
@@ -214,8 +215,11 @@ export const CollaborationProviderV2 = ({ children }: { children: React.ReactNod
 			dispatch({ type: "RESET" });
 			return;
 		}
+		if (!pathname?.startsWith("/collaboration")) {
+			return;
+		}
 		void refreshCollaborationV2();
-	}, [status, username, accessToken]);
+	}, [accessToken, pathname, status, username]);
 
 	const resolvePermission = (
 		entityType: "TOPIC" | "BLOG",

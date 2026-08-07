@@ -61,7 +61,7 @@ export default function Page() {
         curr_project,
         isProjectLoading,
         fetchProjectById,
-        updateProject,
+        updateReleaseDraftTemplate,
         syncRelease,
         isSyncingRelease,
         releaseSyncStatus,
@@ -161,12 +161,7 @@ export default function Page() {
         try {
             setIsSavingTemplate(true)
             const nextTemplate = template.trim()
-            const updatedProject = {
-                ...project,
-                releaseDraftTemplate: nextTemplate,
-                updatedAt: new Date().toISOString(),
-            }
-            await updateProject(updatedProject)
+            await updateReleaseDraftTemplate(project.id, nextTemplate)
             toast({
                 title: 'Template saved',
                 description: 'Release draft template has been updated.',
