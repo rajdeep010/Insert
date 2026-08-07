@@ -31,6 +31,7 @@ import ConfirmDeleteProject from './ConfirmDeleteProject'
 import { useInsertUser } from '@/features/user/context/InsertUserProvider';
 import ProGate from './ProGate';
 import { externalServices } from '@/lib/config/services';
+import ProjectsListSkeleton from './skeletons/ProjectsListSkeleton'
 
 
 
@@ -50,7 +51,7 @@ const Projects = () => {
 
     const showSubscribeModal = currentUser?.proStatus?.active === false;
 
-    const { user_projects, removeProject, updateProject, pagination, isAllProjectsLoading, loadMore } = useInsertProjects();
+    const { user_projects, removeProject, updateProject, pagination, isAllProjectsLoading, isUserProjectsLoading, loadMore } = useInsertProjects();
     const [isRepoModalOpen, setIsRepoModalOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
 
@@ -101,6 +102,10 @@ const Projects = () => {
             isDeleting: false
         })
     }
+
+    const isProjectsInitialLoading =
+        !!session?.user?.githubAccessToken &&
+        (isUserProjectsLoading || (isAllProjectsLoading && (user_projects?.length || 0) === 0))
 
     
     return (
@@ -173,7 +178,11 @@ const Projects = () => {
                 </Card>
             )}
 
-            {session?.user?.githubAccessToken && filteredProjects && filteredProjects.length === 0 && (
+            {isProjectsInitialLoading && (
+                <ProjectsListSkeleton count={4} />
+            )}
+
+            {session?.user?.githubAccessToken && !isProjectsInitialLoading && filteredProjects && filteredProjects.length === 0 && (
                 <Card className={`${surface} shadow-none`}>
                     <CardContent className="h-[40vh] flex justify-center items-center text-gray-500 dark:text-gray-400">
                         No projects match “{searchQuery}”. Try a different search, or click New to add one.
@@ -181,7 +190,7 @@ const Projects = () => {
                 </Card>
             )}
 
-            {session?.user?.githubAccessToken && filteredProjects && filteredProjects.length > 0 && (
+            {session?.user?.githubAccessToken && !isProjectsInitialLoading && filteredProjects && filteredProjects.length > 0 && (
                 <div className="my-1 flex flex-col gap-3 w-full max-h-[70vh] overflow-y-auto pr-1 custom-small-scrollbar">
                     {filteredProjects.map(({
                         id,
