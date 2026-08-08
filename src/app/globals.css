@@ -13,18 +13,18 @@
 .ag-theme-insert {
   --ag-font-size: 13px;
   --ag-grid-size: 6px;
-  --ag-border-radius: 5px;
-  --ag-wrapper-border-radius: 5px;
-  --ag-cell-horizontal-padding: 20px;
+  --ag-border-radius: 10px;
+  --ag-wrapper-border-radius: 10px;
+  --ag-cell-horizontal-padding: 18px;
   --ag-header-height: 52px;
   --ag-row-height: 60px;
   --ag-background-color: hsl(var(--card));
   --ag-foreground-color: hsl(var(--card-foreground));
-  --ag-header-background-color: color-mix(in oklab, hsl(var(--muted)) 70%, hsl(var(--card)));
+  --ag-header-background-color: color-mix(in oklab, hsl(var(--muted)) 56%, hsl(var(--card)));
   --ag-header-foreground-color: hsl(var(--foreground));
   --ag-odd-row-background-color: hsl(var(--card));
   --ag-even-row-background-color: hsl(var(--card));
-  --ag-row-hover-color: color-mix(in oklab, hsl(var(--muted)) 68%, hsl(var(--card)));
+  --ag-row-hover-color: color-mix(in oklab, hsl(var(--muted)) 78%, hsl(var(--card)));
   --ag-selected-row-background-color: color-mix(in oklab, hsl(var(--primary)) 10%, hsl(var(--card)));
   --ag-border-color: hsl(var(--border));
   --ag-secondary-border-color: color-mix(in oklab, hsl(var(--border)) 72%, transparent);
@@ -61,12 +61,13 @@
 .ag-theme-insert {
   border: 1px solid var(--ag-border-color);
   background: var(--ag-background-color);
+  box-shadow: 0 26px 60px -42px rgba(15, 23, 42, 0.35);
 }
 
 .ag-grid-shell .ag-root-wrapper {
   border: 0;
   background: var(--ag-background-color);
-  border-radius: 18px;
+  border-radius: 22px;
 }
 
 .ag-grid-shell .ag-root-wrapper-body,
@@ -116,6 +117,7 @@
 
 .ag-grid-shell .ag-header {
   border-bottom: 1px solid var(--ag-border-color);
+  box-shadow: inset 0 -1px 0 color-mix(in oklab, hsl(var(--border)) 72%, transparent);
 }
 
 .ag-grid-shell .ag-header-cell,
@@ -148,6 +150,7 @@
 
 .ag-grid-shell .ag-row {
   border-bottom: 1px solid var(--ag-row-border-color);
+  transition: background-color 160ms ease, border-color 160ms ease;
 }
 
 .ag-grid-shell .ag-row-odd {
@@ -186,11 +189,20 @@
 }
 
 .ag-grid-shell .ag-header-cell-label {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
+  font-family: 'Urbanist', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ag-header-foreground-color);
+}
+
+.ag-grid-shell .topic-problem-header-cell .ag-header-cell-label {
+  letter-spacing: 0.14em;
+}
+
+.ag-grid-shell .topic-problem-actions-header .ag-header-cell-label {
+  justify-content: flex-end;
 }
 
 .ag-grid-shell .ag-floating-filter {
@@ -200,6 +212,15 @@
 
 .ag-grid-shell .ag-cell {
   line-height: 1.25;
+}
+
+.ag-grid-shell .topic-problem-cell {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.ag-grid-shell .topic-problem-actions-cell {
+  padding-right: 14px;
 }
 
 .ag-grid-shell .ag-cell-value,

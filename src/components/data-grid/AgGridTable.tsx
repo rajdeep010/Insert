@@ -119,35 +119,12 @@ export function AgGridTable<T extends object>({
 
 	return (
 		<div className={cn(
-			'rounded-[20px] bg-transparent p-0',
+			'space-y-4 rounded-[24px] bg-transparent p-0',
 			className,
 		)}>
-			{/* <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-				<div className="space-y-1.5">
-					<div className="flex items-center gap-2">
-						<Badge className="rounded-full bg-secondary px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary-foreground">
-							<Rows3 className="mr-1.5 h-3.5 w-3.5" />
-							{title}
-						</Badge>
-						<Badge variant="secondary" className="rounded-full px-3 py-1 text-xs font-medium">
-							{rowData.length} rows
-						</Badge>
-					</div>
-					{subtitle ? <p className="max-w-2xl text-sm text-muted-foreground">{subtitle}</p> : null}
-				</div>
+			
 
-				<div className="relative w-full lg:max-w-md">
-					<Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-					<Input
-						value={quickFilter}
-						onChange={(event) => setQuickFilter(event.target.value)}
-						placeholder={quickFilterPlaceholder}
-						className="h-11 rounded-2xl border-border bg-background pl-10 shadow-none"
-					/>
-				</div>
-			</div> */}
-
-			<div className={cn(themeClassName, 'ag-grid-shell w-full overflow-hidden rounded-[18px]', gridClassName)}>
+			<div className={cn(themeClassName, 'ag-grid-shell w-full overflow-hidden rounded-[22px]', gridClassName)}>
 				<AgGridReact<T>
 					rowData={rowData}
 					columnDefs={columnDefs}
@@ -169,11 +146,11 @@ export function AgGridTable<T extends object>({
 				/>
 			</div>
 
-			<div className="mt-3 flex flex-col gap-3 px-1 py-1 lg:flex-row lg:items-center lg:justify-between">
+			<div className="flex flex-col gap-3 px-1 py-1 lg:flex-row lg:items-center lg:justify-between">
 				<div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-					<span>Page size</span>
+					<span className="font-medium">Page size</span>
 					<Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
-						<SelectTrigger className="h-9 w-[92px] border-border bg-background">
+						<SelectTrigger className="h-9 w-[92px] rounded-xl border-border bg-background/90">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>

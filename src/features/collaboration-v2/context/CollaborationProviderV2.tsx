@@ -62,6 +62,18 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 	return fallback;
 };
 
+const resolveSettledValue = <T,>(
+	result: PromiseSettledResult<T>,
+	fallback: T,
+	onRejected?: (reason: unknown) => void
+) => {
+	if (result.status === "fulfilled") {
+		return result.value;
+	}
+	onRejected?.(result.reason);
+	return fallback;
+};
+
 export const CollaborationProviderV2 = ({ children }: { children: React.ReactNode }) => {
 	const { data: session, status } = useSession();
 	const router = useRouter();
@@ -105,12 +117,24 @@ export const CollaborationProviderV2 = ({ children }: { children: React.ReactNod
 		dispatch({ type: "SET_LOADING", payload: true });
 		dispatch({ type: "SET_ERROR", payload: null });
 		try {
-			const [myCollaborations, pendingInvites, sentInvites, rawTopics] = await Promise.all([
+			const [membershipsResult, pendingInvitesResult, sentInvitesResult, topicsResult] = await Promise.allSettled([
 				fetchMyCollaborationsV2(accessToken),
 				fetchPendingInvitesV2(accessToken),
 				fetchSentInvitesV2(accessToken),
 				fetchOwnedTopicsV2(username),
 			]);
+			const myCollaborations = resolveSettledValue(membershipsResult, [], (reason) => {
+				console.warn("Failed to fetch collaboration memberships", reason);
+			});
+			const pendingInvites = resolveSettledValue(pendingInvitesResult, [], (reason) => {
+				console.warn("Failed to fetch pending invites", reason);
+			});
+			const sentInvites = resolveSettledValue(sentInvitesResult, [], (reason) => {
+				console.warn("Failed to fetch sent invites", reason);
+			});
+			const rawTopics = resolveSettledValue(topicsResult, [], (reason) => {
+				console.warn("Failed to fetch topic options", reason);
+			});
 			const topicOptions = rawTopics.map((topic: Record<string, any>) => normalizeTopicOptionV2(topic, username));
 			dispatch({
 				type: "HYDRATE",
@@ -215,7 +239,7 @@ export const CollaborationProviderV2 = ({ children }: { children: React.ReactNod
 			dispatch({ type: "RESET" });
 			return;
 		}
-		if (!pathname?.startsWith("/collaboration")) {
+		if (!pathname?.startsWith("/collaboration") && !pathname?.startsWith("/topic")) {
 			return;
 		}
 		void refreshCollaborationV2();
