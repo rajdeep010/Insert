@@ -32,7 +32,10 @@ type ProjectReducerAction =
 	| { type: "CLEAR_RELEASE_SYNC_STATUS"; payload: string }
 	| { type: "SET_IS_SYNCING_RELEASE"; payload: { projectId: string; isLoading: boolean } }
 
-const sortByCreatedAt = <T extends { createdAt?: string | null }>(items: T[] = []) => {
+const sortByCreatedAt = <T extends { createdAt?: string | null }>(items: T[] | unknown = []) => {
+	if (!Array.isArray(items)) {
+		return [] as T[]
+	}
 	return [...items].sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())
 }
 

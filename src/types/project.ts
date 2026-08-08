@@ -73,6 +73,7 @@ export interface Project {
     releaseBlogs?: ReleaseBlog[];
     monitorCommits?: boolean;
     releaseTriggerKeyword?: string;
+    lastMonitoredCommitSha?: string;
     releaseDraftTemplate?: string;
     createdAt?: string;
     updatedAt?: string;

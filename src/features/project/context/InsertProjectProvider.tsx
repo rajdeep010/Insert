@@ -380,7 +380,14 @@ export const InsertProjectProvider = ({ children }: { children: React.ReactNode 
 		try {
 			dispatch({ type: "SET_IS_RELEASE_BLOG_LOADING", payload: true })
 			const res = await axios.get(`${API_BASE}/api/release-blogs/get-release-blogs/${projectId}`, { headers: buildHeaders({ includeGithubToken: true }) })
-			dispatch({ type: "SET_RELEASE_BLOGS", payload: { projectId, blogs: res.data } })
+			const blogs = Array.isArray(res.data?.data)
+				? res.data.data
+				: Array.isArray(res.data?.blogs)
+					? res.data.blogs
+					: Array.isArray(res.data)
+						? res.data
+						: []
+			dispatch({ type: "SET_RELEASE_BLOGS", payload: { projectId, blogs } })
 		} catch (error: any) {
 			toast({ title: "Error ⭕", description: error?.response?.data?.message || "Failed to fetch release blogs", variant: "destructive" })
 		} finally {

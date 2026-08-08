@@ -13,6 +13,7 @@ import {
     GitCommit,
     Loader2,
     FileText,
+    RefreshCcw,
     Rocket,
     Settings,
     Trash2,
@@ -40,6 +41,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import ReleaseBlogsSkeleton from '@/components/skeletons/ReleaseBlogsSkeleton'
+import ProjectDetailSkeleton from '@/components/skeletons/ProjectDetailSkeleton'
 
 const shellCard =
     'rounded-2xl border border-slate-200/80 bg-white/70 backdrop-blur-xl dark:border-slate-800/90 dark:bg-slate-950/55'
@@ -61,9 +64,11 @@ export default function Page() {
         curr_project,
         isProjectLoading,
         fetchProjectById,
+        fetchReleaseBlogForProject,
         updateReleaseDraftTemplate,
         syncRelease,
         isSyncingRelease,
+        isReleaseBlogLoading,
         releaseSyncStatus,
         webSocketConnected,
         clearReleaseSyncStatus,
@@ -123,6 +128,11 @@ export default function Page() {
         await syncRelease(projectId)
     }
 
+    const handleRefreshReleaseBlogs = async () => {
+        if (!projectId) return
+        await fetchReleaseBlogForProject(projectId)
+    }
+
     const handleClearStatus = () => clearReleaseSyncStatus(projectId)
 
     const handleCloseEditModal = () => {
@@ -180,17 +190,15 @@ export default function Page() {
 
     if (status === 'authenticated' && !project) {
         return (
-            <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 dark:bg-[#020817] dark:text-slate-50">
-                <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 opacity-60 dark:opacity-100 [background-image:linear-gradient(to_right,rgba(100,116,139,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(100,116,139,0.08)_1px,transparent_1px)] [background-size:48px_48px]"
-                />
-                <div className="relative mx-auto w-full max-w-[1560px] px-4 py-5 sm:px-8 lg:px-12 lg:py-8">
-                    <InsertNavbar />
-                    <div className="flex min-h-[58vh] items-center justify-center">
-                        {isProjectLoading ? (
-                            <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
-                        ) : (
+            isProjectLoading ? <ProjectDetailSkeleton /> : (
+                <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 dark:bg-[#020817] dark:text-slate-50">
+                    <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 opacity-60 dark:opacity-100 [background-image:linear-gradient(to_right,rgba(100,116,139,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(100,116,139,0.08)_1px,transparent_1px)] [background-size:48px_48px]"
+                    />
+                    <div className="relative mx-auto w-full max-w-[1560px] px-4 py-5 sm:px-8 lg:px-12 lg:py-8">
+                        <InsertNavbar />
+                        <div className="flex min-h-[58vh] items-center justify-center">
                             <Card className={shellCard + ' w-full max-w-xl'}>
                                 <CardContent className="p-8 text-center">
                                     <p className="text-lg font-semibold">Project not available</p>
@@ -199,10 +207,10 @@ export default function Page() {
                                     </p>
                                 </CardContent>
                             </Card>
-                        )}
+                        </div>
                     </div>
-                </div>
-            </main>
+                </main>
+            )
         )
     }
 
@@ -361,6 +369,16 @@ export default function Page() {
                                             <FileText className="h-4 w-4" />
                                             {project.releaseDraftTemplate ? 'Update Template' : 'Add Template'}
                                         </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="gap-2"
+                                            onClick={handleRefreshReleaseBlogs}
+                                            disabled={isReleaseBlogLoading}
+                                        >
+                                            <RefreshCcw className={`h-4 w-4 ${isReleaseBlogLoading ? 'animate-spin' : ''}`} />
+                                            Refresh
+                                        </Button>
                                         <Button onClick={handleSyncRelease} disabled={isLoading} size="sm" className="gap-2">
                                             {isLoading ? (
                                                 <>
@@ -387,7 +405,9 @@ export default function Page() {
                                 </CardContent>
                             </Card>
 
-                            {project.releaseBlogs && project.releaseBlogs.length > 0 ? (
+                            {isReleaseBlogLoading ? (
+                                <ReleaseBlogsSkeleton count={4} />
+                            ) : project.releaseBlogs && project.releaseBlogs.length > 0 ? (
                                 <div className="custom-small-scrollbar max-h-[58vh] space-y-3 overflow-y-auto pr-1">
                                     {project.releaseBlogs.map((blog: any, idx: number) => {
                                         const statusVariant = getStatusBadgeVariant(blog.status)
