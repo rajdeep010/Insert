@@ -1,363 +1,80 @@
 'use client'
-import { useSession } from 'next-auth/react'
+
+import { useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import React, { useMemo, useState } from 'react'
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import Link from 'next/link';
-import { FiExternalLink } from 'react-icons/fi';
-import { Album, GitBranch, MoreHorizontal, Trash2, Search } from 'lucide-react'
-import { Badge } from './ui/badge'
-import {
-    Card,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-    CardContent,
-} from "@/components/ui/card"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Separator } from './ui/separator'
+import { useSession } from 'next-auth/react'
 import { GitHubLogoIcon } from '@radix-ui/react-icons'
+import { Album, ArrowRight, ExternalLink, FolderGit2, GitBranch, GitCommit, Loader2, MoreHorizontal, Search, Trash2 } from 'lucide-react'
+
+import ConfirmDeleteProject from '@/components/ConfirmDeleteProject'
+import GithubRepoModal from '@/components/GithubRepoModal'
+import ProGate from '@/components/ProGate'
+import ProjectsListSkeleton from '@/components/skeletons/ProjectsListSkeleton'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 import { useInsertProjects } from '@/features/project/context/InsertProjectProvider'
-import GithubRepoModal from './GithubRepoModal'
+import { useInsertUser } from '@/features/user/context/InsertUserProvider'
+import { getLastModifiedText } from '@/helpers/last-modified'
+import { externalServices } from '@/lib/config/services'
 import { languageColors } from '@/types/master-data'
-import ConfirmDeleteProject from './ConfirmDeleteProject'
-import { useInsertUser } from '@/features/user/context/InsertUserProvider';
-import ProGate from './ProGate';
-import { externalServices } from '@/lib/config/services';
-import ProjectsListSkeleton from './skeletons/ProjectsListSkeleton'
 
-
-
-const surface =
-    'rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 transition-colors'
-const hoverable =
-    'transition-colors hover:border-black/20 dark:hover:border-white/30'
-
-const NEXT_PROJECT_SERVICE_URL = externalServices.project.apiBaseUrl
-
-const Projects = () => {
-    const { data: session, status } = useSession();
-    const params = useParams();
-    const username = params.username as string;
-
-    const { currentUser } = useInsertUser();
-
-    const showSubscribeModal = currentUser?.proStatus?.active === false;
-
-    const { user_projects, removeProject, updateProject, pagination, isAllProjectsLoading, isUserProjectsLoading, loadMore } = useInsertProjects();
+export default function Projects() {
+    const { data: session, status } = useSession()
+    const { username } = useParams()
+    const { currentUser } = useInsertUser()
+    const { user_projects, removeProject, pagination, isAllProjectsLoading, isUserProjectsLoading, loadMore } = useInsertProjects()
     const [isRepoModalOpen, setIsRepoModalOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
+    const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, projectId: '', projectName: '', isDeleting: false })
+    const isOwner = status === 'authenticated' && session?.user?.username === username
+    const hasGithub = Boolean(session?.user?.githubAccessToken)
 
     const filteredProjects = useMemo(() => {
-        return user_projects?.filter(project =>
-            project?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+        const query = searchQuery.trim().toLowerCase()
+        if (!query) return user_projects || []
+        return (user_projects || []).filter((project) => [project.name, project.description, project.language].filter(Boolean).some((value) => String(value).toLowerCase().includes(query)))
     }, [searchQuery, user_projects])
 
-    const [deleteConfirm, setDeleteConfirm] = useState({
-        isOpen: false,
-        projectId: '',
-        projectName: '',
-        isDeleting: false
-    })
-
-    const handleDeleteProject = (id: string, name: string) => {
-        setDeleteConfirm({
-            isOpen: true,
-            projectId: id,
-            projectName: name,
-            isDeleting: false
-        })
-    }
-
-    // Confirm delete action
+    const initialLoading = hasGithub && (isUserProjectsLoading || (isAllProjectsLoading && user_projects.length === 0))
     const confirmDelete = async () => {
         try {
-            setDeleteConfirm(prev => ({ ...prev, isDeleting: true }))
+            setDeleteConfirm((value) => ({ ...value, isDeleting: true }))
             await removeProject(deleteConfirm.projectId)
-            setDeleteConfirm({
-                isOpen: false,
-                projectId: '',
-                projectName: '',
-                isDeleting: false
-            })
-        } catch (error) {
-            setDeleteConfirm(prev => ({ ...prev, isDeleting: false }))
+            setDeleteConfirm({ isOpen: false, projectId: '', projectName: '', isDeleting: false })
+        } catch {
+            setDeleteConfirm((value) => ({ ...value, isDeleting: false }))
         }
     }
 
-    // Cancel delete action
-    const cancelDelete = () => {
-        setDeleteConfirm({
-            isOpen: false,
-            projectId: '',
-            projectName: '',
-            isDeleting: false
-        })
-    }
-
-    const isProjectsInitialLoading =
-        !!session?.user?.githubAccessToken &&
-        (isUserProjectsLoading || (isAllProjectsLoading && (user_projects?.length || 0) === 0))
-
-    
     return (
-        <div className="flex flex-col gap-6">
-            <ProGate show={showSubscribeModal} />
+        <div className="space-y-6">
+            <ProGate show={currentUser?.proStatus?.active === false} />
+            <GithubRepoModal isOpen={isRepoModalOpen} onClose={() => setIsRepoModalOpen(false)} />
 
-            {session?.user?.githubAccessToken && (
-                <>
-                    <div className="flex items-center justify-between flex-wrap gap-3">
-                        <span className="flex items-center gap-2 text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
-                            Projects
-                            {filteredProjects && (
-                                <Badge variant="secondary" className="text-xs">
-                                    {filteredProjects?.length || 0}
-                                </Badge>
-                            )}
-                        </span>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {filteredProjects?.length ?? 0} shown{searchQuery ? ` of ${user_projects?.length ?? 0}` : ""}
-                        </div>
-                    </div>
-
-                    <div className="flex gap-3 items-center justify-between">
-                        <div className={`${surface} ${hoverable} rounded-md shadow-none p-1 pr-3 flex items-center gap-2 w-full`}>
-                            <div className="pl-2 pr-1 text-gray-500">
-                                <Search className="h-4 w-4" />
-                            </div>
-                            <Input
-                                type="text"
-                                placeholder="Search by project name…"
-                                className="border-0 focus-visible:ring-0 bg-transparent"
-                                value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
-                            />
-                        </div>
-
-                        <Button
-                            className="gap-2 flex items-center rounded-md cursor-pointer bg-green-700 text-white hover:bg-green-800"
-                            onClick={() => setIsRepoModalOpen(true)}
-                        >
-                            <Album className="h-8 w-8" /> <span className="text-sm">New</span>
-                        </Button>
-                    </div>
-                </>
-            )}
-
-            <GithubRepoModal
-                isOpen={isRepoModalOpen}
-                onClose={() => setIsRepoModalOpen(false)}
-            />
-
-            <Separator />
-
-            {!session?.user?.githubAccessToken && (
-                <Card className={`${surface} shadow-none`}>
-                    <CardContent className="h-[50vh] flex justify-center items-center flex-col gap-4 p-8">
-                        <div className="text-gray-500 dark:text-gray-400 text-center">
-                            You don’t have any projects yet.
-                        </div>
-                        <Button
-                            className="flex gap-2 items-center bg-green-700 text-white hover:bg-green-800"
-                            onClick={() =>
-                                window.location.href = `${NEXT_PROJECT_SERVICE_URL}/oauth2/authorize/github?userId=${session?.user?._id}&username=${session?.user?.username}`
-                            }
-                        >
-                            <GitHubLogoIcon />
-                            Authorize With Github
-                        </Button>
-                    </CardContent>
-                </Card>
-            )}
-
-            {isProjectsInitialLoading && (
-                <ProjectsListSkeleton count={4} />
-            )}
-
-            {session?.user?.githubAccessToken && !isProjectsInitialLoading && filteredProjects && filteredProjects.length === 0 && (
-                <Card className={`${surface} shadow-none`}>
-                    <CardContent className="h-[40vh] flex justify-center items-center text-gray-500 dark:text-gray-400">
-                        No projects match “{searchQuery}”. Try a different search, or click New to add one.
-                    </CardContent>
-                </Card>
-            )}
-
-            {session?.user?.githubAccessToken && !isProjectsInitialLoading && filteredProjects && filteredProjects.length > 0 && (
-                <div className="my-1 flex flex-col gap-3 w-full max-h-[70vh] overflow-y-auto pr-1 custom-small-scrollbar">
-                    {filteredProjects.map(({
-                        id,
-                        name,
-                        username,
-                        repoUrl,
-                        defaultBranch,
-                        userId,
-                        releaseTriggerKeyword,
-                        lastMonitoredCommitSha,
-                        createdAt,
-                        updatedAt,
-                        visibility,
-                        description,
-                        language
-                    }) => {
-                        const formatDate = (dateString?: string) => {
-                            if (!dateString) {
-                                return 'Unknown date'
-                            }
-
-                            return new Date(dateString).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                            })
-                        }
-
-                        return (
-                            <Card
-                                key={id}
-                                className={`${surface} ${hoverable} shadow-none p-0`}
-                            >
-                                <CardHeader className="p-5 pb-4">
-                                    <div className="flex justify-between items-start gap-4">
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <CardTitle className="text-xl font-semibold leading-tight truncate">
-                                                    <Link
-                                                        href={`/project/${id}`}
-                                                        className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                                                    >
-                                                        {name}
-                                                    </Link>
-                                                </CardTitle>
-
-                                                <Badge
-                                                    variant={visibility === 'private' ? 'destructive' : 'secondary'}
-                                                    className="text-xs capitalize"
-                                                >
-                                                    {visibility}
-                                                </Badge>
-                                            </div>
-
-                                            <div className="flex flex-wrap items-center gap-3 mb-3 text-xs">
-                                                <div className="flex gap-1.5 items-center bg-gray-100 dark:bg-gray-800 py-1 px-2 rounded-md border">
-                                                    <GitBranch className="h-3.5 w-3.5" />
-                                                    <span>{defaultBranch}</span>
-                                                </div>
-
-                                                {language && (
-                                                    <div className="flex items-center gap-2">
-                                                        <span
-                                                            className="inline-block w-2.5 h-2.5 rounded-full"
-                                                            style={{ backgroundColor: languageColors[language] || '#586069' }}
-                                                        />
-                                                        <span className="text-gray-600 dark:text-gray-300">{language}</span>
-                                                    </div>
-                                                )}
-
-                                                {repoUrl && (
-                                                    <Link
-                                                        href={repoUrl}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="flex items-center gap-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-                                                    >
-                                                        <FiExternalLink className="h-4 w-4" />
-                                                        <span>Repository</span>
-                                                    </Link>
-                                                )}
-                                            </div>
-
-                                            <CardDescription className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2">
-                                                {description && description.length > 0
-                                                    ? description
-                                                    : 'No description available for this project.'}
-                                                <Link
-                                                    href={`/project/${id}`}
-                                                    className="text-indigo-600 dark:text-indigo-400 hover:underline ml-1"
-                                                >
-                                                    Learn more →
-                                                </Link>
-                                            </CardDescription>
-                                        </div>
-
-                                        {status === 'authenticated' && session?.user?.username === username && (
-                                            <div className="ml-2 shrink-0">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="outline" size="icon" className="h-8 w-8 p-0">
-                                                            <MoreHorizontal className="h-4 w-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent className="w-56" align="end" side="bottom">
-                                                        <DropdownMenuGroup>
-                                                            {/* reserved for future actions */}
-                                                        </DropdownMenuGroup>
-                                                        <DropdownMenuGroup>
-                                                            <DropdownMenuItem
-                                                                className="text-red-500 focus:text-red-600"
-                                                                onClick={() => {
-                                                                    if (!id || !name) {
-                                                                        return
-                                                                    }
-
-                                                                    handleDeleteProject(id, name)
-                                                                }}
-                                                            >
-                                                                <Trash2 className="h-4 w-4 mr-2" />
-                                                                Delete Project
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuGroup>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
-                                        <div className="flex items-center gap-3">
-                                            <span>Created {formatDate(createdAt)}</span>
-                                            <span className="opacity-40">•</span>
-                                            <span>Updated {formatDate(updatedAt)}</span>
-                                            {typeof lastMonitoredCommitSha === 'string' && lastMonitoredCommitSha && (
-                                                <>
-                                                    <span className="opacity-40">•</span>
-                                                    <span>Last commit: {lastMonitoredCommitSha.substring(0, 7)}</span>
-                                                </>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            {/* placeholder for future quick actions */}
-                                        </div>
-                                    </div>
-                                </CardHeader>
-                            </Card>
-                        )
-                    })}
-
-                    {pagination?.hasMore && (
-                        <div className="pt-2">
-                            <Button className='w-full' disabled={isAllProjectsLoading} onClick={loadMore}>
-                                {isAllProjectsLoading ? "Loading..." : "Load more"}
-                            </Button>
-                        </div>
-                    )}
+            <section className="rounded-2xl border border-slate-200 bg-white/65 p-5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/55 sm:p-7">
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                    <div><p className="text-[10px] font-medium uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-300">Project workspace</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">Repositories & releases</h1><p className="mt-2 text-sm text-slate-500">Connect GitHub projects and document every important release.</p></div>
+                    {hasGithub && <div className="flex w-full items-center gap-3 lg:w-auto"><label className="flex h-11 flex-1 items-center gap-2 rounded-xl border border-slate-200 bg-white/70 px-3 dark:border-slate-800 dark:bg-slate-950/60 lg:min-w-80"><Search className="h-4 w-4 text-slate-400" /><Input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search projects, stacks..." className="h-auto border-0 bg-transparent p-0 shadow-none focus-visible:ring-0" /></label>{isOwner && <Button className="h-11 rounded-xl" onClick={() => setIsRepoModalOpen(true)}><Album className="mr-2 h-4 w-4" />New project</Button>}</div>}
                 </div>
-            )}
+                <div className="mt-5 border-t border-slate-200 pt-4 text-xs text-slate-500 dark:border-slate-800">{filteredProjects.length} project{filteredProjects.length === 1 ? '' : 's'}{searchQuery ? ` matching “${searchQuery}”` : ''}</div>
+            </section>
 
-            <ConfirmDeleteProject
-                deleteConfirm={deleteConfirm}
-                onConfirm={confirmDelete}
-                onCancel={cancelDelete}
-            />
+            {!hasGithub ? <div className="flex min-h-80 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/45 p-8 text-center dark:border-slate-700 dark:bg-slate-950/35"><span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-900"><GitHubLogoIcon className="h-6 w-6" /></span><h2 className="mt-5 text-lg font-semibold">Connect your GitHub workspace</h2><p className="mt-2 max-w-md text-sm leading-6 text-slate-500">Authorize GitHub to import repositories and generate release journals from monitored projects.</p>{isOwner && <Button className="mt-6" onClick={() => { window.location.href = `${externalServices.project.apiBaseUrl}/oauth2/authorize/github?userId=${session?.user?._id}&username=${session?.user?.username}` }}><GitHubLogoIcon className="mr-2" />Authorize with GitHub</Button>}</div> : initialLoading ? <ProjectsListSkeleton count={4} /> : filteredProjects.length ? (
+                <div className="grid auto-rows-fr gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    {filteredProjects.map((project) => <article key={project.id} className="group flex min-h-72 flex-col rounded-2xl border border-slate-200 bg-white/65 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400/40 dark:border-slate-800 dark:bg-slate-950/55">
+                        <div className="flex items-start justify-between gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500"><FolderGit2 className="h-5 w-5" /></span><div className="flex items-center gap-2"><Badge variant={project.visibility === 'private' ? 'destructive' : 'secondary'} className="text-[9px] uppercase">{project.visibility || 'public'}</Badge>{isOwner && <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem className="text-red-600" onClick={() => setDeleteConfirm({ isOpen: true, projectId: project.id, projectName: project.name || 'Project', isDeleting: false })}><Trash2 className="mr-2 h-4 w-4" />Delete project</DropdownMenuItem></DropdownMenuContent></DropdownMenu>}</div></div>
+                        <Link href={`/project/${project.id}`} className="mt-6 flex items-start justify-between gap-3"><h2 className="line-clamp-2 text-xl font-semibold tracking-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-300">{project.name || 'Untitled project'}</h2><ArrowRight className="mt-1 h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" /></Link>
+                        <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-500">{project.description || 'A connected Insert project with release-ready notes.'}</p>
+                        <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4 text-xs text-slate-500 dark:border-slate-800">{project.language && <span className="inline-flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ backgroundColor: languageColors[project.language] || '#64748b' }} />{project.language}</span>}{project.defaultBranch && <span className="inline-flex items-center gap-1"><GitBranch className="h-3.5 w-3.5" />{project.defaultBranch}</span>}{project.lastMonitoredCommitSha && <span className="inline-flex items-center gap-1 font-mono"><GitCommit className="h-3.5 w-3.5" />{project.lastMonitoredCommitSha.slice(0, 7)}</span>}<span className="ml-auto">{getLastModifiedText(project.updatedAt || project.createdAt)}</span>{project.repoUrl && <Link href={project.repoUrl} target="_blank" rel="noopener noreferrer" aria-label="Open repository"><ExternalLink className="h-4 w-4" /></Link>}</div>
+                    </article>)}
+                </div>
+            ) : <div className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/45 text-center dark:border-slate-700 dark:bg-slate-950/35"><FolderGit2 className="h-7 w-7 text-slate-400" /><h3 className="mt-3 font-medium">No projects found</h3><p className="mt-1 text-sm text-slate-500">{searchQuery ? 'Try a different project name or technology.' : 'Imported repositories will appear here.'}</p></div>}
+
+            {pagination?.hasMore && !searchQuery && <div className="flex justify-center"><Button variant="outline" className="rounded-xl" disabled={isAllProjectsLoading} onClick={loadMore}>{isAllProjectsLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Load more projects</Button></div>}
+            <ConfirmDeleteProject deleteConfirm={deleteConfirm} onConfirm={confirmDelete} onCancel={() => setDeleteConfirm({ isOpen: false, projectId: '', projectName: '', isDeleting: false })} />
         </div>
     )
 }
-
-export default Projects

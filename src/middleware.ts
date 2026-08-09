@@ -28,10 +28,13 @@ export async function middleware(request: NextRequest) {
         (
             url.pathname.startsWith('/write') ||
             url.pathname.startsWith('/project') ||
-            url.pathname.startsWith('/posts')
+            url.pathname.startsWith('/posts') ||
+            url.pathname.startsWith('/collaboration')
         )
     ) {
-        return NextResponse.redirect(new URL('/', request.url))
+        const signInUrl = new URL('/sign-in', request.url)
+        signInUrl.searchParams.set('callbackUrl', `${url.pathname}${url.search}`)
+        return NextResponse.redirect(signInUrl)
     }
 
     return NextResponse.next()
@@ -47,6 +50,7 @@ export const config = {
         '/u/:path*',
         '/write/:path*',
         '/project/:path*',
-        '/posts/:path*'
+        '/posts/:path*',
+        '/collaboration/:path*'
     ]
 }

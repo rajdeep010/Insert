@@ -60,14 +60,15 @@ import {
     Eye,
     ShieldCheck
 } from 'lucide-react'
+import ContentCardsSkeleton from '@/components/skeletons/ContentCardsSkeleton'
 
 /* Shared style helpers (kept consistent with project page) */
 const surface =
-    'rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 transition-colors'
+    'rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/65 dark:bg-slate-950/55 shadow-sm backdrop-blur-xl transition'
 const surfaceMuted =
-    'rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white/50 dark:bg-gray-900/30'
+    'rounded-xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-950/60'
 const hoverable =
-    'transition-colors hover:border-black/20 dark:hover:border-white/30'
+    'hover:-translate-y-0.5 hover:border-indigo-400/40'
 
 const formatCreatedDate = (value?: string | Date) => {
     if (!value) return 'Unknown date'
@@ -81,8 +82,6 @@ const formatCreatedDate = (value?: string | Date) => {
         year: 'numeric',
     })
 }
-
-const loadingCards = Array.from({ length: 4 })
 
 const Dashboard = () => {
     const { data: session, status } = useSession()
@@ -160,9 +159,11 @@ const Dashboard = () => {
     const canEdit = status === 'authenticated' && session?.user?.username === username
 
     return (
-        <div className="flex flex-col gap-8">
-            {/* <section className={surface + ' p-5 sm:p-6'}> */}
-                <div className="flex w-full items-center gap-3 lg:w-auto">
+        <div className="flex flex-col gap-6">
+            <section className={`${surface} p-5 sm:p-7`}>
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                    <div><p className="text-[10px] font-medium uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-300">Topic workspace</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">Coding sheets</h1><p className="mt-2 text-sm text-slate-500">Create, organize, and manage structured problem sets.</p></div>
+                    <div className="flex w-full items-center gap-3 lg:w-auto">
                     <div className={`${surfaceMuted} flex flex-1 items-center gap-2 px-3 py-2 lg:min-w-[20rem]`}>
                         <Search className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                         <Input
@@ -180,39 +181,19 @@ const Dashboard = () => {
                             className="h-11 shrink-0 gap-2 px-4"
                         >
                             <Plus className="h-4 w-4" />
-                            Topic
+                            New topic
                         </Button>
                     )}
                 </div>
-            {/* </section> */}
+                </div>
+                <div className="mt-5 border-t border-slate-200 pt-4 text-xs text-slate-500 dark:border-slate-800">{topicCountLabel}{searchQuery ? ` matching “${searchQuery}”` : ''}</div>
+            </section>
 
             <div className="flex flex-col gap-4">
                 {isTopicLoading ? (
-                    <div className="grid gap-4 md:grid-cols-2">
-                        {loadingCards.map((_, index) => (
-                            <Card key={index} className={surface + ' overflow-hidden shadow-none'}>
-                                <CardHeader className="space-y-4 p-6">
-                                    <div className="flex items-center justify-between gap-3">
-                                        <div className="space-y-2">
-                                            <div className="h-6 w-36 animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
-                                            <div className="h-4 w-24 animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
-                                        </div>
-                                        <div className="h-7 w-20 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div className="h-4 w-full animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
-                                        <div className="h-4 w-4/5 animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
-                                    </div>
-                                    <div className="flex items-center gap-2 pt-2">
-                                        <div className="h-6 w-24 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
-                                        <div className="h-6 w-28 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
-                                    </div>
-                                </CardHeader>
-                            </Card>
-                        ))}
-                    </div>
+                    <ContentCardsSkeleton />
                 ) : filteredTopics.length > 0 ? (
-                    <div className="grid gap-4 md:grid-cols-3">
+                    <div className="grid auto-rows-fr gap-3 md:grid-cols-2 xl:grid-cols-3">
                         {filteredTopics.map(({ id, title, about, visibility, createdAt, collaborators, problems, creator_username, currentAccessRole }) => {
                             const createdLabel = formatCreatedDate(createdAt)
                             const currentRole = currentAccessRole ?? collaborators?.find(
@@ -239,7 +220,7 @@ const Dashboard = () => {
                                             ' h-full cursor-pointer overflow-hidden group/inner'
                                         }
                                     >
-                                        <CardHeader className="flex h-full flex-col gap-5 p-6 lg:p-7">
+                                        <CardHeader className="flex min-h-60 h-full flex-col gap-5 p-5">
                                             <div className="flex items-start justify-between gap-4">
                                                 <div className="min-w-0 space-y-3">
                                                     <div className="flex flex-wrap items-center gap-2">
@@ -249,27 +230,27 @@ const Dashboard = () => {
                                                         {visibility === 'private' ? (
                                                             <Badge
                                                                 variant="destructive"
-                                                                className="flex items-center gap-1 rounded-full p-1 text-[10px]"
+                                                            className="flex items-center gap-1 rounded-md px-2 py-1 text-[9px] uppercase"
                                                             >
                                                                 <Lock className="h-3 w-3" />
-                                                                {/* private */}
+                                                                Private
                                                             </Badge>
                                                         ) : (
                                                             <Badge
                                                                 variant="secondary"
-                                                                className="flex items-center gap-1 rounded-full p-1 text-[10px]"
+                                                                className="flex items-center gap-1 rounded-md px-2 py-1 text-[9px] uppercase"
                                                             >
                                                                 <Globe2 className="h-3 w-3" />
-                                                                {/* public */}
+                                                                Public
                                                             </Badge>
                                                         )}
                                                         {accessMeta && AccessIcon ? (
                                                             <Badge
                                                                 variant={accessMeta.variant}
-                                                                className="flex items-center gap-1 rounded-full p-1 text-[10px]"
+                                                                className="flex items-center gap-1 rounded-md px-2 py-1 text-[9px]"
                                                             >
                                                                 <AccessIcon className="h-3 w-3" />
-                                                                {/* {accessMeta.label} */}
+                                                                {accessMeta.label}
                                                             </Badge>
                                                         ) : null}
                                                     </div>

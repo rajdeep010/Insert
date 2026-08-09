@@ -1,52 +1,7 @@
-import React from 'react'
-import { Card, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 
-const ProjectCardSkeleton = () => (
-  <Card className="rounded-2xl border border-black/[0.08] bg-white/60 p-0 shadow-none dark:border-white/[0.08] dark:bg-gray-900/40">
-    <CardHeader className="p-5 pb-4">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 flex-1 space-y-3">
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-6 w-56" />
-            <Skeleton className="h-5 w-16 rounded-full" />
-          </div>
+const ProjectCardSkeleton = () => <div className="flex min-h-72 flex-col rounded-2xl border border-slate-200 bg-white/65 p-5 dark:border-slate-800 dark:bg-slate-950/55"><div className="flex justify-between"><Skeleton className="h-10 w-10 rounded-xl" /><div className="flex gap-2"><Skeleton className="h-5 w-16 rounded-md" /><Skeleton className="h-8 w-8 rounded-lg" /></div></div><div className="mt-6 space-y-3"><Skeleton className="h-7 w-3/4" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-5/6" /><Skeleton className="h-4 w-1/2" /></div><div className="mt-auto flex gap-3 border-t border-slate-200 pt-4 dark:border-slate-800"><Skeleton className="h-4 w-20" /><Skeleton className="h-4 w-20" /><Skeleton className="ml-auto h-4 w-16" /></div></div>
 
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-6 w-24 rounded-md" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-24" />
-          </div>
-
-          <div className="space-y-2 pt-1">
-            <Skeleton className="h-4 w-[95%]" />
-            <Skeleton className="h-4 w-[82%]" />
-          </div>
-        </div>
-
-        <Skeleton className="h-8 w-8" />
-      </div>
-
-      <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4 dark:border-gray-700">
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-3 w-24" />
-          <Skeleton className="h-3 w-3 rounded-full" />
-          <Skeleton className="h-3 w-24" />
-        </div>
-        <Skeleton className="h-3 w-20" />
-      </div>
-    </CardHeader>
-  </Card>
-)
-
-const ProjectsListSkeleton = ({ count = 4 }: { count?: number }) => {
-  return (
-    <div className="my-1 flex max-h-[70vh] w-full flex-col gap-3 overflow-y-auto pr-1 custom-small-scrollbar">
-      {Array.from({ length: count }).map((_, idx) => (
-        <ProjectCardSkeleton key={`project-skeleton-${idx}`} />
-      ))}
-    </div>
-  )
+export default function ProjectsListSkeleton({ count = 4 }: { count?: number }) {
+    return <div className="grid auto-rows-fr gap-3 md:grid-cols-2 xl:grid-cols-3">{Array.from({ length: count }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div>
 }
-
-export default ProjectsListSkeleton

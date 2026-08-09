@@ -1,177 +1,46 @@
-import React from 'react'
+'use client'
+
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
-import { Card, CardDescription, CardHeader, CardTitle } from './ui/card'
-import { Badge } from './ui/badge'
-import OverviewSkeleton from './skeletons/OverviewSkeleton'
+import { ArrowRight, BookOpen, Crown, Eye, FileText, Globe2, Lock, ShieldCheck } from 'lucide-react'
+
+import OverviewSkeleton from '@/components/skeletons/OverviewSkeleton'
+import { Badge } from '@/components/ui/badge'
 import { useInsertTopics } from '@/features/topic/context/InsertTopicProvider'
 import { useInsertUser } from '@/features/user/context/InsertUserProvider'
-import { Crown, Eye, ShieldCheck } from 'lucide-react'
+import { getLastModifiedText } from '@/helpers/last-modified'
 
-/* Shared style helpers (consistent with other pages) */
-const surface =
-	'rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 transition-colors'
-const hoverable =
-	'transition-colors hover:border-black/20 dark:hover:border-white/30'
+export default function Overview() {
+    const { isTopicsLoading, user_Topics } = useInsertTopics()
+    const { profileUser } = useInsertUser()
+    const { data: session } = useSession()
+    const topics = user_Topics || []
+    const featured = topics.slice(0, 4)
+    const publicCount = topics.filter((topic) => topic.visibility === 'public').length
 
-const Overview = () => {
-	const { isTopicsLoading, user_Topics } = useInsertTopics()
-	const { profileUser } = useInsertUser()
-	const { data: session, status } = useSession()
+    if (isTopicsLoading) return <OverviewSkeleton />
 
-	const canEdit =
-		status === 'authenticated' && session?.user?.username === profileUser?.username
-	const hasTopics = !isTopicsLoading && user_Topics && user_Topics.length > 0
-	const firstTopics = (user_Topics || []).slice(0, 4)
+    return (
+        <div className="space-y-6">
+            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white/65 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/55">
+                <div className="grid gap-6 p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+                    <div><p className="text-[10px] font-medium uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-300">Workspace overview</p><h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em]"><span className='text-muted-foreground'>Hi 👋</span> <span className='mr-4'>{profileUser?.name || profileUser?.username}</span></h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">A quick view of published sheets, shared knowledge, and recent work.</p></div>
+                    <Link href={`/u/${profileUser?.username}?tab=topics`} className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-300">View all topics<ArrowRight className="h-4 w-4" /></Link>
+                </div>
+                <div className="grid border-t border-slate-200 dark:border-slate-800 sm:grid-cols-3">
+                    {[{ icon: BookOpen, label: 'Topics', value: topics.length }, { icon: Globe2, label: 'Public sheets', value: publicCount }, { icon: Lock, label: 'Collections', value: topics.length - publicCount }].map(({ icon: Icon, label, value }, index) => <div key={label} className={`flex items-center gap-3 px-5 py-4 ${index ? 'border-t border-slate-200 dark:border-slate-800 sm:border-l sm:border-t-0' : ''}`}><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500"><Icon className="h-4 w-4" /></span><div><p className="text-2xl font-semibold leading-none">{value}</p><p className="mt-1 text-xs text-slate-500">{label}</p></div></div>)}
+                </div>
+            </section>
 
-	return (
-		<div className="flex flex-col gap-6">
-			{isTopicsLoading && <OverviewSkeleton />}
-
-			<div className="flex items-center justify-between flex-wrap gap-3">
-				{!isTopicsLoading && <div className="flex items-center gap-2">
-					<span className="flex items-center gap-2 text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
-						Overview
-						{hasTopics && (
-							<Badge variant="secondary" className="text-xs">
-								{user_Topics?.length || 0}
-							</Badge>
-						)}
-					</span>
-
-				</div>}
-				{hasTopics && (
-					<Link
-						href={`/u/${profileUser?.username}?tab=topics`}
-						className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
-					>
-						View all →
-					</Link>
-				)}
-			</div>
-
-			<div className="grid gap-6 sm:grid-cols-2">
-				{hasTopics &&
-					firstTopics.map((topic, idx) => {
-						const currentRole = topic.currentAccessRole ?? topic.collaborators?.find(
-							(collaborator) => collaborator.username === session?.user?.username
-						)?.role ?? null
-						const accessMeta = session?.user?.username === topic.creator_username || currentRole === 'OWNER'
-							? { label: 'Owner', icon: Crown, variant: 'default' as const }
-							: currentRole === 'EDITOR'
-								? { label: 'Editor', icon: ShieldCheck, variant: 'secondary' as const }
-								: currentRole === 'VIEWER'
-									? { label: 'Viewer', icon: Eye, variant: 'outline' as const }
-									: topic?.visibility === 'public'
-										? { label: 'Public', icon: Eye, variant: 'outline' as const }
-										: null
-						const AccessIcon = accessMeta?.icon
-
-						return (
-						<Card
-							key={idx}
-							className={`${surface} shadow-none p-0 ${hoverable} group overflow-hidden`}
-						>
-							<CardHeader className="p-6 pb-5 flex flex-col gap-3 min-h-[140px]">
-								<div className="flex items-start justify-between gap-4">
-									<div className="flex flex-col gap-2 min-w-0">
-										<div className="flex flex-wrap items-center gap-3">
-											<CardTitle className="text-lg font-semibold leading-snug truncate">
-												<Link
-													href={`/topic/${topic.id}`}
-													className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-												>
-													{topic?.title || 'Untitled'}
-												</Link>
-											</CardTitle>
-											{topic?.visibility === 'private' ? (
-												<Badge
-													variant="destructive"
-													className="text-[10px] px-2 py-0.5 uppercase tracking-wide"
-												>
-													private
-												</Badge>
-											) : (
-												<Badge
-													variant="secondary"
-													className="text-[10px] px-2 py-0.5 uppercase tracking-wide"
-												>
-													public
-												</Badge>
-											)}
-											{accessMeta && AccessIcon ? (
-												<Badge
-													variant={accessMeta.variant}
-													className="flex items-center gap-1 text-[10px] px-2 py-0.5 uppercase tracking-wide"
-												>
-													<AccessIcon className="h-3 w-3" />
-													{accessMeta.label}
-												</Badge>
-											) : null}
-										</div>
-										{topic?.about && (
-											<CardDescription className="text-sm leading-relaxed text-gray-600 dark:text-gray-400 line-clamp-3">
-												{topic.about.length > 160
-													? topic.about.slice(0, 158) + '…'
-													: topic.about}
-											</CardDescription>
-										)}
-									</div>
-								</div>
-
-								<div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 pt-2 mt-1 border-t border-black/5 dark:border-white/10">
-									<span className="uppercase tracking-wide">{topic?.visibility}</span>
-									<Link
-										href={`/topic/${topic.id}`}
-										className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
-									>
-										Open
-									</Link>
-								</div>
-							</CardHeader>
-						</Card>
-						)
-					})}
-
-				{!isTopicsLoading && !hasTopics && canEdit && (
-					<Card className={`${surface} shadow-none`}>
-						<CardHeader className="p-8 flex flex-col items-start gap-4">
-							<CardTitle className="text-base">No topics yet</CardTitle>
-							<CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-								You have not created any topics. Start by adding your first one.
-							</CardDescription>
-							<Link
-								href={`/u/${profileUser?.username}?tab=topics`}
-								className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
-							>
-								Create one →
-							</Link>
-						</CardHeader>
-					</Card>
-				)}
-
-				{!isTopicsLoading && !hasTopics && !canEdit && (
-					<Card className={`${surface} shadow-none`}>
-						<CardHeader className="p-8 flex flex-col gap-3">
-							<CardTitle className="text-base">No topics published</CardTitle>
-							<CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-								This user has not published any topics yet.
-							</CardDescription>
-						</CardHeader>
-					</Card>
-				)}
-			</div>
-
-			{hasTopics && firstTopics.length < (user_Topics?.length || 0) && (
-				<Link
-					href={`/u/${profileUser?.username}?tab=topics`}
-					className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline w-fit"
-				>
-					Show more...
-				</Link>
-			)}
-		</div>
-	)
+            <section>
+                <div className="mb-4 flex items-end justify-between gap-4"><div><p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Recent work</p><h3 className="mt-1 text-xl font-semibold">Featured topics</h3></div><Badge variant="outline">{topics.length} total</Badge></div>
+                {featured.length ? <div className="grid auto-rows-fr gap-3 md:grid-cols-2 xl:grid-cols-4">{featured.map((topic) => {
+                    const role = topic.creator_username === session?.user?.username ? 'OWNER' : topic.currentAccessRole
+                    const access = role === 'OWNER' ? { label: 'Owner', icon: Crown } : role === 'EDITOR' ? { label: 'Editor', icon: ShieldCheck } : role === 'VIEWER' ? { label: 'Viewer', icon: Eye } : null
+                    const AccessIcon = access?.icon
+                    return <Link key={topic.id} href={`/topic/${topic.id}`} className="group flex min-h-56 flex-col rounded-2xl border border-slate-200 bg-white/65 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-400/40 dark:border-slate-800 dark:bg-slate-950/55"><div className="flex items-start justify-between gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-500"><FileText className="h-5 w-5" /></span><div className="flex gap-1"><Badge variant={topic.visibility === 'private' ? 'destructive' : 'secondary'} className="text-[9px] uppercase">{topic.visibility}</Badge>{access && AccessIcon && <Badge variant="outline" className="gap-1 text-[9px]"><AccessIcon className="h-3 w-3" />{access.label}</Badge>}</div></div><h4 className="mt-5 line-clamp-2 text-lg font-semibold group-hover:text-indigo-600 dark:group-hover:text-indigo-300">{topic.title}</h4><p className="mt-2 line-clamp-2 text-sm leading-5 text-slate-500">{topic.about || 'A structured coding sheet.'}</p><div className="mt-auto flex items-center justify-between border-t border-slate-200 pt-4 text-xs text-slate-500 dark:border-slate-800"><span>{getLastModifiedText(topic.createdAt)}</span><ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></div></Link>
+                })}</div> : <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/40 text-center dark:border-slate-700 dark:bg-slate-950/35"><BookOpen className="h-7 w-7 text-slate-400" /><h3 className="mt-3 font-medium">No topics yet</h3><p className="mt-1 text-sm text-slate-500">Created and shared topics will appear here.</p></div>}
+            </section>
+        </div>
+    )
 }
-
-export default Overview
