@@ -149,7 +149,7 @@ export default function InsertNavbar() {
         <nav aria-label="Primary navigation" className="relative z-40 flex h-16 items-center justify-between gap-4 rounded-2xl border-slate-200/80 bg-white/75 px-3 shadow-[0_10px_40px_-28px_rgba(15,23,42,0.55)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/65 sm:px-4">
             <Link href="/" aria-label="Insert home" className="group flex shrink-0 items-center gap-2.5 rounded-xl pr-2 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
                 <InsertIcon className="h-6 w-6 rounded-xl border border-slate-200 bg-white p-1 transition-transform group-hover:-rotate-3 dark:border-slate-700" />
-                <span className="text-3xl tracking-[-0.04em]">Insert</span>
+                <span className="text-2xl tracking-[-0.02em]">Insert</span>
             </Link>
 
             <div className="hidden min-w-0 flex-1 items-center justify-end gap-2 lg:flex">

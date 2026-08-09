@@ -2,10 +2,10 @@
   <img src="public/insert_v6.png" alt="Insert hero" width="1340" />
 </p>
 
-<h1 align="center">Insert (v5.1)</h1>
+<h1 align="center">Insert (v7.0)</h1>
 
 <p align="center">
-  A workspace for structured coding sheets, technical writing, public blog collections, and release-ready project workflows.
+  A connected developer workspace for structured coding sheets, technical writing, typed collections, collaboration, and release-ready project workflows.
 </p>
 
 <p align="center">
@@ -25,8 +25,8 @@ The current app combines:
 
 - structured topic-based coding sheets
 - a markdown-friendly technical writing flow
-- public and private blog collections
-- collaborative topic/problem workflows
+- topic-only and blog-only Collection V2 workspaces
+- role-based topic and blog collaboration workflows
 - project dashboards with release blog automation
 - Pro-gated higher-scale publishing and project tooling
 
@@ -34,15 +34,17 @@ This repository is the main Next.js application for Insert. It handles the core 
 
 ## What Is New
 
-Recent work reflected in this repository includes:
+Version 7 brings the main product surfaces into one cohesive visual and technical system:
 
-- blog collections with public collection pages and collection management flows
-- cleaner auth boundaries on app APIs so previously-private surfaces fail closed correctly
-- improved project read flows backed by the project service
-- shareable deep links for blogs, topics, and projects via copy-first share actions
-- more accurate Pro badge handling that distinguishes active Pro from expired history
-- release workflow polish across the project dashboard and release blog flows
-- updated landing content and release messaging
+- Collection V2 with an immutable `BLOG` or `TOPIC` kind selected at creation
+- dedicated collection detail workspaces with accordion sheets and AG Grid topic rows
+- modern topic, blog, project, profile, collaboration, membership, release, and authentication screens
+- redesigned project release readers that use the available viewport without horizontal scrolling
+- a responsive shadcn-based application navigation system
+- role-based collaboration management, realtime notifications, and shared access summaries
+- stricter authentication boundaries for private pages, including a server-side Collaboration guard
+- refreshed skeletons, empty states, loading states, privacy policy, landing page, and footer
+- clearer Pro status handling that distinguishes active membership from expired history
 
 ## Product Areas
 
@@ -73,14 +75,16 @@ Write technical blogs in a focused editor, keep drafts private, and publish when
   <img src="https://res.cloudinary.com/dgxeg3sju/image/upload/v1753474830/4440e28b-4269-42b1-9536-179d06eb8f80.png" alt="Technical writing" width="1000" />
 </p>
 
-### 3. Blog Collections
+### 3. Collection V2
 
-Group related blog posts into one guided reading experience and share a single collection link instead of sending readers across isolated posts.
+Create a collection for one content type and turn related topics or blogs into a focused, shareable workspace.
 
-- collection creation and editing
+- topic-only or blog-only collection creation
+- metadata-only collection editing
 - public and private visibility
-- public collection feed and detail pages
-- cleaner reading paths for tutorials, release notes, or topic bundles
+- public collection feed and dedicated detail pages
+- accordion-based sheets with AG Grid topic tables
+- content-type and visibility badges throughout the UI
 
 <p align="center">
   <img src="https://res.cloudinary.com/dgxeg3sju/image/upload/v1778334681/22c3959d-0e05-4f0b-9218-68c839a6807b.png" alt="Blog collections" width="1000" />
@@ -114,13 +118,17 @@ Insert keeps the core writing workflow intact while reserving higher-scale publi
 
 ## Latest Release Snapshot
 
-The latest release work represented in this repo centers on collections, access tightening, and Pro-state correctness.
+The current release is **v7.0**, a major UI and workflow update spanning the complete Insert workspace.
 
 ```txt
-feat(collections): public collections feed + detail view
-fix(pro): active vs expired badge state
-chore(access): visibility rules tightened for shared content
+feat(collection-v2): typed topic/blog collections + dedicated sheet views
+feat(collaboration): role-based workspace + realtime request handling
+feat(projects): modern project and release journal experience
+feat(ui): unified navigation, profiles, membership, auth, releases, and landing
+chore(access): private application routes fail closed
 ```
+
+See the complete release story at [`/release/v7`](http://localhost:3000/release/v7) when running the application locally.
 
 ## Tech Stack
 
@@ -135,6 +143,7 @@ chore(access): visibility rules tightened for shared content
 - NextAuth.js
 - Axios
 - React Hook Form + Zod
+- AG Grid
 
 ### Data And Services
 
@@ -165,6 +174,10 @@ Insert combines local app-router APIs with external services:
 - Firebase for activity aggregation
 
 The external service configuration lives in [src/lib/config/services.ts](src/lib/config/services.ts).
+
+Detailed directory ownership, dependency rules, naming conventions, and verification commands are documented in [docs/architecture.md](docs/architecture.md).
+
+The isolated topic/blog collection contract and V2 endpoints are documented in [docs/collection-v2.md](docs/collection-v2.md).
 
 ## Key Workflows
 
@@ -257,17 +270,21 @@ npm run lint     # run Next.js linting
 
 ## Screens
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/cbd7eda8-f52e-4395-bb53-0f8baf8fe20d" alt="Insert screen 1" width="1000" />
-</p>
+### Overview
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/fee6888e-4695-4b4b-8623-cf66dbc916c2" alt="Insert screen 2" width="1000" />
-</p>
+<p align="center"><img src="https://res.cloudinary.com/dgxeg3sju/image/upload/v1786237523/4468230f-24b7-46de-9953-73cd42b7f70b.png" alt="Insert v7 overview" width="1000" /></p>
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/364444aa-487a-4e3a-9c01-743a9dc7d19c" alt="Insert screen 3" width="1000" />
-</p>
+### Projects
+
+<p align="center"><img src="https://res.cloudinary.com/dgxeg3sju/image/upload/v1786237602/82e0c97f-337d-4907-a629-1135d2f3e4d1.png" alt="Insert v7 projects" width="1000" /></p>
+
+### Collection V2
+
+<p align="center"><img src="https://res.cloudinary.com/dgxeg3sju/image/upload/v1786238057/097fa55b-832f-4097-8833-9b6c1a9f55de.png" alt="Insert Collection V2" width="1000" /></p>
+
+### Individual Collection
+
+<p align="center"><img src="https://res.cloudinary.com/dgxeg3sju/image/upload/v1786238122/27d23293-aff5-4c4b-96d5-2319562302ce.png" alt="Insert individual collection workspace" width="1000" /></p>
 
 ## Why Insert
 
@@ -283,7 +300,7 @@ Insert treats them as one connected system:
 
 - This repo is the main application, not the separate browser extension workspace.
 - Some flows depend on external services being available.
-- The current app includes stricter auth handling than earlier snapshots of the project.
+- Private routes are protected by middleware; sensitive surfaces such as Collaboration also enforce a server-side session guard.
 
 ## Contributing
 
@@ -294,4 +311,3 @@ If you find a bug, UX issue, or workflow gap, open an issue or send improvements
 <p align="center">
   Built with Insert.
 </p>
-
