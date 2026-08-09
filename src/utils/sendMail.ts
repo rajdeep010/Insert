@@ -1,8 +1,10 @@
+import 'server-only';
+
 import nodemailer from 'nodemailer';
 
 const getEmailCredentials = () => {
-    const emailFrom = process.env.EMAIL_FROM || process.env.NEXT_PUBLIC_EMAIL_FROM;
-    const emailPass = process.env.EMAIL_PASS || process.env.NEXT_PUBLIC_EMAIL_PASS;
+    const emailFrom = process.env.EMAIL_FROM;
+    const emailPass = process.env.EMAIL_PASS;
 
     if (!emailFrom || !emailPass) {
         throw new Error('Email credentials are missing. Set EMAIL_FROM and EMAIL_PASS in server-only env.');

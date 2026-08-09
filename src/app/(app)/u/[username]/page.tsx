@@ -11,7 +11,7 @@ import Overview from '@/components/Overview'
 import PaymentPage from '@/components/PaymentPage'
 import Profile from '@/components/Profile'
 import Projects from '@/components/Projects'
-import { BlogCollectionsPage } from '@/features/blog/components/BlogCollectionsPage'
+import { CollectionDirectory } from '@/features/collection-v2/components/CollectionDirectory'
 import { Loader2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
@@ -65,10 +65,6 @@ export default function UserPage() {
         }
 
         if (tab === 'collections') {
-            if (session?.user?.username === username) {
-                fetchBlogsByUsername(username)
-                fetchBlogCollections()
-            }
             return
         }
 
@@ -86,25 +82,24 @@ export default function UserPage() {
     }
 
     return (
-        <div className='flex gap-10 justify-center py-10 px-6 content-col'>
-            <Profile />
-
-
-            <div className='w-3/5 flex flex-col gap-5 full-width'>
-                <div><InsertNavbar /></div>
-                <div>
+        <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 dark:bg-[#020817] dark:text-slate-50">
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-60 [background-image:linear-gradient(to_right,rgba(100,116,139,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(100,116,139,0.08)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:linear-gradient(to_bottom,black,transparent_92%)]" />
+            <div aria-hidden="true" className="pointer-events-none absolute left-[8%] top-20 h-72 w-72 rounded-full bg-indigo-500/10 blur-[120px]" />
+            <div className="relative mx-auto w-full max-w-[1720px] px-4 py-5 sm:px-7 lg:px-10 lg:py-7">
+                <InsertNavbar />
+                <div className="grid gap-6 py-6 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[310px_minmax(0,1fr)] lg:items-start">
+                    <aside className="lg:sticky lg:top-6"><Profile /></aside>
+                    <section className="min-w-0">
                     {tab === 'topics' && <Dashboard />}
                     {tab === 'overview' && <Overview />}
                     {tab === 'blogs' && <Blogs />}
-                    {tab === 'collections' && <BlogCollectionsPage />}
+                    {tab === 'collections' && <CollectionDirectory />}
                     {tab === 'projects' && <Projects/>}
                     {tab === 'subscribe' && <PaymentPage/>}
-                </div>
-                <div>
-                    {tab === 'overview' && <Heatmap />}
+                        {tab === 'overview' && <div className="mt-6"><Heatmap /></div>}
+                    </section>
                 </div>
             </div>
-        </div>
+        </main>
     )
 }
-

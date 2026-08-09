@@ -1,8 +1,8 @@
 import dbConnect from "@/lib/dbConnect";
 import { getAuthenticatedAccessToken, getAuthenticatedUsername } from "@/lib/api/auth";
-import { fetchMyCollaborations } from "@/lib/collaboration/permissions";
 import TopicModel from "@/model/Topic";
 import { usernameParamsSchema } from "@/schemas/userSchema";
+import { fetchCollaborationsWithTimeout } from "@/lib/collaboration/fetch-collaborations-with-timeout";
 
 type RouteContext = {
     params: {
@@ -67,43 +67,32 @@ export async function GET(
         const skip = (page - 1) * limit;
 
         const accessToken = await getAuthenticatedAccessToken(request);
-        let collaboratorTopicIds: string[] = [];
-        let membershipRoles = new Map<string, TopicAccessRole>();
-        
-        // Fetch collaborations with timeout
-        try {
-            const collaborations = await Promise.race([
-                fetchMyCollaborations(accessToken, "TOPIC"),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Collaboration fetch timeout')), 5000))
-            ]) as Array<{ entityId: string; role: TopicAccessRole }>;
-            
-            membershipRoles = new Map<string, TopicAccessRole>(
-                collaborations.map((item: { entityId: string; role: TopicAccessRole }) => [item.entityId, item.role])
-            );
-            collaboratorTopicIds = collaborations
-                .map((item: { entityId: string }) => item.entityId)
-                .filter(Boolean);
-        } catch (error) {
-            console.warn('Failed to fetch collaborations:', error);
-        }
+        const collaborationsPromise = fetchCollaborationsWithTimeout(accessToken, "TOPIC", 1200);
 
         if (currentUsername === requestedUsername) {
-            const [ownedTopics, collaboratedTopics] = await Promise.all([
+            const [ownedTopics, collaborations] = await Promise.all([
                 TopicModel.find({ creator_username: requestedUsername })
                     .sort({ createdAt: -1 })
                     .skip(skip)
                     .limit(limit)
                     .select(TOPIC_SELECT)
                     .lean(),
-                collaboratorTopicIds.length
-                    ? TopicModel.find({ id: { $in: collaboratorTopicIds } })
-                        .sort({ createdAt: -1 })
-                        .skip(skip)
-                        .limit(limit)
-                        .select(TOPIC_SELECT)
-                        .lean()
-                    : Promise.resolve([]),
+                collaborationsPromise,
             ]);
+
+            const collaboratorTopicIds = collaborations.map((item) => item.entityId).filter(Boolean);
+            const membershipRoles = new Map<string, TopicAccessRole>(
+                collaborations.map((item) => [item.entityId, item.role])
+            );
+
+            const collaboratedTopics = collaboratorTopicIds.length
+                ? await TopicModel.find({ id: { $in: collaboratorTopicIds } })
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit)
+                    .select(TOPIC_SELECT)
+                    .lean()
+                : [];
 
             const dedupedTopics = Array.from(
                 new Map(
@@ -124,7 +113,7 @@ export async function GET(
             );
         }
 
-        const [publicTopics, total] = await Promise.all([
+        const [publicTopics, collaborations, total] = await Promise.all([
             TopicModel.find({
                 creator_username: requestedUsername,
                 visibility: "public",
@@ -134,11 +123,16 @@ export async function GET(
                 .limit(limit)
                 .select(TOPIC_SELECT)
                 .lean(),
+            collaborationsPromise,
             TopicModel.countDocuments({
                 creator_username: requestedUsername,
                 visibility: "public",
             }),
         ]);
+
+        const membershipRoles = new Map<string, TopicAccessRole>(
+            collaborations.map((item) => [item.entityId, item.role])
+        );
 
         const topicsWithCollaborators = attachAccessRole(publicTopics, currentUsername, membershipRoles);
         const totalPages = Math.ceil(total / limit);

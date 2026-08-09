@@ -11,13 +11,10 @@ import { ApiResponse } from '@/types/ApiResponse'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Loader2, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react'
 import { signInSchema } from '@/schemas/signInSchema'
 import { signIn } from 'next-auth/react'
-import { BsHourglassSplit } from "react-icons/bs";
-import { FiTarget } from "react-icons/fi";
-import InsertIcon from '@/components/InsertIcon'
-import { Navbar } from '@/components/landing/Navbar'
+import AuthShell from '@/components/auth/AuthShell'
 
 
 
@@ -64,12 +61,14 @@ export default function SignInForm() {
 
                 const userData = await axios.get(`/api/me`)
                 const username = userData.data.userdata.username
-                router.replace(`/u/${username}`)
+                const requestedPath = new URLSearchParams(window.location.search).get('callbackUrl')
+                const safePath = requestedPath?.startsWith('/') && !requestedPath.startsWith('//') ? requestedPath : `/u/${username}`
+                router.replace(safePath)
             }
             setIsSubmitting(false)
         } catch (error) {
             const axiosError = error as AxiosError<ApiResponse>
-            let errorMessage = axiosError.response?.data.message
+            const errorMessage = axiosError.response?.data.message
             toast({
                 title: 'Signin Failed',
                 description: errorMessage,
@@ -80,65 +79,9 @@ export default function SignInForm() {
     }
 
     return (
-        <div className='flex min-h-screen'>
-            <Navbar />
-
-            {/* Left Section - Hidden on smaller screens */}
-            <div className='hidden md:flex md:w-1/2 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-600 dark:to-emerald-800 flex-col justify-center items-center p-12'>
-                <div className='flex flex-col items-center text-center space-y-6'>
-                    <InsertIcon height={120} width={120} className='border-4 p-2 bg-white border-gray-900 dark:border-gray-800 shadow-xl' />
-                    <div className='space-y-4'>
-                        <h2 className='text-4xl font-semibold font-sans'>
-                            Welcome Back
-                        </h2>
-                        <p className='text-lg max-w-md leading-relaxed font-sans'>
-                            Sign in to continue your development journey. Access your projects, collaborate with your team, and build amazing things.
-                        </p>
-                    </div>
-                    <div className='flex flex-col space-y-2 text-sm'>
-                        <div className='flex items-center space-x-2 font-sans'>
-                            <div className='w-2 h-2 bg-green-500 rounded-full'></div>
-                            <span>Quick Access</span>
-                        </div>
-                        <div className='flex items-center space-x-2 font-sans'>
-                            <div className='w-2 h-2 bg-blue-500 rounded-full'></div>
-                            <span>Project Management</span>
-                        </div>
-                        <div className='flex items-center space-x-2 font-sans'>
-                            <div className='w-2 h-2 bg-purple-500 rounded-full'></div>
-                            <span>Team Collaboration</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Right Section - Always visible */}
-            <div className='w-full md:w-1/2 flex justify-center items-center p-8'>
-                <div className="fixed inset-0 -z-10 bg-gradient-to-b from-indigo-50 via-white to-white dark:from-indigo-950 dark:via-gray-900 dark:to-gray-900" />
-                <div className="fixed inset-0 -z-10 opacity-40 [mask-image:radial-gradient(ellipse_at_center,black,transparent)] [background-image:linear-gradient(to_right,rgba(99,102,241,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.08)_1px,transparent_1px)] [background-size:20px_20px] [background-position:center] dark:opacity-35 dark:[background-image:linear-gradient(to_right,rgba(99,102,241,0.12)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.12)_1px,transparent_1px)]" />
-                <div className="pointer-events-none fixed left-1/2 top-[-12rem] -z-10 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-gradient-to-tr from-indigo-400/35 via-fuchsia-400/25 to-transparent blur-3xl dark:from-indigo-600/30 dark:via-fuchsia-600/25" />
-
-                <div className='w-full max-w-md space-y-8'>
-                    <div className='flex flex-col justify-center items-center'>
-                        <div className='flex flex-col items-center gap-1'>
-                            <span className='text-gray-400 dark:text-gray-600'>welcome back</span>
-                            <div className='flex items-center gap-2 mb-3 md:hidden'>
-                                <InsertIcon height={45} width={45} className='border-2 p-[4px] dark:bg-white border-gray-950 dark:border-gray-800' />
-                                <h1 className='font-sans text-5xl tracking-wide'>
-                                    Insert
-                                </h1>
-                            </div>
-                            <div className='hidden md:block'>
-                                <h1 className='text-4xl tracking-wide text-center'>
-                                    Sign In
-                                </h1>
-                            </div>
-                        </div>
-                        <p className='mb-4 text-gray-600 dark:text-gray-400'>Start by signing in</p>
-                    </div>
-
+        <AuthShell mode="sign-in" title="Sign in to Insert" description="Continue to your topics, writing, collections, projects, and shared workspaces." footer={<>New to Insert? <Link href='/sign-up' className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-300'>Create an account</Link></>}>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-5'>
                             <FormField
                                 control={form.control}
                                 name="email"
@@ -146,8 +89,7 @@ export default function SignInForm() {
                                     <FormItem>
                                         <FormLabel>Email</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Email" {...field}
-                                                className='border dark:border-white/50 border-black/10' />
+                                            <div className="relative"><Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><Input type="email" autoComplete="email" placeholder="you@example.com" {...field} className='h-11 rounded-md border-slate-200 bg-white/60 pl-10 dark:border-slate-800 dark:bg-slate-950/60' /></div>
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -164,16 +106,18 @@ export default function SignInForm() {
                                             <div className="relative">
                                                 <Input
                                                     type={showPassword ? 'text' : 'password'}
-                                                    placeholder="Password"
+                                                placeholder="Enter your password"
+                                                autoComplete="current-password"
                                                     {...field}
-                                                    className='border dark:border-white/50 border-black/10'
+                                                className='h-11 rounded-md border-slate-200 bg-white/60 pl-10 pr-11 dark:border-slate-800 dark:bg-slate-950/60'
                                                 />
-                                                <div
-                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                                                <LockKeyhole className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                                <button type="button" aria-label={showPassword ? "Hide password" : "Show password"}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 hover:text-slate-900 dark:hover:text-white"
                                                     onClick={togglePasswordVisibility}
                                                 >
-                                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                                </div>
+                                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                                </button>
                                             </div>
                                         </FormControl>
                                         <FormMessage />
@@ -181,7 +125,7 @@ export default function SignInForm() {
                                 )}
                             />
 
-                            <Button type='submit' disabled={isSubmitting} className='w-full'>
+                            <Button type='submit' disabled={isSubmitting} className='h-11 w-full rounded-md bg-indigo-600 text-white hover:bg-indigo-500'>
                                 {isSubmitting ? (
                                     <>
                                         <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please Wait
@@ -191,16 +135,6 @@ export default function SignInForm() {
                         </form>
                     </Form>
 
-                    <div className='text-center mt-4'>
-                        <div className='text-gray-600 dark:text-gray-400'>
-                            Not registered yet? {' '}
-                            <Link href='/sign-up' className='text-blue-600 hover:text-blue-800 font-medium transition-colors'>
-                                Sign up
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </AuthShell>
     )
 }

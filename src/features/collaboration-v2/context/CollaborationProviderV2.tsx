@@ -3,7 +3,7 @@
 import axios from "axios";
 import { createContext, useContext, useEffect, useReducer } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import CollaborationReducerV2, {
@@ -62,9 +62,22 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 	return fallback;
 };
 
+const resolveSettledValue = <T,>(
+	result: PromiseSettledResult<T>,
+	fallback: T,
+	onRejected?: (reason: unknown) => void
+) => {
+	if (result.status === "fulfilled") {
+		return result.value;
+	}
+	onRejected?.(result.reason);
+	return fallback;
+};
+
 export const CollaborationProviderV2 = ({ children }: { children: React.ReactNode }) => {
 	const { data: session, status } = useSession();
 	const router = useRouter();
+	const pathname = usePathname();
 	const accessToken = session?.accessToken ?? null;
 	const username = session?.user?.username ?? null;
 	const [state, dispatch] = useReducer(CollaborationReducerV2, initialCollaborationStateV2);
@@ -104,12 +117,24 @@ export const CollaborationProviderV2 = ({ children }: { children: React.ReactNod
 		dispatch({ type: "SET_LOADING", payload: true });
 		dispatch({ type: "SET_ERROR", payload: null });
 		try {
-			const [myCollaborations, pendingInvites, sentInvites, rawTopics] = await Promise.all([
+			const [membershipsResult, pendingInvitesResult, sentInvitesResult, topicsResult] = await Promise.allSettled([
 				fetchMyCollaborationsV2(accessToken),
 				fetchPendingInvitesV2(accessToken),
 				fetchSentInvitesV2(accessToken),
 				fetchOwnedTopicsV2(username),
 			]);
+			const myCollaborations = resolveSettledValue(membershipsResult, [], (reason) => {
+				console.warn("Failed to fetch collaboration memberships", reason);
+			});
+			const pendingInvites = resolveSettledValue(pendingInvitesResult, [], (reason) => {
+				console.warn("Failed to fetch pending invites", reason);
+			});
+			const sentInvites = resolveSettledValue(sentInvitesResult, [], (reason) => {
+				console.warn("Failed to fetch sent invites", reason);
+			});
+			const rawTopics = resolveSettledValue(topicsResult, [], (reason) => {
+				console.warn("Failed to fetch topic options", reason);
+			});
 			const topicOptions = rawTopics.map((topic: Record<string, any>) => normalizeTopicOptionV2(topic, username));
 			dispatch({
 				type: "HYDRATE",
@@ -214,8 +239,11 @@ export const CollaborationProviderV2 = ({ children }: { children: React.ReactNod
 			dispatch({ type: "RESET" });
 			return;
 		}
+		if (!pathname?.startsWith("/collaboration") && !pathname?.startsWith("/topic")) {
+			return;
+		}
 		void refreshCollaborationV2();
-	}, [status, username, accessToken]);
+	}, [accessToken, pathname, status, username]);
 
 	const resolvePermission = (
 		entityType: "TOPIC" | "BLOG",

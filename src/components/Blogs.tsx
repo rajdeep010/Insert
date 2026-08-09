@@ -53,14 +53,15 @@ import type { BlogEntry } from '@/types/blog'
 import type { BlogCollectionEntry } from '@/types/blog-collection'
 import EditBlogMetadataDialog from '@/components/EditBlogMetadataDialog'
 import AddBlogModal from '@/components/AddBlogModal'
+import ContentCardsSkeleton from '@/components/skeletons/ContentCardsSkeleton'
 
 /* Shared style helpers (aligned with other pages) */
 const surface =
-	' rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 transition-colors'
+	' rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/65 dark:bg-slate-950/55 shadow-sm backdrop-blur-xl transition'
 const surfaceMuted =
 	' rounded-xl border border-black/[0.06] dark:border-white/[0.06] bg-white/50 dark:bg-gray-900/30'
 const hoverable =
-	'transition-colors hover:border-black/20 dark:hover:border-white/30'
+	'hover:-translate-y-0.5 hover:border-cyan-400/40'
 
 const formatCreatedDate = (value?: string | Date) => {
 	if (!value) return 'Unknown date'
@@ -184,9 +185,7 @@ const Blogs = () => {
 		const readTimeLabel = getReadTime(blog)
 
 		return (
-			<Link
-				href={`/blog/${blog?.blogUrl}`}
-				target="_blank"
+			<div
 				className="block group"
 			>
 				<Card
@@ -225,9 +224,7 @@ const Blogs = () => {
 					<CardContent className="p-5 flex flex-col flex-1 relative">
 						<div className="flex items-start justify-between gap-4">
 							<div className="flex-1 min-w-0">
-								<CardTitle className="text-xl font-semibold leading-snug line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-									{blog?.blogTitle || 'Untitled'}
-								</CardTitle>
+								<Link href={`/blog/${blog?.blogUrl}`} target="_blank"><CardTitle className="text-xl font-semibold leading-snug line-clamp-2 group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">{blog?.blogTitle || 'Untitled'}</CardTitle></Link>
 								{blog?.blogContentText && (
 									<CardDescription className="mt-3 text-sm leading-relaxed line-clamp-3">
 										{blog.blogContentText}
@@ -305,7 +302,7 @@ const Blogs = () => {
 						</div>
 					</CardContent>
 				</Card>
-			</Link>
+			</div>
 		)
 	}
 
@@ -445,40 +442,37 @@ const Blogs = () => {
 				</section>
 			)} */}
 
-			<div className="flex items-center justify-between flex-wrap gap-4">
-				{/* <h2 className="text-2xl font-semibold tracking-tight">Blogs</h2> */}
-				{!isAllBlogsLoading && <span className="flex items-center gap-2 text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
-					Blogs
-					<Badge variant="secondary" className="text-xs px-2 py-0.5">
-						{allBlogs.length}
-					</Badge>
-				</span>}
-				<div className="flex flex-wrap items-center justify-end gap-3">
-					<div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-						<span className="flex items-center gap-1">
-							<Globe2 className="h-3 w-3" /> {publicBlogs.length} public
-						</span>
-						<span className="opacity-40">•</span>
-						<span className="flex items-center gap-1">
-							<Lock className="h-3 w-3" /> {privateBlogs.length} private
-						</span>
-					</div>
-					{canManageCollections && (
-						<div className="flex flex-wrap items-center gap-2">
-							<Button variant="outline" className="h-10 rounded-full px-4" onClick={() => openAddBlogModal('private')}>
-								<Lock className="mr-2 h-4 w-4" />
-								New private
-							</Button>
-							<Button className="h-10 rounded-full px-4" onClick={() => openAddBlogModal('public')}>
-								<PlusCircle className="mr-2 h-4 w-4" />
-								New public
-							</Button>
+			<section className={`${surface} p-5 sm:p-7`}>
+				<div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+					<div><p className="text-[10px] font-medium uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-300">Writing workspace</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">Technical blogs</h1><p className="mt-2 text-sm text-slate-500">Publish ideas, engineering notes, and practical guides.</p></div>
+					{/* <h2 className="text-2xl font-semibold tracking-tight">Blogs</h2> */}
+					<div className="flex flex-wrap items-center justify-end gap-3">
+						<div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+							<span className="flex items-center gap-1">
+								<Globe2 className="h-3 w-3" /> {publicBlogs.length} public
+							</span>
+							<span className="opacity-40">•</span>
+							<span className="flex items-center gap-1">
+								<Lock className="h-3 w-3" /> {privateBlogs.length} private
+							</span>
 						</div>
-					)}
+						{canManageCollections && (
+							<div className="flex flex-wrap items-center gap-2">
+								<Button variant="outline" className="h-10 rounded-md px-4" onClick={() => openAddBlogModal('private')}>
+									<Lock className="mr-2 h-4 w-4" />
+									New private
+								</Button>
+								<Button className="h-10 rounded-md px-4" onClick={() => openAddBlogModal('public')}>
+									<PlusCircle className="mr-2 h-4 w-4" />
+									New public
+								</Button>
+							</div>
+						)}
+					</div>
 				</div>
-			</div>
+			</section>
 
-			<Tabs defaultValue="public" className="flex flex-col gap-6">
+			{isAllBlogsLoading ? <ContentCardsSkeleton image /> : <Tabs defaultValue="public" className="flex flex-col gap-6">
 				<TabsList
 					className="w-full flex rounded-xl p-1 bg-gray-100/70 dark:bg-gray-800/40 border border-black/10 dark:border-white/10 backdrop-blur supports-[backdrop-filter]:bg-gray-100/50"
 				>
@@ -506,10 +500,10 @@ const Blogs = () => {
 					</TabsTrigger>
 				</TabsList>
 
-				<div className="max-h-[70vh] overflow-y-auto pr-1 custom-small-scrollbar">
+				<div>
 					<TabsContent
 						value="public"
-						className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5"
+						className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3"
 					>
 						{publicBlogs.length > 0
 							? publicBlogs.map((b: any) => <BlogCard blog={b} key={b._id} />)
@@ -517,14 +511,14 @@ const Blogs = () => {
 					</TabsContent>
 					<TabsContent
 						value="private"
-						className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5"
+						className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3"
 					>
 						{privateBlogs.length > 0
 							? privateBlogs.map((b: any) => <BlogCard blog={b} key={b._id} />)
 							: <EmptyState label="private" />}
 					</TabsContent>
 				</div>
-			</Tabs>
+			</Tabs>}
 
 			<Dialog open={isCreateCollectionOpen} onOpenChange={setIsCreateCollectionOpen}>
 				<DialogContent>

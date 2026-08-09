@@ -1,11 +1,5 @@
-import React from 'react'
-import { Skeleton } from '../ui/skeleton'
+import { Skeleton } from '@/components/ui/skeleton'
 
-
-const AvatarSkeleton = () => {
-    return (
-        <Skeleton className='rounded-full w-[260px] h-[260px]' />
-    )
+export default function AvatarSkeleton() {
+    return <Skeleton className="h-24 w-24 rounded-2xl border-4 border-white dark:border-slate-950" />
 }
-
-export default AvatarSkeleton

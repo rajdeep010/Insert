@@ -292,45 +292,34 @@ const EachTopic = () => {
 		const mapped = new Map<string, { id: string; title: string; currentRole: CollaborationRoleV2 }>();
 
 		topicOptions.forEach((topic) => {
+			if (!topic.id) return;
 			mapped.set(topic.id, {
 				id: topic.id,
 				title: topic.title,
-				currentRole: "OWNER",
+				currentRole: topic.currentRole,
 			});
 		});
 
-		return Array.from(topicOptions.values());
+		myCollaborations
+			.filter((membership) => membership.entityType === "TOPIC")
+			.forEach((membership) => {
+				if (!membership.entityId || mapped.has(membership.entityId)) return;
+				mapped.set(membership.entityId, {
+					id: membership.entityId,
+					title: membership.entityTitle,
+					currentRole: membership.role,
+				});
+			});
 
-		// console.log("this is the topic options: ", topicOptions);
+		if (resolvedTopicId && curr_topic?.topic?.title && !mapped.has(resolvedTopicId)) {
+			mapped.set(resolvedTopicId, {
+				id: resolvedTopicId,
+				title: curr_topic.topic.title,
+				currentRole: session?.user?.username === ownerUsername ? "OWNER" : "VIEWER",
+			});
+		}
 
-		// myCollaborations
-		// 	.filter((membership) => membership.entityType === "TOPIC")
-		// 	.forEach((membership) => {
-		// 		if (!mapped.has(membership.entityId)) {
-		// 			mapped.set(membership.entityId, {
-		// 				id: membership.entityId,
-		// 				title: membership.entityTitle,
-		// 				currentRole: membership.role,
-		// 			});
-		// 		}
-		// 	});
-
-		// console.log("this is the my collaborations: ", myCollaborations);
-
-		// if (resolvedTopicId && curr_topic?.topic?.title && !mapped.has(resolvedTopicId)) {
-
-		// 	const owner = curr_topic.topic.creator_username;
-		// 	console.log('current topic id: ', curr_topic?.topic);
-		// 	mapped.set(resolvedTopicId, {
-		// 		id: resolvedTopicId,
-		// 		title: curr_topic.topic.title,
-		// 		currentRole: session?.user?.username === owner ? "OWNER" : "VIEWER",
-		// 	});
-		// }
-
-		// console.log("this is the accessible topics: ", Array.from(mapped.values()));
-
-		// return Array.from(mapped.values());
+		return Array.from(mapped.values());
 	}, [curr_topic?.topic?.title, myCollaborations, ownerUsername, resolvedTopicId, session?.user?.username, topicOptions]);
 
 	const fallbackCollaborators = (curr_topic?.topic?.collaborators || []).map((each: any) => ({
@@ -578,10 +567,10 @@ const EachTopic = () => {
 	};
 
 	useEffect(() => {
-		if (status !== "authenticated" || !session?.user?.username || !canManageProblems) return;
+		if (status !== "authenticated" || !session?.user?.username || !canManageProblems || !isReferenceModalOpen) return;
 		void fetchBlogsByUsername(session.user.username);
 		void fetchBlogCollections();
-	}, [canManageProblems, fetchBlogCollections, fetchBlogsByUsername, session?.user?.username, status]);
+	}, [canManageProblems, fetchBlogCollections, fetchBlogsByUsername, isReferenceModalOpen, session?.user?.username, status]);
 
 	const selectedBlogCollections = React.useMemo(() => {
 		if (!selectedBlogId) return blogCollections
@@ -1241,7 +1230,15 @@ const EachTopic = () => {
 					description="Jump between owned and shared topics without backing out of the workspace."
 				>
 					<div className="space-y-3">
-						{accessibleTopics?.map((topic) => {
+						{accessibleTopics.length === 0 ? (
+							<div className="rounded-2xl border border-border/60 bg-background/60 px-4 py-5 text-center">
+								<p className="text-sm font-medium text-foreground">No topics available yet</p>
+								<p className="mt-1 text-xs text-muted-foreground">Refresh the topic list and try again.</p>
+								<Button variant="outline" size="sm" className="mt-3" onClick={() => void refreshCollaborationV2()}>
+									Refresh topics
+								</Button>
+							</div>
+						) : accessibleTopics.map((topic) => {
 							const active = topic.id === resolvedTopicId;
 							const accessMeta = topic.currentRole === "OWNER"
 								? { label: "Owner", icon: Crown, variant: "default" as const, helper: "You manage this topic" }

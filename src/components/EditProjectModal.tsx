@@ -24,6 +24,7 @@ interface ProjectUpdateConfig {
     defaultBranch: string
     monitorCommits: boolean
     releaseTriggerKeyword: string
+    lastMonitoredCommitSha: string
     visibility: 'public' | 'private'
 }
 
@@ -34,11 +35,27 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
     isUpdating
 }) => {
     const { data: session } = useSession()
+    const commitShaOptions = React.useMemo(() => {
+        const blogs = Array.isArray(project?.releaseBlogs) ? project.releaseBlogs : []
+        const seen = new Set<string>()
+
+        return blogs
+            .map((blog: any) => {
+                const commitId = typeof blog?.commitId === 'string' ? blog.commitId.trim() : ''
+                if (!commitId || seen.has(commitId)) return null
+                seen.add(commitId)
+                const label = blog?.releaseTitle || blog?.blogTitle || blog?.title || 'Release blog'
+                return { commitId, label }
+            })
+            .filter(Boolean) as Array<{ commitId: string; label: string }>
+    }, [project?.releaseBlogs])
+
     const [config, setConfig] = useState<ProjectUpdateConfig>({
         name: '',
         defaultBranch: '',
         monitorCommits: true,
         releaseTriggerKeyword: '',
+        lastMonitoredCommitSha: '',
         visibility: 'private'
     })
 
@@ -57,6 +74,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                 defaultBranch: project.defaultBranch || '',
                 monitorCommits: project.monitorCommits ?? false,
                 releaseTriggerKeyword: project.releaseTriggerKeyword || '',
+                lastMonitoredCommitSha: project.lastMonitoredCommitSha || '',
                 visibility: project.visibility || 'private'
             }
             setConfig(initialConfig)
@@ -111,6 +129,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
             config.defaultBranch !== project.defaultBranch ||
             config.monitorCommits !== project.monitorCommits ||
             config.releaseTriggerKeyword !== project.releaseTriggerKeyword ||
+            config.lastMonitoredCommitSha !== (project.lastMonitoredCommitSha || '') ||
             config.visibility !== project.visibility
         setHasChanges(changed)
     }, [config, project])
@@ -124,6 +143,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                 defaultBranch: config.defaultBranch,
                 monitorCommits: config.monitorCommits,
                 releaseTriggerKeyword: config.releaseTriggerKeyword,
+                lastMonitoredCommitSha: config.lastMonitoredCommitSha.trim(),
                 visibility: config.visibility,
                 updatedAt: new Date().toISOString()
             }
@@ -161,10 +181,10 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                     <DialogDescription />
                 </DialogHeader>
 
-                <div className="space-y-6">
-                    <div className="space-y-6">
+                <div className="space-y-4">
+                    <div className="space-y-4">
                         {/* Project Name */}
-                        <div className="space-y-2">
+                        <div className="space-y-1.5">
                             <Label htmlFor="project-name" className="text-sm font-medium">
                                 Project Name
                             </Label>
@@ -228,49 +248,132 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                                     <span>{branchesError}</span>
                                 </div>
                             )}
-                            <p className="text-xs text-gray-500">
+                            <p className="text-[11px] leading-4 text-gray-500">
                                 This branch will be monitored for commits and releases
                             </p>
                         </div>
 
-                        {/* Monitor Commits */}
-                        <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="grid gap-3 md:grid-cols-2 md:items-start">
+                            {/* Monitor Commits */}
+                            <div className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2">
+                                <div className="space-y-0.5">
+                                    <Label htmlFor="monitor-commits" className="text-sm font-medium leading-none">
+                                        Monitor Commits
+                                    </Label>
+                                    <p className="text-[11px] leading-4 text-gray-500">
+                                        Track commits and automatically generate release blogs
+                                    </p>
+                                </div>
+                                <Switch
+                                    id="monitor-commits"
+                                    checked={config.monitorCommits}
+                                    onCheckedChange={(checked) =>
+                                        setConfig((p) => ({ ...p, monitorCommits: checked }))
+                                    }
+                                />
+                            </div>
+
+                            {/* Release Trigger Keyword */}
                             <div className="space-y-1">
-                                <Label htmlFor="monitor-commits" className="text-sm font-medium">
-                                    Monitor Commits
+                                <Label htmlFor="trigger-keyword" className="text-sm font-medium leading-none">
+                                    Release Trigger Keyword
                                 </Label>
-                                <p className="text-xs text-gray-500">
-                                    Track commits and automatically generate release blogs
+                                <Input
+                                    id="trigger-keyword"
+                                    value={config.releaseTriggerKeyword}
+                                    onChange={(e) =>
+                                        setConfig((p) => ({
+                                            ...p,
+                                            releaseTriggerKeyword: e.target.value
+                                        }))
+                                    }
+                                    placeholder="e.g. RELEASE, VERSION, DEPLOY"
+                                    className="w-full"
+                                />
+                                <p className="text-[11px] leading-4 text-gray-500">
+                                    Commits containing this keyword will trigger release blog generation
                                 </p>
                             </div>
-                            <Switch
-                                id="monitor-commits"
-                                checked={config.monitorCommits}
-                                onCheckedChange={(checked) =>
-                                    setConfig((p) => ({ ...p, monitorCommits: checked }))
-                                }
-                            />
                         </div>
 
-                        {/* Release Trigger Keyword */}
-                        <div className="space-y-2">
-                            <Label htmlFor="trigger-keyword" className="text-sm font-medium">
-                                Release Trigger Keyword
-                            </Label>
+                        {/* Last Commit SHA */}
+                        <div className="space-y-1.5">
+                            <div className="flex items-center justify-between gap-2">
+                                <Label htmlFor="last-commit-sha" className="text-sm font-medium leading-none">
+                                    Last Commit SHA
+                                </Label>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 px-2 text-[11px]"
+                                    onClick={() =>
+                                        setConfig((p) => ({
+                                            ...p,
+                                            lastMonitoredCommitSha: project?.lastMonitoredCommitSha || ''
+                                        }))
+                                    }
+                                    disabled={!project?.lastMonitoredCommitSha}
+                                >
+                                    Use current
+                                </Button>
+                            </div>
+                            {commitShaOptions.length > 0 && (
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="commit-sha-select" className="text-[11px] font-medium text-gray-500">
+                                        Pick from existing release blogs
+                                    </Label>
+                                    <Select
+                                        value={
+                                            commitShaOptions.some((item) => item.commitId === config.lastMonitoredCommitSha)
+                                                ? config.lastMonitoredCommitSha
+                                                : ''
+                                        }
+                                        onValueChange={(value) =>
+                                            setConfig((p) => ({
+                                                ...p,
+                                                lastMonitoredCommitSha: value
+                                            }))
+                                        }
+                                    >
+                                        <SelectTrigger id="commit-sha-select" className="w-full">
+                                            <SelectValue placeholder="Choose a commit SHA from an existing blog" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {commitShaOptions.map((option) => {
+                                                const shortSha = option.commitId.substring(0, 7)
+                                                return (
+                                                    <SelectItem key={option.commitId} value={option.commitId}>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-mono text-xs">{shortSha}</span>
+                                                            <span className="max-w-[15rem] truncate text-sm">{option.label}</span>
+                                                            {project?.lastMonitoredCommitSha === option.commitId && (
+                                                                <Badge variant="outline" className="ml-1 text-[10px]">
+                                                                    current
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                    </SelectItem>
+                                                )
+                                            })}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
                             <Input
-                                id="trigger-keyword"
-                                value={config.releaseTriggerKeyword}
+                                id="last-commit-sha"
+                                value={config.lastMonitoredCommitSha}
                                 onChange={(e) =>
                                     setConfig((p) => ({
                                         ...p,
-                                        releaseTriggerKeyword: e.target.value
+                                        lastMonitoredCommitSha: e.target.value
                                     }))
                                 }
-                                placeholder="e.g. RELEASE, VERSION, DEPLOY"
-                                className="w-full"
+                                placeholder={project?.lastMonitoredCommitSha ? `${project.lastMonitoredCommitSha} (7-char prefix ok)` : 'e.g. a1b2c3d or full sha'}
+                                className="w-full font-mono text-sm"
                             />
-                            <p className="text-xs text-gray-500">
-                                Commits containing this keyword will trigger release blog generation
+                            <p className="text-[11px] leading-4 text-gray-500">
+                                Use this to reset or update the release workflow starting commit. A 7-character SHA prefix is accepted.
                             </p>
                         </div>
 

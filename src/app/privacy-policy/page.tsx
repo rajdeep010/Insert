@@ -1,93 +1,38 @@
-import type { Metadata } from "next"
-import Link from "next/link"
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowLeft, Database, ExternalLink, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 
-export const metadata: Metadata = {
-	title: "Privacy Policy | Insert",
-	description: "Privacy policy for Insert and the Insert Chrome extension.",
-}
+import InsertNavbar from "@/components/InsertNavbar";
+import { Badge } from "@/components/ui/badge";
+
+export const metadata: Metadata = { title: "Privacy Policy | Insert", description: "How Insert collects, uses, shares, and protects personal data across the application and Chrome extension." };
 
 const sections = [
-	{
-		title: "Information We Collect",
-		body: [
-			"Insert stores account details you provide directly, such as your username, email address, and profile information.",
-			"When you connect GitHub, Insert stores the access token and the repository metadata needed to create and sync projects and release notes.",
-			"The Insert Chrome extension only sends data required to authenticate you with Insert and save release-note content to your Insert account.",
-		],
-	},
-	{
-		title: "How We Use Information",
-		body: [
-			"We use your information to sign you in, show your projects, sync repositories, generate release notes, and improve the Insert experience.",
-			"We do not sell your personal data.",
-		],
-	},
-	{
-		title: "Chrome Extension Data Use",
-		body: [
-			"The extension communicates only with Insert services to authenticate your session and save project-related content.",
-			"The extension does not read unrelated browsing history, does not inject remote code, and does not transfer user data to third parties for advertising.",
-		],
-	},
-	{
-		title: "Data Sharing",
-		body: [
-			"We share data only with service providers required to operate Insert, such as hosting, database, analytics, and email delivery providers.",
-			"GitHub data is accessed only when you authorize Insert to connect your GitHub account.",
-		],
-	},
-	{
-		title: "Data Retention",
-		body: [
-			"We retain account and project data for as long as your account remains active or as needed to provide the service.",
-			"You can request deletion of your account-related data by contacting us.",
-		],
-	},
-	{
-		title: "Security",
-		body: [
-			"We use reasonable technical and organizational measures to protect your information. No online service can guarantee absolute security.",
-		],
-	},
-	{
-		title: "Contact",
-		body: [
-			"For privacy questions or deletion requests, contact us at rajdeepmallick999@gmail.com.",
-		],
-	},
-]
+    { id: "scope", title: "1. Scope and who we are", paragraphs: ["This Privacy Policy describes how Insert (\"Insert,\" \"we,\" \"our,\" or \"us\") handles personal data when you use the Insert website, application, connected services, and Insert Chrome extension.", "By using Insert, you acknowledge the practices described here. If you do not agree with this policy, please do not use the service."] },
+    { id: "collect", title: "2. Information we collect", paragraphs: ["Account and profile information: username, name, email address, avatar, biography, company, location, social profile identifiers, authentication details, verification state, and preferences you provide.", "Content and collaboration information: Topics, problems, Blogs, Collections, Projects, release notes, comments or references, visibility choices, collaborator roles, invitations, and related metadata.", "Connected-service information: when you authorize GitHub, we receive the authorization credentials and repository, branch, commit, and account metadata required to provide project and release features. We only access connected data within the permissions you grant.", "Payment and subscription information: plan, order, payment, verification, renewal, cancellation, and subscription-state identifiers. Payments are processed by Razorpay; Insert does not intentionally store complete card, bank-account, or UPI credentials.", "Technical and usage information: IP address, device and browser information, request and error logs, session activity, timestamps, feature interactions, and similar diagnostic information used to operate and protect the service."] },
+    { id: "use", title: "3. How we use information", paragraphs: ["We use personal data to create and secure accounts; provide Topics, Blogs, Collections, Projects, collaboration, notifications, and release workflows; process subscriptions; synchronize authorized repositories; deliver service messages; troubleshoot failures; prevent misuse; and improve product performance and usability.", "We do not sell personal data. We do not use Chrome extension data for advertising or unrelated profiling."] },
+    { id: "extension", title: "4. Chrome extension", paragraphs: ["The Insert Chrome extension handles only the data necessary for its disclosed purpose: authenticating with Insert and creating or saving supported project and release-note content to your Insert account.", "The extension does not intentionally collect unrelated browsing history, sell user data, or use user data for advertising. It does not inject remotely hosted executable code. Extension permissions should be limited to those necessary for currently available features.", "Data practices displayed in the Chrome Web Store and any in-product disclosure should be read together with this policy."] },
+    { id: "sharing", title: "5. When information is shared", paragraphs: ["We may share data with infrastructure and service providers that help operate Insert, such as hosting, database, media storage, authentication, email, analytics, error monitoring, payment, and repository-integration providers. These providers receive information only as needed to perform their services.", "Content marked public—including public profiles, Topics, Blogs, Collections, Projects, and release material—can be viewed by other people. Private content is made available to authorized account holders and collaborators according to the access choices you make.", "We may disclose information when reasonably necessary to comply with law, respond to valid legal process, protect users or the service, investigate fraud or security incidents, or support a merger, financing, acquisition, or transfer of assets with appropriate safeguards."] },
+    { id: "retention", title: "6. Retention and deletion", paragraphs: ["We retain account information and user content while your account is active and for as long as reasonably needed to provide the service, maintain security and backups, resolve disputes, or meet legal obligations. Retention periods may vary by data type and operational need.", "You may delete supported content using product controls. To request account-level access, correction, export, or deletion, contact us using the address below. Some information may remain temporarily in backups or be retained when required by law or legitimate security and recordkeeping needs."] },
+    { id: "security", title: "7. Security", paragraphs: ["We use reasonable administrative, technical, and organizational safeguards designed to protect personal data, including secure network transmission for supported production services and access controls appropriate to the service.", "No internet service or storage system can be guaranteed completely secure. You are responsible for protecting your account credentials and promptly notifying us if you suspect unauthorized access."] },
+    { id: "choices", title: "8. Your choices and rights", paragraphs: ["Depending on where you live, you may have rights to request access to, correction of, or deletion of personal data; withdraw consent where processing relies on consent; or raise a grievance about our handling of personal data.", "You control content visibility, collaboration permissions, connected GitHub authorization, notification state, and subscription settings through available product and third-party controls. Disconnecting a service stops future access but may not automatically delete data already imported into Insert."] },
+    { id: "children", title: "9. Children’s privacy", paragraphs: ["Insert is intended for users who are legally able to create an account and use the service. We do not knowingly collect personal data from children in violation of applicable law. If you believe a child has provided personal data improperly, contact us so we can review the request."] },
+    { id: "changes", title: "10. Changes to this policy", paragraphs: ["We may update this policy as Insert changes or legal and operational requirements evolve. We will update the effective date and, when appropriate, provide additional notice in the product. Material changes to Chrome extension data practices may also require prominent disclosure and consent."] },
+];
 
 export default function PrivacyPolicyPage() {
-	return (
-		<div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-white px-4 py-16 text-slate-900 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-slate-100">
-			<div className="mx-auto flex w-full max-w-3xl flex-col gap-8 rounded-3xl border border-black/10 bg-white/80 p-8 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-900/70 sm:p-10">
-				<div className="space-y-4">
-					<Link href="/" className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-300 dark:hover:text-indigo-200">
-						Back to Insert
-					</Link>
-					<div className="space-y-2">
-						<p className="text-xs font-semibold uppercase tracking-[0.24em] text-indigo-600/80 dark:text-indigo-300/80">Privacy Policy</p>
-						<h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Insert Privacy Policy</h1>
-						<p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
-							This policy explains what data Insert collects, how it is used, and how the Insert Chrome extension handles user data.
-						</p>
-						<p className="text-xs text-slate-500 dark:text-slate-400">Effective date: May 11, 2026</p>
-					</div>
-				</div>
-
-				<div className="space-y-8">
-					{sections.map((section) => (
-						<section key={section.title} className="space-y-3">
-							<h2 className="text-xl font-semibold tracking-tight">{section.title}</h2>
-							<div className="space-y-3 text-sm leading-6 text-slate-700 dark:text-slate-300">
-								{section.body.map((paragraph) => (
-									<p key={paragraph}>{paragraph}</p>
-								))}
-							</div>
-						</section>
-					))}
-				</div>
-			</div>
-		</div>
-	)
+    return <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 dark:bg-[#020817] dark:text-slate-50">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-60 [background-image:linear-gradient(to_right,rgba(100,116,139,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(100,116,139,0.08)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:linear-gradient(to_bottom,black,transparent_94%)]" />
+        <div className="relative mx-auto w-full max-w-[1560px] px-4 py-5 sm:px-8 lg:px-12 lg:py-8"><InsertNavbar />
+            <section className="grid gap-8 border-b border-slate-200 py-10 dark:border-slate-800 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end lg:py-14"><div><div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300"><ShieldCheck className="h-3.5 w-3.5" />Legal & trust</div><h1 className="mt-4 text-5xl font-semibold tracking-[-0.06em] sm:text-7xl">Privacy,<br /><span className="text-slate-400">in plain language.</span></h1><p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-400">This policy explains what Insert collects, why it is used, when it is shared, and the controls available to you.</p></div><div className="rounded-2xl border border-slate-200 bg-white/65 p-5 dark:border-slate-800 dark:bg-slate-950/55"><Badge variant="secondary" className="rounded-md">Effective August 9, 2026</Badge><p className="mt-4 text-sm leading-6 text-slate-500">Applies to the Insert application, public pages, connected services, and Chrome extension.</p></div></section>
+            <div className="grid gap-8 py-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">
+                <aside className="lg:sticky lg:top-6"><div className="rounded-2xl border border-slate-200 bg-white/65 p-4 dark:border-slate-800 dark:bg-slate-950/55"><p className="px-2 text-[10px] uppercase tracking-[0.18em] text-slate-500">On this page</p><nav className="mt-3 space-y-1">{sections.map((section) => <Link key={section.id} href={`#${section.id}`} className="block rounded-md px-2 py-2 text-xs text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:hover:bg-slate-900 dark:hover:text-white">{section.title}</Link>)}</nav></div></aside>
+                <article className="min-w-0 space-y-4">{sections.map((section) => <section id={section.id} key={section.id} className="scroll-mt-8 rounded-2xl border border-slate-200 bg-white/65 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/55 sm:p-7"><h2 className="text-xl font-semibold tracking-tight">{section.title}</h2><div className="mt-4 space-y-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div></section>)}
+                    <section className="rounded-2xl border border-indigo-500/20 bg-indigo-500/[0.06] p-5 sm:p-7"><div className="flex h-10 w-10 items-center justify-center rounded-md bg-indigo-500/10 text-indigo-500"><Mail className="h-5 w-5" /></div><h2 className="mt-4 text-xl font-semibold">11. Contact and privacy requests</h2><p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">For privacy questions, data requests, or complaints, email <a href="mailto:rajdeepmallick999@gmail.com" className="font-medium text-indigo-600 hover:underline dark:text-indigo-300">rajdeepmallick999@gmail.com</a>. Please include enough information for us to identify your account and understand the request.</p></section>
+                    <div className="grid gap-3 sm:grid-cols-2"><a href="https://developer.chrome.com/docs/webstore/program-policies/privacy" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/65 p-4 text-sm dark:border-slate-800 dark:bg-slate-950/55"><LockKeyhole className="h-4 w-4 text-indigo-500" /><span>Chrome Web Store privacy requirements</span><ExternalLink className="ml-auto h-4 w-4 text-slate-400" /></a><a href="https://www.meity.gov.in/static/uploads/2024/02/Digital-Personal-Data-Protection-Act-2023.pdf" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/65 p-4 text-sm dark:border-slate-800 dark:bg-slate-950/55"><Database className="h-4 w-4 text-indigo-500" /><span>Digital Personal Data Protection Act</span><ExternalLink className="ml-auto h-4 w-4 text-slate-400" /></a></div>
+                    <Link href="/" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-indigo-500"><ArrowLeft className="h-4 w-4" />Back to Insert</Link>
+                </article>
+            </div>
+        </div>
+    </main>;
 }

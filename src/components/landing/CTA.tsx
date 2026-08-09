@@ -1,34 +1,7 @@
-"use client";
 import Link from "next/link";
-import { Button } from "../ui/button";
+import { ArrowRight, Code2, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function CTA() {
-    return (
-        <section className="mx-auto my-12 max-w-5xl px-4">
-            <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-black p-8 text-white dark:border-white/10">
-                <div className="relative z-10">
-                    <h3 className="text-2xl font-bold md:text-3xl">
-                        Ready to automate your release notes?
-                    </h3>
-                    <p className="mt-2 text-sm text-gray-300">
-                        Connect GitHub and publish your first release blog in minutes.
-                    </p>
-                    <div className="mt-5 flex flex-wrap gap-3">
-                        <Link href="/sign-up">
-                            <Button className="bg-white text-black hover:bg-gray-100">
-                                Get Started
-                            </Button>
-                        </Link>
-                        <Link href="#project-service">
-                            <Button variant="outline" className="border-white text-white">
-                                Learn more
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
-
-                <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
-            </div>
-        </section>
-    );
+    return <section className="bg-white py-8 dark:bg-[#030a18] sm:py-14"><div className="mx-auto max-w-[1560px] px-4 sm:px-8 lg:px-12"><div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 p-7 text-white shadow-2xl sm:p-10"><div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(99,102,241,0.3),transparent_30%),radial-gradient(circle_at_85%_75%,rgba(6,182,212,0.18),transparent_32%)]" /><div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end"><div><p className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-indigo-300"><Sparkles className="h-4 w-4" />Start with one idea</p><h2 className="mt-4 max-w-3xl text-4xl font-semibold tracking-[-0.05em] sm:text-6xl">Build the sheet.<br /><span className="text-slate-400">Write the story.</span></h2><p className="mt-4 max-w-xl text-sm leading-6 text-slate-400">Create your first developer workspace for free and keep the entire journey—from problem solving to release publishing—connected.</p></div><div className="flex flex-wrap gap-2"><Button asChild size="lg" variant="secondary" className="rounded-md"><Link href="/sign-up">Create your workspace<ArrowRight className="ml-2 h-4 w-4" /></Link></Button><Button asChild size="lg" variant="outline" className="rounded-md border-white/15 bg-white/5 text-white hover:bg-white/10"><Link href="/release"><Code2 className="mr-2 h-4 w-4" />See releases</Link></Button></div></div></div></div></section>;
 }

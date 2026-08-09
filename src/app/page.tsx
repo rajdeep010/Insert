@@ -5,6 +5,7 @@ import { Features } from '@/components/landing/Features'
 import { Footer } from '@/components/landing/Footer'
 import { Hero } from '@/components/landing/Hero'
 import { Navbar } from '@/components/landing/Navbar'
+import { CTA } from '@/components/landing/CTA'
 import FadeUp from '@/components/animations/FadeUp'
 
 export default function Home() {
@@ -24,6 +25,9 @@ export default function Home() {
         <Features />
       </FadeUp>
 
+      <FadeUp>
+        <CTA />
+      </FadeUp>
 
       <FadeUp>
         <Footer />

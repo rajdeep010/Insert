@@ -1,104 +1,15 @@
-"use client";
-
 import Link from "next/link";
 import { GitHubLogoIcon, InstagramLogoIcon } from "@radix-ui/react-icons";
 import { Linkedin } from "lucide-react";
-import InsertIcon from "../InsertIcon";
+
+import InsertIcon from "@/components/InsertIcon";
+
+const columns = [
+    { title: "Create", links: [{ label: "Topics", href: "/posts/topic" }, { label: "Blogs", href: "/posts/blog" }, { label: "Collections", href: "/posts/collections" }, { label: "Projects", href: "/posts/projects" }] },
+    { title: "Product", links: [{ label: "Features", href: "/#features" }, { label: "Membership", href: "/subscribe" }, { label: "Releases", href: "/release" }, { label: "Collaboration", href: "/collaboration" }] },
+    { title: "Company", links: [{ label: "About", href: "/#about" }, { label: "Privacy policy", href: "/privacy-policy" }, { label: "Sign in", href: "/sign-in" }, { label: "Create account", href: "/sign-up" }] },
+];
 
 export function Footer() {
-    const currentYear = new Date().getFullYear();
-
-    return (
-        <footer className="bg-background relative">
-
-            <div
-                className="pointer-events-none absolute inset-0 z-0 opacity-40"
-                style={{
-                    backgroundImage: [
-                        "linear-gradient(hsl(var(--border) / 0.5) 1px, transparent 1px)",
-                        "linear-gradient(90deg, hsl(var(--border) / 0.5) 1px, transparent 1px)",
-                    ].join(", "),
-                    backgroundSize: "48px 48px",
-                }}
-            />
-
-            <div className="border-t border-border/60 py-10 mx-auto w-full max-w-7xl px-6 pb-12">
-                <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
-
-                    {/* Brand Meta Block */}
-                    <div className="max-w-sm space-y-3">
-                        <div className="flex items-center gap-2.5">
-                            <InsertIcon
-                                height={26}
-                                width={26}
-                                className="rounded-md border border-border bg-white p-1 shadow-sm"
-                            />
-                            <p className="text-base font-semibold text-foreground tracking-tight">Insert</p>
-                        </div>
-                        <p className="text-sm leading-relaxed text-muted-foreground">
-                            A developer workspace for writing, team collaboration with role-based access, and release workflow automation.
-                        </p>
-                    </div>
-
-                    {/* Navigation Matrices */}
-                    <div className="flex flex-col gap-8 sm:flex-row sm:gap-16">
-
-                        {/* Links Column */}
-                        <div className="space-y-3">
-                            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60">
-                                Product
-                            </p>
-                            <div className="flex flex-col gap-2.5 text-sm text-muted-foreground">
-                                <Link href="/release" className="transition-colors hover:text-foreground">
-                                    Releases
-                                </Link>
-                                <Link href="/privacy-policy" className="transition-colors hover:text-foreground">
-                                    Privacy Policy
-                                </Link>
-                            </div>
-                        </div>
-
-                        {/* Social Presence Column */}
-                        <div className="space-y-3">
-                            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60">
-                                Connect
-                            </p>
-                            <div className="flex items-center gap-4 text-muted-foreground">
-                                <Link
-                                    href="https://www.linkedin.com/in/rajdeep-mallick999/"
-                                    target="_blank"
-                                    aria-label="LinkedIn"
-                                    className="transition-colors hover:text-foreground"
-                                >
-                                    <Linkedin className="h-5 w-5" />
-                                </Link>
-                                <Link
-                                    href="https://github.com/rajdeep010"
-                                    target="_blank"
-                                    aria-label="GitHub"
-                                    className="transition-colors hover:text-foreground"
-                                >
-                                    <GitHubLogoIcon className="h-5 w-5" />
-                                </Link>
-                                <Link
-                                    href="https://www.instagram.com/rajdeepmallick010/"
-                                    target="_blank"
-                                    aria-label="Instagram"
-                                    className="transition-colors hover:text-foreground"
-                                >
-                                    <InstagramLogoIcon className="h-5 w-5" />
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Closing Copyright Section */}
-                <div className="mt-12 pt-6 border-t border-border/40 flex flex-col gap-3 text-xs font-mono text-muted-foreground/70 md:flex-row md:items-center md:justify-between">
-                    <p>Built for crisp technical distribution and engineering logs.</p>
-                    <p className="text-muted-foreground/50">© {currentYear} Insert. All rights reserved.</p>
-                </div>
-            </div>
-        </footer>
-    );
+    return <footer className="relative overflow-hidden border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-[#020817]"><div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-50 [background-image:linear-gradient(to_right,rgba(100,116,139,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(100,116,139,0.08)_1px,transparent_1px)] [background-size:48px_48px]" /><div className="relative mx-auto max-w-[1560px] px-4 py-12 sm:px-8 lg:px-12"><div className="grid gap-10 lg:grid-cols-[minmax(280px,1fr)_1.5fr]"><div><Link href="/" className="inline-flex items-center gap-2.5"><InsertIcon width={38} height={38} className="rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700" /><span className="text-xl font-semibold tracking-[-0.04em]">Insert</span></Link><p className="mt-4 max-w-sm text-sm leading-6 text-slate-500">A connected developer workspace for structured sheets, technical writing, typed collections, collaboration, and project release journals.</p><div className="mt-6 flex gap-2">{[{ href: "https://github.com/rajdeep010", label: "GitHub", icon: GitHubLogoIcon }, { href: "https://www.linkedin.com/in/rajdeep-mallick999/", label: "LinkedIn", icon: Linkedin }, { href: "https://www.instagram.com/rajdeepmallick010/", label: "Instagram", icon: InstagramLogoIcon }].map(({ href, label, icon: Icon }) => <Link key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 bg-white/65 text-slate-500 transition hover:text-indigo-500 dark:border-slate-800 dark:bg-slate-950/55"><Icon className="h-4 w-4" /></Link>)}</div></div><div className="grid grid-cols-2 gap-8 sm:grid-cols-3">{columns.map((column) => <div key={column.title}><p className="text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">{column.title}</p><div className="mt-4 space-y-3">{column.links.map((link) => <Link key={link.href} href={link.href} className="block text-sm text-slate-500 transition hover:text-indigo-500">{link.label}</Link>)}</div></div>)}</div></div><div className="mt-12 flex flex-col gap-3 border-t border-slate-200 pt-6 text-xs text-slate-500 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between"><p>© {new Date().getFullYear()} Insert. Built for developers who document the work.</p><p>Topics · Blogs · Collections · Projects</p></div></div></footer>;
 }

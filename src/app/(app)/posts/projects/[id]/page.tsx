@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { EditorContent, EditorContext, useEditor } from "@tiptap/react";
@@ -14,73 +14,127 @@ import { Highlight } from "@tiptap/extension-highlight";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import { Underline } from "@tiptap/extension-underline";
+import {
+    ArrowLeft,
+    ArrowRight,
+    BookOpen,
+    CalendarDays,
+    ExternalLink,
+    Eye,
+    EyeOff,
+    FolderGit2,
+    GitBranch,
+    GitCommit,
+    Loader2,
+    X,
+} from "lucide-react";
+
+import InsertHoverCard from "@/components/InsertHoverCard";
+import InsertNavbar from "@/components/InsertNavbar";
+import ProGate from "@/components/ProGate";
+import ShareLinkButton from "@/components/ShareLinkButton";
 import { Link } from "@/components/tiptap-extension/link-extension";
 import { Selection } from "@/components/tiptap-extension/selection-extension";
 import { TrailingNode } from "@/components/tiptap-extension/trailing-node-extension";
 import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node/image-upload-node-extension";
-import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
-
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-
-import {
-    Loader2,
-    MoreHorizontal,
-    GitBranch,
-    ExternalLink,
-    Eye,
-    EyeOff,
-    GitCommit,
-    Calendar,
-    User,
-    Trash2,
-    X,
-    ArrowLeft,
-    BookOpen,
-} from "lucide-react";
-
-import InsertNavbar from "@/components/InsertNavbar";
-import InsertHoverCard from "@/components/InsertHoverCard";
-import ShareLinkButton from "@/components/ShareLinkButton";
+import { Button } from "@/components/ui/button";
 import { useInsertProjects } from "@/features/project/context/InsertProjectProvider";
+import { useInsertUser } from "@/features/user/context/InsertUserProvider";
 import { getLastModifiedText } from "@/helpers/last-modified";
+import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
+import type { Project, ReleaseBlog } from "@/types/project";
 
 import "@/components/tiptap-node/code-block-node/code-block-node.scss";
 import "@/components/tiptap-node/list-node/list-node.scss";
 import "@/components/tiptap-node/image-node/image-node.scss";
 import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
 import "@/components/tiptap-templates/simple/simple-editor.scss";
-import { useInsertUser } from "@/features/user/context/InsertUserProvider";
-import ProGate from "@/components/ProGate";
+
+const getRepositoryName = (repoUrl?: string) => {
+    if (!repoUrl) return "Repository not linked";
+    try {
+        return new URL(repoUrl).pathname.split("/").filter(Boolean).at(-1)?.replace(/\.git$/, "") || "Repository";
+    } catch {
+        return "Repository";
+    }
+};
+
+const getCommitSha = (blog: ReleaseBlog) => {
+    const value = blog.commitSha ?? blog.commitId;
+    return typeof value === "string" && value ? value.slice(0, 7) : null;
+};
+
+function ProjectPageShell({ children }: { children: React.ReactNode }) {
+    return (
+        <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 dark:bg-[#020817] dark:text-slate-50">
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-60 [background-image:linear-gradient(to_right,rgba(100,116,139,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(100,116,139,0.08)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:linear-gradient(to_bottom,black,transparent_92%)]" />
+            <div aria-hidden="true" className="pointer-events-none absolute left-[10%] top-16 h-72 w-72 rounded-full bg-indigo-500/10 blur-[120px]" />
+            <div aria-hidden="true" className="pointer-events-none absolute right-[8%] top-80 h-72 w-72 rounded-full bg-cyan-500/10 blur-[120px]" />
+            <div className="relative mx-auto w-full max-w-[1560px] px-4 py-5 sm:px-8 lg:px-12 lg:py-8">
+                <InsertNavbar />
+                {children}
+            </div>
+        </main>
+    );
+}
+
+function ProjectMeta({ project }: { project: Project }) {
+    const items = [
+        { icon: GitBranch, label: "Default branch", value: project.defaultBranch || "—", mono: true },
+        { icon: FolderGit2, label: "Repository", value: getRepositoryName(project.repoUrl) },
+        { icon: CalendarDays, label: "Created", value: getLastModifiedText(project.createdAt, { empty: "—" }) },
+        { icon: GitCommit, label: "Release tracking", value: project.monitorCommits ? "Monitored" : "Manual" },
+    ];
+
+    return (
+        <div className="grid border-t border-slate-200/80 dark:border-slate-800/80 sm:grid-cols-2 xl:grid-cols-4">
+            {items.map(({ icon: Icon, label, value, mono }, index) => (
+                <div key={label} className={`flex items-center gap-3 px-5 py-4 ${index > 0 ? "border-t border-slate-200/80 dark:border-slate-800/80 sm:border-t-0 sm:border-l" : ""} ${index === 2 ? "sm:border-l-0 xl:border-l" : ""}`}>
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-400"><Icon className="h-4 w-4" /></span>
+                    <div className="min-w-0">
+                        <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">{label}</p>
+                        <p className={`mt-1 truncate text-sm font-medium ${mono ? "font-mono" : ""}`}>{value}</p>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function ReleaseCard({ blog, index, onOpen }: { blog: ReleaseBlog; index: number; onOpen: () => void }) {
+    const isPrivate = blog.visibility === "private";
+    const commitSha = getCommitSha(blog);
+    const title = blog.releaseTitle || blog.blogTitle || blog.title || `Release ${String(index + 1).padStart(2, "0")}`;
+
+    return (
+        <button type="button" onClick={onOpen} className="group flex min-h-64 w-full flex-col rounded-2xl border border-slate-200 bg-white/65 p-5 text-left shadow-sm backdrop-blur-xl transition duration-300 hover:-translate-y-0.5 hover:border-indigo-400/45 hover:bg-white dark:border-slate-800 dark:bg-slate-950/55 dark:hover:bg-slate-950/85">
+            <div className="flex items-start justify-between gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-500"><BookOpen className="h-5 w-5" /></span>
+                <Badge variant={isPrivate ? "destructive" : "secondary"} className="gap-1 text-[10px] uppercase">{isPrivate ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}{isPrivate ? "Private" : "Public"}</Badge>
+            </div>
+            <div className="mt-2 flex items-start justify-between gap-3">
+                <h3 className="line-clamp-2 text-xl font-semibold tracking-tight transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-300">{title}</h3>
+                <ArrowRight className="mt-1 h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
+            </div>
+            <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-400">{blog.blogContentText || "Open this release to read the project update."}</p>
+            <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-slate-200/80 pt-4 text-xs text-slate-500 dark:border-slate-800/80 dark:text-slate-400">
+                <span>{getLastModifiedText(blog.createdAt ?? blog.publishedAt, { empty: "—" })}</span>
+                {blog.version && <span className="rounded-md bg-slate-100 px-2 py-1 font-mono dark:bg-slate-900">{blog.version}</span>}
+                {commitSha && <span className="ml-auto inline-flex items-center gap-1 font-mono"><GitCommit className="h-3.5 w-3.5" />{commitSha}</span>}
+            </div>
+        </button>
+    );
+}
 
 export default function ProjectDetailsPage() {
     const { id } = useParams();
-    const { data: session, status } = useSession();
     const router = useRouter();
-    const projectId = id as string;
-
-    const {
-        curr_project,
-        isProjectLoading,
-        fetchProjectById,
-    } = useInsertProjects();
+    const { data: session, status } = useSession();
+    const { curr_project, isProjectLoading, fetchProjectById } = useInsertProjects();
     const { currentUser } = useInsertUser();
-    const showSubscribeModal = currentUser?.proStatus?.active === false;
-
-
-
-    const [selectedBlog, setSelectedBlog] = useState<any>(null);
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const projectId = id as string;
+    const [selectedBlog, setSelectedBlog] = useState<ReleaseBlog | null>(null);
 
     const blogEditor = useEditor({
         immediatelyRender: false,
@@ -96,13 +150,7 @@ export default function ProjectDetailsPage() {
             Superscript,
             Subscript,
             Selection,
-            ImageUploadNode.configure({
-                accept: "image/*",
-                maxSize: MAX_FILE_SIZE,
-                limit: 3,
-                upload: handleImageUpload,
-                onError: (error) => console.error("Upload failed:", error),
-            }),
+            ImageUploadNode.configure({ accept: "image/*", maxSize: MAX_FILE_SIZE, limit: 3, upload: handleImageUpload, onError: (error) => console.error("Upload failed:", error) }),
             TrailingNode,
             Link.configure({ openOnClick: false }),
         ],
@@ -111,364 +159,108 @@ export default function ProjectDetailsPage() {
     });
 
     useEffect(() => {
-        if (blogEditor) {
-            try {
-                const content =
-                    typeof selectedBlog?.blogContent === "string"
-                        ? JSON.parse(selectedBlog?.blogContent)
-                        : selectedBlog?.blogContent;
-                blogEditor.commands.setContent(content);
-            } catch {
-                blogEditor.commands.setContent("");
-            }
+        if (!blogEditor) return;
+        try {
+            const content = typeof selectedBlog?.blogContent === "string" ? JSON.parse(selectedBlog.blogContent) : selectedBlog?.blogContent;
+            blogEditor.commands.setContent(content || "");
+        } catch {
+            blogEditor.commands.setContent("");
         }
-    }, [selectedBlog, blogEditor]);
+    }, [blogEditor, selectedBlog]);
 
     useEffect(() => {
-        if (status !== "authenticated" || !session?.user?.githubAccessToken || !projectId) return;
-        fetchProjectById(projectId);
+        if (status === "authenticated" && session?.user?.githubAccessToken && projectId) fetchProjectById(projectId);
     }, [fetchProjectById, projectId, session?.user?.githubAccessToken, status]);
 
-    const handleBlogSelect = (blog: any) => {
-        setSelectedBlog(blog);
-        setSidebarOpen(true);
-    };
-
-    const closeBlogView = () => {
-        setSelectedBlog(null);
-        setSidebarOpen(false);
-    };
-
-    const handleDeleteProject = async () => {
-        // delete remains available as in your original page; no sync/status controls are shown here
-        // handled in provider from other page context; leaving UI intact per "don't change functionalities"
-        // If you want to remove delete from this public post page later, just remove the dropdown below.
-    };
-
-    const getRepoName = (repoUrl?: string) => {
-        if (!repoUrl) {
-            return "Repository";
-        }
-
-        try {
-            const url = new URL(repoUrl);
-            const pathParts = url.pathname.split("/");
-            return pathParts[pathParts.length - 1].replace(".git", "");
-        } catch {
-            return "Repository";
-        }
-    };
+    const releases = useMemo(() => Array.isArray(curr_project?.releaseBlogs) ? curr_project.releaseBlogs : [], [curr_project?.releaseBlogs]);
 
     if (isProjectLoading) {
-        return (
-            <div className="min-h-screen bg-background">
-                <div className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b">
-                    <div className="py-4 lg:py-6 px-4 lg:px-8 xl:px-64">
-                        <InsertNavbar />
-                    </div>
-                </div>
-                <div className="pt-24 lg:pt-28 flex justify-center items-center h-[60vh]">
-                    <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
-                </div>
-            </div>
-        );
+        return <ProjectPageShell><div className="flex min-h-[65vh] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-slate-400" /></div></ProjectPageShell>;
     }
 
     if (!curr_project) {
         return (
-            <div className="min-h-screen bg-background">
-                <div className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b">
-                    <div className="py-4 lg:py-6 px-4 lg:px-8 xl:px-64">
-                        <InsertNavbar />
-                    </div>
+            <ProjectPageShell>
+                <div className="flex min-h-[65vh] flex-col items-center justify-center text-center">
+                    <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"><FolderGit2 className="h-6 w-6 text-slate-400" /></span>
+                    <h1 className="mt-5 text-xl font-semibold">Project not found</h1>
+                    <p className="mt-2 text-sm text-slate-500">This project may have been removed or is unavailable.</p>
+                    <Button variant="outline" className="mt-6" onClick={() => router.push("/posts/projects")}><ArrowLeft className="mr-2 h-4 w-4" />Back to projects</Button>
                 </div>
-                <div className="pt-24 lg:pt-28 text-center py-12">
-                    <div className="text-muted-foreground text-lg mb-3">Project not found</div>
-                    <Button variant="outline" onClick={() => router.push("/posts/projects")}>
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back to Projects
-                    </Button>
-                </div>
-            </div>
+            </ProjectPageShell>
         );
     }
 
     const project = curr_project;
-
+    const isPrivate = project.visibility === "private";
 
     return (
         <>
-            <ProGate show={showSubscribeModal} />
-            <div className="min-h-screen bg-background">
-                {/* Fixed Navbar */}
-                <div className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b">
-                    <div className="py-4 lg:py-6 px-4 lg:px-8 xl:px-64">
-                        <InsertNavbar />
-                    </div>
-                </div>
-
-                {/* Main */}
-                <div className="pt-24 lg:pt-28">
-                    <div className="px-4 lg:px-8 xl:px-64 pb-10">
-                        {/* Header with subtle gradient and ring */}
-                        <div className="relative mb-8">
-
-                            <Card className="relative rounded-2xl border bg-card/70 backdrop-blur-xl">
-                                <div className="pointer-events-none absolute inset-0">
-                                    <div className="absolute inset-0 opacity-[0.12] bg-[radial-gradient(60%_60%_at_30%_20%,theme(colors.blue.400/.6),transparent),radial-gradient(60%_60%_at_70%_80%,theme(colors.violet.400/.6),transparent)]" />
-                                </div>
-                                <CardHeader className="pb-4">
-                                    <div className="flex flex-col gap-5">
-                                        {/* Top row: title, badges, primary actions */}
-                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                                            <div className="flex flex-col gap-2">
-                                                <CardTitle className="text-2xl lg:text-3xl font-bold tracking-tight">
-                                                    {project.name}
-                                                </CardTitle>
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    {project.visibility === "private" ? (
-                                                        <Badge variant="destructive" className="gap-1">
-                                                            <EyeOff className="w-3 h-3" />
-                                                            Private
-                                                        </Badge>
-                                                    ) : (
-                                                        <Badge variant="default" className="gap-1">
-                                                            <Eye className="w-3 h-3" />
-                                                            Public
-                                                        </Badge>
-                                                    )}
-                                                    {project.language && (
-                                                        <Badge variant="outline">{project.language}</Badge>
-                                                    )}
-                                                    {project.monitorCommits && (
-                                                        <Badge variant="outline" className="gap-1">
-                                                            <GitCommit className="w-3 h-3" />
-                                                            Monitored
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center gap-2">
-                                                <Button variant="outline" size="sm" onClick={() => router.push("/posts/projects")} className="gap-2">
-                                                    <ArrowLeft className="h-4 w-4" />
-                                                    Back
-                                                </Button>
-                                                <ShareLinkButton
-                                                    path={`/posts/projects/${projectId}`}
-                                                    title={project?.name || 'Insert project'}
-                                                    text={`Check out this project on Insert: ${project?.name || 'Untitled project'}`}
-                                                    className="gap-2"
-                                                />
-                                                {project.repoUrl && (
-                                                    <Button variant="outline" size="sm" asChild>
-                                                        <a href={project.repoUrl} target="_blank" rel="noopener noreferrer" aria-label="Open repository">
-                                                            <ExternalLink className="h-4 w-4" />
-                                                        </a>
-                                                    </Button>
-                                                )}
-                                                {project?.username === session?.user?.username && (
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="outline" size="sm">
-                                                                <MoreHorizontal className="h-4 w-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuGroup>
-                                                                <DropdownMenuItem className="text-red-500" onClick={handleDeleteProject}>
-                                                                    <Trash2 className="h-4 w-4 mr-2" />
-                                                                    Delete Project
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuGroup>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* User and meta */}
-                                        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                                            <div className="flex items-center gap-2">
-                                                <InsertHoverCard username={project.username as string} type="avatar" avatarSize="small" />
-                                                <div className="hover:text-primary">
-                                                    <InsertHoverCard username={project.username as string} type="username" avatarSize="small" />
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <GitBranch className="w-4 h-4" />
-                                                <span className="font-medium">Branch:</span>
-                                                <span className="font-mono bg-muted px-2 py-0.5 rounded text-xs">
-                                                    {project.defaultBranch}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <Calendar className="w-4 h-4" />
-                                                <span className="font-medium">Created:</span>
-                                                <span>{getLastModifiedText(project?.createdAt ?? project?.createdAt, { empty: "—" })}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <User className="w-4 h-4" />
-                                                <span className="font-medium">Repository:</span>
-                                                <span>{getRepoName(project?.repoUrl)}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </CardHeader>
-                            </Card>
-                        </div>
-
-                        <Separator className="mb-8" />
-
-                        <div className="mb-8">
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                                <div className="flex items-center gap-2 text-xl lg:text-2xl font-bold">
-                                    <BookOpen className="h-6 w-6" />
-                                    <span>Release Blogs</span>
-                                    <Badge variant="outline" className="ml-1">
-                                        {project?.releaseBlogs?.length || 0} {project?.releaseBlogs?.length === 1 ? "blog" : "blogs"}
-                                    </Badge>
-                                </div>
+            <ProGate show={currentUser?.proStatus?.active === false} />
+            <ProjectPageShell>
+                <section className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white/65 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/55">
+                    <div className="grid gap-8 p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+                        <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <Badge variant={isPrivate ? "destructive" : "secondary"} className="gap-1 text-[10px] uppercase">{isPrivate ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}{isPrivate ? "Private" : "Public"}</Badge>
+                                {project.language && <Badge variant="outline">{project.language}</Badge>}
                             </div>
-
-                            {/* Blog list */}
-                            {Array.isArray(project?.releaseBlogs) && project.releaseBlogs.length > 0 ? (
-                                <div className="space-y-4 max-h-[50vh] overflow-y-scroll custom-small-scrollbar">
-                                    {project.releaseBlogs.map((blog: any, index: number) => (
-                                        <Card
-                                            key={blog.id || index}
-                                            className="relative overflow-hidden border rounded-xl transition-all group cursor-pointer"
-                                            onClick={() => handleBlogSelect(blog)}
-                                        >
-                                            <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition">
-                                                <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_10%_10%,theme(colors.blue.500/.06),transparent)]" />
-                                            </div>
-                                            <CardContent className="p-4 lg:p-6">
-                                                <div className="flex flex-col gap-3">
-                                                    <div className="flex items-start justify-between gap-2">
-                                                        <div className="text-lg lg:text-xl font-semibold group-hover:text-primary transition-colors">
-                                                            {blog?.releaseTitle || `Release Blog #${index + 1}`}
-                                                        </div>
-                                                        <div>
-                                                            {blog?.visibility === "private" ? (
-                                                                <Badge variant="destructive" className="gap-1">
-                                                                    <EyeOff className="w-3 h-3" />
-                                                                    Private
-                                                                </Badge>
-                                                            ) : (
-                                                                <Badge variant="default" className="gap-1">
-                                                                    <Eye className="w-3 h-3" />
-                                                                    Public
-                                                                </Badge>
-                                                            )}
-                                                        </div>
-                                                    </div>
-
-                                                    <p className="text-muted-foreground mb-1 line-clamp-2 text-sm lg:text-base">
-                                                        {blog?.blogContentText || "No description available for this release blog."}
-                                                    </p>
-
-                                                    <div className="flex items-center justify-between text-xs text-muted-foreground gap-3">
-                                                        <div className="flex flex-wrap items-center gap-3">
-                                                            <div className="flex items-center gap-1.5">
-                                                                <Calendar className="w-4 h-4" />
-                                                                <span>
-                                                                    Created {getLastModifiedText(blog?.createdAt ?? blog?.publishedAt, { empty: "—" })}
-                                                                </span>
-                                                            </div>
-                                                            {blog.commitSha && (
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <GitCommit className="w-4 h-4" />
-                                                                    <code className="bg-muted px-1.5 py-0.5 rounded text-[11px]">
-                                                                        {blog.commitSha.substring(0, 7)}
-                                                                    </code>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <ArrowLeft className="h-4 w-4 rotate-180 group-hover:translate-x-1 transition-transform flex-shrink-0" />
-                                                    </div>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
-                            ) : (
-                                <Card className="p-8 lg:p-12 text-center">
-                                    <div className="text-muted-foreground mb-1">
-                                        <GitCommit className="h-10 w-10 mx-auto mb-3 opacity-60" />
-                                        <h3 className="text-base lg:text-lg font-medium mb-1">No Release Blogs</h3>
-                                        <p className="text-sm">This project has no release blogs yet.</p>
-                                    </div>
-                                </Card>
-                            )}
+                            <h1 className="mt-5 break-words text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">{project.name || "Untitled project"}</h1>
+                            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-400">{project.description?.trim() || "Explore this project, its repository, and the release notes documenting how it is evolving."}</p>
+                            <div className="mt-5 flex min-w-0 items-center gap-2 text-sm text-slate-500"><InsertHoverCard username={project.username || ""} type="avatar" avatarSize="small" /><span>Built by</span><InsertHoverCard username={project.username || ""} type="username" avatarSize="small" /></div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+                            <Button variant="outline" size="sm" onClick={() => router.push("/posts/projects")}><ArrowLeft className="h-4 w-4" />Projects</Button>
+                            <ShareLinkButton path={`/posts/projects/${projectId}`} title={project.name || "Insert project"} text={`Check out this project on Insert: ${project.name || "Untitled project"}`} className="gap-2" />
+                            {project.repoUrl && <Button size="sm" asChild><a href={project.repoUrl} target="_blank" rel="noopener noreferrer">Repository<ExternalLink className="ml-2 h-4 w-4" /></a></Button>}
                         </div>
                     </div>
-                </div>
+                    <ProjectMeta project={project} />
+                </section>
 
-                {/* Slide-over blog viewer */}
-                <div
-                    className={`fixed top-0 right-0 h-svh bg-background/80 backdrop-blur-xl ring-1 ring-border shadow-2xl transition-transform duration-500 ease-in-out z-[100] ${sidebarOpen ? "translate-x-0 pointer-events-auto" : "translate-x-full pointer-events-none"
-                        } w-full sm:w-[520px] lg:w-[640px] xl:w-[760px] rounded-none sm:rounded-l-2xl`}
-                >
-                    {selectedBlog && (
-                        <div className="h-full flex flex-col">
-                            {/* Sticky header with subtle gradient accent */}
-                            <div className="sticky top-0 z-10">
-                                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-                                <div className="py-3 px-4 lg:px-6 bg-background/60 backdrop-blur-xl flex items-center justify-between">
-                                    <div className="min-w-0 pr-3">
-                                        <div className="text-base lg:text-xl font-semibold truncate">
-                                            {selectedBlog?.releaseTitle || selectedBlog?.blogTitle || "Release Blog"}
-                                        </div>
-                                        <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                                            <div className="flex items-center gap-1.5">
-                                                <Calendar className="w-4 h-4" />
-                                                <span>
-                                                    {getLastModifiedText(selectedBlog?.createdAt ?? selectedBlog?.publishedAt, { empty: "—" })}
-                                                </span>
-                                            </div>
-                                            {selectedBlog?.visibility && (
-                                                <Badge
-                                                    variant={selectedBlog.visibility === "private" ? "destructive" : "default"}
-                                                    className="gap-1"
-                                                >
-                                                    {selectedBlog.visibility === "private" ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                                                    {selectedBlog.visibility === "private" ? "Private" : "Public"}
-                                                </Badge>
-                                            )}
-                                        </div>
+                <section className="py-7 lg:py-9">
+                    <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+                        <div><p className="text-[10px] uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-300">Project journal</p><h2 className="mt-1 text-2xl font-semibold tracking-tight">Release updates</h2><p className="mt-1 text-sm text-slate-500">Read the milestones and engineering notes published for this project.</p></div>
+                        <Badge variant="outline">{releases.length} {releases.length === 1 ? "release" : "releases"}</Badge>
+                    </div>
+                    {releases.length ? (
+                        <div className="grid auto-rows-fr gap-3 md:grid-cols-2 xl:grid-cols-3">{releases.map((blog, index) => <ReleaseCard key={blog.id || blog._id || index} blog={blog} index={index} onOpen={() => setSelectedBlog(blog)} />)}</div>
+                    ) : (
+                        <div className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/45 px-6 text-center dark:border-slate-700 dark:bg-slate-950/35"><span className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"><GitCommit className="h-5 w-5 text-slate-400" /></span><h3 className="mt-4 font-semibold">No release updates yet</h3><p className="mt-2 text-sm text-slate-500">Published project milestones will appear here.</p></div>
+                    )}
+                </section>
+            </ProjectPageShell>
+
+            <div className={`fixed inset-0 z-[100] overflow-x-hidden overflow-y-auto bg-slate-50 transition duration-300 dark:bg-[#020817] ${selectedBlog ? "visible opacity-100" : "invisible pointer-events-none opacity-0"}`}>
+                {selectedBlog && (
+                    <div className="min-h-screen">
+                        <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-slate-50/90 backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#020817]/90">
+                            <div className="mx-auto flex w-full max-w-[1560px] items-start justify-between gap-5 px-4 py-4 sm:px-8 lg:px-12">
+                                <div className="min-w-0">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <p className="text-[10px] uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-300">Release update</p>
+                                        <span className="text-slate-300 dark:text-slate-700">/</span>
+                                        <p className="text-xs text-slate-500">{project.name}</p>
                                     </div>
-                                    <Button variant="ghost" size="icon" onClick={closeBlogView} className="shrink-0">
-                                        <X className="h-5 w-5" />
-                                    </Button>
+                                    <h2 className="mt-1 text-lg font-semibold leading-snug sm:text-xl">{selectedBlog.releaseTitle || selectedBlog.blogTitle || selectedBlog.title || "Release"}</h2>
+                                    <p className="mt-1 text-xs text-slate-500">{getLastModifiedText(selectedBlog.createdAt ?? selectedBlog.publishedAt, { empty: "—" })}</p>
                                 </div>
-                                <div className="h-px bg-border" />
+                                <Button variant="outline" size="sm" className="shrink-0" onClick={() => setSelectedBlog(null)}><X className="h-4 w-4" /></Button>
                             </div>
+                        </header>
 
-                            {/* Scrollable content */}
-                            <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+                        <main className="mx-auto w-full max-w-[1560px] px-4 py-5 sm:px-8 sm:py-8 lg:px-12">
+                            <div className="mx-auto w-full max-w-6xl overflow-hidden rounded-2xl border border-slate-200 bg-white/70 shadow-sm dark:border-slate-800 dark:bg-slate-950/55">
                                 {blogEditor && (
                                     <EditorContext.Provider value={{ editor: blogEditor }}>
-                                        <div className="post-wrapper">
-                                            <EditorContent
-                                                editor={blogEditor}
-                                                role="presentation"
-                                                className="simple-editor-content prose dark:prose-invert max-w-none prose-sm lg:prose-base"
-                                            />
+                                        <div className="post-wrapper !min-h-0 !max-h-none !overflow-visible !border-0 !bg-transparent !shadow-none">
+                                            <EditorContent editor={blogEditor} role="presentation" className="release-reader-content simple-editor-content prose dark:prose-invert" />
                                         </div>
                                     </EditorContext.Provider>
                                 )}
                             </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Overlay */}
-                {sidebarOpen && (
-                    <div
-                        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[90] transition-opacity"
-                        onClick={closeBlogView}
-                    />
+                        </main>
+                    </div>
                 )}
             </div>
         </>

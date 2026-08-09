@@ -23,6 +23,7 @@ export interface EntityCollaboratorSummary {
 
 const collaborationClient = axios.create({
 	baseURL: externalServices.collaboration.apiBaseUrl,
+	timeout: 1800,
 });
 
 const extractCollection = (payload: any) => {

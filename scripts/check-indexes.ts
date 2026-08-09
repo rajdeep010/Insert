@@ -14,6 +14,7 @@ import TopicModel from "@/model/Topic";
 import UserModel from "@/model/User";
 import ProblemModel from "@/model/Problem";
 import BlogCollectionModel from "@/model/BlogCollection";
+import CollectionModel from "@/model/Collection";
 import AlltopicModel from "@/model/Alltopic";
 import TopicPublicOrPrivateModel from "@/model/Topicvisible";
 
@@ -51,6 +52,7 @@ const checkIndexes = async () => {
       { name: "User", model: UserModel },
       { name: "Problem", model: ProblemModel },
       { name: "BlogCollection", model: BlogCollectionModel },
+      { name: "CollectionV2", model: CollectionModel },
       { name: "Alltopic", model: AlltopicModel },
       { name: "TopicPublicOrPrivate", model: TopicPublicOrPrivateModel },
     ];
@@ -141,6 +143,7 @@ const checkIndexes = async () => {
       User: 8,
       Problem: 6,
       BlogCollection: 5,
+      CollectionV2: 7,
       Alltopic: 1,
       TopicPublicOrPrivate: 3,
     };

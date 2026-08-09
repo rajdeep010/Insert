@@ -21,7 +21,8 @@ async function dbConnect() {
         const db = await mongoose.connect(mongoUri, {
             // Connection pooling settings for better performance
             maxPoolSize: 10,
-            minPoolSize: 5,
+            // Do not force idle connections in short-lived serverless instances.
+            minPoolSize: 0,
             // Socket timeout
             socketTimeoutMS: 45000,
             // Server selection timeout

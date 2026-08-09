@@ -36,17 +36,18 @@ const difficultyOrder = ['Easy', 'Easy-Med', 'Medium', 'Med-Hard', 'Hard', 'Adva
 const difficultyRank = Object.fromEntries(difficultyOrder.map((value, index) => [value, index])) as Record<ProblemDifficulty, number>
 
 const difficultyTone: Record<ProblemDifficulty, string> = {
-	Easy: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200',
-	'Easy-Med': 'border-lime-500/20 bg-lime-500/10 text-lime-700 dark:text-lime-200',
-	Medium: 'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-200',
-	'Med-Hard': 'border-orange-500/20 bg-orange-500/10 text-orange-700 dark:text-orange-200',
-	Hard: 'border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-200',
-	Advanced: 'border-fuchsia-500/20 bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-200',
+	Easy: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-200 dark:hover:bg-emerald-500/10',
+	'Easy-Med': 'border-lime-500/20 bg-lime-500/10 text-lime-700 hover:bg-lime-500/10 dark:text-lime-200 dark:hover:bg-lime-500/10',
+	Medium: 'border-amber-500/20 bg-amber-500/10 text-amber-700 hover:bg-amber-500/10 dark:text-amber-200 dark:hover:bg-amber-500/10',
+	'Med-Hard': 'border-orange-500/20 bg-orange-500/10 text-orange-700 hover:bg-orange-500/10 dark:text-orange-200 dark:hover:bg-orange-500/10',
+	Hard: 'border-rose-500/20 bg-rose-500/10 text-rose-700 hover:bg-rose-500/10 dark:text-rose-200 dark:hover:bg-rose-500/10',
+	Advanced: 'border-fuchsia-500/20 bg-fuchsia-500/10 text-fuchsia-700 hover:bg-fuchsia-500/10 dark:text-fuchsia-200 dark:hover:bg-fuchsia-500/10',
 }
 
 type TopicProblemsGridProps = {
 	problems: TopicProblemGridRow[]
 	canManageProblems: boolean
+	canEditProblems?: boolean
 	onDelete?: (problemId: string) => void
 	onEdit?: (problem: TopicProblemGridRow) => void
 	onManageReferences?: (problem: TopicProblemGridRow) => void
@@ -63,6 +64,7 @@ const getHostname = (url: string) => {
 export function TopicProblemsGrid({
 	problems,
 	canManageProblems,
+	canEditProblems = canManageProblems,
 	onDelete,
 	onEdit,
 	onManageReferences,
@@ -71,12 +73,14 @@ export function TopicProblemsGrid({
 		{
 			headerName: 'Problem',
 			field: 'qname',
-			minWidth: 280,
+			minWidth: 140,
 			flex: 2.1,
 			resizable: true,
 			filter: 'agTextColumnFilter',
+			headerClass: 'topic-problem-header-cell',
+			cellClass: 'topic-problem-cell',
 			cellRenderer: (params: { value: string }) => (
-				<div className="flex min-w-0 flex-col justify-center">
+				<div className="flex min-w-0 items-center py-1">
 					<span className="truncate text-sm font-semibold text-foreground">{params.value}</span>
 				</div>
 			),
@@ -84,68 +88,55 @@ export function TopicProblemsGrid({
 		{
 			headerName: 'Difficulty',
 			field: 'difficulty',
-			minWidth: 160,
+			minWidth: 140,
+			width: 150,
+			flex: 0,
 			resizable: true,
 			filter: 'agTextColumnFilter',
+			headerClass: 'topic-problem-header-cell topic-problem-centered-header',
+			cellClass: 'topic-problem-cell topic-problem-centered-cell',
 			comparator: (left: ProblemDifficulty, right: ProblemDifficulty) => {
 				return (difficultyRank[left] ?? 999) - (difficultyRank[right] ?? 999)
 			},
 			cellRenderer: (params: { value: ProblemDifficulty }) => (
-				<Badge className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${difficultyTone[params.value]}`}>
+				<Badge variant="outline" className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${difficultyTone[params.value]}`}>
 					{params.value}
 				</Badge>
 			),
 		},
 		{
-			headerName: 'Resource',
+			headerName: 'Source',
 			field: 'url',
-			minWidth: 180,
-			flex: 1,
+			minWidth: 140,
+			width: 160,
+			flex: 0,
+			resizable: true,
 			filter: 'agTextColumnFilter',
-			resizable: true,
-			valueGetter: (params) => params.data?.url ?? '',
+			headerClass: 'topic-problem-header-cell topic-problem-centered-header',
+			cellClass: 'topic-problem-cell topic-problem-centered-cell',
+			valueGetter: (params) => getHostname(params.data?.url ?? ''),
 			cellRenderer: (params: { value: string }) => (
-				<div className="flex min-w-0 flex-col justify-center">
-					<span className="truncate text-sm text-muted-foreground">{getHostname(params.value)}</span>
-				</div>
+				<span className="truncate text-sm font-medium text-muted-foreground">{params.value}</span>
 			),
-		},
-		{
-			headerName: 'References',
-			field: 'blogReferences',
-			minWidth: 150,
-			flex: 1,
-			resizable: true,
-			filter: false,
-			sortable: false,
-			valueGetter: (params) => params.data?.blogReferences?.length ?? 0,
-			cellRenderer: (params: { data?: TopicProblemGridRow }) => {
-				const references = params.data?.blogReferences ?? []
-				const count = references.length
-
-				return (
-					<div className="flex min-w-0 flex-col gap-1.5 py-2">
-						<Badge className="w-fit rounded-full border border-slate-500/15 bg-slate-500/10 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-200">
-							{count} ref{count === 1 ? '' : 's'}
-						</Badge>
-					</div>
-				)
-			},
 		},
 		{
 			headerName: 'Actions',
 			field: '_id',
-			minWidth: canManageProblems ? 200 : 120,
+			minWidth: canManageProblems ? 204 : canEditProblems ? 152 : 72,
+			width: canManageProblems ? 204 : canEditProblems ? 152 : 72,
+			maxWidth: canManageProblems ? 204 : canEditProblems ? 152 : 72,
+			flex: 0,
 			filter: false,
 			sortable: false,
 			floatingFilter: false,
 			resizable: true,
+			headerClass: 'topic-problem-header-cell topic-problem-centered-header',
 			cellClass: 'topic-problem-actions-cell',
 			cellRenderer: (params: { data?: TopicProblemGridRow }) => {
 				if (!params.data) return null
 
 				return (
-					<div className="flex h-full items-center justify-between gap-1.5">
+					<div className="flex h-full items-center justify-center gap-1.5">
 						<Tooltip>
 							<TooltipTrigger asChild>
 								<a
@@ -154,7 +145,7 @@ export function TopicProblemsGrid({
 									rel="noreferrer noopener"
 									onClick={(event) => event.stopPropagation()}
 								>
-									<Button type="button" variant="ghost" size="icon" className="h-9 w-9  border border-transparent text-sky-600 hover:border-sky-500/20 hover:bg-sky-500/10 hover:text-sky-700 dark:text-sky-300 dark:hover:text-sky-200">
+									<Button type="button" variant="ghost" size="icon" className="h-9 w-9 rounded-xl border border-sky-500/10 bg-sky-500/[0.06] text-sky-600 hover:border-sky-500/20 hover:bg-sky-500/10 hover:text-sky-700 dark:text-sky-300 dark:hover:text-sky-200">
 										<ExternalLink className="h-4 w-4" />
 									</Button>
 								</a>
@@ -163,14 +154,13 @@ export function TopicProblemsGrid({
 						</Tooltip>
 
 						{canManageProblems ? (
-							<>
 								<Tooltip>
 									<TooltipTrigger asChild>
 										<Button
 											type="button"
 											variant="ghost"
 											size="icon"
-											className="h-9 w-9  border border-transparent text-violet-600 hover:border-violet-500/20 hover:bg-violet-500/10 hover:text-violet-700 dark:text-violet-300 dark:hover:text-violet-200"
+											className="h-9 w-9 rounded-xl border border-violet-500/10 bg-violet-500/[0.06] text-violet-600 hover:border-violet-500/20 hover:bg-violet-500/10 hover:text-violet-700 dark:text-violet-300 dark:hover:text-violet-200"
 											onClick={(event) => {
 												event.stopPropagation()
 												onManageReferences?.(params.data!)
@@ -181,14 +171,16 @@ export function TopicProblemsGrid({
 									</TooltipTrigger>
 									<TooltipContent>Manage references</TooltipContent>
 								</Tooltip>
+						) : null}
 
+						{canEditProblems ? (
 								<Tooltip>
 									<TooltipTrigger asChild>
 										<Button
 											type="button"
 											variant="ghost"
 											size="icon"
-											className="h-9 w-9  border border-transparent text-amber-600 hover:border-amber-500/20 hover:bg-amber-500/10 hover:text-amber-700 dark:text-amber-300 dark:hover:text-amber-200"
+											className="h-9 w-9 rounded-xl border border-amber-500/10 bg-amber-500/[0.06] text-amber-600 hover:border-amber-500/20 hover:bg-amber-500/10 hover:text-amber-700 dark:text-amber-300 dark:hover:text-amber-200"
 											onClick={(event) => {
 												event.stopPropagation()
 												onEdit?.(params.data!)
@@ -199,14 +191,16 @@ export function TopicProblemsGrid({
 									</TooltipTrigger>
 									<TooltipContent>Edit problem</TooltipContent>
 								</Tooltip>
+						) : null}
 
+						{canManageProblems ? (
 								<Tooltip>
 									<TooltipTrigger asChild>
 										<Button
 											type="button"
 											variant="ghost"
 											size="icon"
-											className="h-9 w-9  border border-transparent text-rose-600 hover:border-rose-500/20 hover:bg-rose-500/10 hover:text-rose-700 dark:text-rose-300 dark:hover:text-rose-200"
+											className="h-9 w-9 rounded-xl border border-rose-500/10 bg-rose-500/[0.06] text-rose-600 hover:border-rose-500/20 hover:bg-rose-500/10 hover:text-rose-700 dark:text-rose-300 dark:hover:text-rose-200"
 											onClick={(event) => {
 												event.stopPropagation()
 												onDelete?.(params.data!._id)
@@ -217,21 +211,20 @@ export function TopicProblemsGrid({
 									</TooltipTrigger>
 									<TooltipContent>Delete problem</TooltipContent>
 								</Tooltip>
-							</>
 						) : null}
 					</div>
 				)
 			},
 		},
-	], [canManageProblems, onDelete, onEdit, onManageReferences])
+	], [canEditProblems, canManageProblems, onDelete, onEdit, onManageReferences])
 
 	return (
 		<AgGridTable<TopicProblemGridRow>
 			title="Problems"
-			subtitle="Search and manage problems."
+			subtitle="Track practice links, references, and difficulty from one cleaner workspace."
 			rowData={problems}
 			columnDefs={columnDefs}
-			quickFilterPlaceholder="Search by problem, difficulty, or resource..."
+		quickFilterPlaceholder="Search by problem, difficulty, or source..."
 			emptyMessage="No problems added yet"
 			paginationPageSize={5}
 		/>
