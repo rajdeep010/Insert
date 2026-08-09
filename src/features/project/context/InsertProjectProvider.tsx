@@ -126,7 +126,7 @@ const initialState: ProjectState & Pick<InsertProjectProviderProps,
 const InsertProjectContext = createContext<InsertProjectProviderProps | null>(null)
 
 export const InsertProjectProvider = ({ children }: { children: React.ReactNode }) => {
-	const API_BASE = "http://localhost:4000/v1"
+	const API_BASE = externalServices.project.baseUrl
 	const [state, dispatch] = useReducer(InsertProjectReducer, initialState)
 	const { data: session, status } = useSession()
 	useInsertUser()
