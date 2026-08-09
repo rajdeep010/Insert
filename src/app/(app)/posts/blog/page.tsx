@@ -1,183 +1,95 @@
 "use client";
+
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useBlog } from "@/features/blog/context/BlogProvider";
-import InsertNavbar from "@/components/InsertNavbar";
+import { ArrowRight, Clock3, FileText, FolderSearch, Globe2, Loader2, Lock } from "lucide-react";
+
 import InsertHoverCard from "@/components/InsertHoverCard";
-import { getLastModifiedText } from "@/helpers/last-modified";
-
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { PostDirectoryLayout } from "@/components/posts/PostDirectoryLayout";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Loader2, MoreHorizontal, Search } from "lucide-react";
+import { useBlog } from "@/features/blog/context/BlogProvider";
+import { getLastModifiedText } from "@/helpers/last-modified";
+import type { BlogEntry } from "@/types/blog";
 
-
-/* Surface styles aligned with Projects/Blogs */
-const surface = "rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 transition-colors";
-const hoverable = "transition-colors hover:border-black/20 dark:hover:border-white/30";
+const getReadingTime = (content?: string) => {
+    const words = content?.trim().split(/\s+/).filter(Boolean).length ?? 0;
+    return Math.max(1, Math.ceil(words / 200));
+};
 
 export default function AllBlogPosts() {
-	const { allBlogPosts, fetchAllBlogPosts, isAllBlogPostsLoading } = useBlog();
-	const [query, setQuery] = useState("");
+    const { allBlogPosts, fetchAllBlogPosts, isAllBlogPostsLoading } = useBlog();
+    const [query, setQuery] = useState("");
 
-	useEffect(() => {
-		fetchAllBlogPosts();
-	}, []);
+    useEffect(() => {
+        fetchAllBlogPosts();
+    }, [fetchAllBlogPosts]);
 
-	const defaultBanner = "/insert.png";
+    const filtered = useMemo(() => {
+        const normalizedQuery = query.trim().toLowerCase();
+        if (!normalizedQuery) return allBlogPosts || [];
+        return (allBlogPosts || []).filter((blog: BlogEntry) =>
+            [blog.blogTitle, blog.creator, blog.blogContentText]
+                .filter((value): value is string => typeof value === "string")
+                .some((value) => value.toLowerCase().includes(normalizedQuery)),
+        );
+    }, [allBlogPosts, query]);
 
-	const filtered = useMemo(() => {
-		const q = query.trim().toLowerCase();
-		if (!q) return allBlogPosts || [];
-		return (allBlogPosts || []).filter((b: any) => {
-			const title = (b?.blogTitle || "").toLowerCase();
-			const creator = (b?.creator || "").toLowerCase();
-			return title.includes(q) || creator.includes(q);
-		});
-	}, [allBlogPosts, query]);
+    return (
+        <PostDirectoryLayout
+            title="Blogs"
+            description="Read technical articles, practical notes, and engineering stories from the Insert community."
+            query={query}
+            onQueryChange={setQuery}
+            searchPlaceholder="Search blogs, content, or authors..."
+            accentClassName="text-cyan-600 dark:text-cyan-300"
+        >
+            <section className="py-3 lg:py-4">
+                <div className="mb-5 flex items-center justify-between gap-4">
+                    <p className="text-sm text-muted-foreground">Technical writing and notes</p>
+                    <p className="text-sm text-muted-foreground">{filtered.length} blog{filtered.length === 1 ? "" : "s"}</p>
+                </div>
 
-	return (
-		<>
-			<div className="flex flex-col gap-6 py-8 lg:py-12 justify-center px-6 lg:px-56">
-				{isAllBlogPostsLoading && (
-					<div className="flex justify-center items-center h-[60vh]">
-						<Loader2 className="h-12 w-12 animate-spin text-gray-500" />
-					</div>
-				)}
-
-				{!isAllBlogPostsLoading && (
-					<div>
-						<InsertNavbar />
-					</div>
-				)}
-
-				<div className="flex flex-col gap-3">
-					{!isAllBlogPostsLoading &&<div className="flex items-center justify-between flex-wrap gap-4">
-						<span className="text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
-							Post: Blogs
-						</span>
-						<div className="text-xs text-gray-500 dark:text-gray-400">
-							{filtered?.length ?? 0} shown{query ? ` of ${allBlogPosts?.length ?? 0}` : ""}
-						</div>
-					</div>}
-
-					{!isAllBlogPostsLoading && <div className={`${surface} ${hoverable} shadow-none p-2 pr-3 flex items-center gap-2`}>
-						<div className="pl-2 pr-1 text-gray-500">
-							<Search className="h-4 w-4" />
-						</div>
-						<Input
-							value={query}
-							onChange={(e) => setQuery(e.target.value)}
-							placeholder="Search by title or creator..."
-							className="border-0 focus-visible:ring-0 bg-transparent"
-						/>
-					</div>}
-				</div>
-
-				{!isAllBlogPostsLoading && (
-					<div className="flex flex-col gap-4 max-h-[72vh] overflow-y-scroll custom-small-scrollbar pb-16">
-						{filtered?.length === 0 && (
-							<Card className={`${surface} shadow-none`}>
-								<CardContent className="py-14 text-center text-sm text-gray-600 dark:text-gray-400">
-									No results for “{query}”. Try a different search.
-								</CardContent>
-							</Card>
-						)}
-
-						{filtered?.map((blog: any, idx: number) => (
-							<div key={idx} className="group">
-								<Card className={`${surface} ${hoverable} shadow-none`}>
-									<div className="flex justify-between px-3 lg:px-6 py-6">
-										{/* Left: meta + content */}
-										<CardContent className="flex flex-col gap-3 pr-6 w-full p-0">
-											<CardHeader className="flex flex-col gap-3 px-0 py-0">
-												<div className="flex items-center gap-2">
-													<InsertHoverCard username={blog?.creator as string} type="avatar" avatarSize="small" />
-													<div className="text-sm text-gray-600 hover:text-blue-500 hover:underline">
-														<InsertHoverCard username={blog?.creator as string} type="username" avatarSize="small" />
-													</div>
-												</div>
-
-												<div className="flex items-center gap-3">
-													<Link href={`/posts/blog/${blog?.blogUrl}`}>
-														<CardTitle className="text-2xl font-semibold leading-snug hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-															{blog?.blogTitle}
-														</CardTitle>
-													</Link>
-
-													{blog?.type === "private" && (
-														<Badge variant="destructive" className="text-[11px]">private</Badge>
-													)}
-													{blog?.type === "public" && (
-														<Badge variant="secondary" className="text-[11px]">public</Badge>
-													)}
-												</div>
-											</CardHeader>
-
-											<CardDescription className="text-[15px] text-muted-foreground line-clamp-3">
-												{blog?.blogContentText && blog.blogContentText?.length > 0
-													? blog?.blogContentText?.slice(0, 240) + "…"
-													: "No content available..."}
-											</CardDescription>
-
-											<div className="flex justify-between items-center pt-2">
-												<div className="text-[12px] flex items-center gap-2 text-gray-600 dark:text-gray-400">
-													<div>{getLastModifiedText(blog?.lastEdited)}</div>
-													<span className="opacity-40">•</span>
-													<span>
-														{Math.ceil(((blog?.blogContentText?.split(" ").length ?? 0) / 200))} min read
-													</span>
-												</div>
-
-												<div className="hover:bg-gray-200 dark:hover:bg-gray-800 p-2 flex justify-end rounded-md">
-													<DropdownMenu>
-														<DropdownMenuTrigger asChild>
-															<MoreHorizontal className="h-4 w-4 cursor-pointer" />
-														</DropdownMenuTrigger>
-														<DropdownMenuContent className="w-56" align="start">
-															<DropdownMenuGroup>
-																<DropdownMenuItem disabled>Show less like this</DropdownMenuItem>
-															</DropdownMenuGroup>
-															<DropdownMenuGroup>
-																<DropdownMenuItem className="text-red-500" disabled>
-																	Report post...
-																</DropdownMenuItem>
-															</DropdownMenuGroup>
-														</DropdownMenuContent>
-													</DropdownMenu>
-												</div>
-											</div>
-										</CardContent>
-
-										{/* Right: large banner image */}
-										<div className="flex-shrink-0 overflow-hidden rounded-md hidden lg:block">
-											<Image
-												src={blog?.blogBannerImage || defaultBanner}
-												alt={blog?.blogTitle}
-												width={180}
-												height={112}
-												className="h-[112px] w-[180px] object-cover"
-											/>
-										</div>
-									</div>
-								</Card>
-
-								{/* Optional divider to keep rhythm on long lists */}
-								{idx < filtered.length - 1 && <Separator className="opacity-60" />}
-							</div>
-						))}
-					</div>
-				)}
-			</div>
-		</>
-	);
+                {isAllBlogPostsLoading ? (
+                    <div className="flex min-h-[40vh] items-center justify-center"><Loader2 className="h-7 w-7 animate-spin text-muted-foreground" /></div>
+                ) : filtered.length === 0 ? (
+                    <div className="flex min-h-80 flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/30 text-center">
+                        <FolderSearch className="h-9 w-9 text-muted-foreground" />
+                        <h2 className="mt-4 font-semibold">No matching blogs</h2>
+                        <p className="mt-2 text-sm text-muted-foreground">Try another title, phrase, or author.</p>
+                    </div>
+                ) : (
+                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                        {filtered.map((blog: BlogEntry) => {
+                            const blogId = String(blog._id ?? blog.id ?? blog.blogUrl);
+                            const visibility = blog.type === "private" ? "private" : "public";
+                            return (
+                                <article key={blogId} className="group flex overflow-hidden rounded-2xl border border-border/70 bg-card/55 backdrop-blur transition hover:-translate-y-0.5 hover:border-cyan-500/35 hover:bg-card md:flex-col">
+                                    <Link href={`/posts/blog/${blog.blogUrl}`} className="relative w-32 shrink-0 overflow-hidden bg-muted md:aspect-[16/7] md:w-full">
+                                        <Image src={blog.blogBannerImage || "/insert.png"} alt="" fill sizes="(max-width: 768px) 128px, (max-width: 1280px) 50vw, 25vw" className="object-cover transition duration-500 group-hover:scale-[1.03]" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
+                                    </Link>
+                                    <div className="flex min-w-0 flex-1 flex-col p-5">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-500"><FileText className="h-4 w-4" /></span>
+                                            <Badge variant={visibility === "public" ? "default" : "destructive"} className="gap-1 text-[10px] capitalize">{visibility === "public" ? <Globe2 className="h-3 w-3" /> : <Lock className="h-3 w-3" />}{visibility}</Badge>
+                                        </div>
+                                        <Link href={`/posts/blog/${blog.blogUrl}`} className="mt-4 inline-flex items-start justify-between gap-3">
+                                            <h2 className="line-clamp-2 text-xl font-semibold tracking-tight transition group-hover:text-cyan-600 dark:group-hover:text-cyan-300">{blog.blogTitle}</h2>
+                                            <ArrowRight className="mt-1 h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
+                                        </Link>
+                                        <p className="mt-2 line-clamp-2 text-sm leading-5 text-muted-foreground">{blog.blogContentText?.trim() || "A technical post from the Insert community."}</p>
+                                        <div className="mt-auto flex items-end justify-between gap-3 border-t border-border/60 pt-4 text-xs text-muted-foreground">
+                                            <div className="flex min-w-0 items-center gap-2">{blog.creator && <><InsertHoverCard username={blog.creator} type="avatar" avatarSize="small" /><InsertHoverCard username={blog.creator} type="username" avatarSize="small" /></>}</div>
+                                            <div className="flex shrink-0 flex-col items-end gap-1"><span>{getLastModifiedText(blog.lastEdited)}</span><span className="inline-flex items-center gap-1"><Clock3 className="h-3 w-3" />{getReadingTime(blog.blogContentText)} min</span></div>
+                                        </div>
+                                    </div>
+                                </article>
+                            );
+                        })}
+                    </div>
+                )}
+            </section>
+        </PostDirectoryLayout>
+    );
 }

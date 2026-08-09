@@ -25,6 +25,7 @@ import { getLastModifiedText } from "@/helpers/last-modified";
 import { languageColors } from "@/types/master-data";
 import { useInsertProjects } from "@/features/project/context/InsertProjectProvider";
 import { useInsertUser } from "@/features/user/context/InsertUserProvider";
+import { Badge } from "@/components/ui/badge";
 
 const accents = [
     {
@@ -85,23 +86,23 @@ export default function ProjectsPage() {
                 <div className="relative mx-auto w-full max-w-[1560px] px-4 py-5 sm:px-8 lg:px-12 lg:py-8">
                     <InsertNavbar />
 
-                    <section className="grid gap-8 border-b border-slate-200/80 py-14 dark:border-slate-800/80 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.62fr)] lg:items-end lg:py-20">
+                    <section className="grid gap-8 border-b border-slate-200/80 py-4 dark:border-slate-800/80 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.62fr)] lg:items-end lg:py-6">
                         <div>
-                            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/[0.07] px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-300">
+                            <div className="mb-2 inline-flex items-center gap-2 rounded-md border border-emerald-500/20 bg-emerald-500/[0.07] px-3 py-1.5 text-[11px] uppercase text-emerald-700 dark:text-emerald-300">
                                 <Sparkles className="h-3 w-3" />
-                                Community showcase
+                                PRO FEATURE
                             </div>
-                            <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.04em] sm:text-6xl lg:text-7xl">
-                                Projects built in public,
-                                <span className="block text-slate-500 dark:text-slate-400">ready to explore.</span>
-                            </h1>
-                            <p className="mt-6 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-400 sm:text-lg">
+                            <p className="text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">
+                                Projects built in public
+                                <span className="block text-slate-500 dark:text-slate-400">ready to explore</span>
+                            </p>
+                            <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
                                 Browse release-ready work from the Insert community. See the stack, follow the repository, and discover how each project is evolving.
                             </p>
                         </div>
 
-                        <div className="rounded-2xl border border-slate-200 bg-white/65 p-2 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/55">
-                            <label htmlFor="project-search" className="flex items-center gap-3 rounded-xl border border-transparent px-3 focus-within:border-indigo-500/40 focus-within:bg-white dark:focus-within:bg-slate-950">
+                        <div className="rounded-2xl border border-slate-200 bg-white/65 px-2 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/55">
+                            <label htmlFor="project-search" className="flex items-center gap-3 rounded-md border border-transparent px-2 ">
                                 <Search className="h-4 w-4 shrink-0 text-slate-400" />
                                 <Input
                                     id="project-search"
@@ -110,9 +111,6 @@ export default function ProjectsPage() {
                                     placeholder="Search projects, owners, stacks..."
                                     className="h-12 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
                                 />
-                                <span className="hidden rounded-md border border-slate-200 px-2 py-1 font-mono text-[10px] text-slate-400 dark:border-slate-700 sm:block">
-                                    {filtered.length} found
-                                </span>
                             </label>
                         </div>
                     </section>
@@ -123,16 +121,6 @@ export default function ProjectsPage() {
                         </div>
                     ) : (
                         <section className="py-8 lg:py-10">
-                            <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-                                <div>
-                                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-300">Project directory</p>
-                                    <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Explore the latest builds</h2>
-                                </div>
-                                <p className="text-sm text-slate-500 dark:text-slate-400">
-                                    {query ? `${filtered.length} of ${all_projects?.length ?? 0} projects` : `${filtered.length} public projects`}
-                                </p>
-                            </div>
-
                             {filtered.length > 0 ? (
                                 <div className="grid auto-rows-fr gap-3 md:grid-cols-2 xl:grid-cols-3">
                                     {filtered.map((project: any, index: number) => {
@@ -150,14 +138,14 @@ export default function ProjectsPage() {
                                                             <InsertHoverCard username={project?.username} type="avatar" avatarSize="small" />
                                                             <InsertHoverCard username={project?.username} type="username" avatarSize="small" />
                                                         </div>
-                                                        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100/80 px-2.5 py-1 text-[10px] uppercase tracking-wider text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                                                        <Badge variant="secondary" className={`shrink-0 text-[10px] gap-1 ${accent.label} uppercase`}>
                                                             {project?.visibility === "private" ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                                                             {project?.visibility || "public"}
-                                                        </span>
+                                                        </Badge>
                                                     </div>
 
                                                     <div className="mt-10">
-                                                        <p className={`mb-3 font-mono text-[10px] uppercase tracking-[0.2em] ${accent.label}`}>
+                                                        <p className={`mb-3 uppercase text-xs text-muted-foreground`}>
                                                             {index === 0 ? "Featured build" : `Project ${String(index + 1).padStart(2, "0")}`}
                                                         </p>
                                                         <Link href={`/posts/projects/${project?.id}`} className="inline-flex max-w-full items-center gap-2">

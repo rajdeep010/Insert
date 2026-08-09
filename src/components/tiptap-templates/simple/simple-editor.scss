@@ -94,11 +94,10 @@ body {
 }
 
 .simple-editor-content {
-  max-width: 100%;
-  width: 100%;
   margin: 0 auto;
-  width: 65rem;
-  max-width: 65rem;
+  width: min(65rem, 100%);
+  max-width: 100%;
+  min-width: 0;
 }
 
 .simple-post-content {
@@ -109,6 +108,43 @@ body {
   padding: 2rem 2.5rem;
   max-width: 80rem;
   margin: 0 auto;
+}
+
+.release-reader-content {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.release-reader-content .tiptap.ProseMirror {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.release-reader-content .tiptap.ProseMirror img,
+.release-reader-content .tiptap.ProseMirror video,
+.release-reader-content .tiptap.ProseMirror iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+.release-reader-content .tiptap.ProseMirror pre,
+.release-reader-content .tiptap.ProseMirror code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.release-reader-content .tiptap.ProseMirror table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.release-reader-content .tiptap.ProseMirror th,
+.release-reader-content .tiptap.ProseMirror td {
+  overflow-wrap: anywhere;
 }
 
 @media screen and (max-width: 480px) {

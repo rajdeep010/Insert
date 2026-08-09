@@ -161,60 +161,30 @@ const Dashboard = () => {
 
     return (
         <div className="flex flex-col gap-8">
-            <section className={surface + ' p-5 sm:p-6'}>
-                <div className="flex flex-col gap-6">
-                    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                                <span className="inline-flex items-center gap-2 rounded-full bg-indigo-500/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.18em] text-indigo-700 dark:text-indigo-300">
-                                    Topics
-                                </span>
-                                <Badge variant="secondary" className="rounded-full px-2.5 py-1 text-xs">
-                                    {topicCountLabel}
-                                </Badge>
-                            </div>
-
-                            <div className="space-y-2">
-                                <h2 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">
-                                    Topic dashboard
-                                </h2>
-                                <p className="max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-                                    Browse topic collections, jump into problem sets quickly, and keep track of when each topic was created.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex w-full items-center gap-3 lg:w-auto">
-                            <div className={`${surfaceMuted} flex flex-1 items-center gap-2 px-3 py-2 lg:min-w-[20rem]`}>
-                                <Search className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                                <Input
-                                    type="text"
-                                    placeholder="Search topics by title..."
-                                    className="h-auto border-0 bg-transparent px-0 py-0 shadow-none focus-visible:ring-0"
-                                    value={searchQuery}
-                                    onChange={e => setSearchQuery(e.target.value)}
-                                />
-                            </div>
-
-                            {canEdit && (
-                                <Button
-                                    onClick={() => setIsTopicModalOpen(true)}
-                                    className="h-11 shrink-0 gap-2 px-4"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                    New topic
-                                </Button>
-                            )}
-                        </div>
+            {/* <section className={surface + ' p-5 sm:p-6'}> */}
+                <div className="flex w-full items-center gap-3 lg:w-auto">
+                    <div className={`${surfaceMuted} flex flex-1 items-center gap-2 px-3 py-2 lg:min-w-[20rem]`}>
+                        <Search className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                        <Input
+                            type="text"
+                            placeholder="Search topics by title..."
+                            className="h-auto border-0 bg-transparent px-0 py-0 shadow-none focus-visible:ring-0"
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                        />
                     </div>
 
-                    {!isTopicLoading && filteredTopics.length > 0 && (
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                            {/* <span className="rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-800">Open any card to manage problems</span> */}
-                        </div>
+                    {canEdit && (
+                        <Button
+                            onClick={() => setIsTopicModalOpen(true)}
+                            className="h-11 shrink-0 gap-2 px-4"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Topic
+                        </Button>
                     )}
                 </div>
-            </section>
+            {/* </section> */}
 
             <div className="flex flex-col gap-4">
                 {isTopicLoading ? (
@@ -242,12 +212,9 @@ const Dashboard = () => {
                         ))}
                     </div>
                 ) : filteredTopics.length > 0 ? (
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 md:grid-cols-3">
                         {filteredTopics.map(({ id, title, about, visibility, createdAt, collaborators, problems, creator_username, currentAccessRole }) => {
                             const createdLabel = formatCreatedDate(createdAt)
-                            const createdRelative = getLastModifiedText(createdAt, { empty: 'Recently created' })
-                            const collaboratorCount = collaborators?.length ?? 0
-                            const problemCount = problems?.length ?? 0
                             const currentRole = currentAccessRole ?? collaborators?.find(
                                 (collaborator) => collaborator.username === session?.user?.username
                             )?.role ?? null

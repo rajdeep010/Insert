@@ -52,8 +52,6 @@ const buildBlogLookup = (entityId: string) => {
 export async function POST(request: Request) {
     const internalApiKey = request.headers.get("x-internal-api-key");
     if (!internalApiKey || internalApiKey !== process.env.INTERNAL_API_KEY) {
-        console.log('Unauthorized access attempt with API key:', internalApiKey);
-        console.log('Expected API key:', process.env.INTERNAL_API_KEY);
         return unauthorizedResponse();
     }
 

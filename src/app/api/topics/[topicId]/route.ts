@@ -21,6 +21,10 @@ const TOPIC_SELECT =
 const BLOG_REFERENCE_SELECT = "_id blogTitle blogUrl";
 const BLOG_COLLECTION_REFERENCE_SELECT = "_id name";
 
+// Keep enough headroom for a cold database connection on serverless deployments.
+// External collaboration calls are independently bounded and fail soft.
+export const maxDuration = 30;
+
 export async function GET(
     request: Request,
     context: RouteContext
@@ -80,17 +84,18 @@ export async function GET(
             );
         }
 
-        const collaborators = await fetchEntityCollaborators(
-            "TOPIC",
-            parsedParams.data.topicId,
-            accessToken
-        );
-
-        const problems = await ProblemModel.find({
-            topicId: topic._id,
-        })
-            .sort({ createdAt: -1 })
-            .lean();
+        const [collaborators, problems] = await Promise.all([
+            fetchEntityCollaborators(
+                "TOPIC",
+                parsedParams.data.topicId,
+                accessToken
+            ),
+            ProblemModel.find({
+                topicId: topic._id,
+            })
+                .sort({ createdAt: -1 })
+                .lean(),
+        ]);
 
         const blogIds = Array.from(
             new Set(

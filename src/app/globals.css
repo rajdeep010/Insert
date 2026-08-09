@@ -201,6 +201,10 @@
   letter-spacing: 0.14em;
 }
 
+.ag-grid-shell .topic-problem-centered-header .ag-header-cell-label {
+  justify-content: center;
+}
+
 .ag-grid-shell .topic-problem-actions-header .ag-header-cell-label {
   justify-content: flex-end;
 }
@@ -219,8 +223,18 @@
   padding-bottom: 4px;
 }
 
+.ag-grid-shell .topic-problem-centered-cell,
+.ag-grid-shell .topic-problem-centered-cell .ag-cell-wrapper,
+.ag-grid-shell .topic-problem-centered-cell .ag-cell-value {
+  justify-content: center;
+  text-align: center;
+}
+
 .ag-grid-shell .topic-problem-actions-cell {
-  padding-right: 14px;
+  padding-left: 6px;
+  padding-right: 6px;
+  text-align: center;
+  justify-content: center;
 }
 
 .ag-grid-shell .ag-cell-value,

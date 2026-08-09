@@ -11,7 +11,7 @@ import Overview from '@/components/Overview'
 import PaymentPage from '@/components/PaymentPage'
 import Profile from '@/components/Profile'
 import Projects from '@/components/Projects'
-import { BlogCollectionsPage } from '@/features/blog/components/BlogCollectionsPage'
+import { CollectionDirectory } from '@/features/collection-v2/components/CollectionDirectory'
 import { Loader2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
@@ -65,10 +65,6 @@ export default function UserPage() {
         }
 
         if (tab === 'collections') {
-            if (session?.user?.username === username) {
-                fetchBlogsByUsername(username)
-                fetchBlogCollections()
-            }
             return
         }
 
@@ -96,7 +92,7 @@ export default function UserPage() {
                     {tab === 'topics' && <Dashboard />}
                     {tab === 'overview' && <Overview />}
                     {tab === 'blogs' && <Blogs />}
-                    {tab === 'collections' && <BlogCollectionsPage />}
+                    {tab === 'collections' && <CollectionDirectory />}
                     {tab === 'projects' && <Projects/>}
                     {tab === 'subscribe' && <PaymentPage/>}
                 </div>
@@ -107,4 +103,3 @@ export default function UserPage() {
         </div>
     )
 }
-

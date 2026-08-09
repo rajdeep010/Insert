@@ -129,7 +129,7 @@ const Projects = () => {
                     </div>
 
                     <div className="flex gap-3 items-center justify-between">
-                        <div className={`${surface} ${hoverable} shadow-none p-2 pr-3 flex items-center gap-2 w-full`}>
+                        <div className={`${surface} ${hoverable} rounded-md shadow-none p-1 pr-3 flex items-center gap-2 w-full`}>
                             <div className="pl-2 pr-1 text-gray-500">
                                 <Search className="h-4 w-4" />
                             </div>
@@ -143,10 +143,10 @@ const Projects = () => {
                         </div>
 
                         <Button
-                            className="gap-2 flex items-center px-4 py-2 rounded-md cursor-pointer bg-green-700 text-white hover:bg-green-800"
+                            className="gap-2 flex items-center rounded-md cursor-pointer bg-green-700 text-white hover:bg-green-800"
                             onClick={() => setIsRepoModalOpen(true)}
                         >
-                            <Album className="h-4 w-4" /> <span className="text-sm">New</span>
+                            <Album className="h-8 w-8" /> <span className="text-sm">New</span>
                         </Button>
                     </div>
                 </>

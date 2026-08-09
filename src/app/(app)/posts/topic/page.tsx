@@ -1,99 +1,96 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import InsertNavbar from "@/components/InsertNavbar";
-import TopicCard from "@/components/TopicCard";
-import { useInsertTopics } from "@/features/topic/context/InsertTopicProvider";
-import {
-    Card,
-    CardContent,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { ArrowRight, BookOpen, Crown, Eye, FolderSearch, Loader2, Lock, ShieldCheck } from "lucide-react";
+
+import InsertHoverCard from "@/components/InsertHoverCard";
+import { PostDirectoryLayout } from "@/components/posts/PostDirectoryLayout";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Search } from "lucide-react";
+import { getLastModifiedText } from "@/helpers/last-modified";
+import { useInsertTopics } from "@/features/topic/context/InsertTopicProvider";
+import type { Topic } from "@/types/topic";
 
-/* Consistent surface styles */
-const surface ="rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-gray-900/40 supports-[backdrop-filter]:bg-white/40 transition-colors";
-const hoverable = "transition-colors hover:border-black/20 dark:hover:border-white/30";
-
+const getAccessMeta = (topic: Topic, currentUsername?: string | null) => {
+    const role = topic.creator_username === currentUsername ? "OWNER" : topic.currentAccessRole;
+    if (role === "OWNER") return { label: "Owner", icon: Crown };
+    if (role === "EDITOR") return { label: "Editor", icon: ShieldCheck };
+    if (role === "VIEWER") return { label: "Viewer", icon: Eye };
+    return null;
+};
 
 export default function AllTopicPosts() {
+    const { data: session } = useSession();
     const { all_topics, fetchAllTopicPosts, isAllSheetsLoading } = useInsertTopics();
     const [query, setQuery] = useState("");
 
     useEffect(() => {
         fetchAllTopicPosts();
-    }, []); // keep behavior unchanged
+    }, [fetchAllTopicPosts]);
 
     const filtered = useMemo(() => {
-        const q = query.trim().toLowerCase();
-        if (!q) return all_topics || [];
-        return (all_topics || []).filter((t: any) => {
-            const name = (t?.name || t?.title || "").toLowerCase();
-            const creator = (t?.username || t?.owner || t?.createdBy || "").toLowerCase();
-            const desc = (t?.description || "").toLowerCase();
-            return name.includes(q) || creator.includes(q) || desc.includes(q);
-        });
+        const normalizedQuery = query.trim().toLowerCase();
+        if (!normalizedQuery) return all_topics || [];
+        return (all_topics || []).filter((topic) =>
+            [topic.title, topic.creator_username, topic.about]
+                .filter(Boolean)
+                .some((value) => value.toLowerCase().includes(normalizedQuery)),
+        );
     }, [all_topics, query]);
 
     return (
-        <>
-            <div className="flex flex-col gap-6 py-8 lg:py-12 justify-center px-8 lg:px-56">
-                {isAllSheetsLoading && (
-                    <div className="flex justify-center items-center h-[60vh]">
-                        <Loader2 className="h-12 w-12 animate-spin text-gray-500" />
+        <PostDirectoryLayout
+            title="Topics"
+            description="Explore focused coding sheets shared by the Insert community."
+            query={query}
+            onQueryChange={setQuery}
+            searchPlaceholder="Search topics, descriptions, or creators..."
+            accentClassName="text-indigo-600 dark:text-indigo-300"
+        >
+            <section className="py-3 lg:py-4">
+                <div className="mb-5 flex items-center justify-between gap-4">
+                    <p className="text-sm text-muted-foreground">Structured topic sheets</p>
+                    <p className="text-sm text-muted-foreground">{filtered.length} topic{filtered.length === 1 ? "" : "s"}</p>
+                </div>
+
+                {isAllSheetsLoading ? (
+                    <div className="flex min-h-[40vh] items-center justify-center"><Loader2 className="h-7 w-7 animate-spin text-muted-foreground" /></div>
+                ) : filtered.length === 0 ? (
+                    <div className="flex min-h-80 flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/30 text-center">
+                        <FolderSearch className="h-9 w-9 text-muted-foreground" />
+                        <h2 className="mt-4 font-semibold">No matching topics</h2>
+                        <p className="mt-2 text-sm text-muted-foreground">Try another title, description, or creator.</p>
+                    </div>
+                ) : (
+                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                        {filtered.map((topic) => {
+                            const access = getAccessMeta(topic, session?.user?.username);
+                            const AccessIcon = access?.icon;
+                            return (
+                                <article key={topic.id} className="group flex min-h-60 flex-col rounded-2xl border border-border/70 bg-card/55 p-5 backdrop-blur transition hover:-translate-y-0.5 hover:border-indigo-500/35 hover:bg-card">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-500"><BookOpen className="h-5 w-5" /></span>
+                                        <div className="flex flex-wrap justify-end gap-1.5">
+                                            <Badge variant={topic.visibility === "public" ? "default" : "destructive"} className="gap-1 text-[10px] capitalize">{topic.visibility === "public" ? <Eye className="h-3 w-3" /> : <Lock className="h-3 w-3" />}{topic.visibility}</Badge>
+                                            {access && AccessIcon && <Badge variant="outline" className="gap-1 text-[10px]"><AccessIcon className="h-3 w-3" />{access.label}</Badge>}
+                                        </div>
+                                    </div>
+                                    <Link href={`/topic/${topic.id}`} className="mt-5 inline-flex items-start justify-between gap-3">
+                                        <h2 className="line-clamp-2 text-xl font-semibold tracking-tight transition group-hover:text-indigo-600 dark:group-hover:text-indigo-300">{topic.title}</h2>
+                                        <ArrowRight className="mt-1 h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
+                                    </Link>
+                                    <p className="mt-2 line-clamp-2 text-sm leading-5 text-muted-foreground">{topic.about || "A structured coding sheet from the Insert community."}</p>
+                                    <div className="mt-auto flex items-center justify-between gap-3 border-t border-border/60 pt-4 text-xs text-muted-foreground">
+                                        <div className="flex min-w-0 items-center gap-2"><InsertHoverCard username={topic.creator_username} type="avatar" avatarSize="small" /><InsertHoverCard username={topic.creator_username} type="username" avatarSize="small" /></div>
+                                        <span className="shrink-0">{getLastModifiedText(topic.createdAt)}</span>
+                                    </div>
+                                </article>
+                            );
+                        })}
                     </div>
                 )}
-
-                {!isAllSheetsLoading && (
-                    <div>
-                        <InsertNavbar />
-                    </div>
-                )}
-
-                {!isAllSheetsLoading && <div className="flex items-center justify-between flex-wrap gap-3">
-                    <span className="text-[13px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-purple-200/70 dark:bg-purple-800/60 text-purple-900 dark:text-purple-200">
-                        Post: Topics
-                    </span>
-                    <Badge variant="secondary" className="text-xs">
-                        {filtered?.length ?? 0} shown{query ? ` of ${all_topics?.length ?? 0}` : ""}
-                    </Badge>
-                </div>}
-
-                {!isAllSheetsLoading && <div className={`${surface} ${hoverable} shadow-none p-2 pr-3 flex items-center gap-2`}>
-                    <div className="pl-2 pr-1 text-gray-500">
-                        <Search className="h-4 w-4" />
-                    </div>
-                    <Input
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search topics by name, creator, or description..."
-                        className="border-0 focus-visible:ring-0 bg-transparent"
-                    />
-                </div>}
-
-                {!isAllSheetsLoading && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-visible">
-                        {filtered?.length === 0 && (
-                            <div className="col-span-full">
-                                <Card className={`${surface} shadow-none`}>
-                                    <CardContent className="py-14 text-center text-sm text-gray-600 dark:text-gray-400">
-                                        No results for “{query}”. Try a different search.
-                                    </CardContent>
-                                </Card>
-                            </div>
-                        )}
-
-                        {filtered?.map((topic: any, idx: number) => (
-                            <Card key={idx} className={`${surface} ${hoverable} shadow-none`}>
-                                <CardContent className="p-0">
-                                    <TopicCard topic={topic} />
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                )}
-            </div>
-        </>
+            </section>
+        </PostDirectoryLayout>
     );
 }
