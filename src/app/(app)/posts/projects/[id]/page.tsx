@@ -210,7 +210,7 @@ export default function ProjectDetailsPage() {
                             <div className="mt-5 flex min-w-0 items-center gap-2 text-sm text-slate-500"><InsertHoverCard username={project.username || ""} type="avatar" avatarSize="small" /><span>Built by</span><InsertHoverCard username={project.username || ""} type="username" avatarSize="small" /></div>
                         </div>
                         <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-                            <Button variant="outline" size="sm" onClick={() => router.push("/posts/projects")}><ArrowLeft className="mr-2 h-4 w-4" />Projects</Button>
+                            <Button variant="outline" size="sm" onClick={() => router.push("/posts/projects")}><ArrowLeft className="h-4 w-4" />Projects</Button>
                             <ShareLinkButton path={`/posts/projects/${projectId}`} title={project.name || "Insert project"} text={`Check out this project on Insert: ${project.name || "Untitled project"}`} className="gap-2" />
                             {project.repoUrl && <Button size="sm" asChild><a href={project.repoUrl} target="_blank" rel="noopener noreferrer">Repository<ExternalLink className="ml-2 h-4 w-4" /></a></Button>}
                         </div>
