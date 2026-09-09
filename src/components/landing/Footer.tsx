@@ -6,7 +6,7 @@ import InsertIcon from "@/components/InsertIcon";
 
 const columns = [
     { title: "Create", links: [{ label: "Topics", href: "/posts/topic" }, { label: "Blogs", href: "/posts/blog" }, { label: "Collections", href: "/posts/collections" }, { label: "Projects", href: "/posts/projects" }] },
-    { title: "Product", links: [{ label: "Features", href: "/#features" }, { label: "Membership", href: "/subscribe" }, { label: "Releases", href: "/release" }, { label: "Collaboration", href: "/collaboration" }] },
+    { title: "Product", links: [{ label: "Features", href: "/#features" }, { label: "Chrome extension", href: "/extension" }, { label: "Membership", href: "/subscribe" }, { label: "Releases", href: "/release" }, { label: "Collaboration", href: "/collaboration" }] },
     { title: "Company", links: [{ label: "About", href: "/#about" }, { label: "Privacy policy", href: "/privacy-policy" }, { label: "Sign in", href: "/sign-in" }, { label: "Create account", href: "/sign-up" }] },
 ];
 
