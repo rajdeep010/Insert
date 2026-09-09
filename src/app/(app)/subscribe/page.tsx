@@ -1,3 +1,6 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
     ArrowRight,
@@ -34,7 +37,18 @@ const included = [
     "Verified Pro profile badge",
 ];
 
+type BillingPeriod = "monthly" | "yearly";
+
+const monthlyPrice = 11;
+const yearlyPrice = 99;
+
 export default function SubscribePage() {
+    const [billing, setBilling] = useState<BillingPeriod>("yearly");
+    const discountPercent = useMemo(() => Math.round((1 - yearlyPrice / (monthlyPrice * 12)) * 100), []);
+    const displayPrice = billing === "monthly" ? monthlyPrice : yearlyPrice;
+    const unit = billing === "monthly" ? "/month" : "/year";
+    const subtext = billing === "monthly" ? "Billed monthly. Cancel anytime." : `Save ${discountPercent}% compared with monthly billing.`;
+
     return (
         <main className="min-h-screen overflow-hidden bg-slate-50 text-slate-950 dark:bg-[#020817] dark:text-white">
             <Navbar />
@@ -75,10 +89,14 @@ export default function SubscribePage() {
                                 <div>
                                     <div className="flex items-center gap-2"><span className="flex h-11 w-11 items-center justify-center rounded-md bg-indigo-500/10 text-indigo-500"><Crown className="h-5 w-5" /></span><Badge className="rounded-md bg-indigo-600 text-white">Recommended</Badge></div>
                                     <p className="mt-7 text-sm font-medium text-indigo-600 dark:text-indigo-300">Insert Pro</p>
-                                    <div className="mt-2 flex items-end gap-2"><span className="text-5xl font-semibold tracking-[-0.05em]">₹99</span><span className="pb-1 text-sm text-slate-500">/year</span></div>
-                                    <p className="mt-2 text-sm text-slate-500">Save 25% compared with monthly billing.</p>
+                                    <div className="mt-2 flex items-end gap-2"><span className="text-5xl font-semibold tracking-[-0.05em]">₹{displayPrice}</span><span className="pb-1 text-sm text-slate-500">{unit}</span></div>
+                                    <p className="mt-2 text-sm text-slate-500">{subtext}</p>
                                 </div>
                                 <Button asChild className="rounded-md bg-indigo-600 text-white hover:bg-indigo-500"><Link href="/sign-in?callbackUrl=%2Fsubscribe">Sign in to upgrade <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
+                            </div>
+                            <div className="mt-6 inline-grid grid-cols-2 rounded-md border border-slate-200 bg-slate-100/70 p-1 dark:border-slate-800 dark:bg-slate-900/70">
+                                <Button type="button" size="sm" variant={billing === "monthly" ? "default" : "ghost"} className="rounded-md" onClick={() => setBilling("monthly")}>Monthly</Button>
+                                <Button type="button" size="sm" variant={billing === "yearly" ? "default" : "ghost"} className="rounded-md" onClick={() => setBilling("yearly")}>Yearly <span className="ml-1 text-[10px] opacity-70">Save {discountPercent}%</span></Button>
                             </div>
                             <div className="mt-8 grid gap-3 sm:grid-cols-2">
                                 {included.map((item) => <div key={item} className="flex items-center gap-2.5 rounded-md border border-slate-200 bg-slate-50/70 px-3 py-3 text-sm dark:border-slate-800 dark:bg-slate-900/55"><BadgeCheck className="h-4 w-4 shrink-0 text-emerald-500" />{item}</div>)}

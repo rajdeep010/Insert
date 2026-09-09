@@ -9,7 +9,7 @@ import InsertIcon from "@/components/InsertIcon";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
-const navItems = [{ title: "About", href: "#about" }, { title: "Features", href: "#features" }, { title: "Pricing", href: "#pricing" }, { title: "Releases", href: "/release" }];
+const navItems = [{ title: "About", href: "#about" }, { title: "Features", href: "#features" }, { title: "Pricing", href: "#pricing" }, { title: "Extension", href: "/extension" }, { title: "Releases", href: "/release" }];
 
 export function Navbar() {
     const pathname = usePathname();
