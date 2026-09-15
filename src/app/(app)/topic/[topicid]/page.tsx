@@ -40,7 +40,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { questionSchema, suggestionSchema, topicSchema } from "@/schemas/topicSchema";
+import { questionSchema, topicSchema } from "@/schemas/topicSchema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiResponse } from "@/types/ApiResponse";
@@ -67,7 +67,6 @@ import {
 import InsertNavbar from "@/components/InsertNavbar";
 import ShareLinkButton from "@/components/ShareLinkButton";
 import { useCollaborationV2 } from "@/features/collaboration-v2/context/CollaborationProviderV2";
-import { useNotifications } from "@/features/notification/context/NotificationProvider";
 import InsertHoverCard from "@/components/InsertHoverCard";
 import { useBlog } from "@/features/blog/context/BlogProvider";
 import { useInsertTopics } from "@/features/topic/context/InsertTopicProvider";
@@ -122,14 +121,11 @@ const EachTopic = () => {
 		fetchBlogCollections,
 	} = useBlog();
 
-	const { sendSuggestion } = useNotifications();
-
 	// Modal state
 	const [currentProblemId, setCurrentProblemId] = useState<string | null>(null);
 
 	const [isItemModalOpen, setIsItemModalOpen] = useState(false);
 	const [isItemDeleteModalOpen, setIsItemDeleteModalOpen] = useState(false);
-	const [isSuggestProblemOpen, setIsSuggestProblemOpen] = useState(false);
 	const [isReferenceModalOpen, setIsReferenceModalOpen] = useState(false);
 	const [referenceProblem, setReferenceProblem] = useState<any | null>(null);
 	const [selectedBlogId, setSelectedBlogId] = useState("");
@@ -170,7 +166,6 @@ const EachTopic = () => {
 		setCurrentProblemId(problemId);
 		setIsItemDeleteModalOpen(true);
 	};
-	const handleOpenSuggestProblem = () => setIsSuggestProblemOpen(true);
 	const handleOpenReferenceModal = (problem: any) => {
 		setReferenceProblem(problem);
 		setSelectedBlogId("");
@@ -213,27 +208,6 @@ const EachTopic = () => {
 		setIsItemModalOpen(false);
 	};
 
-
-	// ------------------------------------
-
-	const suggestionForm = useForm<z.infer<typeof suggestionSchema>>({
-		resolver: zodResolver(suggestionSchema),
-		defaultValues: { problemname: "", problemurl: "" },
-	});
-
-	const suggestionSubmit = async (data: z.infer<typeof suggestionSchema>) => {
-		if (!curr_topic || !session?.user?.username) return;
-		await sendSuggestion(curr_topic.topic?.creator_username, {
-			noti_type: "suggestion",
-			from: session.user.username,
-			topicid: curr_topic.topic.id,
-			topicname: curr_topic.topic.title,
-			read: true,
-			problemname: data.problemname,
-			problemurl: data.problemurl
-		});
-		suggestionForm.reset()
-	};
 
 	const topicDetailsForm = useForm<z.infer<typeof topicSchema>>({
 		resolver: zodResolver(topicSchema),
@@ -470,14 +444,6 @@ const EachTopic = () => {
 		difficulty: problem.difficulty,
 		blogReferences: (problem.blogReferences || []).map(resolveProblemReference),
 	}));
-
-	const canSuggestProblem = Boolean(
-		status === "authenticated" &&
-		session?.user?.username &&
-		curr_topic &&
-		session.user.username !== curr_topic.topic.creator_username &&
-		!canManageProblems
-	);
 
 	const handleTopicSwitch = (nextTopicId: string) => {
 		if (!nextTopicId || nextTopicId === resolvedTopicId) return;
@@ -746,14 +712,6 @@ const EachTopic = () => {
 								</TopicActionButton>
 							) : null}
 
-							{/* {canSuggestProblem ? (
-								<TopicActionButton label="Suggest problem">
-									<Button variant="outline" size="icon" className="h-9 w-9 rounded-full border-border/60 bg-background/70" onClick={() => handleOpenSuggestProblem()}>
-										<FileInput className="h-4 w-4" />
-									</Button>
-								</TopicActionButton>
-							) : null} */}
-
 							{/* {isOwner ? (
 								<TopicActionButton label="Edit topic details">
 									<Button variant="outline" size="icon" className="h-9 w-9 rounded-full border-border/60 bg-background/70" onClick={() => setIsDetailsSheetOpen(true)}>
@@ -888,60 +846,6 @@ const EachTopic = () => {
 									Cancel
 								</Button>
 							</DialogFooter>
-						</DialogContent>
-					</Dialog>
-
-					<Dialog
-						open={isSuggestProblemOpen}
-						onOpenChange={setIsSuggestProblemOpen}
-					>
-						<DialogContent>
-							<DialogHeader>
-								<DialogTitle>Problem Details</DialogTitle>
-								<DialogDescription>Share a problem suggestion with its name and source URL for this topic.</DialogDescription>
-							</DialogHeader>
-							<Form {...suggestionForm}>
-								<form
-									onSubmit={suggestionForm.handleSubmit(suggestionSubmit)}
-									className="space-y-6"
-								>
-									<FormField
-										control={suggestionForm.control}
-										name="problemname"
-										render={({ field }) => (
-											<FormItem>
-												<FormControl>
-													<Input placeholder="Problem Name" {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<FormField
-										control={suggestionForm.control}
-										name="problemurl"
-										render={({ field }) => (
-											<FormItem>
-												<FormControl>
-													<Input placeholder="Problem URL" {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<DialogFooter>
-										<Button type="submit" variant="default">
-											Send
-										</Button>
-										<Button
-											variant="destructive"
-											onClick={() => setIsSuggestProblemOpen(false)}
-										>
-											Cancel
-										</Button>
-									</DialogFooter>
-								</form>
-							</Form>
 						</DialogContent>
 					</Dialog>
 
