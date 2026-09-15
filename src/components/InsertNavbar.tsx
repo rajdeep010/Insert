@@ -165,7 +165,7 @@ export default function InsertNavbar() {
                             </NavigationMenuList>
                         </NavigationMenu>
                         <Button asChild size="sm" className="h-10 px-4"><Link href="/write"><PenLine className="h-4 w-4" />Write</Link></Button>
-                        <Tooltip><TooltipTrigger asChild><span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white/70 dark:border-slate-800 dark:bg-slate-950/60"><NotificationBellV2 /></span></TooltipTrigger><TooltipContent>Notifications</TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild><span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border-slate-200 bg-white/70 dark:border-slate-800 dark:bg-slate-950/60"><NotificationBellV2 /></span></TooltipTrigger><TooltipContent>Notifications</TooltipContent></Tooltip>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild><Button variant="outline" className="h-10 rounded-xl px-3"><span className="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-500/10 text-xs font-semibold uppercase dark:text-indigo-300">{username.slice(0, 1)}</span><span className="max-w-28 truncate">{username}</span></Button></DropdownMenuTrigger>
                             <DropdownMenuContent align="end" sideOffset={10} className="w-60 rounded-xl p-2">
@@ -182,7 +182,7 @@ export default function InsertNavbar() {
             </div>
 
             <div className="flex items-center gap-2 lg:hidden">
-                {status === "authenticated" && username && <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800"><NotificationBellV2 /></span>}
+                {status === "authenticated" && username && <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border-slate-200 dark:border-slate-800"><NotificationBellV2 /></span>}
                 <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
                     <SheetTrigger asChild><Button variant="outline" size="icon" className="h-10 w-10 rounded-xl" aria-label="Open navigation"><Menu className="h-5 w-5"/></Button></SheetTrigger>
                     <SheetContent side="right" className="w-[92vw] max-w-md border-slate-200 bg-slate-50 p-0 dark:border-slate-800 dark:bg-[#020817]">
