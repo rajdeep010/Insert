@@ -1,11 +1,13 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { ArrowRight, BookOpen, Crown, Eye, FileText, Globe2, Lock, ShieldCheck } from 'lucide-react'
 
 import OverviewSkeleton from '@/components/skeletons/OverviewSkeleton'
 import { Badge } from '@/components/ui/badge'
+import { fetchMyCollections, fetchPublicCollections } from '@/features/collection-v2/api/collections'
 import { useInsertTopics } from '@/features/topic/context/InsertTopicProvider'
 import { useInsertUser } from '@/features/user/context/InsertUserProvider'
 import { getLastModifiedText } from '@/helpers/last-modified'
@@ -13,10 +15,28 @@ import { getLastModifiedText } from '@/helpers/last-modified'
 export default function Overview() {
     const { isTopicsLoading, user_Topics } = useInsertTopics()
     const { profileUser } = useInsertUser()
-    const { data: session } = useSession()
+    const { data: session, status } = useSession()
     const topics = user_Topics || []
     const featured = topics.slice(0, 4)
     const publicCount = topics.filter((topic) => topic.visibility === 'public').length
+
+    // Collections is a separate feature from Topics (a different model,
+    // /api/v2/collections) — it must be fetched on its own, not derived from
+    // the topics list. This previously showed `topics.length - publicCount`
+    // (a private-topic count mislabeled "Collections"), which is why it read
+    // 0 for a user with public-only topics regardless of real collections.
+    const [collectionsCount, setCollectionsCount] = useState(0)
+
+    useEffect(() => {
+        if (status !== 'authenticated' || !profileUser?.username) return
+
+        const isOwner = session?.user?.username === profileUser.username
+        const request = isOwner ? fetchMyCollections() : fetchPublicCollections(profileUser.username)
+
+        request
+            .then((payload) => setCollectionsCount(payload.pagination.total))
+            .catch(() => setCollectionsCount(0))
+    }, [status, session?.user?.username, profileUser?.username])
 
     if (isTopicsLoading) return <OverviewSkeleton />
 
@@ -28,7 +48,7 @@ export default function Overview() {
                     <Link href={`/u/${profileUser?.username}?tab=topics`} className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-300">View all topics<ArrowRight className="h-4 w-4" /></Link>
                 </div>
                 <div className="grid border-t border-slate-200 dark:border-slate-800 sm:grid-cols-3">
-                    {[{ icon: BookOpen, label: 'Topics', value: topics.length }, { icon: Globe2, label: 'Public sheets', value: publicCount }, { icon: Lock, label: 'Collections', value: topics.length - publicCount }].map(({ icon: Icon, label, value }, index) => <div key={label} className={`flex items-center gap-3 px-5 py-4 ${index ? 'border-t border-slate-200 dark:border-slate-800 sm:border-l sm:border-t-0' : ''}`}><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500"><Icon className="h-4 w-4" /></span><div><p className="text-2xl font-semibold leading-none">{value}</p><p className="mt-1 text-xs text-slate-500">{label}</p></div></div>)}
+                    {[{ icon: BookOpen, label: 'Topics', value: topics.length }, { icon: Globe2, label: 'Public sheets', value: publicCount }, { icon: Lock, label: 'Collections', value: collectionsCount }].map(({ icon: Icon, label, value }, index) => <div key={label} className={`flex items-center gap-3 px-5 py-4 ${index ? 'border-t border-slate-200 dark:border-slate-800 sm:border-l sm:border-t-0' : ''}`}><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500"><Icon className="h-4 w-4" /></span><div><p className="text-2xl font-semibold leading-none">{value}</p><p className="mt-1 text-xs text-slate-500">{label}</p></div></div>)}
                 </div>
             </section>
 
