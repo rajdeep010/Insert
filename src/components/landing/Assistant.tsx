@@ -16,7 +16,7 @@ export function Assistant() {
     return <section id="assistant" className="relative scroll-mt-24 overflow-hidden bg-white py-16 dark:bg-[#030a18] sm:py-24">
         <div className="relative mx-auto max-w-[1560px] px-4 sm:px-8 lg:px-12">
             <div className="grid gap-12 lg:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.1fr)] lg:items-center">
-                <div className="relative order-2 lg:order-1"><div className="absolute -inset-8 rounded-full bg-indigo-500/10 blur-3xl" /><DexPreview /></div>
+                <div className="relative order-2 lg:order-1"><div className="absolute -inset-8 rounded-full bg-indigo-500/10 blur-3xl" /><DexPreview variant="launch" /></div>
                 <div className="order-1 lg:order-2">
                     <p className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300"><Sparkles className="h-3.5 w-3.5" />Meet Dex</p>
                     <h2 className="mt-4 max-w-4xl text-4xl font-semibold tracking-[-0.05em] sm:text-6xl">Meet &apos;&apos;Dex&apos;&apos;<br /><span className="text-slate-400">Insert&apos;s AI assistant.</span></h2>

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, Check, LayoutDashboard, MessageSquareText, ShieldCheck, Sparkles } from "lucide-react";
 
 import InsertNavbar from "@/components/InsertNavbar";
-import { ReleaseVideo } from "@/components/release/ReleaseVideo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import DexPreview from "@/components/DexPreview";
@@ -25,7 +24,7 @@ export default function ReleaseV71Page() {
                 <div><div className="flex flex-wrap items-center gap-2"><Badge className="rounded-md">Latest release</Badge><Badge variant="outline" className="rounded-md border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Minor update</Badge></div><h1 className="mt-6 max-w-5xl text-5xl font-semibold tracking-[-0.06em] sm:text-7xl">Say hello<br /><span className="text-slate-400">to Dex.</span></h1><p className="mt-6 max-w-3xl text-base leading-7 text-slate-600 dark:text-slate-400">Insert&apos;s first AI assistant is here. Ask Dex about your Topics and problems, or what any Insert feature does — right from a floating widget available on every page.</p><div className="mt-7 flex flex-wrap gap-2">{["Dex", "AI Assistant", "Topics Q&A", "Guardrails"].map((tag) => <Badge key={tag} variant="secondary" className="rounded-md">{tag}</Badge>)}</div></div>
             </section>
 
-            <DexPreview />
+            <DexPreview variant="launch" />
 
             <section className="py-12 lg:py-16"><div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)]"><div><p className="text-[10px] uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400">What&apos;s new</p><h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em]">One assistant, added on top.</h2><p className="mt-3 text-sm leading-6 text-slate-500">Dex doesn&apos;t change how Insert works today — it adds a faster way to get answers about your work and the product itself.</p></div><div className="grid gap-3 md:grid-cols-2">{featureGroups.map(({ icon: Icon, title, description, items }) => <article key={title} className="rounded-2xl border border-slate-200 bg-white/65 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/55 sm:p-6"><span className="flex h-10 w-10 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-500"><Icon className="h-5 w-5" /></span><h3 className="mt-5 text-xl font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-500">{description}</p><ul className="mt-5 space-y-3 border-t border-slate-200 pt-5 text-sm dark:border-slate-800">{items.map((item) => <li key={item} className="flex items-start gap-2.5"><span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-500"><Check className="h-3 w-3" /></span><span className="leading-5 text-slate-600 dark:text-slate-300">{item}</span></li>)}</ul></article>)}</div></div></section>
 

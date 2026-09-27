@@ -72,7 +72,7 @@ export default function AssistantPage() {
                         <Button asChild variant="outline" size="lg" className="rounded-md"><Link href="/sign-up">Create your workspace<ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
                     </div>
                 </div>
-                <div className="relative"><div aria-hidden="true" className="absolute -inset-8 rounded-full bg-indigo-500/10 blur-3xl" /><DexPreview /></div>
+                <div className="relative"><div aria-hidden="true" className="absolute -inset-8 rounded-full bg-indigo-500/10 blur-3xl" /><DexPreview variant="launch" /></div>
             </section>
 
             <section className="py-8 lg:py-10">
