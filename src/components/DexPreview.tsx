@@ -5,7 +5,7 @@ import { useState } from "react";
 import AssistantInfoCard from "@/components/AssistantInfoCard";
 import { cn } from "@/lib/utils";
 
-const DEX_VIDEO_URL = "https://res.cloudinary.com/dgxeg3sju/video/upload/v1790482525/insert-dex2_b8evqv.mp4";
+const DEX_VIDEO_URL = "https://res.cloudinary.com/dgxeg3sju/video/upload/v1790486327/dex-insert_vhy4xs.mp4";
 
 export default function DexPreview({ className }: { className?: string }) {
     const [videoFailed, setVideoFailed] = useState(false);
