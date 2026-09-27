@@ -59,16 +59,16 @@ export function AnnouncementBar() {
         >
             <Sparkles className="h-3.5 w-3.5 shrink-0" />
             <span>New: Meet Dex, Insert&apos;s AI assistant.</span>
-            <Link href="/assistant" className="inline-flex items-center gap-1 font-semibold underline underline-offset-2">
-                Try it now <ArrowRight className="h-3 w-3" />
+            <Link href="/release/v7.1" className="inline-flex items-center gap-1 font-semibold underline underline-offset-2">
+                What&apos;s new<ArrowRight className="h-3 w-3" />
             </Link>
-            <button
+            {/* <button
                 onClick={handleDismiss}
                 aria-label="Dismiss announcement"
                 className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded hover:bg-black/10"
             >
                 <X className="h-3.5 w-3.5" />
-            </button>
+            </button> */}
         </div>
     );
 }
