@@ -26,7 +26,7 @@ const collaborationServiceOrigin = trimTrailingSlash(
 )
 
 const agenticRagServiceOrigin = trimTrailingSlash(
-	process.env.NEXT_PUBLIC_AGENTIC_RAG_SERVICE_ORIGIN ??
+	process.env.AGENTIC_RAG_SERVICE_ORIGIN ??
 	"http://localhost:8000"
 )
 
