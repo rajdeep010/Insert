@@ -1,10 +1,7 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, MessageSquareText, Sparkles, TableProperties } from "lucide-react";
 
-import AssistantInfoCard from "@/components/AssistantInfoCard";
+import DexPreview from "@/components/DexPreview";
 import { Button } from "@/components/ui/button";
 
 const points = [
@@ -14,18 +11,6 @@ const points = [
 ];
 
 const comingSoon = ["Creating & editing", "Blogs", "Collections", "Projects"];
-
-const DEX_VIDEO_URL = "https://res.cloudinary.com/dgxeg3sju/video/upload/v1790482525/insert-dex2_b8evqv.mp4";
-
-function DexPreview() {
-    const [videoFailed, setVideoFailed] = useState(false);
-
-    if (videoFailed) return <AssistantInfoCard className="relative" />;
-
-    return <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-2xl shadow-slate-950/10 dark:border-slate-800">
-        <video src={DEX_VIDEO_URL} autoPlay muted loop playsInline preload="metadata" aria-label="Dex, Insert's AI assistant, answering questions in the workspace" onError={() => setVideoFailed(true)} className="block aspect-video h-auto w-full object-cover" />
-    </div>;
-}
 
 export function Assistant() {
     return <section id="assistant" className="relative scroll-mt-24 overflow-hidden bg-white py-16 dark:bg-[#030a18] sm:py-24">
