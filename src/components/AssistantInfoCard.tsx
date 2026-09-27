@@ -8,7 +8,7 @@ export default function AssistantInfoCard({ className }: { className?: string })
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10"><Sparkles className="h-5 w-5" /></span>
             <div>
                 <p className="text-sm font-medium">Dex</p>
-                <p className="text-xs text-slate-400">Insert&apos;s assistant</p>
+                <p className="text-xs text-slate-400">Insert&apos;s AI assistant</p>
             </div>
         </div>
         <div className="mt-5 space-y-2 border-t border-white/10 pt-4">

@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
     title: "Dex, your Insert assistant | Insert",
-    description: "Meet Dex, Insert's built-in assistant. Ask about your topics and problems, or what any Insert feature does, from a floating widget on every page.",
+    description: "Meet Dex, Insert's built-in AI assistant. Ask about your topics and problems, or what any Insert feature does, from a floating widget on every page.",
 };
 
 const features = [
@@ -33,7 +33,7 @@ const features = [
     { title: "Ask about Insert itself", description: "What does Projects do, how does Pro work — Dex knows every feature, and only states what's true.", icon: MessageSquareText },
     { title: "Remembers the conversation", description: "Ask a follow-up without repeating yourself — Dex keeps context within your session.", icon: History },
     { title: "Never guesses", description: "If Dex isn't sure about something, it says so instead of making something up.", icon: ShieldCheck },
-    { title: "Read-only, for now", description: "Dex can't create topics, add problems, or edit anything on your behalf yet — it only answers questions.", icon: Eye },
+    // { title: "Read-only, for now", description: "Dex can't create topics, add problems, or edit anything on your behalf yet — it only answers questions.", icon: Eye },
 ];
 
 const steps = [
@@ -65,8 +65,8 @@ export default function AssistantPage() {
             <section className="grid gap-8 border-b border-slate-200/80 py-10 dark:border-slate-800/80 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end lg:py-16">
                 <div>
                     <div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300"><Sparkles className="h-3.5 w-3.5" />Meet Dex</div>
-                    <h1 className="mt-5 max-w-4xl text-5xl font-semibold tracking-[-0.06em] sm:text-7xl">Meet Dex.<br /><span className="text-slate-400">Insert&apos;s built-in assistant.</span></h1>
-                    <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-400">Dex is Insert&apos;s built-in assistant. Ask about your Topics and problems, or what any Insert feature does — right from a floating widget available on every page, once you&apos;re signed in.</p>
+                    <h1 className="mt-5 max-w-4xl text-5xl font-semibold tracking-[-0.06em] sm:text-7xl">Meet Dex.<br /><span className="text-slate-400">Insert&apos;s built-in AI assistant.</span></h1>
+                    <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-400">Dex is Insert&apos;s built-in AI assistant. Ask about your Topics and problems, or what any Insert feature does — right from a floating widget available on every page, once you&apos;re signed in.</p>
                     <div className="mt-7 flex flex-wrap items-center gap-3">
                         <Button asChild size="lg" className="rounded-md"><Link href="/posts/topic"><Sparkles className="mr-2 h-4 w-4" />Try Dex now</Link></Button>
                         <Button asChild variant="outline" size="lg" className="rounded-md"><Link href="/sign-up">Create your workspace<ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
