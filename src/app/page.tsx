@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { About } from '@/components/About'
+import { Assistant } from '@/components/landing/Assistant'
 import { Extension } from '@/components/landing/Extension'
 import { Features } from '@/components/landing/Features'
 import { Footer } from '@/components/landing/Footer'
@@ -24,6 +25,10 @@ export default function Home() {
 
       <FadeUp>
         <Extension />
+      </FadeUp>
+
+      <FadeUp>
+        <Assistant />
       </FadeUp>
 
       <FadeUp>

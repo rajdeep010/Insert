@@ -2,35 +2,40 @@ const trimTrailingSlash = (value: string) => value.replace(/\/+$/, "")
 
 const projectServiceOrigin = trimTrailingSlash(
 	process.env.NEXT_PUBLIC_PROJECT_SERVICE_ORIGIN ??
-		"https://insert-projects-service.onrender.com"
+	"https://insert-projects-service.onrender.com"
 )
 
 const paymentServiceOrigin = trimTrailingSlash(
 	process.env.NEXT_PUBLIC_PAYMENT_SERVICE_ORIGIN ??
-		"https://insert-payment-service.onrender.com"
+	"https://insert-payment-service.onrender.com"
 )
 
 const notificationServiceOrigin = trimTrailingSlash(
 	process.env.NEXT_PUBLIC_NOTIFICATION_SERVICE_ORIGIN ??
-		"https://insert-notification-service.onrender.com"
+	"https://insert-notification-service.onrender.com"
 )
 
 const notificationServiceV2Origin = trimTrailingSlash(
 	process.env.NEXT_PUBLIC_NOTIFICATION_SERVICE_V2_ORIGIN ??
-		"insert-notification-service.railway.internal"
+	"insert-notification-service.railway.internal"
 )
 
 const collaborationServiceOrigin = trimTrailingSlash(
 	process.env.NEXT_PUBLIC_COLLABORATION_SERVICE_ORIGIN ??
-		"insert-collaboration-service.railway.internal"
+	"insert-collaboration-service.railway.internal"
+)
+
+const agenticRagServiceOrigin = trimTrailingSlash(
+	process.env.AGENTIC_RAG_SERVICE_ORIGIN ??
+	"http://localhost:8000"
 )
 
 const appOrigin = trimTrailingSlash(
 	process.env.NEXT_PUBLIC_APP_ORIGIN ??
-		process.env.NEXTAUTH_URL ??
-		(process.env.NODE_ENV === "production"
-			? "https://insertshare.vercel.app"
-			: "http://localhost:3001")
+	process.env.NEXTAUTH_URL ??
+	(process.env.NODE_ENV === "production"
+		? "https://insertshare.vercel.app"
+		: "http://localhost:3001")
 )
 
 const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUD_NAME ?? ""
@@ -58,6 +63,9 @@ export const externalServices = {
 	collaboration: {
 		origin: collaborationServiceOrigin,
 		apiBaseUrl: `${collaborationServiceOrigin}/api/v1`,
+	},
+	agenticRag: {
+		origin: agenticRagServiceOrigin,
 	},
 	app: {
 		origin: appOrigin,
