@@ -18,8 +18,8 @@ export function Hero() {
                     {/* <div className="mt-8 flex items-center gap-3"><InsertIcon width={64} height={64} className="rounded-xl border border-slate-200 bg-white p-1.5 dark:border-slate-700" /><span className="text-5xl tracking-[-0.04em]">Insert</span></div> */}
 
                     <div className="mt-6 sm:mt-8">
-                        <h1 className="flex items-center gap-[0.22em] font-serif text-5xl font-bold leading-none tracking-[-0.02em] sm:text-5xl lg:text-6xl xl:text-7xl"><InsertIcon width="0.92em" height="0.92em" className="shrink-0 rounded-[0.22em] border border-slate-200 bg-white p-[0.08em] shadow-sm dark:border-slate-700" />Insert</h1>
-                        <p className="mt-3 max-w-3xl font-serif text-3xl font-light italic leading-[1.15] tracking-[-0.01em] text-slate-400 sm:mt-4 sm:text-4xl lg:text-5xl xl:text-6xl dark:text-slate-500">Dev workspace...</p>
+                        <h1 className="flex items-center gap-[0.22em] text-5xl font-semibold leading-none tracking-[-0.06em] sm:text-5xl lg:text-6xl xl:text-7xl"><InsertIcon width="0.92em" height="0.92em" className="shrink-0 rounded-[0.22em] border border-slate-200 bg-white p-[0.08em] shadow-sm dark:border-slate-700" />Insert</h1>
+                        <p className="mt-3 max-w-3xl text-3xl font-semibold leading-[1.05] tracking-[-0.05em] text-slate-400 sm:mt-4 sm:text-4xl lg:text-5xl xl:text-6xl dark:text-slate-500">Dev workspace...</p>
                     </div>
 
                     <p className="mt-6 max-w-xl text-base leading-7 text-slate-600 dark:text-slate-400">A connected developer workspace for structured coding sheets, technical writing, typed collections, collaborative work, and GitHub-powered release journals.</p>
