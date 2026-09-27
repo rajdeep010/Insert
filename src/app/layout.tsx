@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Nanum_Myeongjo } from "next/font/google";
 import "./globals.css";
 import "./swiper.css";
 import AppProviders from "./providers";
 
-const inter = Inter({ subsets: ["latin"] });
+const nanumMyeongjo = Nanum_Myeongjo({
+  subsets: ["latin"],
+  weight: ["400", "700", "800"],
+  display: "swap",
+  variable: "--font-nanum-myeongjo",
+});
 
 export const metadata: Metadata = {
   title: "Insert",
@@ -22,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.className} suppressHydrationWarning>
+    <html lang="en" className={`${nanumMyeongjo.variable} ${nanumMyeongjo.className}`} suppressHydrationWarning>
       <body className={`antialiased`} suppressHydrationWarning>
         <AppProviders>{children}</AppProviders>
       </body>

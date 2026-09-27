@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap');
 /* @import 'ag-grid-community/styles/ag-grid.css'; */
 /* @import 'ag-grid-community/styles/ag-theme-quartz.css'; */
 
@@ -189,7 +188,7 @@
 }
 
 .ag-grid-shell .ag-header-cell-label {
-  font-family: 'Urbanist', sans-serif;
+  font-family: var(--font-nanum-myeongjo), serif;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -409,7 +408,7 @@
   align-items: center;
   font-size: 0.6rem;
   color: white;
-  font-family: 'Urbanist', sans-serif;
+  font-family: var(--font-nanum-myeongjo), serif;
 }
 
 

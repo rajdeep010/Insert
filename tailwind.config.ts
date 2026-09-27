@@ -20,8 +20,8 @@ const config: Config = {
   	extend: {
   		fontFamily: {
   			sans: [
-  				'Urbanist',
-  				'sans-serif'
+  				'var(--font-nanum-myeongjo)',
+  				'serif'
   			]
   		},
   		colors: {
