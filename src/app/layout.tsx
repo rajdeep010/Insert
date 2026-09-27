@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Nanum_Myeongjo } from "next/font/google";
 import "./globals.css";
 import "./swiper.css";
+import { AnnouncementBar } from "@/components/AnnouncementBar";
+
 import AppProviders from "./providers";
 
 const nanumMyeongjo = Nanum_Myeongjo({
@@ -29,7 +31,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${nanumMyeongjo.variable} ${nanumMyeongjo.className}`} suppressHydrationWarning>
       <body className={`antialiased`} suppressHydrationWarning>
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+          <AnnouncementBar />
+          {children}
+        </AppProviders>
       </body>
     </html>
   );

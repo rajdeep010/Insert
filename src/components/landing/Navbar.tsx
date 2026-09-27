@@ -16,7 +16,7 @@ export function Navbar() {
     const [open, setOpen] = useState(false);
     const authHref = pathname === "/sign-up" ? "/sign-in" : "/sign-up";
     const authLabel = pathname === "/sign-up" ? "Sign in" : "Get started";
-    return <header className="fixed inset-x-0 top-4 z-50 px-4">
+    return <header className="fixed inset-x-0 top-[calc(1rem+var(--announcement-height,0px))] z-50 px-4">
         <div className="mx-auto flex h-16 max-w-[1480px] items-center justify-between rounded-2xl border border-slate-200/80 bg-white/80 px-4 shadow-[0_12px_50px_-30px_rgba(15,23,42,0.6)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/75 sm:px-5">
             <Link href="/" className="flex items-center gap-2.5">
                 <InsertIcon width={34} height={34} className="rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700" />
