@@ -19,6 +19,7 @@ import {
     PanelsTopLeft,
     PenLine,
     Puzzle,
+    Sparkles,
     User,
     User2,
     Users,
@@ -131,6 +132,7 @@ export default function InsertNavbar() {
         { href: "/write", label: "Write", description: "Create and manage technical blogs.", icon: FilePenLine },
         { href: `/u/${profileUsername}?tab=subscribe`, label: "Subscription", description: "Review your Insert plan and access.", icon: BadgeCheck },
         { href: "/extension", label: "Extension", description: "Save coding problems from your browser.", icon: Puzzle },
+        { href: "/assistant", label: "Dex", description: "Ask about your topics, or what Insert can do.", icon: Sparkles },
     ];
 
     const exploreLinks: NavItem[] = [

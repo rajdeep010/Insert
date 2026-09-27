@@ -649,6 +649,32 @@
   background-color: #f0f0f0;
 }
 
+/* Dex widget always renders on a dark panel regardless of site theme, so it
+   needs its own scrollbar colors — and unlike the rules above, sets both
+   width and height so horizontal scroll (e.g. inside a chat table) is thin too. */
+.dex-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.dex-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.dex-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.dex-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.35);
+}
+
+.dex-scrollbar::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
 .custom-small-scrollbar::-webkit-scrollbar {
   width: 0px !important;
 }

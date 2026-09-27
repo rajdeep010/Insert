@@ -1,3 +1,5 @@
+import AgentChatWidget from "@/components/AgentChatWidget";
+
 import AppFeatureProviders from "./providers";
 
 interface RootLayoutProps {
@@ -8,6 +10,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <div className="flex min-h-screen flex-col">
       <AppFeatureProviders>{children}</AppFeatureProviders>
+      <AgentChatWidget />
     </div>
   );
 }
