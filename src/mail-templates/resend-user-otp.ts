@@ -10,14 +10,14 @@ export const resendUserOTPEmail = (username: string, otp: string | number) => {
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet" />
     <style type="text/css">
       html, body { margin: 0; padding: 0; height: 100%; }
       body {
         -webkit-text-size-adjust: 100%;
         -ms-text-size-adjust: 100%;
         background-color: #F3F4F6;
-        font-family: 'Urbanist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+        font-family: 'Nanum Myeongjo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
         color: #111827;
       }
       table, td { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
