@@ -1,0 +1,34 @@
+pipeline:
+  id: pipeline_rajdeep010_Insert_build_9ac8
+  name: pipeline_rajdeep010_Insert_build_9ac8
+  stages:
+    - name: Build and Check
+      id: build_and_check
+      runtime: cloud
+      clone:
+        enabled: true
+      cache:
+        enabled: true
+      steps:
+        - name: Install Dependencies
+          id: install
+          run:
+            shell: bash
+            script: |
+              node --version
+              npm --version
+              npm ci
+        - name: Type Check and Lint
+          id: check
+          run:
+            shell: bash
+            script: |
+              npm run check
+        - name: Build
+          id: build
+          run:
+            shell: bash
+            script: |
+              npm run build
+  tags:
+    onboarding: "true"
